@@ -23,12 +23,16 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
 public class EventBusReporterWrapper implements Reporter, Handler<Message<Reportable>>{
+
+    private final Logger logger = LoggerFactory.getLogger(EventBusReporterWrapper.class);
 
     private static final String EVENT_BUS_ADDRESS = "node:metrics";
     private final Reporter reporter;
@@ -59,6 +63,7 @@ public class EventBusReporterWrapper implements Reporter, Handler<Message<Report
                     reporter.start();
                     event.complete(reporter);
                 } catch (Exception ex) {
+                    logger.error("Error while starting reporter", ex);
                     event.fail(ex);
                 }
             }

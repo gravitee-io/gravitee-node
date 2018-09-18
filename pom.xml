@@ -43,6 +43,7 @@
         <module>gravitee-node-reporter</module>
         <module>gravitee-node-plugins</module>
         <module>gravitee-node-services</module>
+        <module>gravitee-node-notifier</module>
     </modules>
 
     <dependencyManagement>
@@ -63,7 +64,13 @@
             <dependency>
                 <groupId>io.gravitee.plugin</groupId>
                 <artifactId>gravitee-plugin-core</artifactId>
-                <version>${gravitee-plugin-core.version}</version>
+                <version>${gravitee-plugin.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.gravitee.notifier</groupId>
+                <artifactId>gravitee-notifier-api</artifactId>
+                <version>${gravitee-notifier-api.version}</version>
             </dependency>
 
             <!-- Spring -->
@@ -89,8 +96,9 @@
 
     <properties>
         <gravitee-common.version>1.13.0</gravitee-common.version>
-        <gravitee-plugin-core.version>1.4.0</gravitee-plugin-core.version>
+        <gravitee-plugin.version>1.5.0-SNAPSHOT</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.12.0</gravitee-reporter-api.version>
+        <gravitee-notifier-api.version>1.0.0-SNAPSHOT</gravitee-notifier-api.version>
         <snakeyaml.version>1.23</snakeyaml.version>
     </properties>
 </project>
