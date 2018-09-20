@@ -16,6 +16,11 @@
 package io.gravitee.node.service.monitoring;
 
 import io.gravitee.node.api.Node;
+import io.gravitee.node.reporter.ReporterService;
+import io.gravitee.node.service.monitoring.probe.JvmProbe;
+import io.gravitee.node.service.monitoring.probe.OsProbe;
+import io.gravitee.node.service.monitoring.probe.ProcessProbe;
+import io.gravitee.reporter.api.monitor.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +33,8 @@ public class MonitoringThread implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MonitoringThread.class);
 
-    //@Autowired
-    //private ReporterService reporterService;
+    @Autowired
+    private ReporterService reporterService;
 
     @Autowired
     private Node node;
@@ -38,7 +43,6 @@ public class MonitoringThread implements Runnable {
     public void run() {
         try {
             // And generate monitoring metrics
-            /*
             reporterService.report(
                     Monitor
                     .on(node.id())
@@ -47,7 +51,6 @@ public class MonitoringThread implements Runnable {
                     .jvm(JvmProbe.getInstance().jvmInfo())
                     .process(ProcessProbe.getInstance().processInfo())
                     .build());
-            */
         } catch (Exception ex) {
             LOGGER.error("Unexpected error occurs while monitoring the node", ex);
         }

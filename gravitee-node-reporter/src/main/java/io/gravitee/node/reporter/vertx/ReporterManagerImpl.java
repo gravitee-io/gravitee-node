@@ -52,7 +52,7 @@ public class ReporterManagerImpl extends AbstractService<ReporterManager> implem
             if (event.failed()) {
                 LOGGER.error("Reporter service can not be started", event.cause());
             } else {
-                if (! reporters.isEmpty() && deploymentId != null) {
+                if (! reporters.isEmpty()) {
                     for (Reporter reporter : reporters) {
                         try {
                             LOGGER.info("Starting reporter: {}", reporter);

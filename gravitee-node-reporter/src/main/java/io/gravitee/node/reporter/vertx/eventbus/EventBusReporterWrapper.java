@@ -18,6 +18,8 @@ package io.gravitee.node.reporter.vertx.eventbus;
 import io.gravitee.common.component.Lifecycle;
 import io.gravitee.reporter.api.Reportable;
 import io.gravitee.reporter.api.Reporter;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -50,9 +52,26 @@ public class EventBusReporterWrapper implements Reporter, Handler<Message<Report
 
     @Override
     public Object start() throws Exception {
-        Object ret = reporter.start();
-        vertx.eventBus().consumer(EVENT_BUS_ADDRESS, this);
-        return ret;
+        vertx.executeBlocking(new Handler<Future<Object>>() {
+            @Override
+            public void handle(Future<Object> event) {
+                try {
+                    reporter.start();
+                    event.complete(reporter);
+                } catch (Exception ex) {
+                    event.fail(ex);
+                }
+            }
+        }, new Handler<AsyncResult<Object>>() {
+            @Override
+            public void handle(AsyncResult<Object> event) {
+                if (event.succeeded()) {
+                    vertx.eventBus().consumer(EVENT_BUS_ADDRESS, EventBusReporterWrapper.this);
+                }
+            }
+        });
+
+        return reporter;
     }
 
     @Override

@@ -42,7 +42,7 @@ public class ReporterPluginHandler implements PluginHandler {
     private PluginClassLoaderFactory pluginClassLoaderFactory;
 
     @Autowired
-    private ReporterManager reporterService;
+    private ReporterManager reporterManager;
 
     @Override
     public boolean canHandle(Plugin plugin) {
@@ -59,7 +59,7 @@ public class ReporterPluginHandler implements PluginHandler {
 
                 ApplicationContext context = pluginContextFactory.create(plugin);
                 Reporter reporter = context.getBean(Reporter.class);
-                reporterService.register(reporter);
+                reporterManager.register(reporter);
             } catch (Exception iae) {
                 LOGGER.error("Unexpected error while create reporter instance", iae);
                 // Be sure that the context does not exist anymore.

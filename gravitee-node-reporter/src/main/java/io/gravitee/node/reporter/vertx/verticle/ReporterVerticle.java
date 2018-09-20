@@ -58,6 +58,8 @@ public class ReporterVerticle extends AbstractVerticle implements ReporterServic
     }
 
     public void report(Reportable reportable) {
-        producer.write(reportable);
+        if (producer != null) {
+            producer.write(reportable);
+        }
     }
 }

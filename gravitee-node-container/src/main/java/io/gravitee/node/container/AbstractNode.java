@@ -21,6 +21,11 @@ import io.gravitee.common.service.AbstractService;
 import io.gravitee.common.util.ListReverser;
 import io.gravitee.common.util.Version;
 import io.gravitee.node.api.Node;
+import io.gravitee.node.management.http.ManagementService;
+import io.gravitee.node.plugins.service.ServiceManager;
+import io.gravitee.node.reporter.ReporterManager;
+import io.gravitee.plugin.core.api.PluginRegistry;
+import io.gravitee.plugin.core.internal.PluginEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -30,6 +35,7 @@ import org.springframework.context.ApplicationContextAware;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -109,11 +115,24 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
         this.LOGGER.info("{} stopped", this.name());
     }
 
-    public abstract String name();
-
     @Override
     public String hostname() {
         return hostname;
+    }
+
+    public abstract String name();
+
+    @Override
+    public List<Class<? extends LifecycleComponent>> components() {
+        List<Class<? extends LifecycleComponent>> components = new ArrayList<>();
+
+        components.add(PluginEventListener.class);
+        components.add(PluginRegistry.class);
+        components.add(ServiceManager.class);
+        components.add(ManagementService.class);
+        components.add(ReporterManager.class);
+
+        return components;
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

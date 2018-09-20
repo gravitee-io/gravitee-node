@@ -57,7 +57,9 @@ public interface Node extends LifecycleComponent<Node> {
         return Collections.emptyList();
     }
 
-    String hostname();
+    default String hostname() {
+        return "";
+    }
 
     default Map<String, Object> metadata() {
         return Collections.emptyMap();
