@@ -36,7 +36,6 @@
     <packaging>pom</packaging>
     
     <modules>
-        <module>gravitee-node-bootstrap</module>
         <module>gravitee-node-api</module>
         <module>gravitee-node-container</module>
         <module>gravitee-node-vertx</module>
