@@ -16,6 +16,7 @@
 package io.gravitee.node.management.http.vertx.verticle;
 
 import io.gravitee.common.http.HttpStatusCode;
+import io.gravitee.node.management.http.configuration.ConfigurationEndpoint;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.management.http.metrics.prometheus.PrometheusEndpoint;
 import io.gravitee.node.management.http.node.NodeEndpoint;
@@ -70,6 +71,9 @@ public class ManagementVerticle extends AbstractVerticle {
 
     @Autowired
     private NodeEndpoint nodeEndpoint;
+
+    @Autowired
+    private ConfigurationEndpoint configurationEndpoint;
 
     @Autowired
     private PrometheusEndpoint prometheusEndpoint;
@@ -135,6 +139,7 @@ public class ManagementVerticle extends AbstractVerticle {
                         LOGGER.error("HTTP listener for Node Management can not be started properly", event.cause());
                     } else {
                         managementEndpointManager.register(nodeEndpoint);
+                        managementEndpointManager.register(configurationEndpoint);
 
                         // Metrics
                         boolean metricsEnabled = environment.getProperty("services.metrics.enabled", Boolean.class, false);

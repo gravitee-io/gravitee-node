@@ -16,6 +16,7 @@
 package io.gravitee.node.management.http.spring;
 
 import io.gravitee.node.management.http.ManagementService;
+import io.gravitee.node.management.http.configuration.ConfigurationEndpoint;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.management.http.metrics.prometheus.PrometheusEndpoint;
 import io.gravitee.node.management.http.node.NodeEndpoint;
@@ -57,5 +58,10 @@ public class ManagementConfiguration {
     @Bean
     public PrometheusEndpoint prometheusEndpoint() {
         return new PrometheusEndpoint();
+    }
+
+    @Bean
+    public ConfigurationEndpoint configurationEndpoint() {
+        return new ConfigurationEndpoint();
     }
 }

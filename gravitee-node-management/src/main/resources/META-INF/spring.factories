@@ -1,2 +1,3 @@
 io.gravitee.node.management.http.endpoint.ManagementEndpoint=\
-    io.gravitee.node.management.http.node.NodeEndpoint
+    io.gravitee.node.management.http.node.NodeEndpoint, \
+    io.gravitee.node.management.http.configuration.ConfigurationEndpoint
