@@ -20,6 +20,7 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import io.gravitee.common.service.AbstractService;
+import io.gravitee.node.api.Node;
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.StaticLoggerBinder;
 
@@ -84,10 +85,11 @@ public abstract class AbstractContainer extends AbstractService<Container> imple
         LoggerFactory.getLogger(AbstractContainer.class).info("Starting {}...", name());
 
         try {
-            node().start();
+            final Node node = node();
+            node.start();
 
             // Register shutdown hook
-            Thread shutdownHook = new ContainerShutdownHook();
+            Thread shutdownHook = new ContainerShutdownHook(node);
             shutdownHook.setName("graviteeio-finalizer");
             Runtime.getRuntime().addShutdownHook(shutdownHook);
         } catch (Exception ex) {
@@ -114,9 +116,15 @@ public abstract class AbstractContainer extends AbstractService<Container> imple
 
     private class ContainerShutdownHook extends Thread {
 
+        private final Node node;
+
+        private ContainerShutdownHook(Node node) {
+            this.node = node;
+        }
+
         @Override
         public void run() {
-            if (node() != null) {
+            if (node != null) {
                 try {
                     AbstractContainer.this.stop();
                 } catch (Exception ex) {
@@ -126,13 +134,4 @@ public abstract class AbstractContainer extends AbstractService<Container> imple
             }
         }
     }
-
-    /*
-    public static void main(String[] args) {
-        // If you want to run Gravitee standalone from your IDE, please do not forget
-        // to specify -Dgravitee.home=/path/to/gravitee/home in order to make it works.
-        AbstractContainer container = new AbstractContainer();
-        container.start();
-    }
-    */
 }
