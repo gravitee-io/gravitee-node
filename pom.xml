@@ -24,7 +24,7 @@
 	<parent>
 		<groupId>io.gravitee</groupId>
 		<artifactId>gravitee-parent</artifactId>
-		<version>13-SNAPSHOT</version>
+		<version>13</version>
 	</parent>
 
     <groupId>io.gravitee.node</groupId>
@@ -34,7 +34,7 @@
     <name>Gravitee.io - Node</name>
 
     <packaging>pom</packaging>
-    
+
     <modules>
         <module>gravitee-node-api</module>
         <module>gravitee-node-container</module>
