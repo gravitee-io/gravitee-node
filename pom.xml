@@ -91,5 +91,6 @@
         <gravitee-common.version>1.13.0</gravitee-common.version>
         <gravitee-plugin-core.version>1.4.0</gravitee-plugin-core.version>
         <gravitee-reporter-api.version>1.12.0</gravitee-reporter-api.version>
+        <snakeyaml.version>1.23</snakeyaml.version>
     </properties>
 </project>
