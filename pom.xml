@@ -29,7 +29,7 @@
 
     <groupId>io.gravitee.node</groupId>
     <artifactId>gravitee-node</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.0</version>
 
     <name>Gravitee.io - Node</name>
 
@@ -96,9 +96,9 @@
 
     <properties>
         <gravitee-common.version>1.13.0</gravitee-common.version>
-        <gravitee-plugin.version>1.5.0-SNAPSHOT</gravitee-plugin.version>
+        <gravitee-plugin.version>1.5.0</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.12.0</gravitee-reporter-api.version>
-        <gravitee-notifier-api.version>1.0.0-SNAPSHOT</gravitee-notifier-api.version>
+        <gravitee-notifier-api.version>1.0.0</gravitee-notifier-api.version>
         <snakeyaml.version>1.23</snakeyaml.version>
     </properties>
 </project>
