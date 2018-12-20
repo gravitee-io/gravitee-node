@@ -21,7 +21,6 @@ import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.management.http.metrics.prometheus.PrometheusEndpoint;
 import io.gravitee.node.management.http.node.NodeEndpoint;
 import io.gravitee.node.management.http.vertx.configuration.HttpServerConfiguration;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -30,7 +29,6 @@ import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.AuthHandler;
 import io.vertx.ext.web.handler.BasicAuthHandler;
-import io.vertx.micrometer.backends.BackendRegistries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,8 +122,8 @@ public class ManagementVerticle extends AbstractVerticle {
 
         // Set security handler is defined
         if (authHandler != null) {
-            mainRouter.route().handler(authHandler);
-            nodeRouter.route().handler(authHandler);
+            mainRouter.route().order(-1).handler(authHandler);
+            nodeRouter.route().order(-1).handler(authHandler);
         }
 
         // Set default handler
