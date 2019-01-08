@@ -39,7 +39,7 @@ public class SpringVerticleFactory implements VerticleFactory, ApplicationContex
     @Override
     public Verticle createVerticle(String verticleName, ClassLoader classLoader) throws Exception {
         String verticleClassname = verticleName.substring(VERTICLE_PREFIX.length() + 1);
-        Class<?> verticleClass = this.getClass().getClassLoader().loadClass(verticleClassname);
+        Class<?> verticleClass = Thread.currentThread().getContextClassLoader().loadClass(verticleClassname);
         return (Verticle) applicationContext.getBean(verticleClass);
     }
 
