@@ -28,10 +28,9 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
+import io.vertx.micrometer.*;
 import io.vertx.micrometer.backends.BackendRegistries;
+import io.vertx.micrometer.impl.Label;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
@@ -94,8 +93,29 @@ public class VertxFactory implements FactoryBean<Vertx> {
 
         MicrometerMetricsOptions micrometerMetricsOptions = new MicrometerMetricsOptions();
         micrometerMetricsOptions
-                .setDisabledMetricsCategories(EnumSet.of(MetricsDomain.DATAGRAM_SOCKET, MetricsDomain.NAMED_POOLS, MetricsDomain.VERTICLES))
+                .setDisabledMetricsCategories(EnumSet.of(
+                        MetricsDomain.DATAGRAM_SOCKET,
+                        MetricsDomain.NAMED_POOLS,
+                        MetricsDomain.VERTICLES,
+                        MetricsDomain.EVENT_BUS))
                 .setEnabled(true);
+
+        Match pathMatch = new Match()
+                .setLabel("path")
+                .setType(MatchType.REGEX)
+                .setValue(".*")
+                .setAlias("_");
+        Match remoteMatch = new Match()
+                .setLabel("remote")
+                .setType(MatchType.REGEX)
+                .setValue(".*")
+                .setAlias("_");
+
+        micrometerMetricsOptions
+                .addLabelMatch(pathMatch)
+                .addLabelMatch(remoteMatch);
+
+        options.setMetricsOptions(micrometerMetricsOptions);
 
         boolean prometheusEnabled = environment.getProperty("services.metrics.prometheus.enabled", Boolean.class, true);
         if (prometheusEnabled) {
