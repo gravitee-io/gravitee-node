@@ -28,7 +28,10 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.micrometer.*;
+import io.vertx.micrometer.Label;
+import io.vertx.micrometer.MetricsDomain;
+import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.VertxPrometheusOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +40,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -99,20 +106,15 @@ public class VertxFactory implements FactoryBean<Vertx> {
                         MetricsDomain.EVENT_BUS))
                 .setEnabled(true);
 
-        Match pathMatch = new Match()
-                .setLabel("path")
-                .setType(MatchType.REGEX)
-                .setValue(".*")
-                .setAlias("_");
-        Match remoteMatch = new Match()
-                .setLabel("remote")
-                .setType(MatchType.REGEX)
-                .setValue(".*")
-                .setAlias("_");
-
-        micrometerMetricsOptions
-                .addLabelMatch(pathMatch)
-                .addLabelMatch(remoteMatch);
+        // Read labels
+        Set<String> labels = loadLabels();
+        if (labels != null && !labels.isEmpty()) {
+            Set<Label> micrometerLabels = labels.stream().map(label -> Label.valueOf(label.toUpperCase())).collect(Collectors.toSet());
+            micrometerMetricsOptions.setLabels(micrometerLabels);
+        } else {
+            // Defaults to
+            micrometerMetricsOptions.setLabels(EnumSet.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE));
+        }
 
         options.setMetricsOptions(micrometerMetricsOptions);
 
@@ -135,6 +137,28 @@ public class VertxFactory implements FactoryBean<Vertx> {
         return true;
     }
 
+    private Set<String> loadLabels() {
+        LOGGER.debug("Looking for metrics labels...");
+        Set<String> labels = null;
+
+        boolean found = true;
+        int idx = 0;
+
+        while (found) {
+            String label = environment.getProperty("services.metrics.labels[" + idx + "]");
+            found = (label != null);
+            if (found) {
+                if (labels == null) {
+                     labels = new HashSet<>();
+                }
+                labels.add(label);
+            }
+            idx++;
+        }
+
+        return labels;
+    }
+
     private class RenameVertxFilter implements MeterFilter {
 
         @Override
@@ -147,4 +171,3 @@ public class VertxFactory implements FactoryBean<Vertx> {
         }
     }
 }
-
