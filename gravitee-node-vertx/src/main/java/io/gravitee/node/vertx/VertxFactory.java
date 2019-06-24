@@ -65,7 +65,7 @@ public class VertxFactory implements FactoryBean<Vertx> {
     @Override
     public Vertx getObject() throws Exception {
         LOGGER.debug("Creating a new instance of Vert.x");
-        VertxOptions options = new VertxOptions();
+        VertxOptions options = getVertxOptions();
 
         boolean metricsEnabled = environment.getProperty("services.metrics.enabled", Boolean.class, false);
         if (metricsEnabled) {
@@ -169,5 +169,26 @@ public class VertxFactory implements FactoryBean<Vertx> {
 
             return id;
         }
+    }
+
+    private VertxOptions getVertxOptions() {
+        VertxOptions options = new VertxOptions();
+
+        Long blockedThreadCheckInterval = Long.getLong("vertx.options.blockedThreadCheckInterval");
+        if (blockedThreadCheckInterval != null) {
+            options.setBlockedThreadCheckInterval(blockedThreadCheckInterval);
+        }
+
+        Long maxEventLoopExecuteTime = Long.getLong("vertx.options.maxEventLoopExecuteTime");
+        if (maxEventLoopExecuteTime != null) {
+            options.setMaxEventLoopExecuteTime(maxEventLoopExecuteTime);
+        }
+
+        Long warningExceptionTime = Long.getLong("vertx.options.warningExceptionTime");
+        if (warningExceptionTime != null) {
+            options.setWarningExceptionTime(warningExceptionTime);
+        }
+
+        return options;
     }
 }
