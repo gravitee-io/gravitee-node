@@ -20,7 +20,6 @@ import io.gravitee.node.container.AbstractContainer;
 import io.gravitee.node.container.spring.env.EnvironmentConfiguration;
 import io.gravitee.node.container.spring.env.PropertiesConfiguration;
 import io.gravitee.node.management.http.spring.ManagementConfiguration;
-import io.gravitee.node.notifier.spring.NotifierPluginConfiguration;
 import io.gravitee.node.plugins.service.spring.ServiceConfiguration;
 import io.gravitee.node.reporter.spring.ReporterConfiguration;
 import io.gravitee.plugin.core.spring.PluginConfiguration;
@@ -73,7 +72,6 @@ public abstract class SpringBasedContainer extends AbstractContainer {
         classes.add(ManagementConfiguration.class);
         classes.add(ReporterConfiguration.class);
 
-        classes.add(NotifierPluginConfiguration.class);
         return classes;
     }
 

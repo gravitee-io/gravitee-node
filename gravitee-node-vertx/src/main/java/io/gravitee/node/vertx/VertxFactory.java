@@ -71,7 +71,7 @@ public class VertxFactory implements FactoryBean<Vertx> {
         if (metricsEnabled) {
             configureMetrics(options);
         }
-
+        
         Vertx instance = Vertx.vertx(options);
         instance.registerVerticleFactory(springVerticleFactory);
 
