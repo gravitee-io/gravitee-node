@@ -15,9 +15,12 @@
  */
 package io.gravitee.node.service.monitoring;
 
+import io.gravitee.alert.api.event.Event;
 import io.gravitee.common.service.AbstractService;
+import io.gravitee.node.api.Node;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.service.monitoring.management.MonitorManagementEndpoint;
+import io.gravitee.plugin.alert.AlertEventProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +39,15 @@ public class MonitoringService extends AbstractService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MonitoringService.class);
 
+    private static final String PROPERTY_NODE_HOSTNAME = "node.hostname";
+    private static final String PROPERTY_NODE_APPLICATION = "node.application";
+    private static final String PROPERTY_NODE_ID = "node.id";
+    private static final String PROPERTY_NODE_EVENT = "node.event";
+
+    private static final String NODE_LIFECYCLE = "NODE_LIFECYCLE";
+    private static final String NODE_EVENT_START = "NODE_START";
+    private static final String NODE_EVENT_STOP = "NODE_STOP";
+
     @Value("${services.monitoring.enabled:true}")
     private boolean enabled;
 
@@ -53,6 +65,12 @@ public class MonitoringService extends AbstractService {
     @Autowired
     private ManagementEndpointManager managementEndpointManager;
 
+    @Autowired
+    private Node node;
+
+    @Autowired
+    private AlertEventProducer eventProducer;
+
     @Override
     protected void doStart() throws Exception {
         if (enabled) {
@@ -63,6 +81,16 @@ public class MonitoringService extends AbstractService {
 
             MonitoringThread monitorThread = new MonitoringThread();
             this.applicationContext.getAutowireCapableBeanFactory().autowireBean(monitorThread);
+
+            // Send an event to notify about the node status
+            eventProducer.send(Event
+                    .now()
+                    .type(NODE_LIFECYCLE)
+                    .property(PROPERTY_NODE_EVENT, NODE_EVENT_START)
+                    .property(PROPERTY_NODE_ID, node.id())
+                    .property(PROPERTY_NODE_HOSTNAME, node.hostname())
+                    .property(PROPERTY_NODE_APPLICATION, node.application())
+                    .build());
 
             LOGGER.info("Node monitoring scheduled with fixed delay {} {} ", delay, unit.name());
 
@@ -84,6 +112,17 @@ public class MonitoringService extends AbstractService {
             }
 
             super.doStop();
+
+            // Send an event to notify about the node status
+            eventProducer.send(Event
+                    .now()
+                    .type(NODE_LIFECYCLE)
+                    .property(PROPERTY_NODE_EVENT, NODE_EVENT_STOP)
+                    .property(PROPERTY_NODE_ID, node.id())
+                    .property(PROPERTY_NODE_HOSTNAME, node.hostname())
+                    .property(PROPERTY_NODE_APPLICATION, node.application())
+                    .build());
+
             LOGGER.info("Stop node monitor : DONE");
         }
     }

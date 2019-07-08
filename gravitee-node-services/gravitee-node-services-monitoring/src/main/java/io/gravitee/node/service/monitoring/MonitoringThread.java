@@ -15,12 +15,18 @@
  */
 package io.gravitee.node.service.monitoring;
 
+import io.gravitee.alert.api.event.DefaultEvent;
+import io.gravitee.alert.api.event.Event;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.reporter.ReporterService;
 import io.gravitee.node.service.monitoring.probe.JvmProbe;
 import io.gravitee.node.service.monitoring.probe.OsProbe;
 import io.gravitee.node.service.monitoring.probe.ProcessProbe;
+import io.gravitee.plugin.alert.AlertEventProducer;
+import io.gravitee.reporter.api.monitor.JvmInfo;
 import io.gravitee.reporter.api.monitor.Monitor;
+import io.gravitee.reporter.api.monitor.OsInfo;
+import io.gravitee.reporter.api.monitor.ProcessInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,24 +39,70 @@ public class MonitoringThread implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MonitoringThread.class);
 
+    private static final String NODE_HEARTBEAT = "NODE_HEARTBEAT";
+
+    private static final String PROPERTY_NODE_HOSTNAME = "node.hostname";
+    private static final String PROPERTY_NODE_APPLICATION = "node.application";
+    private static final String PROPERTY_NODE_ID = "node.id";
+
     @Autowired
     private ReporterService reporterService;
 
     @Autowired
     private Node node;
 
+    @Autowired
+    private AlertEventProducer eventProducer;
+
     @Override
     public void run() {
         try {
-            // And generate monitoring metrics
-            reporterService.report(
-                    Monitor
+            Monitor monitor = Monitor
                     .on(node.id())
                     .at(System.currentTimeMillis())
                     .os(OsProbe.getInstance().osInfo())
                     .jvm(JvmProbe.getInstance().jvmInfo())
                     .process(ProcessProbe.getInstance().processInfo())
-                    .build());
+                    .build();
+
+            // And generate monitoring metrics
+            reporterService.report(monitor);
+
+            if (! eventProducer.isEmpty()) {
+                DefaultEvent.Builder event = Event
+                        .at(monitor.timestamp().toEpochMilli())
+                        .type(NODE_HEARTBEAT);
+
+                event.property(PROPERTY_NODE_ID, node.id());
+                event.property(PROPERTY_NODE_HOSTNAME, node.hostname());
+                event.property(PROPERTY_NODE_APPLICATION, node.application());
+
+                // OS metrics
+                OsInfo osInfo = monitor.getOs();
+                event.property("os.cpu.percent", osInfo.cpu.getPercent());
+                for (int i = 0 ; i < osInfo.cpu.getLoadAverage().length ; i++) {
+                    event.property("os.cpu.average."+i, osInfo.cpu.getLoadAverage()[i]);
+                }
+
+                // Process metrics
+                ProcessInfo processInfo = monitor.getProcess();
+                event.property("process.fd.open", processInfo.openFileDescriptors);
+                event.property("process.fd.max", processInfo.maxFileDescriptors);
+                event.property("process.cpu.percent", processInfo.cpu.percent);
+                event.property("process.cpu.total", processInfo.cpu.total);
+                event.property("process.mem.virtual.total", processInfo.mem.totalVirtual);
+
+                // JVM metrics
+                JvmInfo jvmInfo = monitor.getJvm();
+                event.property("jvm.uptime", jvmInfo.uptime);
+                event.property("jvm.threads.count", jvmInfo.threads.count);
+                event.property("jvm.threads.peak", jvmInfo.threads.peakCount);
+                event.property("jvm.mem.heap.used", jvmInfo.mem.heapUsed);
+                event.property("jvm.mem.heap.max", jvmInfo.mem.heapMax);
+                event.property("jvm.mem.heap.percent", jvmInfo.mem.getHeapUsedPercent());
+
+                eventProducer.send(event.build());
+            }
         } catch (Exception ex) {
             LOGGER.error("Unexpected error occurs while monitoring the node", ex);
         }
