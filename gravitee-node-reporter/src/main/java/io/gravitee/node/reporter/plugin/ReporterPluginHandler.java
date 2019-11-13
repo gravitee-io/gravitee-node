@@ -16,27 +16,18 @@
 package io.gravitee.node.reporter.plugin;
 
 import io.gravitee.node.reporter.ReporterManager;
-import io.gravitee.plugin.core.api.*;
+import io.gravitee.plugin.core.api.AbstractSpringPluginHandler;
+import io.gravitee.plugin.core.api.Plugin;
+import io.gravitee.plugin.core.api.PluginClassLoaderFactory;
+import io.gravitee.plugin.core.api.PluginType;
 import io.gravitee.reporter.api.Reporter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.env.Environment;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ReporterPluginHandler implements PluginHandler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReporterPluginHandler.class);
-
-    @Autowired
-    private Environment environment;
-
-    @Autowired
-    private PluginContextFactory pluginContextFactory;
+public class ReporterPluginHandler extends AbstractSpringPluginHandler<Reporter> {
 
     @Autowired
     private PluginClassLoaderFactory pluginClassLoaderFactory;
@@ -50,29 +41,17 @@ public class ReporterPluginHandler implements PluginHandler {
     }
 
     @Override
-    public void handle(Plugin plugin) {
-        LOGGER.info("Register a new reporter: {} [{}]", plugin.id(), plugin.clazz());
-        boolean enabled = isEnabled(plugin);
-        if (enabled) {
-            try {
-                pluginClassLoaderFactory.getOrCreateClassLoader(plugin, this.getClass().getClassLoader());
-
-                ApplicationContext context = pluginContextFactory.create(plugin);
-                Reporter reporter = context.getBean(Reporter.class);
-                reporterManager.register(reporter);
-            } catch (Exception iae) {
-                LOGGER.error("Unexpected error while create reporter instance", iae);
-                // Be sure that the context does not exist anymore.
-                pluginContextFactory.remove(plugin);
-            }
-        } else {
-            LOGGER.warn("Plugin {} is disabled. Please have a look to your configuration to re-enable it", plugin.id());
-        }
+    protected String type() {
+        return "reporters";
     }
 
-    private boolean isEnabled(Plugin reporterPlugin) {
-        boolean enabled = environment.getProperty("reporters." + reporterPlugin.id() + ".enabled", Boolean.class, true);
-        LOGGER.debug("Plugin {} configuration: {}", reporterPlugin.id(), enabled);
-        return enabled;
+    @Override
+    protected ClassLoader getClassLoader(Plugin plugin) throws Exception {
+        return pluginClassLoaderFactory.getOrCreateClassLoader(plugin, this.getClass().getClassLoader());
+    }
+
+    @Override
+    protected void register(Reporter plugin) {
+        reporterManager.register(plugin);
     }
 }

@@ -17,25 +17,20 @@ package io.gravitee.node.plugins.service.handler;
 
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.plugins.service.ServiceManager;
-import io.gravitee.plugin.core.api.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.gravitee.plugin.core.api.AbstractSpringPluginHandler;
+import io.gravitee.plugin.core.api.Plugin;
+import io.gravitee.plugin.core.api.PluginClassLoaderFactory;
+import io.gravitee.plugin.core.api.PluginType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ServicePluginHandler implements PluginHandler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServicePluginHandler.class);
+public class ServicePluginHandler extends AbstractSpringPluginHandler<AbstractService> {
 
     @Autowired
     private ServiceManager serviceManager;
-
-    @Autowired
-    private PluginContextFactory pluginContextFactory;
 
     @Autowired
     private PluginClassLoaderFactory pluginClassLoaderFactory;
@@ -46,18 +41,17 @@ public class ServicePluginHandler implements PluginHandler {
     }
 
     @Override
-    public void handle(Plugin plugin) {
-        try {
-            pluginClassLoaderFactory.getOrCreateClassLoader(plugin, this.getClass().getClassLoader());
+    protected String type() {
+        return "services";
+    }
 
-            LOGGER.info("Register a new service: {} [{}]", plugin.id(), plugin.clazz());
-            ApplicationContext context = pluginContextFactory.create(plugin);
-            serviceManager.register((AbstractService) context.getBean(plugin.clazz()));
+    @Override
+    protected ClassLoader getClassLoader(Plugin plugin) throws Exception {
+        return pluginClassLoaderFactory.getOrCreateClassLoader(plugin, this.getClass().getClassLoader());
+    }
 
-        } catch (Exception iae) {
-            LOGGER.error("Unexpected error while create reporter instance", iae);
-            // Be sure that the context does not exist anymore.
-            pluginContextFactory.remove(plugin);
-        }
+    @Override
+    protected void register(AbstractService plugin) {
+        serviceManager.register(plugin);
     }
 }
