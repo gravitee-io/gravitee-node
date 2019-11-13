@@ -72,6 +72,8 @@ public abstract class SpringBasedContainer extends AbstractContainer {
         classes.add(ManagementConfiguration.class);
         classes.add(ReporterConfiguration.class);
 
+        classes.add(NodeConfiguration.class);
+
         return classes;
     }
 
