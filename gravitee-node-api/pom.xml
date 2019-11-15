@@ -31,9 +31,16 @@
     <name>Gravitee.io - Node - API</name>
 
     <dependencies>
+        <!-- Gravitee.io dependencies -->
         <dependency>
             <groupId>io.gravitee.common</groupId>
             <artifactId>gravitee-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.gravitee.plugin</groupId>
+            <artifactId>gravitee-plugin-api</artifactId>
+            <version>${gravitee-plugin.version}</version>
         </dependency>
     </dependencies>
 </project>
