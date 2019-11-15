@@ -13,25 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.container.spring;
+package io.gravitee.node.api.plugin;
 
-import io.gravitee.node.container.NodeDeployerFactoriesLoader;
-import io.gravitee.node.container.plugin.NodeDeploymentContextFactory;
-import org.springframework.context.annotation.Bean;
+import io.gravitee.node.api.Node;
+import io.gravitee.plugin.api.DeploymentContext;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class NodeConfiguration {
+public interface NodeDeploymentContext extends DeploymentContext {
 
-    @Bean
-    public NodeDeployerFactoriesLoader nodeDeployerFactoriesLoader() {
-        return new NodeDeployerFactoriesLoader();
-    }
-
-    @Bean
-    public NodeDeploymentContextFactory nodeDeploymentContextFactory() {
-        return new NodeDeploymentContextFactory();
-    }
+    Node node();
 }
