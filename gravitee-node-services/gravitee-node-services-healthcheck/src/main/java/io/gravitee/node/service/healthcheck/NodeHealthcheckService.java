@@ -18,6 +18,9 @@ package io.gravitee.node.service.healthcheck;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.service.healthcheck.management.HealthcheckManagementEndpoint;
+import io.gravitee.node.service.healthcheck.micrometer.NodeHealthcheckMetrics;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.vertx.micrometer.backends.BackendRegistries;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -41,6 +44,8 @@ public class NodeHealthcheckService extends AbstractService {
 
         managementEndpointManager.register(healthcheckEndpoint);
         healthcheckEndpoint.setProbes(probesLoader.getProbes());
+
+        new NodeHealthcheckMetrics(probesLoader.getProbes()).bindTo(BackendRegistries.getDefaultNow());
     }
 
     @Override
