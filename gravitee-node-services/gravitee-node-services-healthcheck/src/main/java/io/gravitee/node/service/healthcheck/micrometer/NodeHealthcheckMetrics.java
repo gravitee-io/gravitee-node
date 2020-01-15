@@ -17,45 +17,46 @@ package io.gravitee.node.service.healthcheck.micrometer;
 
 import io.gravitee.node.api.healthcheck.Probe;
 import io.gravitee.node.api.healthcheck.Result;
-import io.gravitee.node.service.healthcheck.vertx.VertxCompletableFuture;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
+import io.vertx.core.Handler;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.ToDoubleFunction;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-public class NodeHealthcheckMetrics implements MeterBinder {
+/**
+ * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author GraviteeSource Team
+ */
+public class NodeHealthcheckMetrics implements MeterBinder, Handler<Long> {
 
-    private final List<Probe> probes;
+    private final Map<Probe, Result> probes;
 
     public NodeHealthcheckMetrics(List<Probe> probes) {
-        this.probes = probes;
+        this.probes = probes.stream().collect(Collectors.toMap(probe -> probe, probe -> Result.healthy()));
     }
 
     @Override
     public void bindTo(MeterRegistry registry) {
-        for (Probe probe: probes) {
-            Gauge.builder("node", probe, new ToDoubleFunction<Probe>() {
-                @Override
-                public double applyAsDouble(Probe probe) {
-                    try {
-                        CompletableFuture<Result> probeFuture = probe.check();
-
-                        if (VertxCompletableFuture.class.getSimpleName().equals(probeFuture.getClass().getSimpleName())) {
-                            return 1;
-                        }
-
-                        Result result = probeFuture.get();
-                        return result.isHealthy() ? 1 : 0;
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-
-                    return 0;
-                }
+        for (Probe probe: probes.keySet()) {
+            Gauge.builder("node", probe, probe1 -> {
+                Result check = probes.get(probe1);
+                return check.isHealthy() ? 1 : 0;
             }).tag("probe", probe.id()).description("The health-check of the " + probe.id() + " probe").baseUnit("health").register(registry);
+        }
+    }
+
+    @Override
+    public void handle(Long tick) {
+        for (Map.Entry<Probe, Result> probe : probes.entrySet()) {
+            try {
+                probe.getKey().check().thenAccept(probe::setValue);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                probe.setValue(Result.unhealthy(ex));
+            }
         }
     }
 }
