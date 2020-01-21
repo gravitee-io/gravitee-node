@@ -17,14 +17,13 @@ package io.gravitee.node.service.healthcheck.micrometer;
 
 import io.gravitee.node.api.healthcheck.Probe;
 import io.gravitee.node.api.healthcheck.Result;
+import io.gravitee.node.service.healthcheck.ProbeStatusRegistry;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import io.vertx.core.Handler;
 
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -32,25 +31,27 @@ import java.util.stream.Collectors;
  */
 public class NodeHealthcheckMetrics implements MeterBinder, Handler<Long> {
 
-    private final Map<Probe, Result> probes;
+    private final ProbeStatusRegistry statusRegistry;
 
-    public NodeHealthcheckMetrics(List<Probe> probes) {
-        this.probes = probes.stream().collect(Collectors.toMap(probe -> probe, probe -> Result.healthy()));
+    public NodeHealthcheckMetrics(ProbeStatusRegistry statusRegistry) {
+        this.statusRegistry = statusRegistry;
     }
 
     @Override
     public void bindTo(MeterRegistry registry) {
-        for (Probe probe: probes.keySet()) {
-            Gauge.builder("node", probe, probe1 -> {
-                Result check = probes.get(probe1);
-                return check.isHealthy() ? 1 : 0;
-            }).tag("probe", probe.id()).description("The health-check of the " + probe.id() + " probe").baseUnit("health").register(registry);
+        for (Map.Entry<Probe, Result> status: statusRegistry.getResults().entrySet()) {
+            Gauge
+                    .builder("node", status.getKey(), probe -> status.getValue().isHealthy() ? 1 : 0)
+                    .tag("probe", status.getKey().id())
+                    .description("The health-check of the " + status.getKey().id() + " probe")
+                    .baseUnit("health")
+                    .register(registry);
         }
     }
 
     @Override
     public void handle(Long tick) {
-        for (Map.Entry<Probe, Result> probe : probes.entrySet()) {
+        for (Map.Entry<Probe, Result> probe : statusRegistry.getResults().entrySet()) {
             try {
                 probe.getKey().check().thenAccept(probe::setValue);
             } catch (Exception ex) {
