@@ -45,21 +45,25 @@ public class NodeHealthcheckService extends AbstractService {
 
     private long metricsPollerId = -1;
 
+    private static final long NODE_CHECKER_DELAY = 5000;
+
     @Override
     protected void doStart() throws Exception {
         super.doStart();
 
+        // Poll data
+        ProbeStatusRegistry statusRegistry = new ProbeStatusRegistry(probesLoader.getProbes());
+        applicationContext.getAutowireCapableBeanFactory().autowireBean(statusRegistry);
+
+        metricsPollerId = vertx.setPeriodic(NODE_CHECKER_DELAY, statusRegistry);
+
+        healthcheckEndpoint.setRegistry(statusRegistry);
         managementEndpointManager.register(healthcheckEndpoint);
-        healthcheckEndpoint.setProbes(probesLoader.getProbes());
 
         MeterRegistry registry = BackendRegistries.getDefaultNow();
 
         if (registry instanceof PrometheusMeterRegistry) {
-            NodeHealthcheckMetrics metrics = new NodeHealthcheckMetrics(probesLoader.getProbes());
-            metrics.bindTo(registry);
-
-            // Poll data
-            metricsPollerId = vertx.setPeriodic(5000, metrics);
+            new NodeHealthcheckMetrics(statusRegistry).bindTo(registry);
         }
     }
 
@@ -67,7 +71,7 @@ public class NodeHealthcheckService extends AbstractService {
     protected void doStop() throws Exception {
         super.doStop();
 
-        if (metricsPollerId != -1) {
+        if (metricsPollerId > 0) {
             vertx.cancelTimer(metricsPollerId);
         }
     }
