@@ -24,7 +24,7 @@
 	<parent>
 		<groupId>io.gravitee</groupId>
 		<artifactId>gravitee-parent</artifactId>
-		<version>17</version>
+		<version>18-SNAPSHOT</version>
 	</parent>
 
     <groupId>io.gravitee.node</groupId>
@@ -43,10 +43,53 @@
         <module>gravitee-node-reporter</module>
         <module>gravitee-node-plugins</module>
         <module>gravitee-node-services</module>
+        <module>gravitee-node-jetty</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
+            <!-- Self import modules -->
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-container</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-vertx</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-management</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-reporter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-plugins</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-services</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-jetty</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- Gravitee.io -->
             <dependency>
                 <groupId>io.gravitee.common</groupId>
