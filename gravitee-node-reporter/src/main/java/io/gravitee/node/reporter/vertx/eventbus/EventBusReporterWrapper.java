@@ -19,8 +19,8 @@ import io.gravitee.common.component.Lifecycle;
 import io.gravitee.reporter.api.Reportable;
 import io.gravitee.reporter.api.Reporter;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import org.slf4j.Logger;
@@ -56,9 +56,9 @@ public class EventBusReporterWrapper implements Reporter, Handler<Message<Report
 
     @Override
     public Object start() throws Exception {
-        vertx.executeBlocking(new Handler<Future<Object>>() {
+        vertx.executeBlocking(new Handler<Promise<Object>>() {
             @Override
-            public void handle(Future<Object> event) {
+            public void handle(Promise<Object> event) {
                 try {
                     reporter.start();
                     event.complete(reporter);
