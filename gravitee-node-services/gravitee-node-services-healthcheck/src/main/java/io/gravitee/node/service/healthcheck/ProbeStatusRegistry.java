@@ -31,15 +31,16 @@ import java.util.stream.Collectors;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Nicolas GERAUD (nicolas.geraud at graviteesource.com)
  * @author GraviteeSource Team
  */
 public class ProbeStatusRegistry implements Handler<Long> {
 
     private static final String NODE_HEALTHCHECK = "NODE_HEALTHCHECK";
 
-    private static final String PROPERTY_NODE_HOSTNAME = "node.hostname";
-    private static final String PROPERTY_NODE_APPLICATION = "node.application";
-    private static final String PROPERTY_NODE_ID = "node.id";
+    private static final String CONTEXT_NODE_HOSTNAME = "node.hostname";
+    private static final String CONTEXT_NODE_APPLICATION = "node.application";
+    private static final String CONTEXT_NODE_ID = "node.id";
     private static final String PROPERTY_NODE_HEALTHY = "node.healthy";
     private static final String PROPERTY_PROBE_SUFFIX = "node.probe.";
 
@@ -72,9 +73,9 @@ public class ProbeStatusRegistry implements Handler<Long> {
     private void sendAlert() {
         DefaultEvent.Builder builder = Event.now().type(NODE_HEALTHCHECK);
 
-        builder.property(PROPERTY_NODE_ID, node.id());
-        builder.property(PROPERTY_NODE_HOSTNAME, node.hostname());
-        builder.property(PROPERTY_NODE_APPLICATION, node.application());
+        builder.context(CONTEXT_NODE_ID, node.id());
+        builder.context(CONTEXT_NODE_HOSTNAME, node.hostname());
+        builder.context(CONTEXT_NODE_APPLICATION, node.application());
         builder.property(PROPERTY_NODE_HEALTHY, results.values().stream().allMatch(Result::isHealthy) ?  "true" : "false");
 
         results.forEach(new BiConsumer<Probe, Result>() {
