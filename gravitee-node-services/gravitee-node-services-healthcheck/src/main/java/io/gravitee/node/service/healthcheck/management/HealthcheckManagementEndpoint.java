@@ -51,10 +51,10 @@ public class HealthcheckManagementEndpoint implements ManagementEndpoint {
 
     @Override
     public void handle(RoutingContext ctx) {
-        boolean unhealthyProbe = registry.getResults().values().stream().allMatch(Result::isHealthy);
+        boolean healthyProbe = registry.getResults().values().stream().allMatch(Result::isHealthy);
 
         HttpServerResponse response = ctx.response();
-        response.setStatusCode((unhealthyProbe) ? HttpStatusCode.INTERNAL_SERVER_ERROR_500 : HttpStatusCode.OK_200);
+        response.setStatusCode((healthyProbe) ? HttpStatusCode.OK_200 : HttpStatusCode.INTERNAL_SERVER_ERROR_500);
         response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         response.setChunked(true);
 
