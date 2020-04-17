@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.reporter;
+package io.gravitee.node.reporter.health;
 
-import io.gravitee.node.api.healthcheck.Result;
-import io.gravitee.reporter.api.Reportable;
-
-import java.util.concurrent.CompletableFuture;
+import io.gravitee.reporter.api.AbstractMetrics;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Titouan COMPIEGNE (titouan.compiegne at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface ReporterService {
+public class ReporterHealth extends AbstractMetrics {
 
-    void report(Reportable reportable);
+    private ReporterHealth() {
+        super(0l);
+    }
 
-    CompletableFuture<Result> health();
+    public ReporterHealth(long timestamp) {
+        super(timestamp);
+    }
 }

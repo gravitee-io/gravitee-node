@@ -16,6 +16,7 @@
 package io.gravitee.node.reporter.vertx.eventbus;
 
 import io.gravitee.common.component.Lifecycle;
+import io.gravitee.node.reporter.health.ReporterHealth;
 import io.gravitee.reporter.api.Reportable;
 import io.gravitee.reporter.api.Reporter;
 import io.vertx.core.AsyncResult;
@@ -89,6 +90,9 @@ public class EventBusReporterWrapper implements Reporter, Handler<Message<Report
         Reportable reportable = reportableMsg.body();
         if (reporter.canHandle(reportable)) {
             reporter.report(reportable);
+        }
+        if (reportable instanceof ReporterHealth) {
+            reportableMsg.reply("ack");
         }
     }
 }
