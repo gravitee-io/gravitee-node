@@ -31,10 +31,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.PropertiesPropertySource;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -44,6 +43,12 @@ import java.util.stream.Collectors;
 public class ConfigurationEndpoint implements ManagementEndpoint {
 
     private final Logger LOGGER = LoggerFactory.getLogger(ConfigurationEndpoint.class);
+
+    private final static Set<String> PROPERTY_PREFIXES = new HashSet<>(Arrays.asList("gravitee.", "gravitee_", "GRAVITEE." , "GRAVITEE_"));
+
+    private final static String ENDPOINT_PATH = "/configuration";
+
+    private final static String PROPERTY_SOURCE_CONFIGURATION = "graviteeConfiguration";
 
     @Autowired
     private AbstractEnvironment environment;
@@ -55,7 +60,7 @@ public class ConfigurationEndpoint implements ManagementEndpoint {
 
     @Override
     public String path() {
-        return "/configuration";
+        return ENDPOINT_PATH;
     }
 
     @Override
@@ -65,20 +70,41 @@ public class ConfigurationEndpoint implements ManagementEndpoint {
         response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         response.setChunked(true);
 
-        PropertiesPropertySource source = (PropertiesPropertySource) environment.getPropertySources().get("graviteeConfiguration");
+        // Configuration is coming from gravitee.yml
+        PropertiesPropertySource nodeConfiguration = (PropertiesPropertySource) environment.getPropertySources().get(
+                PROPERTY_SOURCE_CONFIGURATION);
+
+        // Configuration is coming from environment variables
+        Map<String, Object> systemEnvironment = environment.getSystemEnvironment();
+
+        Map<String, Object> prefixlessSystemEnvironment = systemEnvironment
+                .entrySet()
+                .stream()
+                .filter(new Predicate<Map.Entry<String, Object>>() {
+                    @Override
+                    public boolean test(Map.Entry<String, Object> entry) {
+                        return entry.getKey().length() > 9
+                                && PROPERTY_PREFIXES.contains(entry.getKey().substring(0, 9));
+                    }
+                })
+                .collect(Collectors.toMap(entry -> entry.getKey().substring(9), Map.Entry::getValue));
+
         try {
-            TreeMap<String, Object> properties = Arrays
-                    .stream(source.getPropertyNames())
+            TreeMap<String, Object> nodeProperties = Arrays
+                    .stream(nodeConfiguration.getPropertyNames())
                     .collect(Collectors.toMap(
                             s -> s,
-                            source::getProperty,
+                            (Function<String, String>) s -> environment.getProperty(s),
                             (v1, v2) -> {
                                 throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));
                             },
                             TreeMap::new));
 
+
+            nodeProperties.putAll(prefixlessSystemEnvironment);
+
             Json.prettyMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            response.write(Json.prettyMapper.writeValueAsString(properties));
+            response.write(Json.prettyMapper.writeValueAsString(nodeProperties));
         } catch (JsonProcessingException jpe) {
             response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
             LOGGER.error("Unable to transform data object to JSON", jpe);
