@@ -21,20 +21,14 @@ import io.gravitee.common.http.HttpHeaders;
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.common.http.HttpStatusCode;
 import io.gravitee.common.http.MediaType;
-import io.gravitee.node.api.healthcheck.Probe;
 import io.gravitee.node.api.healthcheck.Result;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
-import io.gravitee.node.service.healthcheck.vertx.VertxCompletableFuture;
+import io.gravitee.node.service.healthcheck.ProbeStatusRegistry;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -43,9 +37,7 @@ import java.util.stream.Collectors;
  */
 public class HealthcheckManagementEndpoint implements ManagementEndpoint {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(HealthcheckManagementEndpoint.class);
-
-    private List<Probe> probes;
+    private ProbeStatusRegistry registry;
 
     @Override
     public HttpMethod method() {
@@ -59,47 +51,29 @@ public class HealthcheckManagementEndpoint implements ManagementEndpoint {
 
     @Override
     public void handle(RoutingContext ctx) {
-        Map<String, CompletableFuture<Result>> probeResults = this.probes.stream().collect(
-                Collectors.toMap(Probe::id, Probe::check));
+        boolean healthyProbe = registry.getResults().values().stream().allMatch(Result::isHealthy);
 
-        VertxCompletableFuture.allOf(ctx.vertx(), probeResults.values().toArray(new CompletableFuture[]{})).thenAccept(aVoid -> {
-            boolean unhealthyProbe = probeResults.values().stream().anyMatch(completableFuture -> {
-                try {
-                    return !completableFuture.get().isHealthy();
-                } catch (Exception ex) {
-                    LOGGER.error("Unable to check probe health", ex);
-                    return false;
-                }
-            });
+        HttpServerResponse response = ctx.response();
+        response.setStatusCode((healthyProbe) ? HttpStatusCode.OK_200 : HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+        response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        response.setChunked(true);
 
-            HttpServerResponse response = ctx.response();
-            response.setStatusCode((unhealthyProbe) ? HttpStatusCode.INTERNAL_SERVER_ERROR_500 : HttpStatusCode.OK_200);
-            response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-            response.setChunked(true);
+        Map<String, Result> results = registry.getResults().entrySet()
+                .stream()
+                .collect(Collectors.toMap(probeResultEntry -> probeResultEntry.getKey().id(), Map.Entry::getValue));
 
-            Map<String, Result> results = new HashMap<>();
+        try {
+            Json.prettyMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            response.write(Json.prettyMapper.writeValueAsString(results));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
 
-            probeResults.forEach((probe, resultCompletableFuture) -> {
-                try {
-                    results.put(probe, resultCompletableFuture.get());
-                } catch (Exception ex) {
-                    LOGGER.error("Unable to check probe health", ex);
-                }
-            });
-
-            try {
-                Json.prettyMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                response.write(Json.prettyMapper.writeValueAsString(results));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-
-            // End the response
-            response.end();
-        });
+        // End the response
+        response.end();
     }
 
-    public void setProbes(List<Probe> probes) {
-        this.probes = probes;
+    public void setRegistry(ProbeStatusRegistry registry) {
+        this.registry = registry;
     }
 }
