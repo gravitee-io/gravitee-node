@@ -19,6 +19,8 @@ import io.gravitee.node.reporter.ReporterService;
 import io.gravitee.node.reporter.vertx.eventbus.ReportableMessageCodec;
 import io.gravitee.reporter.api.Reportable;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.MessageProducer;
 import org.slf4j.Logger;
@@ -53,7 +55,12 @@ public class ReporterVerticle extends AbstractVerticle implements ReporterServic
     @Override
     public void stop() throws Exception {
         if (producer != null) {
-            producer.close();
+            producer.close(new Handler<AsyncResult<Void>>() {
+                @Override
+                public void handle(AsyncResult<Void> event) {
+                    LOGGER.debug("Reporter publisher has been closed successfully.");
+                }
+            });
         }
     }
 
