@@ -19,7 +19,6 @@ import io.gravitee.node.reporter.ReporterManager;
 import io.gravitee.plugin.core.api.AbstractSpringPluginHandler;
 import io.gravitee.plugin.core.api.Plugin;
 import io.gravitee.plugin.core.api.PluginClassLoaderFactory;
-import io.gravitee.plugin.core.api.PluginType;
 import io.gravitee.reporter.api.Reporter;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -29,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ReporterPluginHandler extends AbstractSpringPluginHandler<Reporter> {
 
+    private final static String PLUGIN_TYPE = "reporter";
+
     @Autowired
     private PluginClassLoaderFactory pluginClassLoaderFactory;
 
@@ -37,7 +38,7 @@ public class ReporterPluginHandler extends AbstractSpringPluginHandler<Reporter>
 
     @Override
     public boolean canHandle(Plugin plugin) {
-        return plugin.type() == PluginType.REPORTER;
+        return PLUGIN_TYPE.equalsIgnoreCase(plugin.type());
     }
 
     @Override
