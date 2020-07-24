@@ -20,7 +20,6 @@ import io.gravitee.node.plugins.service.ServiceManager;
 import io.gravitee.plugin.core.api.AbstractSpringPluginHandler;
 import io.gravitee.plugin.core.api.Plugin;
 import io.gravitee.plugin.core.api.PluginClassLoaderFactory;
-import io.gravitee.plugin.core.api.PluginType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -28,6 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author GraviteeSource Team
  */
 public class ServicePluginHandler extends AbstractSpringPluginHandler<AbstractService> {
+
+    private final static String PLUGIN_TYPE = "service";
 
     @Autowired
     private ServiceManager serviceManager;
@@ -37,7 +38,7 @@ public class ServicePluginHandler extends AbstractSpringPluginHandler<AbstractSe
 
     @Override
     public boolean canHandle(Plugin plugin) {
-        return plugin.type() == PluginType.SERVICE;
+        return PLUGIN_TYPE.equalsIgnoreCase(plugin.type());
     }
 
     @Override

@@ -20,7 +20,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>io.gravitee</groupId>
         <artifactId>gravitee-parent</artifactId>
@@ -132,7 +132,7 @@
 
     <properties>
         <gravitee-common.version>1.16.2</gravitee-common.version>
-        <gravitee-plugin.version>1.10.0</gravitee-plugin.version>
+        <gravitee-plugin.version>1.14.0-SNAPSHOT</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.17.1</gravitee-reporter-api.version>
         <snakeyaml.version>1.26</snakeyaml.version>
     </properties>
