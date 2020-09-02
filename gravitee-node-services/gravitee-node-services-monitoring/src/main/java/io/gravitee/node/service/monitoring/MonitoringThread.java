@@ -80,8 +80,12 @@ public class MonitoringThread implements Runnable {
                 // OS metrics
                 OsInfo osInfo = monitor.getOs();
                 event.property("os.cpu.percent", osInfo.cpu.getPercent());
-                for (int i = 0 ; i < osInfo.cpu.getLoadAverage().length ; i++) {
-                    event.property("os.cpu.average."+i, osInfo.cpu.getLoadAverage()[i]);
+                // On some OS, info is unavailable (Windows)
+                final double[] loadAverage = osInfo.cpu.getLoadAverage();
+                if (loadAverage != null) {
+                    for (int i = 0; i < loadAverage.length ; i++) {
+                        event.property("os.cpu.average."+i, loadAverage[i]);
+                    }
                 }
 
                 // Process metrics
