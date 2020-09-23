@@ -38,6 +38,7 @@
     <modules>
         <module>gravitee-node-api</module>
         <module>gravitee-node-container</module>
+        <module>gravitee-node-cluster</module>
         <module>gravitee-node-vertx</module>
         <module>gravitee-node-management</module>
         <module>gravitee-node-reporter</module>
@@ -135,5 +136,6 @@
         <gravitee-plugin.version>1.15.0</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.17.1</gravitee-reporter-api.version>
         <snakeyaml.version>1.26</snakeyaml.version>
+        <hazelcast.version>3.12.9</hazelcast.version>
     </properties>
 </project>
