@@ -18,7 +18,7 @@ package io.gravitee.node.cluster.spring;
 import com.hazelcast.config.FileSystemXmlConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.spi.properties.GroupProperty;
+import com.hazelcast.spi.properties.ClusterProperty;
 import io.gravitee.node.api.cluster.ClusterManager;
 import io.gravitee.node.cluster.ClusterService;
 import io.gravitee.node.cluster.hazelcast.HazelcastClusterManager;
@@ -39,16 +39,15 @@ public class ClusterConfiguration {
     @Bean
     public HazelcastInstance distributedHazelcastInstance() throws Exception {
         // Force Hazelcast to use SLF4J before loading any HZ classes
-        System.setProperty(GroupProperty.LOGGING_TYPE.getName(), "slf4j");
-        System.setProperty(GroupProperty.SHUTDOWNHOOK_ENABLED.getName(), "false");
+        System.setProperty(ClusterProperty.LOGGING_TYPE.getName(), "slf4j");
+        System.setProperty(ClusterProperty.SHUTDOWNHOOK_ENABLED.getName(), "false");
 
         FileSystemXmlConfig config = new FileSystemXmlConfig(hazelcastConfigFilePath);
 
         // Force the classloader used by Hazelcast to the container's classloader.
         config.setClassLoader(ClusterConfiguration.class.getClassLoader());
-
-
-        config.setProperty(GroupProperty.HEALTH_MONITORING_LEVEL.getName(), "OFF");
+        
+        config.setProperty(ClusterProperty.HEALTH_MONITORING_LEVEL.getName(), "OFF");
 
         return Hazelcast.newHazelcastInstance(new FileSystemXmlConfig(hazelcastConfigFilePath));
     }
