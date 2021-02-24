@@ -15,10 +15,9 @@
  */
 package io.gravitee.node.cluster.hazelcast;
 
+import com.hazelcast.cluster.MembershipEvent;
+import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.MemberAttributeEvent;
-import com.hazelcast.core.MembershipEvent;
-import com.hazelcast.core.MembershipListener;
 import io.gravitee.node.api.cluster.ClusterManager;
 import io.gravitee.node.api.cluster.Member;
 import io.gravitee.node.api.cluster.MemberListener;
@@ -52,8 +51,8 @@ public class HazelcastClusterManager implements InitializingBean, ClusterManager
         hazelcastInstance.getCluster().addMembershipListener(this);
     }
 
-    private boolean isMaster(com.hazelcast.core.Member member) {
-        com.hazelcast.core.Member master = hazelcastInstance.getCluster().getMembers().iterator().next();
+    private boolean isMaster(com.hazelcast.cluster.Member member) {
+        com.hazelcast.cluster.Member master = hazelcastInstance.getCluster().getMembers().iterator().next();
         return member.equals(master);
     }
 
@@ -61,9 +60,9 @@ public class HazelcastClusterManager implements InitializingBean, ClusterManager
     public Collection<Member> getMembers() {
         return hazelcastInstance.getCluster().getMembers()
                 .stream()
-                .map(new Function<com.hazelcast.core.Member, Member>() {
+                .map(new Function<com.hazelcast.cluster.Member, Member>() {
                     @Override
-                    public Member apply(com.hazelcast.core.Member member) {
+                    public Member apply(com.hazelcast.cluster.Member member) {
                         return new NodeMember(
                                 member, isMaster(member));
                     }
@@ -90,7 +89,7 @@ public class HazelcastClusterManager implements InitializingBean, ClusterManager
     @Override
     public void memberAdded(MembershipEvent event) {
         LOGGER.info("A node join the cluster: {}", event);
-        com.hazelcast.core.Member master = hazelcastInstance.getCluster().getMembers().iterator().next();
+        com.hazelcast.cluster.Member master = hazelcastInstance.getCluster().getMembers().iterator().next();
         Member newMember = new NodeMember(event.getMember(), master.equals(event.getMember()));
 
         memberListeners.forEach(listener -> listener.memberAdded(newMember));
@@ -99,17 +98,10 @@ public class HazelcastClusterManager implements InitializingBean, ClusterManager
     @Override
     public void memberRemoved(MembershipEvent event) {
         LOGGER.info("A node leave the cluster: {}", event);
-        com.hazelcast.core.Member master = hazelcastInstance.getCluster().getMembers().iterator().next();
+        com.hazelcast.cluster.Member master = hazelcastInstance.getCluster().getMembers().iterator().next();
         Member newMember = new NodeMember(event.getMember(), master.equals(event.getMember()));
 
         memberListeners.forEach(listener -> listener.memberRemoved(newMember));
     }
 
-    @Override
-    public void memberAttributeChanged(MemberAttributeEvent event) {
-        com.hazelcast.core.Member master = hazelcastInstance.getCluster().getMembers().iterator().next();
-        Member newMember = new NodeMember(event.getMember(), master.equals(event.getMember()));
-
-        memberListeners.forEach(listener -> listener.memberChanged(newMember));
-    }
 }

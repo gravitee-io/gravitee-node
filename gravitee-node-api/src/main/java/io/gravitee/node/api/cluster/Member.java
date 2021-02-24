@@ -29,11 +29,8 @@ public interface Member {
 
     String host();
 
-    Map<String, Object> attributes();
+    Map<String, String> attributes();
 
     Member attribute(String key, String value);
 
-    Member attribute(String key, int value);
-
-    Member attribute(String key, boolean value);
 }

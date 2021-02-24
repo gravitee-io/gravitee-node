@@ -25,17 +25,17 @@ import java.util.Map;
  */
 public class NodeMember implements Member {
 
-    private final com.hazelcast.core.Member member;
+    private final com.hazelcast.cluster.Member member;
     private final boolean master;
 
-    public NodeMember(com.hazelcast.core.Member member, boolean master)  {
+    public NodeMember(com.hazelcast.cluster.Member member, boolean master)  {
         this.member = member;
         this.master = master;
     }
 
     @Override
     public String uuid() {
-        return member.getUuid();
+        return member.getUuid().toString();
     }
 
     @Override
@@ -49,25 +49,14 @@ public class NodeMember implements Member {
     }
 
     @Override
-    public Map<String, Object> attributes() {
+    public Map<String, String> attributes() {
         return member.getAttributes();
     }
 
     @Override
     public Member attribute(String key, String value) {
-        member.setStringAttribute(key, value);
+        member.getAttributes().put(key, value);
         return this;
     }
 
-    @Override
-    public Member attribute(String key, int value) {
-        member.setIntAttribute(key, value);
-        return this;
-    }
-
-    @Override
-    public Member attribute(String key, boolean value) {
-        member.setBooleanAttribute(key, value);
-        return this;
-    }
 }
