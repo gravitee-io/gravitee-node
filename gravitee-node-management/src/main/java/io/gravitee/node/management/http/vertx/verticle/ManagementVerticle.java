@@ -44,6 +44,7 @@ public class ManagementVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagementVerticle.class);
 
     private final static String PATH = "/_node";
+    private final static String WEBHOOK_PATH = "/hooks";
 
     private final static String AUTHENTICATION_TYPE_NONE = "none";
     private final static String AUTHENTICATION_TYPE_BASIC = "basic";
@@ -56,6 +57,10 @@ public class ManagementVerticle extends AbstractVerticle {
     @Autowired
     @Qualifier("managementRouter")
     private Router nodeRouter;
+
+    @Autowired
+    @Qualifier("managementWebhookRouter")
+    private Router nodeWebhookRouter;
 
     @Autowired
     private Vertx vertx;
@@ -107,7 +112,9 @@ public class ManagementVerticle extends AbstractVerticle {
         LOGGER.info("Start HTTP listener for Node Management API");
 
         // Start HTTP server
-        Router mainRouter = Router.router(vertx).mountSubRouter(PATH, nodeRouter);
+        Router mainRouter = Router.router(vertx)
+                .mountSubRouter(PATH, nodeRouter)
+                .mountSubRouter(WEBHOOK_PATH, nodeWebhookRouter);
 
         AuthHandler authHandler = null;
         switch (httpServerConfiguration.getAuthenticationType().toLowerCase()) {
