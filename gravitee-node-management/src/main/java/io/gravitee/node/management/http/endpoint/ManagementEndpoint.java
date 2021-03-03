@@ -29,4 +29,8 @@ public interface ManagementEndpoint {
     String path();
 
     void handle(RoutingContext context);
+
+    default boolean isWebhook() {
+        return false;
+    }
 }

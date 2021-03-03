@@ -17,12 +17,8 @@ package io.gravitee.node.management.http.vertx.endpoint;
 
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
-import io.gravitee.node.management.http.vertx.configuration.HttpServerConfiguration;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.AuthHandler;
-import io.vertx.ext.web.handler.BasicAuthHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,11 +36,19 @@ public class ManagementEndpointManagerImpl implements ManagementEndpointManager 
     @Qualifier("managementRouter")
     private Router nodeRouter;
 
+    @Autowired
+    @Qualifier("managementWebhookRouter")
+    private Router nodeWebhookRouter;
+
     @Override
     public void register(ManagementEndpoint endpoint) {
         LOGGER.info("Register a new endpoint for Management API: {} {} [{}]", endpoint.method(), endpoint.path(), endpoint.getClass().getName());
 
-        nodeRouter.route(convert(endpoint.method()), endpoint.path()).handler(endpoint::handle);
+        if (endpoint.isWebhook()) {
+            nodeWebhookRouter.route(convert(endpoint.method()), endpoint.path()).handler(endpoint::handle);
+        } else {
+            nodeRouter.route(convert(endpoint.method()), endpoint.path()).handler(endpoint::handle);
+        }
     }
 
     private HttpMethod convert(io.gravitee.common.http.HttpMethod httpMethod) {
