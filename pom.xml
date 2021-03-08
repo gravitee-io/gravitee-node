@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee</groupId>
         <artifactId>gravitee-parent</artifactId>
-        <version>20-SNAPSHOT</version>
+        <version>19</version>
     </parent>
 
     <groupId>io.gravitee.node</groupId>
@@ -136,5 +136,6 @@
         <gravitee-plugin.version>1.16.0</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.17.1</gravitee-reporter-api.version>
         <snakeyaml.version>1.26</snakeyaml.version>
+        <hazelcast.version>4.1.1</hazelcast.version>
     </properties>
 </project>
