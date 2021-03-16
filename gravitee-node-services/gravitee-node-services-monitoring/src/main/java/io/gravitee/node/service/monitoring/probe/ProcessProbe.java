@@ -15,7 +15,7 @@
  */
 package io.gravitee.node.service.monitoring.probe;
 
-import io.gravitee.reporter.api.monitor.ProcessInfo;
+import io.gravitee.node.api.monitor.ProcessInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

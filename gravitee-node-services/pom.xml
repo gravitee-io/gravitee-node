@@ -35,6 +35,7 @@
     <modules>
         <module>gravitee-node-services-monitoring</module>
         <module>gravitee-node-services-healthcheck</module>
+        <module>gravitee-node-services-heartbeat</module>
     </modules>
 
     <dependencies>

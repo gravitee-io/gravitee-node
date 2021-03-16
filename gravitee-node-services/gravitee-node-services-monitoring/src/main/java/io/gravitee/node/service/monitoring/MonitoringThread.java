@@ -18,15 +18,15 @@ package io.gravitee.node.service.monitoring;
 import io.gravitee.alert.api.event.DefaultEvent;
 import io.gravitee.alert.api.event.Event;
 import io.gravitee.node.api.Node;
-import io.gravitee.node.reporter.ReporterService;
+import io.gravitee.node.api.monitor.JvmInfo;
+import io.gravitee.node.api.monitor.Monitor;
+import io.gravitee.node.api.monitor.OsInfo;
+import io.gravitee.node.api.monitor.ProcessInfo;
 import io.gravitee.node.service.monitoring.probe.JvmProbe;
 import io.gravitee.node.service.monitoring.probe.OsProbe;
 import io.gravitee.node.service.monitoring.probe.ProcessProbe;
 import io.gravitee.plugin.alert.AlertEventProducer;
-import io.gravitee.reporter.api.monitor.JvmInfo;
-import io.gravitee.reporter.api.monitor.Monitor;
-import io.gravitee.reporter.api.monitor.OsInfo;
-import io.gravitee.reporter.api.monitor.ProcessInfo;
+import io.vertx.core.eventbus.MessageProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +45,11 @@ public class MonitoringThread implements Runnable {
     private static final String PROPERTY_NODE_APPLICATION = "node.application";
     private static final String PROPERTY_NODE_ID = "node.id";
 
-    @Autowired
-    private ReporterService reporterService;
+    private final MessageProducer<Monitor> producer;
+
+    public MonitoringThread(final MessageProducer<Monitor> producer) {
+        this.producer = producer;
+    }
 
     @Autowired
     private Node node;
@@ -66,11 +69,11 @@ public class MonitoringThread implements Runnable {
                     .build();
 
             // And generate monitoring metrics
-            reporterService.report(monitor);
+            producer.write(monitor);
 
             if (! eventProducer.isEmpty()) {
                 DefaultEvent.Builder event = Event
-                        .at(monitor.timestamp().toEpochMilli())
+                        .at(monitor.getTimestamp())
                         .type(NODE_HEARTBEAT);
 
                 event.property(PROPERTY_NODE_ID, node.id());

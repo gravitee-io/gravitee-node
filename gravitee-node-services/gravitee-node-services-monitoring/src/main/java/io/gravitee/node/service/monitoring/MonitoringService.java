@@ -18,9 +18,12 @@ package io.gravitee.node.service.monitoring;
 import io.gravitee.alert.api.event.Event;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.Node;
+import io.gravitee.node.api.monitor.Monitor;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.service.monitoring.management.MonitorManagementEndpoint;
 import io.gravitee.plugin.alert.AlertEventProducer;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.MessageProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +74,11 @@ public class MonitoringService extends AbstractService {
     @Autowired
     private AlertEventProducer eventProducer;
 
+    @Autowired
+    private Vertx vertx;
+
+    private MessageProducer<Monitor> producer;
+
     @Override
     protected void doStart() throws Exception {
         if (enabled) {
@@ -79,7 +87,9 @@ public class MonitoringService extends AbstractService {
             executorService = Executors.newSingleThreadScheduledExecutor(
                     r -> new Thread(r, "node-monitor"));
 
-            MonitoringThread monitorThread = new MonitoringThread();
+            producer = vertx.eventBus().sender("node:monitor");
+
+            MonitoringThread monitorThread = new MonitoringThread(producer);
             this.applicationContext.getAutowireCapableBeanFactory().autowireBean(monitorThread);
 
             // Send an event to notify about the node status

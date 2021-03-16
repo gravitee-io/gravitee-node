@@ -16,12 +16,14 @@
 package io.gravitee.node.service.healthcheck;
 
 import io.gravitee.common.service.AbstractService;
+import io.gravitee.node.api.monitor.Monitor;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.service.healthcheck.management.HealthcheckManagementEndpoint;
 import io.gravitee.node.service.healthcheck.micrometer.NodeHealthcheckMetrics;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.MessageProducer;
 import io.vertx.micrometer.backends.BackendRegistries;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,6 +48,8 @@ public class NodeHealthcheckService extends AbstractService {
     private long metricsPollerId = -1;
 
     private static final long NODE_CHECKER_DELAY = 5000;
+
+    private MessageProducer<Monitor> producer;
 
     @Override
     protected void doStart() throws Exception {
