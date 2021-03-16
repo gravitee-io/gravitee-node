@@ -42,5 +42,16 @@
             <artifactId>gravitee-plugin-api</artifactId>
             <version>${gravitee-plugin.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.gravitee.reporter</groupId>
+            <artifactId>gravitee-reporter-api</artifactId>
+        </dependency>
+
+        <!-- RxJava 2 -->
+        <dependency>
+            <groupId>io.reactivex.rxjava2</groupId>
+            <artifactId>rxjava</artifactId>
+        </dependency>
     </dependencies>
 </project>

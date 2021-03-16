@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.api.healthcheck;
+package io.gravitee.node.monitoring.eventbus;
 
-import java.util.List;
+import io.gravitee.node.api.infos.NodeInfos;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface ProbeManager {
+public class NodeInfosCodec extends AbstractCodec<NodeInfos> {
 
-    List<Probe> getProbes();
+    public static final String CODEC_NAME = "gio:bus:codec:node_infos";
 
-    void register(Probe probe);
-
-    void unregister(Probe probe);
+    public NodeInfosCodec() {
+        super(CODEC_NAME);
+    }
 }

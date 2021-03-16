@@ -13,19 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.api.healthcheck;
+package io.gravitee.node.monitoring.eventbus;
 
-import java.util.List;
+import io.gravitee.node.api.monitor.Monitor;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.MessageCodec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface ProbeManager {
+public class MonitorCodec extends AbstractCodec<Monitor> {
 
-    List<Probe> getProbes();
+    public static final String CODEC_NAME = "gio:bus:codec:node_monitor";
 
-    void register(Probe probe);
-
-    void unregister(Probe probe);
+    public MonitorCodec() {
+        super(CODEC_NAME);
+    }
 }

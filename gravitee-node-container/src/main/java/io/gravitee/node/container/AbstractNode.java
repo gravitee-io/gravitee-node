@@ -22,6 +22,10 @@ import io.gravitee.common.util.ListReverser;
 import io.gravitee.common.util.Version;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.management.http.ManagementService;
+import io.gravitee.node.monitoring.handler.NodeMonitoringEventHandler;
+import io.gravitee.node.monitoring.healthcheck.NodeHealthCheckService;
+import io.gravitee.node.monitoring.infos.NodeInfosService;
+import io.gravitee.node.monitoring.monitor.NodeMonitorService;
 import io.gravitee.node.plugins.service.ServiceManager;
 import io.gravitee.node.reporter.ReporterManager;
 import io.gravitee.plugin.core.api.PluginRegistry;
@@ -130,6 +134,10 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
         components.add(PluginRegistry.class);
         components.add(ServiceManager.class);
         components.add(ManagementService.class);
+        components.add(NodeMonitoringEventHandler.class);
+        components.add(NodeInfosService.class);
+        components.add(NodeHealthCheckService.class);
+        components.add(NodeMonitorService.class);
         components.add(ReporterManager.class);
 
         return components;

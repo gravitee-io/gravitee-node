@@ -13,19 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.api.healthcheck;
+package io.gravitee.node.api.heartbeat;
 
-import java.util.List;
-
-/**
- * @author David BRASSELY (david.brassely at graviteesource.com)
- * @author GraviteeSource Team
- */
-public interface ProbeManager {
-
-    List<Probe> getProbes();
-
-    void register(Probe probe);
-
-    void unregister(Probe probe);
+public enum EventType {
+    NODE_STARTED,
+    NODE_STOPPED
 }
