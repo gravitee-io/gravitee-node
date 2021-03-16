@@ -44,7 +44,7 @@
         <module>gravitee-node-management</module>
         <module>gravitee-node-reporter</module>
         <module>gravitee-node-plugins</module>
-        <module>gravitee-node-services</module>
+        <module>gravitee-node-monitoring</module>
         <module>gravitee-node-jetty</module>
     </modules>
 
@@ -64,6 +64,16 @@
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-vertx</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-cluster</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-monitoring</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -131,6 +141,14 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <dependencies>
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
 
     <properties>
         <gravitee-common.version>1.16.2</gravitee-common.version>

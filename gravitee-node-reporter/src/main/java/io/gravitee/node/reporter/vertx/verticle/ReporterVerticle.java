@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.reporter.vertx.verticle;
 
+import io.gravitee.node.api.monitor.Monitor;
 import io.gravitee.node.reporter.ReporterService;
 import io.gravitee.node.reporter.vertx.eventbus.ReportableMessageCodec;
 import io.gravitee.reporter.api.Reportable;
@@ -50,17 +51,15 @@ public class ReporterVerticle extends AbstractVerticle implements ReporterServic
                             .setCodecName(ReportableMessageCodec.CODEC_NAME))
                 .exceptionHandler(
                         throwable -> LOGGER.error("Unexpected error while sending a reportable element", throwable));
+
+        // By default we report node monitor data.
+        vertx.eventBus().<Monitor>localConsumer("gio:node:monitor", event -> producer.write(event.body()));
     }
 
     @Override
     public void stop() throws Exception {
         if (producer != null) {
-            producer.close(new Handler<AsyncResult<Void>>() {
-                @Override
-                public void handle(AsyncResult<Void> event) {
-                    LOGGER.debug("Reporter publisher has been closed successfully.");
-                }
-            });
+            producer.close(event -> LOGGER.debug("Reporter publisher has been closed successfully."));
         }
     }
 

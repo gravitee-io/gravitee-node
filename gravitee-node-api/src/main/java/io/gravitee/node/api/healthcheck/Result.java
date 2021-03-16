@@ -15,11 +15,13 @@
  */
 package io.gravitee.node.api.healthcheck;
 
+import java.io.Serializable;
+
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public final class Result {
+public class Result implements Serializable {
 
     private static final Result HEALTHY = new Result(true, null);
     private static final Result NOT_READY = new Result(false, "not ready");
@@ -28,6 +30,11 @@ public final class Result {
 
     private final boolean healthy;
     private final String message;
+
+    public Result() {
+        this.healthy = true;
+        this.message = null;
+    }
 
     protected Result(boolean isHealthy, String message) {
         this.healthy = isHealthy;
