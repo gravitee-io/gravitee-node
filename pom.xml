@@ -25,7 +25,7 @@
         <groupId>io.gravitee</groupId>
         <artifactId>gravitee-parent</artifactId>
         <!-- <version>19.2.2-SNAPSHOT</version> -->
-        <version>19.2.2</version>
+        <version>19.2.3-SNAPSHOT</version>
     </parent>
 
     <groupId>io.gravitee.node</groupId>
