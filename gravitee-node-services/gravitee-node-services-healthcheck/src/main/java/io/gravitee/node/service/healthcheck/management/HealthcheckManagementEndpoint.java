@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.gravitee.node.service.healthcheck.management;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -21,6 +22,7 @@ import io.gravitee.common.http.HttpHeaders;
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.common.http.HttpStatusCode;
 import io.gravitee.common.http.MediaType;
+import io.gravitee.node.api.healthcheck.Probe;
 import io.gravitee.node.api.healthcheck.Result;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
 import io.gravitee.node.service.healthcheck.ProbeStatusRegistry;
@@ -37,6 +39,8 @@ import java.util.stream.Collectors;
  */
 public class HealthcheckManagementEndpoint implements ManagementEndpoint {
 
+    public static final String PROBE_FILTER = "probe";
+
     private ProbeStatusRegistry registry;
 
     @Override
@@ -51,14 +55,20 @@ public class HealthcheckManagementEndpoint implements ManagementEndpoint {
 
     @Override
     public void handle(RoutingContext ctx) {
-        boolean healthyProbe = registry.getResults().values().stream().allMatch(Result::isHealthy);
+
+        Map<Probe, Result> probes = registry.getResults().entrySet().stream()
+                .filter(entry -> !ctx.queryParams().contains(PROBE_FILTER)
+                        || ctx.queryParams().get(PROBE_FILTER).contains(entry.getKey().id()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        boolean healthyProbe = probes.values().stream().allMatch(Result::isHealthy);
 
         HttpServerResponse response = ctx.response();
         response.setStatusCode((healthyProbe) ? HttpStatusCode.OK_200 : HttpStatusCode.INTERNAL_SERVER_ERROR_500);
         response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         response.setChunked(true);
 
-        Map<String, Result> results = registry.getResults().entrySet()
+        Map<String, Result> results = probes.entrySet()
                 .stream()
                 .collect(Collectors.toMap(probeResultEntry -> probeResultEntry.getKey().id(), Map.Entry::getValue));
 
