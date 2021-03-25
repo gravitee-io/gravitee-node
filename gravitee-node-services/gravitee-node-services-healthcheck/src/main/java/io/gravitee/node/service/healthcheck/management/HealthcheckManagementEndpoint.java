@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  */
 public class HealthcheckManagementEndpoint implements ManagementEndpoint {
 
-    public static final String PROBE_FILTER = "probe";
+    public static final String PROBE_FILTER = "probes";
 
     private ProbeStatusRegistry registry;
 
@@ -57,8 +57,10 @@ public class HealthcheckManagementEndpoint implements ManagementEndpoint {
     public void handle(RoutingContext ctx) {
 
         Map<Probe, Result> probes = registry.getResults().entrySet().stream()
-                .filter(entry -> !ctx.queryParams().contains(PROBE_FILTER)
-                        || ctx.queryParams().get(PROBE_FILTER).contains(entry.getKey().id()))
+                .filter(entry ->
+                        ctx.queryParams().contains(PROBE_FILTER)
+                                ? ctx.queryParams().get(PROBE_FILTER).contains(entry.getKey().id())
+                                : entry.getKey().isVisibleByDefault())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         boolean healthyProbe = probes.values().stream().allMatch(Result::isHealthy);

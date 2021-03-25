@@ -159,12 +159,12 @@ public class HealthcheckManagementEndpointTest {
     }
 
     @Test
-    public void shouldFilterOneUnhealthyHealthy() throws Exception {
+    public void shouldFilterByProbeId() throws Exception {
         Map<Probe, Result> probeResultMap = fakeProbeResults(false);
         when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
         when(routingContext.queryParams()).thenReturn(queryParams);
         when(queryParams.contains(any())).thenReturn(true);
-        when(queryParams.get(any())).thenReturn("ratelimit-repository,management-repository");
+        when(queryParams.get(any())).thenReturn("ratelimit-repository,management-repository,cpu");
 
         ArgumentCaptor<Integer> statusCaptor = ArgumentCaptor.forClass(Integer.class);
         ArgumentCaptor<String> writeCaptor = ArgumentCaptor.forClass(String.class);
@@ -182,6 +182,9 @@ public class HealthcheckManagementEndpointTest {
                 "  },\n" +
                 "  \"management-repository\" : {\n" +
                 "    \"healthy\" : true\n" +
+                "  },\n" +
+                "  \"cpu\" : {\n" +
+                "    \"healthy\" : true\n" +
                 "  }\n" +
                 "}";
 
@@ -193,6 +196,7 @@ public class HealthcheckManagementEndpointTest {
         probesMap.put(new TestingProbe("http-server"), mockResult(true));
         probesMap.put(new TestingProbe("management-repository"), mockResult(true));
         probesMap.put(new TestingProbe("ratelimit-repository"), mockResult(allHealthy));
+        probesMap.put(new TestingProbe("cpu", false), mockResult(true));
 
         return probesMap;
     }
@@ -205,14 +209,25 @@ public class HealthcheckManagementEndpointTest {
 
     private static class TestingProbe implements Probe {
         private String id;
+        private boolean isVisibleByDefault = true;
 
         public TestingProbe(String id) {
             this.id = id;
         }
 
+        public TestingProbe(String id, boolean isVisibleByDefault) {
+            this.id = id;
+            this.isVisibleByDefault = isVisibleByDefault;
+        }
+
         @Override
         public String id() {
             return id;
+        }
+
+        @Override
+        public boolean isVisibleByDefault() {
+            return this.isVisibleByDefault;
         }
 
         @Override

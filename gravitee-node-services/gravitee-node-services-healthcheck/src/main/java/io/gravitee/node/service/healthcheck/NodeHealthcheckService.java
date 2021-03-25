@@ -20,6 +20,8 @@ import io.gravitee.node.api.healthcheck.ProbeManager;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.service.healthcheck.management.HealthcheckManagementEndpoint;
 import io.gravitee.node.service.healthcheck.micrometer.NodeHealthcheckMetrics;
+import io.gravitee.node.service.healthcheck.probe.CPUProbe;
+import io.gravitee.node.service.healthcheck.probe.MemoryProbe;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
@@ -44,6 +46,12 @@ public class NodeHealthcheckService extends AbstractService {
     @Autowired
     private Vertx vertx;
 
+    @Autowired
+    private CPUProbe cpuProbe;
+
+    @Autowired
+    private MemoryProbe memoryProbe;
+
     private long metricsPollerId = -1;
 
     private static final long NODE_CHECKER_DELAY = 5000;
@@ -53,6 +61,8 @@ public class NodeHealthcheckService extends AbstractService {
         super.doStart();
 
         // Poll data
+        probeManager.register(cpuProbe); // FIXME: to delete with #5294 https://github.com/gravitee-io/issues/issues/5294
+        probeManager.register(memoryProbe); // FIXME: to delete with #5294 https://github.com/gravitee-io/issues/issues/5294
         ProbeStatusRegistry statusRegistry = new ProbeStatusRegistry(probeManager.getProbes());
         applicationContext.getAutowireCapableBeanFactory().autowireBean(statusRegistry);
 
