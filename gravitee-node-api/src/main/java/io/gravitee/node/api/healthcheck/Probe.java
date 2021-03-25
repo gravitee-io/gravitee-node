@@ -26,4 +26,8 @@ public interface Probe {
     String id();
 
     CompletableFuture<Result> check();
+
+    default boolean isVisibleByDefault() {
+        return true;
+    }
 }
