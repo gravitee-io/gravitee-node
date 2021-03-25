@@ -16,6 +16,9 @@
 package io.gravitee.node.service.healthcheck.spring;
 
 import io.gravitee.node.service.healthcheck.management.HealthcheckManagementEndpoint;
+import io.gravitee.node.service.healthcheck.probe.CPUProbe;
+import io.gravitee.node.service.healthcheck.probe.MemoryProbe;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -29,5 +32,17 @@ public class NodeHealthcheckConfiguration {
     @Bean
     public HealthcheckManagementEndpoint healthcheckManagementEndpoint() {
         return new HealthcheckManagementEndpoint();
+    }
+
+    // FIXME: to delete with #5294 https://github.com/gravitee-io/issues/issues/5294
+    @Bean
+    public CPUProbe cpuProbe(@Value("${services.health.threshold.cpu:80}") int threshold) {
+        return new CPUProbe(threshold);
+    }
+
+    // FIXME: to delete with #5294 https://github.com/gravitee-io/issues/issues/5294
+    @Bean
+    public MemoryProbe memoryProbe(@Value("${services.health.threshold.memory:80}") int threshold) {
+        return new MemoryProbe(threshold);
     }
 }
