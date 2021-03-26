@@ -22,6 +22,7 @@ package io.gravitee.node.api.healthcheck;
 public final class Result {
 
     private static final Result HEALTHY = new Result(true, null);
+    private static final Result NOT_READY = new Result(false, "not ready");
 
     private static final int PRIME = 31;
 
@@ -59,6 +60,10 @@ public final class Result {
 
     public boolean isHealthy() {
         return healthy;
+    }
+
+    public static Result notReady() {
+        return NOT_READY;
     }
 
     public String getMessage() {

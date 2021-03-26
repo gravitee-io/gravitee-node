@@ -13,26 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.service.healthcheck;
+package io.gravitee.node.api.healthcheck;
 
-import io.gravitee.common.spring.factory.SpringFactoriesLoader;
-import io.gravitee.node.api.healthcheck.Probe;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ProbesLoader extends SpringFactoriesLoader<Probe> {
+public interface ProbeManager {
 
-    @Override
-    protected Class<Probe> getObjectType() {
-        return Probe.class;
-    }
+    List<Probe> getProbes();
 
-    List<Probe> getProbes() {
-        return new ArrayList<>(getFactoriesInstances());
-    }
+    void register(Probe probe);
+
+    void unregister(Probe probe);
+
 }
