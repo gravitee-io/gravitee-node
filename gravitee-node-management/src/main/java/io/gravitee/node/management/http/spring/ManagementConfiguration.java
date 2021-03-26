@@ -15,6 +15,8 @@
  */
 package io.gravitee.node.management.http.spring;
 
+import io.gravitee.node.api.healthcheck.ProbeManager;
+import io.gravitee.node.management.healthcheck.ProbeManagerImpl;
 import io.gravitee.node.management.http.ManagementService;
 import io.gravitee.node.management.http.configuration.ConfigurationEndpoint;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
@@ -63,5 +65,10 @@ public class ManagementConfiguration {
     @Bean
     public ConfigurationEndpoint configurationEndpoint() {
         return new ConfigurationEndpoint();
+    }
+
+    @Bean
+    public ProbeManager probeManager() {
+        return new ProbeManagerImpl();
     }
 }

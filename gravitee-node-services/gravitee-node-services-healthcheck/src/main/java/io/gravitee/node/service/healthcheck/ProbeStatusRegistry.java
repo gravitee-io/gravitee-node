@@ -52,7 +52,7 @@ public class ProbeStatusRegistry implements Handler<Long> {
     private final Map<Probe, Result> results;
 
     public ProbeStatusRegistry(List<Probe> probes) {
-        this.results = probes.stream().collect(Collectors.toMap(probe -> probe, probe -> Result.healthy()));
+        this.results = probes.stream().collect(Collectors.toMap(probe -> probe, probe -> Result.notReady()));
     }
 
     @Override

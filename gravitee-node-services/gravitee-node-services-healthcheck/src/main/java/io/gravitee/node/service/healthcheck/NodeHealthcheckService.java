@@ -16,6 +16,7 @@
 package io.gravitee.node.service.healthcheck;
 
 import io.gravitee.common.service.AbstractService;
+import io.gravitee.node.api.healthcheck.ProbeManager;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.service.healthcheck.management.HealthcheckManagementEndpoint;
 import io.gravitee.node.service.healthcheck.micrometer.NodeHealthcheckMetrics;
@@ -35,7 +36,7 @@ public class NodeHealthcheckService extends AbstractService {
     private ManagementEndpointManager managementEndpointManager;
 
     @Autowired
-    private ProbesLoader probesLoader;
+    private ProbeManager probeManager;
 
     @Autowired
     private HealthcheckManagementEndpoint healthcheckEndpoint;
@@ -52,7 +53,7 @@ public class NodeHealthcheckService extends AbstractService {
         super.doStart();
 
         // Poll data
-        ProbeStatusRegistry statusRegistry = new ProbeStatusRegistry(probesLoader.getProbes());
+        ProbeStatusRegistry statusRegistry = new ProbeStatusRegistry(probeManager.getProbes());
         applicationContext.getAutowireCapableBeanFactory().autowireBean(statusRegistry);
 
         metricsPollerId = vertx.setPeriodic(NODE_CHECKER_DELAY, statusRegistry);
