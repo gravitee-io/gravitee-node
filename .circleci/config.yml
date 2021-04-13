@@ -3,7 +3,7 @@ version: 2.1
 parameters:
   gio_action:
     type: enum
-    enum: [release, nexus_staging, pull_requests]
+    enum: [release, nexus_staging, standalone_release, pull_requests]
     default: pull_requests
   dry_run:
     type: boolean
@@ -94,3 +94,104 @@ workflows:
           maven_profile_id: << pipeline.parameters.maven_profile_id >>
           s3_bucket_name: << pipeline.parameters.s3_bucket_name >>
 
+  # ---
+  # The 3 Workflows Below are there to perform a "Standalone Release":
+  # => independently of any APIM release Process, with Docker executors instead of VMs
+  # => with chained nexus staging : only when release with dry run mode off
+  standalone_release:
+    when:
+      and:
+        - equal: [ standalone_release, << pipeline.parameters.gio_action >> ]
+        - not: << pipeline.parameters.dry_run >>
+    jobs:
+      - gravitee/d_release_secrets:
+          context: cicd-orchestrator
+          name: release_secrets_resolution
+      - gravitee/d_standalone_release:
+          name: maven_n_git_release
+          requires:
+            - release_secrets_resolution
+          dry_run: false
+          maven_profile_id: << pipeline.parameters.maven_profile_id >>
+          s3_bucket_name: << pipeline.parameters.s3_bucket_name >>
+          # container_gun_image_org: 'circleci'
+          # container_gun_image_name: 'openjdk'
+          # container_gun_image_tag: '11.0.3-jdk-stretch'
+          container_size: 'large'
+
+  standalone_release_dry_run:
+    when:
+      and:
+        - equal: [ standalone_release, << pipeline.parameters.gio_action >> ]
+        - << pipeline.parameters.dry_run >>
+    jobs:
+      - gravitee/d_release_secrets:
+          context: cicd-orchestrator
+          name: release_secrets_resolution
+      - gravitee/d_standalone_release:
+          name: maven_n_git_release
+          requires:
+            - release_secrets_resolution
+          dry_run: true
+          maven_profile_id: << pipeline.parameters.maven_profile_id >>
+          s3_bucket_name: << pipeline.parameters.s3_bucket_name >>
+          # container_gun_image_org: 'circleci'
+          # container_gun_image_name: 'openjdk'
+          # container_gun_image_tag: '11.0.3-jdk-stretch'
+          container_size: 'large'
+
+  standalone_nexus_staging:
+    # ---
+    # Running the nexus staging makes sense only when the
+    # standalone release is being performed with dry run mode off
+    # That is to say, when the maven project is ready to be release to mmaven Staging
+    # ---
+    when:
+      and:
+        - equal: [ standalone_release, << pipeline.parameters.gio_action >> ]
+        - not: << pipeline.parameters.dry_run >>
+    # ---
+    # Running the nexus staging makes sense only when the
+    # standalone release is being performed with dry run mode off
+    # That is to say, when the maven project is ready to be release to mmaven Staging
+    # Never the less, to test the CICD system, I temporarily git pushed a different configuration
+    # ---
+    # when:
+      # equal: [ standalone_release, << pipeline.parameters.gio_action >> ]
+    jobs:
+      - gravitee/d_nexus_staging_secrets:
+          context: cicd-orchestrator
+          name: nexus_staging_secrets_resolution
+      - nexus_staging_dry_run_approval:
+          type: approval
+          requires:
+            - nexus_staging_secrets_resolution
+      - gravitee/d_standalone_nexus_staging:
+          name: standalone_nexus_staging_dry_run
+          requires:
+            - nexus_staging_dry_run_approval
+            # - nexus_staging_secrets_resolution
+          dry_run: true
+          # maven_profile_id: << pipeline.parameters.maven_profile_id >>
+          maven_profile_id: "gravitee-release"
+          # container_gun_image_org: 'circleci'
+          # container_gun_image_name: 'openjdk'
+          # container_gun_image_tag: '11.0.3-jdk-stretch'
+          container_size: 'large'
+      - nexus_staging_approval:
+          type: approval
+          requires:
+            - nexus_staging_secrets_resolution
+            - standalone_nexus_staging_dry_run
+      - gravitee/d_standalone_nexus_staging:
+          name: standalone_nexus_staging
+          requires:
+            - nexus_staging_approval
+            # - nexus_staging_secrets_resolution
+          dry_run: false
+          # maven_profile_id: << pipeline.parameters.maven_profile_id >>
+          maven_profile_id: "gravitee-release"
+          # container_gun_image_org: 'circleci'
+          # container_gun_image_name: 'openjdk'
+          # container_gun_image_tag: '11.0.3-jdk-stretch'
+          container_size: 'large'
