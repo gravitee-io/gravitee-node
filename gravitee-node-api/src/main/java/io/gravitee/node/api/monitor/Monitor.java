@@ -27,12 +27,15 @@ import java.time.Instant;
 // TODO: This class is a duplicate of the one coming from gravitee-reporter-api and will soon completely replace it.
 public class Monitor implements Serializable, Reportable {
 
-    private final String nodeId;
-    private final long timestamp;
+    private String nodeId;
+    private long timestamp;
 
     JvmInfo jvm;
     OsInfo os;
     ProcessInfo process;
+
+    protected Monitor() {
+    }
 
     public Monitor(String nodeId, final long timestamp) {
         this.nodeId = nodeId;

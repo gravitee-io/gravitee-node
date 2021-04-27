@@ -29,6 +29,9 @@ public final class JvmInfo implements Serializable {
     public Threads threads;
     public GarbageCollectors gc;
 
+    protected JvmInfo() {
+    }
+
     public JvmInfo(long timestamp, long uptime) {
         this.timestamp = timestamp;
         this.uptime = uptime;
@@ -58,6 +61,8 @@ public final class JvmInfo implements Serializable {
 
         public long peakUsed;
         public long peakMax;
+
+        protected MemoryPool() {}
 
         public MemoryPool(String name, long used, long max, long peakUsed, long peakMax) {
             this.name = name;
