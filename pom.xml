@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee</groupId>
         <artifactId>gravitee-parent</artifactId>
-        <version>19.2.3</version>
+        <version>20.0</version>
     </parent>
 
     <groupId>io.gravitee.node</groupId>
@@ -49,6 +49,15 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Import bom to properly inherit all dependencies -->
+            <dependency>
+                <groupId>io.gravitee</groupId>
+                <artifactId>gravitee-bom</artifactId>
+                <version>${gravitee-bom.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+
             <!-- Self import modules -->
             <dependency>
                 <groupId>io.gravitee.node</groupId>
@@ -119,25 +128,6 @@
                 <artifactId>gravitee-plugin-core</artifactId>
                 <version>${gravitee-plugin.version}</version>
             </dependency>
-
-            <!-- Spring -->
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-core</artifactId>
-                <version>${spring.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-context</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -150,11 +140,13 @@
     </dependencies>
 
     <properties>
+        <gravitee-bom.version>1.0</gravitee-bom.version>
         <gravitee-common.version>1.16.2</gravitee-common.version>
-        <gravitee-plugin.version>1.16.0</gravitee-plugin.version>
+        <gravitee-plugin.version>1.17.1</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.17.1</gravitee-reporter-api.version>
         <snakeyaml.version>1.26</snakeyaml.version>
         <hazelcast.version>4.1.1</hazelcast.version>
+        <micrometer-registry-prometheus.version>1.6.2</micrometer-registry-prometheus.version>
     </properties>
     <build>
       <plugins>
@@ -163,10 +155,9 @@
             <artifactId>maven-javadoc-plugin</artifactId>
             <version>2.8</version>
             <configuration>
-                <additionalOptions>-Xdoclint:none</additionalOptions>
+                <additionalJOption>-Xdoclint:none</additionalJOption>
                 <source>8</source>
             </configuration>
-
         </plugin>
       </plugins>
     </build>

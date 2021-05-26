@@ -45,7 +45,7 @@ public class BasicAuthProvider implements AuthProvider {
 
             if (password.equals(presentedPassword)) {
                 resultHandler.handle(
-                        Future.succeededFuture(new io.gravitee.node.management.http.vertx.auth.User()));
+                        Future.succeededFuture(User.fromName(authInfo.getString("username"))));
                 return ;
             }
         }

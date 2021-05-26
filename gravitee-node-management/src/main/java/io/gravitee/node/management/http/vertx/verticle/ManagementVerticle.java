@@ -21,13 +21,11 @@ import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.management.http.metrics.prometheus.PrometheusEndpoint;
 import io.gravitee.node.management.http.node.NodeEndpoint;
 import io.gravitee.node.management.http.vertx.configuration.HttpServerConfiguration;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.AuthHandler;
+import io.vertx.ext.web.handler.AuthenticationHandler;
 import io.vertx.ext.web.handler.BasicAuthHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,35 +86,43 @@ public class ManagementVerticle extends AbstractVerticle {
     private Environment environment;
 
     @Override
-    public void start(Future<Void> startFuture) throws Exception {
+    public void start(Promise<Void> promise) throws Exception {
         if (httpServerConfiguration.isEnabled()) {
-            doStart();
+            doStart(promise);
         } else {
+            promise.complete();
             LOGGER.info("Node Management API is disabled, skipping...");
         }
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop(Promise<Void> promise) throws Exception {
         if (httpServerConfiguration.isEnabled()) {
-            try {
                 LOGGER.info("Stopping Management API...");
-                httpServer.close(voidAsyncResult -> LOGGER.info("HTTP Server has been correctly stopped"));
-            } catch (Exception ex) {
-                LOGGER.error("Unexpected error while stopping HTTP listener for Node Management API", ex);
-            }
+                httpServer.close(new Handler<AsyncResult<Void>>() {
+                    @Override
+                    public void handle(AsyncResult<Void> event) {
+                        if (event.succeeded()) {
+                            LOGGER.info("HTTP Server has been correctly stopped");
+                            promise.complete();
+                        } else {
+                            LOGGER.error("Unexpected error while stopping HTTP listener for Node Management API", event.cause());
+                            promise.fail(event.cause());
+                        }
+                    }
+                });
         }
     }
 
-    private void doStart() throws Exception {
+    private void doStart(Promise<Void> promise) throws Exception {
         LOGGER.info("Start HTTP listener for Node Management API");
 
         // Start HTTP server
-        Router mainRouter = Router.router(vertx)
-                .mountSubRouter(PATH, nodeRouter)
-                .mountSubRouter(WEBHOOK_PATH, nodeWebhookRouter);
+        Router mainRouter = Router.router(vertx);
+        mainRouter.mountSubRouter(WEBHOOK_PATH, nodeWebhookRouter);
+        mainRouter.mountSubRouter(PATH, nodeRouter);
 
-        AuthHandler authHandler = null;
+        AuthenticationHandler authHandler = null;
         switch (httpServerConfiguration.getAuthenticationType().toLowerCase()) {
             case AUTHENTICATION_TYPE_NONE:
                 break;
@@ -138,10 +144,11 @@ public class ManagementVerticle extends AbstractVerticle {
 
         // Add request handler
         httpServer
-                .requestHandler(mainRouter::accept)
+                .requestHandler(mainRouter)
                 .listen(event -> {
                     if (event.failed()) {
                         LOGGER.error("HTTP listener for Node Management can not be started properly", event.cause());
+                        promise.fail(event.cause());
                     } else {
                         managementEndpointManager.register(nodeEndpoint);
                         managementEndpointManager.register(configurationEndpoint);
@@ -157,6 +164,7 @@ public class ManagementVerticle extends AbstractVerticle {
                             }
                         }
                         LOGGER.info("HTTP listener for Node Management bind to port TCP:{}", event.result().actualPort());
+                        promise.complete();
                     }
                 });
     }

@@ -16,7 +16,6 @@
 package io.gravitee.node.management.http.node;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.gravitee.common.http.HttpHeaders;
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.common.http.HttpStatusCode;
@@ -24,8 +23,9 @@ import io.gravitee.common.http.MediaType;
 import io.gravitee.common.util.Version;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,20 +63,24 @@ public class NodeEndpoint implements ManagementEndpoint {
 
         NodeInfos data = new NodeInfos();
 
-        try {
-            data.setId(node.id());
-            data.setName(node.name());
-            data.setVersion(Version.RUNTIME_VERSION);
-            data.setMetadata(node.metadata());
+        data.setId(node.id());
+        data.setName(node.name());
+        data.setVersion(Version.RUNTIME_VERSION);
+        data.setMetadata(node.metadata());
 
-            Json.prettyMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            response.write(Json.prettyMapper.writeValueAsString(data));
-        } catch (JsonProcessingException jpe) {
-            response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
-            LOGGER.error("Unable to transform data object to JSON", jpe);
-        }
+        io.vertx.core.json.jackson.DatabindCodec codec = (io.vertx.core.json.jackson.DatabindCodec) io.vertx.core.json.Json.CODEC;
+        codec.prettyMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        response.write(codec.toString(data, true), new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> event) {
+                if (event.failed()) {
+                    response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+                    LOGGER.error("Unable to transform data object to JSON", event.cause());
+                }
 
-        response.end();
+                response.end();
+            }
+        });
     }
 
     public static class NodeInfos {
