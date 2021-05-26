@@ -13,30 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.vertx.spring;
+package io.gravitee.node.tracing.spring;
 
-import io.gravitee.node.tracing.spring.TracingConfiguration;
-import io.gravitee.node.vertx.VertxFactory;
-import io.gravitee.node.vertx.verticle.factory.SpringVerticleFactory;
+import io.gravitee.node.tracing.LazyTracer;
+import io.gravitee.node.tracing.TracingService;
+import io.gravitee.node.tracing.vertx.LazyVertxTracerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
 @Configuration
-@Import(TracingConfiguration.class)
-public class VertxConfiguration {
+public class TracingConfiguration {
 
     @Bean
-    public VertxFactory vertxFactory() {
-        return new VertxFactory();
+    public TracingService tracingService() {
+        return new TracingService();
     }
 
     @Bean
-    public SpringVerticleFactory springVerticleFactory() {
-        return new SpringVerticleFactory();
+    public LazyVertxTracerFactory vertxTracerFactory(TracingService tracingService) {
+        return new LazyVertxTracerFactory(tracingService);
+    }
+
+    @Bean
+    public LazyTracer lazyTracer(TracingService tracingService) {
+        LazyTracer tracer = new LazyTracer();
+        tracingService.addTracerListener(tracer);
+        return tracer;
     }
 }

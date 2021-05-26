@@ -16,6 +16,7 @@
 package io.gravitee.node.vertx;
 
 import io.gravitee.node.api.Node;
+import io.gravitee.node.tracing.vertx.LazyVertxTracerFactory;
 import io.gravitee.node.vertx.verticle.factory.SpringVerticleFactory;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -28,6 +29,7 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.tracing.TracingOptions;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MicrometerMetricsOptions;
@@ -39,8 +41,10 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -60,6 +64,9 @@ public class VertxFactory implements FactoryBean<Vertx> {
     @Autowired
     private SpringVerticleFactory springVerticleFactory;
 
+    @Autowired
+    private LazyVertxTracerFactory vertxTracerFactory;
+
     @Override
     public Vertx getObject() throws Exception {
         LOGGER.debug("Creating a new instance of Vert.x");
@@ -69,7 +76,12 @@ public class VertxFactory implements FactoryBean<Vertx> {
         if (metricsEnabled) {
             configureMetrics(options);
         }
-        
+
+        boolean tracingEnabled = environment.getProperty("services.tracing.enabled", Boolean.class, false);
+        if (tracingEnabled) {
+            configureTracing(options);
+        }
+
         Vertx instance = Vertx.vertx(options);
         instance.registerVerticleFactory(springVerticleFactory);
 
@@ -123,6 +135,10 @@ public class VertxFactory implements FactoryBean<Vertx> {
         }
 
         options.setMetricsOptions(micrometerMetricsOptions);
+    }
+
+    private void configureTracing(VertxOptions options) {
+        options.setTracingOptions(new TracingOptions().setFactory(vertxTracerFactory));
     }
 
     @Override
