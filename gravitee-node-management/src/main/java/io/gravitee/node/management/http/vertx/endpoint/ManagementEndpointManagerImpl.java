@@ -72,7 +72,7 @@ public class ManagementEndpointManagerImpl implements ManagementEndpointManager 
             case TRACE:
                 return HttpMethod.TRACE;
             case OTHER:
-                return HttpMethod.OTHER;
+                return HttpMethod.valueOf(httpMethod.name());
         }
 
         return null;

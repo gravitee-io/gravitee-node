@@ -39,9 +39,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -99,11 +97,11 @@ public class VertxFactory implements FactoryBean<Vertx> {
 
         MicrometerMetricsOptions micrometerMetricsOptions = new MicrometerMetricsOptions();
         micrometerMetricsOptions
-                .setDisabledMetricsCategories(EnumSet.of(
-                        MetricsDomain.DATAGRAM_SOCKET,
-                        MetricsDomain.NAMED_POOLS,
-                        MetricsDomain.VERTICLES,
-                        MetricsDomain.EVENT_BUS))
+                .setDisabledMetricsCategories(new HashSet<>(Arrays.asList(
+                        MetricsDomain.DATAGRAM_SOCKET.name(),
+                        MetricsDomain.NAMED_POOLS.name(),
+                        MetricsDomain.VERTICLES.name(),
+                        MetricsDomain.EVENT_BUS.name())))
                 .setEnabled(true);
 
         // Read labels

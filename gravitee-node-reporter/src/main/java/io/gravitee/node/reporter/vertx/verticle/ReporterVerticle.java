@@ -20,8 +20,7 @@ import io.gravitee.node.reporter.ReporterService;
 import io.gravitee.node.reporter.vertx.eventbus.ReportableMessageCodec;
 import io.gravitee.reporter.api.Reportable;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.MessageProducer;
 import org.slf4j.Logger;
@@ -40,26 +39,34 @@ public class ReporterVerticle extends AbstractVerticle implements ReporterServic
     private MessageProducer<Reportable> producer;
 
     @Override
-    public void start() throws Exception {
+    public void start(Promise<Void> promise) throws Exception {
         // Register specific codec
         vertx.eventBus().registerCodec(new ReportableMessageCodec());
 
         producer = vertx.eventBus()
                 .<Reportable>publisher(
                     EVENT_BUS_ADDRESS,
-                    new DeliveryOptions()
-                            .setCodecName(ReportableMessageCodec.CODEC_NAME))
-                .exceptionHandler(
-                        throwable -> LOGGER.error("Unexpected error while sending a reportable element", throwable));
+                    new DeliveryOptions().setCodecName(ReportableMessageCodec.CODEC_NAME));
 
         // By default we report node monitor data.
         vertx.eventBus().<Monitor>localConsumer("gio:node:monitor", event -> producer.write(event.body()));
+
+        promise.complete();
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop(Promise<Void> promise) throws Exception {
         if (producer != null) {
-            producer.close(event -> LOGGER.debug("Reporter publisher has been closed successfully."));
+            producer.close(event -> {
+                if (event.succeeded()) {
+                    LOGGER.debug("Reporter publisher has been closed successfully.");
+                    promise.complete();
+                } else {
+                    promise.fail(event.cause());
+                }
+            });
+        } else {
+            promise.complete();
         }
     }
 

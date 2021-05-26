@@ -41,3 +41,4 @@ graviteebot.gpg.pub.key
 # -- Cicd : The [.secrets.json] file contains secrets 
 # which should not be commited
 .secrets.json
+

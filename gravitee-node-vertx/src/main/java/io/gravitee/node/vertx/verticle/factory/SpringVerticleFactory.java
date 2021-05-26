@@ -15,11 +15,14 @@
  */
 package io.gravitee.node.vertx.verticle.factory;
 
+import io.vertx.core.Promise;
 import io.vertx.core.Verticle;
 import io.vertx.core.spi.VerticleFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import java.util.concurrent.Callable;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -37,10 +40,15 @@ public class SpringVerticleFactory implements VerticleFactory, ApplicationContex
     }
 
     @Override
-    public Verticle createVerticle(String verticleName, ClassLoader classLoader) throws Exception {
+    public void createVerticle(String verticleName, ClassLoader classLoader, Promise<Callable<Verticle>> promise) {
         String verticleClassname = verticleName.substring(VERTICLE_PREFIX.length() + 1);
-        Class<?> verticleClass = Thread.currentThread().getContextClassLoader().loadClass(verticleClassname);
-        return (Verticle) applicationContext.getBean(verticleClass);
+
+        try {
+            Class<?> verticleClass = Thread.currentThread().getContextClassLoader().loadClass(verticleClassname);
+            promise.complete(() -> (Verticle) applicationContext.getBean(verticleClass));
+        } catch (ClassNotFoundException cnfe) {
+            promise.fail(cnfe);
+        }
     }
 
     @Override

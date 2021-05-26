@@ -16,12 +16,13 @@
 package io.gravitee.node.management.http.configuration;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.gravitee.common.http.HttpHeaders;
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.common.http.HttpStatusCode;
 import io.gravitee.common.http.MediaType;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
@@ -44,7 +45,7 @@ public class ConfigurationEndpoint implements ManagementEndpoint {
 
     private final Logger LOGGER = LoggerFactory.getLogger(ConfigurationEndpoint.class);
 
-    private final static Set<String> PROPERTY_PREFIXES = new HashSet<>(Arrays.asList("gravitee.", "gravitee_", "GRAVITEE." , "GRAVITEE_"));
+    private final static Set<String> PROPERTY_PREFIXES = new HashSet<>(Arrays.asList("gravitee.", "gravitee_", "GRAVITEE.", "GRAVITEE_"));
 
     private final static String ENDPOINT_PATH = "/configuration";
 
@@ -89,28 +90,32 @@ public class ConfigurationEndpoint implements ManagementEndpoint {
                 })
                 .collect(Collectors.toMap(entry -> entry.getKey().substring(9), Map.Entry::getValue));
 
-        try {
-            TreeMap<String, Object> nodeProperties = Arrays
-                    .stream(nodeConfiguration.getPropertyNames())
-                    .collect(Collectors.toMap(
-                            s -> s,
-                            (Function<String, String>) s -> environment.getProperty(s),
-                            (v1, v2) -> {
-                                throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));
-                            },
-                            TreeMap::new));
+        TreeMap<String, Object> nodeProperties = Arrays
+                .stream(nodeConfiguration.getPropertyNames())
+                .collect(Collectors.toMap(
+                        s -> s,
+                        (Function<String, String>) s -> environment.getProperty(s),
+                        (v1, v2) -> {
+                            throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));
+                        },
+                        TreeMap::new));
 
 
-            nodeProperties.putAll(prefixlessSystemEnvironment);
+        nodeProperties.putAll(prefixlessSystemEnvironment);
 
-            Json.prettyMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            response.write(Json.prettyMapper.writeValueAsString(nodeProperties));
-        } catch (JsonProcessingException jpe) {
-            response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
-            LOGGER.error("Unable to transform data object to JSON", jpe);
-        }
+        io.vertx.core.json.jackson.DatabindCodec codec = (io.vertx.core.json.jackson.DatabindCodec) io.vertx.core.json.Json.CODEC;
+        codec.prettyMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        response.write(Json.CODEC.toString(nodeProperties, true), new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> event) {
+                if (event.failed()) {
+                    response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+                    LOGGER.error("Unable to transform data object to JSON", event.cause());
+                }
 
-        response.end();
+                response.end();
+            }
+        });
     }
 
     public class Property implements Comparable {

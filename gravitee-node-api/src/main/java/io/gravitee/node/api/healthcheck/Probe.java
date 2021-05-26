@@ -15,7 +15,7 @@
  */
 package io.gravitee.node.api.healthcheck;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -25,7 +25,7 @@ public interface Probe {
 
     String id();
 
-    CompletableFuture<Result> check();
+    CompletionStage<Result> check();
 
     default boolean isVisibleByDefault() {
         return true;
