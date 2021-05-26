@@ -23,6 +23,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.MessageProducer;
+import io.vertx.core.tracing.TracingPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,9 @@ public class ReporterVerticle extends AbstractVerticle implements ReporterServic
         producer = vertx.eventBus()
                 .<Reportable>publisher(
                     EVENT_BUS_ADDRESS,
-                    new DeliveryOptions().setCodecName(ReportableMessageCodec.CODEC_NAME));
+                    new DeliveryOptions()
+                            .setCodecName(ReportableMessageCodec.CODEC_NAME)
+                            .setTracingPolicy(TracingPolicy.IGNORE));
 
         // By default we report node monitor data.
         vertx.eventBus().<Monitor>localConsumer("gio:node:monitor", event -> producer.write(event.body()));

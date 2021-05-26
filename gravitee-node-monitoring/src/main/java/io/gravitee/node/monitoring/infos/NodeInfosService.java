@@ -27,6 +27,7 @@ import io.gravitee.plugin.core.api.PluginRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.MessageProducer;
+import io.vertx.core.tracing.TracingPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +80,7 @@ public class NodeInfosService extends AbstractService<NodeInfosService> {
         .sender(
           GIO_NODE_INFOS_BUS,
           new DeliveryOptions().setCodecName(NodeInfosCodec.CODEC_NAME)
+                  .setTracingPolicy(TracingPolicy.IGNORE)
         );
 
     nodeInfos = buildNodeInfos();

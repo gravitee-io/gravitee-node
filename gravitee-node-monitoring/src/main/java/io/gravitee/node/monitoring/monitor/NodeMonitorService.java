@@ -25,6 +25,7 @@ import io.gravitee.plugin.alert.AlertEventProducer;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.MessageProducer;
+import io.vertx.core.tracing.TracingPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,7 +93,9 @@ public class NodeMonitorService extends AbstractService {
 
             producer = vertx.eventBus()
                     .registerCodec(new MonitorCodec())
-                    .sender(GIO_NODE_MONITOR_BUS, new DeliveryOptions().setCodecName(MonitorCodec.CODEC_NAME));
+                    .sender(GIO_NODE_MONITOR_BUS, new DeliveryOptions()
+                            .setTracingPolicy(TracingPolicy.IGNORE)
+                            .setCodecName(MonitorCodec.CODEC_NAME));
 
             NodeMonitorThread monitorThread = new NodeMonitorThread(producer);
             this.applicationContext.getAutowireCapableBeanFactory().autowireBean(monitorThread);

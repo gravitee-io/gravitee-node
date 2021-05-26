@@ -13,30 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.vertx.spring;
+package io.gravitee.node.tracing.plugin;
 
-import io.gravitee.node.tracing.spring.TracingConfiguration;
-import io.gravitee.node.vertx.VertxFactory;
-import io.gravitee.node.vertx.verticle.factory.SpringVerticleFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import io.gravitee.plugin.core.api.Plugin;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Configuration
-@Import(TracingConfiguration.class)
-public class VertxConfiguration {
+public interface TracerPlugin extends Plugin {
 
-    @Bean
-    public VertxFactory vertxFactory() {
-        return new VertxFactory();
-    }
-
-    @Bean
-    public SpringVerticleFactory springVerticleFactory() {
-        return new SpringVerticleFactory();
-    }
+    String PLUGIN_TYPE = "tracer";
 }

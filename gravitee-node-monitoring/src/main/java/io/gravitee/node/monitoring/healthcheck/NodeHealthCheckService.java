@@ -28,6 +28,7 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.MessageProducer;
+import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.micrometer.backends.BackendRegistries;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,7 +66,9 @@ public class NodeHealthCheckService extends AbstractService {
 
         producer = vertx.eventBus()
                 .registerCodec(new HealthCheckCodec())
-                .sender(GIO_NODE_HEALTHCHECK_BUS, new DeliveryOptions().setCodecName(HealthCheckCodec.CODEC_NAME));
+                .sender(GIO_NODE_HEALTHCHECK_BUS, new DeliveryOptions()
+                        .setTracingPolicy(TracingPolicy.IGNORE)
+                        .setCodecName(HealthCheckCodec.CODEC_NAME));
 
         // Poll data
         NodeHealthCheckThread statusRegistry = new NodeHealthCheckThread(probeManager.getProbes(), producer);

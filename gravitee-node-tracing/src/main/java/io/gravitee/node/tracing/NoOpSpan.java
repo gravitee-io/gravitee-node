@@ -13,30 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.vertx.spring;
+package io.gravitee.node.tracing;
 
-import io.gravitee.node.tracing.spring.TracingConfiguration;
-import io.gravitee.node.vertx.VertxFactory;
-import io.gravitee.node.vertx.verticle.factory.SpringVerticleFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import io.gravitee.tracing.api.Span;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Configuration
-@Import(TracingConfiguration.class)
-public class VertxConfiguration {
+public class NoOpSpan implements Span {
 
-    @Bean
-    public VertxFactory vertxFactory() {
-        return new VertxFactory();
+    @Override
+    public Span withAttribute(String name, String value) {
+        return this;
     }
 
-    @Bean
-    public SpringVerticleFactory springVerticleFactory() {
-        return new SpringVerticleFactory();
+    @Override
+    public Span withAttribute(String name, boolean value) {
+        return this;
+    }
+
+    @Override
+    public Span withAttribute(String name, long value) {
+        return this;
+    }
+
+    @Override
+    public Span reportError(Throwable throwable) {
+        return this;
+    }
+
+    @Override
+    public Span reportError(String message) {
+        return this;
+    }
+
+    @Override
+    public void end() {
+
     }
 }
