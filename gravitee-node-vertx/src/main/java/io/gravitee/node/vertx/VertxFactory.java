@@ -174,6 +174,8 @@ public class VertxFactory implements FactoryBean<Vertx> {
     private VertxOptions getVertxOptions() {
         VertxOptions options = new VertxOptions();
 
+        options.setPreferNativeTransport(true);
+
         Long blockedThreadCheckInterval = Long.getLong("vertx.options.blockedThreadCheckInterval");
         if (blockedThreadCheckInterval != null) {
             options.setBlockedThreadCheckInterval(blockedThreadCheckInterval);
