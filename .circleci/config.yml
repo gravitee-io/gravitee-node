@@ -74,6 +74,19 @@ workflows:
             # branches:
               # ignore:
                 # - master
+
+      - gravitee/d_pull_requests_ce_qa:
+          context: gravitee-qa
+          name: process_pull_request_qa
+          requires:
+            - pr_secrets_resolution
+          # "What is the maven ID of the maven profile to use to build and deploy SNAPSHOTS to Prviate Artifactory ?"
+          maven_profile_id: 'gio-dev'
+          container_size: 'medium'
+          filters:
+            branches:
+              ignore:
+                - master
   # ---
   # The 2 Workflows Below are there for the CICD Orchestrator to be able to
   # release Gravitee Kubernetes in an APIM release Process, with Docker executors instead of VMs
