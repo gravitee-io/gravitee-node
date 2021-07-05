@@ -63,7 +63,7 @@ public class NodeHealthCheckThread implements Handler<Long> {
 
     public NodeHealthCheckThread(List<Probe> probes, MessageProducer<HealthCheck> producer) {
 
-        this.results = probes.stream().collect(Collectors.toMap(probe -> probe, probe -> Result.healthy()));
+        this.results = probes.stream().collect(Collectors.toMap(probe -> probe, probe -> Result.notReady()));
         this.producer = producer;
     }
 
