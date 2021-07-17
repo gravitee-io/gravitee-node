@@ -146,7 +146,7 @@
         <gravitee-reporter-api.version>1.17.1</gravitee-reporter-api.version>
         <snakeyaml.version>1.26</snakeyaml.version>
         <hazelcast.version>4.1.1</hazelcast.version>
-        <micrometer-registry-prometheus.version>1.6.2</micrometer-registry-prometheus.version>
+        <micrometer-registry-prometheus.version>1.7.1</micrometer-registry-prometheus.version>
     </properties>
     <build>
       <plugins>
