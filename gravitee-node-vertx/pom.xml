@@ -55,6 +55,12 @@
             <version>${micrometer-registry-prometheus.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.latencyutils</groupId>
+            <artifactId>LatencyUtils</artifactId>
+            <version>${LatencyUtils.version}</version>
+        </dependency>
+
         <!-- Spring -->
         <dependency>
             <groupId>org.springframework</groupId>
