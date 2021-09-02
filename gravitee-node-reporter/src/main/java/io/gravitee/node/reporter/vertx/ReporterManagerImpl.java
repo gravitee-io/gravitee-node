@@ -62,10 +62,34 @@ public class ReporterManagerImpl
           if (!reporters.isEmpty()) {
             for (Reporter reporter : reporters) {
               try {
+                LOGGER.debug("Pre-starting reporter: {}", reporter);
+                reporter.preStart();
+              } catch (Exception ex) {
+                LOGGER.error(
+                  "Unexpected error while pre-starting reporter",
+                  ex
+                );
+              }
+            }
+
+            for (Reporter reporter : reporters) {
+              try {
                 LOGGER.info("Starting reporter: {}", reporter);
                 reporter.start();
               } catch (Exception ex) {
                 LOGGER.error("Unexpected error while starting reporter", ex);
+              }
+            }
+
+            for (Reporter reporter : reporters) {
+              try {
+                LOGGER.debug("Port-starting reporter: {}", reporter);
+                reporter.postStart();
+              } catch (Exception ex) {
+                LOGGER.error(
+                  "Unexpected error while post-starting reporter",
+                  ex
+                );
               }
             }
           } else {
@@ -93,10 +117,28 @@ public class ReporterManagerImpl
         event -> {
           for (Reporter reporter : reporters) {
             try {
+              LOGGER.debug("Pre-stopping reporter: {}", reporter);
+              reporter.stop();
+            } catch (Exception ex) {
+              LOGGER.error("Unexpected error while pre-stopping reporter", ex);
+            }
+          }
+
+          for (Reporter reporter : reporters) {
+            try {
               LOGGER.info("Stopping reporter: {}", reporter);
               reporter.stop();
             } catch (Exception ex) {
               LOGGER.error("Unexpected error while stopping reporter", ex);
+            }
+          }
+
+          for (Reporter reporter : reporters) {
+            try {
+              LOGGER.debug("Post-stopping reporter: {}", reporter);
+              reporter.stop();
+            } catch (Exception ex) {
+              LOGGER.error("Unexpected error while post-stopping reporter", ex);
             }
           }
         }
