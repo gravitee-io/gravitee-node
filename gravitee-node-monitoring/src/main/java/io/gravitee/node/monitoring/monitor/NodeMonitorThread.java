@@ -15,6 +15,8 @@
  */
 package io.gravitee.node.monitoring.monitor;
 
+import static io.gravitee.node.monitoring.MonitoringConstants.*;
+
 import io.gravitee.alert.api.event.DefaultEvent;
 import io.gravitee.alert.api.event.Event;
 import io.gravitee.node.api.Node;
@@ -27,6 +29,7 @@ import io.gravitee.node.monitoring.monitor.probe.OsProbe;
 import io.gravitee.node.monitoring.monitor.probe.ProcessProbe;
 import io.gravitee.plugin.alert.AlertEventProducer;
 import io.vertx.core.eventbus.MessageProducer;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,11 +43,6 @@ public class NodeMonitorThread implements Runnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(
     NodeMonitorThread.class
   );
-
-  private static final String NODE_HEARTBEAT = "NODE_HEARTBEAT";
-  private static final String PROPERTY_NODE_HOSTNAME = "node.hostname";
-  private static final String PROPERTY_NODE_APPLICATION = "node.application";
-  private static final String PROPERTY_NODE_ID = "node.id";
 
   private final MessageProducer<Monitor> producer;
 
@@ -80,6 +78,12 @@ public class NodeMonitorThread implements Runnable {
         event.property(PROPERTY_NODE_ID, node.id());
         event.property(PROPERTY_NODE_HOSTNAME, node.hostname());
         event.property(PROPERTY_NODE_APPLICATION, node.application());
+        event.organizations(
+          (Set<String>) node.metadata().get(Node.META_ORGANIZATIONS)
+        );
+        event.environments(
+          (Set<String>) node.metadata().get(Node.META_ENVIRONMENTS)
+        );
 
         // OS metrics
         OsInfo osInfo = monitor.getOs();

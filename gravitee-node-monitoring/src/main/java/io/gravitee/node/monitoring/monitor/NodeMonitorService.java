@@ -15,6 +15,8 @@
  */
 package io.gravitee.node.monitoring.monitor;
 
+import static io.gravitee.node.monitoring.MonitoringConstants.*;
+
 import io.gravitee.alert.api.event.Event;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.Node;
@@ -26,6 +28,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.MessageProducer;
 import io.vertx.core.tracing.TracingPolicy;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -46,15 +49,6 @@ public class NodeMonitorService extends AbstractService {
   private static final Logger LOGGER = LoggerFactory.getLogger(
     NodeMonitorService.class
   );
-
-  private static final String PROPERTY_NODE_HOSTNAME = "node.hostname";
-  private static final String PROPERTY_NODE_APPLICATION = "node.application";
-  private static final String PROPERTY_NODE_ID = "node.id";
-  private static final String PROPERTY_NODE_EVENT = "node.event";
-
-  private static final String NODE_LIFECYCLE = "NODE_LIFECYCLE";
-  private static final String NODE_EVENT_START = "NODE_START";
-  private static final String NODE_EVENT_STOP = "NODE_STOP";
 
   @Value("${services.monitoring.enabled:true}")
   private boolean enabled;
@@ -118,6 +112,12 @@ public class NodeMonitorService extends AbstractService {
           .property(PROPERTY_NODE_ID, node.id())
           .property(PROPERTY_NODE_HOSTNAME, node.hostname())
           .property(PROPERTY_NODE_APPLICATION, node.application())
+          .organizations(
+            (Set<String>) node.metadata().get(Node.META_ORGANIZATIONS)
+          )
+          .environments(
+            (Set<String>) node.metadata().get(Node.META_ENVIRONMENTS)
+          )
           .build()
       );
 
@@ -150,6 +150,12 @@ public class NodeMonitorService extends AbstractService {
           .property(PROPERTY_NODE_ID, node.id())
           .property(PROPERTY_NODE_HOSTNAME, node.hostname())
           .property(PROPERTY_NODE_APPLICATION, node.application())
+          .organizations(
+            (Set<String>) node.metadata().get(Node.META_ORGANIZATIONS)
+          )
+          .environments(
+            (Set<String>) node.metadata().get(Node.META_ENVIRONMENTS)
+          )
           .build()
       );
     }

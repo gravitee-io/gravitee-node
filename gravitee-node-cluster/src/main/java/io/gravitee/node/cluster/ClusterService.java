@@ -29,10 +29,11 @@ public class ClusterService extends AbstractService<ClusterService> {
   private Node node;
 
   @Override
-  protected void doStart() throws Exception {
-    //        Member member = hazelcastInstance.getCluster().getLocalMember();
+  public ClusterService postStart() throws Exception {
     node.metadata().put("node.id", node.id());
     node.metadata().put("node.hostname", node.hostname());
+
+    return this;
   }
 
   @Override

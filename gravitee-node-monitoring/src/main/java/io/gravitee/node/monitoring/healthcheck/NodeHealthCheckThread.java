@@ -15,6 +15,8 @@
  */
 package io.gravitee.node.monitoring.healthcheck;
 
+import static io.gravitee.node.monitoring.MonitoringConstants.*;
+
 import io.gravitee.alert.api.event.DefaultEvent;
 import io.gravitee.alert.api.event.Event;
 import io.gravitee.node.api.Node;
@@ -24,9 +26,9 @@ import io.gravitee.node.api.healthcheck.Result;
 import io.gravitee.plugin.alert.AlertEventProducer;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.MessageProducer;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,14 +43,6 @@ public class NodeHealthCheckThread implements Handler<Long> {
   private static final Logger LOGGER = LoggerFactory.getLogger(
     NodeHealthCheckThread.class
   );
-
-  private static final String NODE_HEALTHCHECK = "NODE_HEALTHCHECK";
-
-  private static final String PROPERTY_NODE_HOSTNAME = "node.hostname";
-  private static final String PROPERTY_NODE_APPLICATION = "node.application";
-  private static final String PROPERTY_NODE_ID = "node.id";
-  private static final String PROPERTY_NODE_HEALTHY = "node.healthy";
-  private static final String PROPERTY_PROBE_SUFFIX = "node.probe.";
 
   @Autowired
   private AlertEventProducer eventProducer;
@@ -105,6 +99,12 @@ public class NodeHealthCheckThread implements Handler<Long> {
     builder.property(
       PROPERTY_NODE_HEALTHY,
       String.valueOf(healthCheck.isHealthy())
+    );
+    builder.organizations(
+      (Set<String>) node.metadata().get(Node.META_ORGANIZATIONS)
+    );
+    builder.environments(
+      (Set<String>) node.metadata().get(Node.META_ENVIRONMENTS)
     );
 
     healthCheck

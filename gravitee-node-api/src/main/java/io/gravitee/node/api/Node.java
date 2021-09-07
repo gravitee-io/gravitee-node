@@ -26,6 +26,10 @@ import java.util.Map;
  * @author GraviteeSource Team
  */
 public interface Node extends LifecycleComponent<Node> {
+  String META_INSTALLATION = "installation";
+  String META_ORGANIZATIONS = "organizations";
+  String META_ENVIRONMENTS = "environments";
+
   String ID = UUID.toString(UUID.random());
 
   /**
