@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.container.spring.env;
 
+import io.gravitee.node.kubernetes.propertyresolver.PropertyResolverFactoriesLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
@@ -53,5 +54,10 @@ public class PropertiesConfiguration {
         LOGGER.info("Loading Gravitee configuration. DONE");
 
         return properties;
+    }
+
+    @Bean
+    public static PropertyResolverFactoriesLoader propertyResolverFactoriesLoader() {
+        return new PropertyResolverFactoriesLoader();
     }
 }

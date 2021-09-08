@@ -15,38 +15,63 @@
  */
 package io.gravitee.node.container.spring.env;
 
+import java.util.Map;
+import java.util.Properties;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.PropertiesPropertySource;
-
-import java.util.Properties;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class PropertySourceBeanProcessor implements BeanFactoryPostProcessor, Ordered {
+public class PropertySourceBeanProcessor
+  implements BeanFactoryPostProcessor, Ordered {
 
-    private Environment environment;
+  private final ApplicationContext applicationContext;
+  private final Environment environment;
+  private final Properties properties;
 
-    private Properties properties;
+  PropertySourceBeanProcessor(
+    Properties properties,
+    Environment environment,
+    ApplicationContext applicationContext
+  ) {
+    this.properties = properties;
+    this.environment = environment;
+    this.applicationContext = applicationContext;
+  }
 
-    PropertySourceBeanProcessor(Properties properties, Environment environment) {
-        this.properties = properties;
-        this.environment = environment;
-    }
+  @Override
+  public int getOrder() {
+    return Ordered.HIGHEST_PRECEDENCE + 10;
+  }
 
-    @Override
-    public int getOrder() {
-        return Ordered.HIGHEST_PRECEDENCE + 10;
-    }
+  @Override
+  public void postProcessBeanFactory(
+    ConfigurableListableBeanFactory beanFactory
+  ) {
+    Map<String, Object> source = properties
+      .entrySet()
+      .stream()
+      .collect(
+        Collectors.toMap(
+          entry -> entry.getKey().toString(),
+          Map.Entry::getValue
+        )
+      );
 
-    @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
-        ((ConfigurableEnvironment) environment).getPropertySources().addLast(
-                new PropertiesPropertySource("graviteeConfiguration", properties));
-    }
+    ((ConfigurableEnvironment) environment).getPropertySources()
+      .addLast(
+        new GraviteePropertySource(
+          "graviteeConfiguration",
+          source,
+          applicationContext
+        )
+      );
+  }
 }

@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.container.spring;
 
+import io.gravitee.gateway.services.kube.client.spring.KubernetesClientConfiguration;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.container.AbstractContainer;
 import io.gravitee.node.container.spring.env.EnvironmentConfiguration;
@@ -74,6 +75,7 @@ public abstract class SpringBasedContainer extends AbstractContainer {
         classes.add(ReporterConfiguration.class);
 
         classes.add(MonitoringConfiguration.class);
+        classes.add(KubernetesClientConfiguration.class);
 
         classes.add(NodeConfiguration.class);
 
