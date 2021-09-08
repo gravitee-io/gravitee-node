@@ -18,7 +18,6 @@ package io.gravitee.node.jetty.node;
 import io.gravitee.common.component.LifecycleComponent;
 import io.gravitee.node.container.AbstractNode;
 import io.gravitee.node.jetty.JettyHttpServer;
-
 import java.util.List;
 
 /**
@@ -27,12 +26,11 @@ import java.util.List;
  */
 public abstract class JettyNode extends AbstractNode {
 
-    @Override
-    public List<Class<? extends LifecycleComponent>> components() {
+  @Override
+  public List<Class<? extends LifecycleComponent>> components() {
+    final List<Class<? extends LifecycleComponent>> components = super.components();
+    components.add(JettyHttpServer.class);
 
-        final List<Class<? extends LifecycleComponent>> components = super.components();
-        components.add(JettyHttpServer.class);
-
-        return components;
-    }
+    return components;
+  }
 }

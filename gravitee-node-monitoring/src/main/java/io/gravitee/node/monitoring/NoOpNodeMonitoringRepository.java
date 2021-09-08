@@ -28,23 +28,27 @@ import io.reactivex.Single;
  */
 public class NoOpNodeMonitoringRepository implements NodeMonitoringRepository {
 
-    @Override
-    public Maybe<Monitoring> findByNodeIdAndType(String nodeId, String type) {
-        return Maybe.empty();
-    }
+  @Override
+  public Maybe<Monitoring> findByNodeIdAndType(String nodeId, String type) {
+    return Maybe.empty();
+  }
 
-    @Override
-    public Single<Monitoring> create(Monitoring monitoring) {
-        return Single.just(monitoring);
-    }
+  @Override
+  public Single<Monitoring> create(Monitoring monitoring) {
+    return Single.just(monitoring);
+  }
 
-    @Override
-    public Single<Monitoring> update(Monitoring monitoring) {
-        return Single.just(monitoring);
-    }
+  @Override
+  public Single<Monitoring> update(Monitoring monitoring) {
+    return Single.just(monitoring);
+  }
 
-    @Override
-    public Flowable<Monitoring> findByTypeAndTimeFrame(String type, long from, long to) {
-        return Flowable.empty();
-    }
+  @Override
+  public Flowable<Monitoring> findByTypeAndTimeFrame(
+    String type,
+    long from,
+    long to
+  ) {
+    return Flowable.empty();
+  }
 }

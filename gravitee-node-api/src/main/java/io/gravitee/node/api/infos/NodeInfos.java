@@ -26,121 +26,121 @@ import java.util.Set;
  */
 public class NodeInfos implements Serializable {
 
-    private String id;
-    private String name;
-    private String application;
-    private long evaluatedAt;
-    private NodeStatus status;
-    private String version;
-    private String jdkVersion;
-    private List<String> tags;
-    private String hostname;
-    private String ip;
-    private int port;
-    private String tenant;
-    private Set<PluginInfos> pluginInfos;
+  private String id;
+  private String name;
+  private String application;
+  private long evaluatedAt;
+  private NodeStatus status;
+  private String version;
+  private String jdkVersion;
+  private List<String> tags;
+  private String hostname;
+  private String ip;
+  private int port;
+  private String tenant;
+  private Set<PluginInfos> pluginInfos;
 
-    public String getHostname() {
-        return hostname;
-    }
+  public String getHostname() {
+    return hostname;
+  }
 
-    public void setHostname(String hostname) {
-        this.hostname = hostname;
-    }
+  public void setHostname(String hostname) {
+    this.hostname = hostname;
+  }
 
-    public String getId() {
-        return id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    public String getIp() {
-        return ip;
-    }
+  public String getIp() {
+    return ip;
+  }
 
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
+  public void setIp(String ip) {
+    this.ip = ip;
+  }
 
-    public int getPort() {
-        return port;
-    }
+  public int getPort() {
+    return port;
+  }
 
-    public void setPort(int port) {
-        this.port = port;
-    }
+  public void setPort(int port) {
+    this.port = port;
+  }
 
-    public List<String> getTags() {
-        return tags;
-    }
+  public List<String> getTags() {
+    return tags;
+  }
 
-    public void setTags(List<String> tags) {
-        this.tags = tags;
-    }
+  public void setTags(List<String> tags) {
+    this.tags = tags;
+  }
 
-    public String getVersion() {
-        return version;
-    }
+  public String getVersion() {
+    return version;
+  }
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
+  public void setVersion(String version) {
+    this.version = version;
+  }
 
-    public Set<PluginInfos> getPluginInfos() {
-        return pluginInfos;
-    }
+  public Set<PluginInfos> getPluginInfos() {
+    return pluginInfos;
+  }
 
-    public void setPluginInfos(Set<PluginInfos> pluginInfos) {
-        this.pluginInfos = pluginInfos;
-    }
+  public void setPluginInfos(Set<PluginInfos> pluginInfos) {
+    this.pluginInfos = pluginInfos;
+  }
 
-    public String getTenant() {
-        return tenant;
-    }
+  public String getTenant() {
+    return tenant;
+  }
 
-    public void setTenant(String tenant) {
-        this.tenant = tenant;
-    }
+  public void setTenant(String tenant) {
+    this.tenant = tenant;
+  }
 
-    public NodeStatus getStatus() {
-        return status;
-    }
+  public NodeStatus getStatus() {
+    return status;
+  }
 
-    public void setStatus(NodeStatus status) {
-        this.status = status;
-    }
+  public void setStatus(NodeStatus status) {
+    this.status = status;
+  }
 
-    public String getJdkVersion() {
-        return jdkVersion;
-    }
+  public String getJdkVersion() {
+    return jdkVersion;
+  }
 
-    public void setJdkVersion(String jdkVersion) {
-        this.jdkVersion = jdkVersion;
-    }
+  public void setJdkVersion(String jdkVersion) {
+    this.jdkVersion = jdkVersion;
+  }
 
-    public long getEvaluatedAt() {
-        return evaluatedAt;
-    }
+  public long getEvaluatedAt() {
+    return evaluatedAt;
+  }
 
-    public void setEvaluatedAt(long evaluatedAt) {
-        this.evaluatedAt = evaluatedAt;
-    }
+  public void setEvaluatedAt(long evaluatedAt) {
+    this.evaluatedAt = evaluatedAt;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public String getApplication() {
-        return application;
-    }
+  public String getApplication() {
+    return application;
+  }
 
-    public void setApplication(String application) {
-        this.application = application;
-    }
+  public void setApplication(String application) {
+    this.application = application;
+  }
 }

@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.container.spring.env;
 
+import java.util.Properties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,36 +23,38 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.Environment;
 
-import java.util.Properties;
-
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
 @Configuration
-@Import({
-        PropertiesConfiguration.class
-})
+@Import({ PropertiesConfiguration.class })
 public class EnvironmentConfiguration {
 
-    @Bean
-    public static PropertySourcesPlaceholderConfigurer properties(@Qualifier("graviteeProperties") Properties graviteeProperties) {
-        PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
-        propertySourcesPlaceholderConfigurer.setProperties(graviteeProperties);
-        propertySourcesPlaceholderConfigurer.setIgnoreUnresolvablePlaceholders(true);
+  @Bean
+  public static PropertySourcesPlaceholderConfigurer properties(
+    @Qualifier("graviteeProperties") Properties graviteeProperties
+  ) {
+    PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
+    propertySourcesPlaceholderConfigurer.setProperties(graviteeProperties);
+    propertySourcesPlaceholderConfigurer.setIgnoreUnresolvablePlaceholders(
+      true
+    );
 
-        return propertySourcesPlaceholderConfigurer;
-    }
+    return propertySourcesPlaceholderConfigurer;
+  }
 
-    @Bean
-    public static PropertySourceBeanProcessor propertySourceBeanProcessor(@Qualifier("graviteeProperties") Properties graviteeProperties,
-                                                                          Environment environment) {
-        // Using this we are now able to use {@link org.springframework.core.env.Environment} in Spring beans
-        return new PropertySourceBeanProcessor(graviteeProperties, environment);
-    }
+  @Bean
+  public static PropertySourceBeanProcessor propertySourceBeanProcessor(
+    @Qualifier("graviteeProperties") Properties graviteeProperties,
+    Environment environment
+  ) {
+    // Using this we are now able to use {@link org.springframework.core.env.Environment} in Spring beans
+    return new PropertySourceBeanProcessor(graviteeProperties, environment);
+  }
 
-    @Bean
-    public static EnvironmentBeanFactoryPostProcessor environmentBeanFactoryPostProcessor() {
-        return new EnvironmentBeanFactoryPostProcessor();
-    }
+  @Bean
+  public static EnvironmentBeanFactoryPostProcessor environmentBeanFactoryPostProcessor() {
+    return new EnvironmentBeanFactoryPostProcessor();
+  }
 }

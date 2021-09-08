@@ -18,41 +18,53 @@ package io.gravitee.node.vertx.verticle.factory;
 import io.vertx.core.Promise;
 import io.vertx.core.Verticle;
 import io.vertx.core.spi.VerticleFactory;
+import java.util.concurrent.Callable;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import java.util.concurrent.Callable;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class SpringVerticleFactory implements VerticleFactory, ApplicationContextAware {
+public class SpringVerticleFactory
+  implements VerticleFactory, ApplicationContextAware {
 
-    public static final String VERTICLE_PREFIX = "spring";
+  public static final String VERTICLE_PREFIX = "spring";
 
-    private ApplicationContext applicationContext;
+  private ApplicationContext applicationContext;
 
-    @Override
-    public String prefix() {
-        return VERTICLE_PREFIX;
+  @Override
+  public String prefix() {
+    return VERTICLE_PREFIX;
+  }
+
+  @Override
+  public void createVerticle(
+    String verticleName,
+    ClassLoader classLoader,
+    Promise<Callable<Verticle>> promise
+  ) {
+    String verticleClassname = verticleName.substring(
+      VERTICLE_PREFIX.length() + 1
+    );
+
+    try {
+      Class<?> verticleClass = Thread
+        .currentThread()
+        .getContextClassLoader()
+        .loadClass(verticleClassname);
+      promise.complete(
+        () -> (Verticle) applicationContext.getBean(verticleClass)
+      );
+    } catch (ClassNotFoundException cnfe) {
+      promise.fail(cnfe);
     }
+  }
 
-    @Override
-    public void createVerticle(String verticleName, ClassLoader classLoader, Promise<Callable<Verticle>> promise) {
-        String verticleClassname = verticleName.substring(VERTICLE_PREFIX.length() + 1);
-
-        try {
-            Class<?> verticleClass = Thread.currentThread().getContextClassLoader().loadClass(verticleClassname);
-            promise.complete(() -> (Verticle) applicationContext.getBean(verticleClass));
-        } catch (ClassNotFoundException cnfe) {
-            promise.fail(cnfe);
-        }
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
+  @Override
+  public void setApplicationContext(ApplicationContext applicationContext)
+    throws BeansException {
+    this.applicationContext = applicationContext;
+  }
 }

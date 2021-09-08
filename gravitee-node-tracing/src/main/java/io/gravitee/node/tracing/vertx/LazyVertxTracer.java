@@ -22,7 +22,6 @@ import io.vertx.core.spi.tracing.SpanKind;
 import io.vertx.core.spi.tracing.TagExtractor;
 import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.core.tracing.TracingPolicy;
-
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -30,53 +29,99 @@ import java.util.function.BiConsumer;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class LazyVertxTracer implements VertxTracer<Object, Object>, TracingService.TracerListener {
+public class LazyVertxTracer
+  implements VertxTracer<Object, Object>, TracingService.TracerListener {
 
-    private io.gravitee.node.tracing.vertx.VertxTracer<Object, Object> tracer;
+  private io.gravitee.node.tracing.vertx.VertxTracer<Object, Object> tracer;
 
-    @Override
-    public <R> Object receiveRequest(Context context, SpanKind kind, TracingPolicy policy, R request, String operation, Iterable<Map.Entry<String, String>> headers, TagExtractor<R> tagExtractor) {
-        if (tracer != null) {
-            return tracer.receiveRequest(context, kind, policy, request, operation, headers, tagExtractor);
-        }
-
-        return request;
+  @Override
+  public <R> Object receiveRequest(
+    Context context,
+    SpanKind kind,
+    TracingPolicy policy,
+    R request,
+    String operation,
+    Iterable<Map.Entry<String, String>> headers,
+    TagExtractor<R> tagExtractor
+  ) {
+    if (tracer != null) {
+      return tracer.receiveRequest(
+        context,
+        kind,
+        policy,
+        request,
+        operation,
+        headers,
+        tagExtractor
+      );
     }
 
-    @Override
-    public <R> void sendResponse(Context context, R response, Object payload, Throwable failure, TagExtractor<R> tagExtractor) {
-        if (tracer != null) {
-            tracer.sendResponse(context, response, payload, failure, tagExtractor);
-        }
+    return request;
+  }
+
+  @Override
+  public <R> void sendResponse(
+    Context context,
+    R response,
+    Object payload,
+    Throwable failure,
+    TagExtractor<R> tagExtractor
+  ) {
+    if (tracer != null) {
+      tracer.sendResponse(context, response, payload, failure, tagExtractor);
+    }
+  }
+
+  @Override
+  public <R> Object sendRequest(
+    Context context,
+    SpanKind kind,
+    TracingPolicy policy,
+    R request,
+    String operation,
+    BiConsumer<String, String> headers,
+    TagExtractor<R> tagExtractor
+  ) {
+    if (tracer != null) {
+      return tracer.sendRequest(
+        context,
+        kind,
+        policy,
+        request,
+        operation,
+        headers,
+        tagExtractor
+      );
     }
 
-    @Override
-    public <R> Object sendRequest(Context context, SpanKind kind, TracingPolicy policy, R request, String operation, BiConsumer<String, String> headers, TagExtractor<R> tagExtractor) {
-        if (tracer != null) {
-            return tracer.sendRequest(context, kind, policy, request, operation, headers, tagExtractor);
-        }
+    return request;
+  }
 
-        return request;
+  @Override
+  public <R> void receiveResponse(
+    Context context,
+    R response,
+    Object payload,
+    Throwable failure,
+    TagExtractor<R> tagExtractor
+  ) {
+    if (tracer != null) {
+      tracer.receiveResponse(context, response, payload, failure, tagExtractor);
     }
+  }
 
-    @Override
-    public <R> void receiveResponse(Context context, R response, Object payload, Throwable failure, TagExtractor<R> tagExtractor) {
-        if (tracer != null) {
-            tracer.receiveResponse(context, response, payload, failure, tagExtractor);
-        }
+  @Override
+  public void close() {
+    if (tracer != null) {
+      tracer.close();
     }
+  }
 
-    @Override
-    public void close() {
-        if (tracer != null) {
-            tracer.close();
-        }
+  @Override
+  public void onRegister(Tracer tracer) {
+    if (tracer instanceof io.gravitee.node.tracing.vertx.VertxTracer) {
+      this.tracer =
+        (io.gravitee.node.tracing.vertx.VertxTracer<Object, Object>) tracer;
     }
-
-    @Override
-    public void onRegister(Tracer tracer) {
-        if(tracer instanceof io.gravitee.node.tracing.vertx.VertxTracer) {
-            this.tracer = (io.gravitee.node.tracing.vertx.VertxTracer<Object, Object>) tracer;
-        }
-    }
+  }
 }

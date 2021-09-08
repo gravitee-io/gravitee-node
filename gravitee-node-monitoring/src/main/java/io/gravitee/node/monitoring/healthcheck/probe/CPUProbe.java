@@ -18,9 +18,8 @@ package io.gravitee.node.monitoring.healthcheck.probe;
 import io.gravitee.node.api.healthcheck.Probe;
 import io.gravitee.node.api.healthcheck.Result;
 import io.gravitee.node.monitoring.monitor.probe.ProcessProbe;
-import org.springframework.beans.factory.annotation.Value;
-
 import java.util.concurrent.CompletableFuture;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -28,28 +27,35 @@ import java.util.concurrent.CompletableFuture;
  */
 public class CPUProbe implements Probe {
 
-    @Value("${services.health.threshold.cpu:80}")
-    private int threshold;
+  @Value("${services.health.threshold.cpu:80}")
+  private int threshold;
 
-    @Override
-    public String id() {
-        return "cpu";
-    }
+  @Override
+  public String id() {
+    return "cpu";
+  }
 
-    @Override
-    public boolean isVisibleByDefault() {
-        return false;
-    }
+  @Override
+  public boolean isVisibleByDefault() {
+    return false;
+  }
 
-    @Override
-    public CompletableFuture<Result> check() {
-        try {
-            return CompletableFuture.supplyAsync(() ->
-                    ProcessProbe.getInstance().getProcessCpuPercent() < threshold
-                    ? Result.healthy()
-                    : Result.unhealthy(String.format("CPU percent is over the threshold of %d %%", threshold)));
-        } catch (Exception ex) {
-            return CompletableFuture.completedFuture(Result.unhealthy(ex));
-        }
+  @Override
+  public CompletableFuture<Result> check() {
+    try {
+      return CompletableFuture.supplyAsync(
+        () ->
+          ProcessProbe.getInstance().getProcessCpuPercent() < threshold
+            ? Result.healthy()
+            : Result.unhealthy(
+              String.format(
+                "CPU percent is over the threshold of %d %%",
+                threshold
+              )
+            )
+      );
+    } catch (Exception ex) {
+      return CompletableFuture.completedFuture(Result.unhealthy(ex));
     }
+  }
 }

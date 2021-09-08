@@ -28,33 +28,42 @@ import org.springframework.core.env.Environment;
  */
 public class TracingPluginHandler extends AbstractPluginHandler {
 
-    @Autowired
-    private PluginClassLoaderFactory<Plugin> pluginClassLoaderFactory;
+  @Autowired
+  private PluginClassLoaderFactory<Plugin> pluginClassLoaderFactory;
 
-    @Autowired
-    private TracingService tracingService;
+  @Autowired
+  private TracingService tracingService;
 
-    @Autowired
-    private Environment environment;
+  @Autowired
+  private Environment environment;
 
-    @Override
-    public boolean canHandle(Plugin plugin) {
-        return environment.getProperty("services.tracing.enabled", Boolean.class, false) &&
-                TracerPlugin.PLUGIN_TYPE.equalsIgnoreCase(plugin.type());
-    }
+  @Override
+  public boolean canHandle(Plugin plugin) {
+    return (
+      environment.getProperty(
+        "services.tracing.enabled",
+        Boolean.class,
+        false
+      ) &&
+      TracerPlugin.PLUGIN_TYPE.equalsIgnoreCase(plugin.type())
+    );
+  }
 
-    @Override
-    protected String type() {
-        return "tracers";
-    }
+  @Override
+  protected String type() {
+    return "tracers";
+  }
 
-    @Override
-    protected ClassLoader getClassLoader(Plugin plugin) throws Exception {
-        return pluginClassLoaderFactory.getOrCreateClassLoader(plugin, this.getClass().getClassLoader());
-    }
+  @Override
+  protected ClassLoader getClassLoader(Plugin plugin) throws Exception {
+    return pluginClassLoaderFactory.getOrCreateClassLoader(
+      plugin,
+      this.getClass().getClassLoader()
+    );
+  }
 
-    @Override
-    protected void handle(Plugin plugin, Class<?> aClass) {
-        tracingService.register(plugin);
-    }
+  @Override
+  protected void handle(Plugin plugin, Class<?> aClass) {
+    tracingService.register(plugin);
+  }
 }

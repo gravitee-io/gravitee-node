@@ -28,31 +28,31 @@ import io.vertx.core.tracing.TracingOptions;
  */
 public class LazyVertxTracerFactory implements VertxTracerFactory {
 
-    private final TracingService tracingService;
+  private final TracingService tracingService;
 
-    public LazyVertxTracerFactory(final TracingService tracingService) {
-        this.tracingService = tracingService;
-    }
+  public LazyVertxTracerFactory(final TracingService tracingService) {
+    this.tracingService = tracingService;
+  }
 
-    @Override
-    public void init(VertxBuilder builder) {
-        VertxTracerFactory.super.init(builder);
-    }
+  @Override
+  public void init(VertxBuilder builder) {
+    VertxTracerFactory.super.init(builder);
+  }
 
-    @Override
-    public VertxTracer tracer(TracingOptions options) {
-        LazyVertxTracer tracer = new LazyVertxTracer();
-        tracingService.addTracerListener(tracer);
-        return tracer;
-    }
+  @Override
+  public VertxTracer tracer(TracingOptions options) {
+    LazyVertxTracer tracer = new LazyVertxTracer();
+    tracingService.addTracerListener(tracer);
+    return tracer;
+  }
 
-    @Override
-    public TracingOptions newOptions() {
-        return VertxTracerFactory.super.newOptions();
-    }
+  @Override
+  public TracingOptions newOptions() {
+    return VertxTracerFactory.super.newOptions();
+  }
 
-    @Override
-    public TracingOptions newOptions(JsonObject jsonObject) {
-        return VertxTracerFactory.super.newOptions(jsonObject);
-    }
+  @Override
+  public TracingOptions newOptions(JsonObject jsonObject) {
+    return VertxTracerFactory.super.newOptions(jsonObject);
+  }
 }

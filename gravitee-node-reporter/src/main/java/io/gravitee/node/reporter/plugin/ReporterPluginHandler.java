@@ -26,33 +26,37 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ReporterPluginHandler extends AbstractSpringPluginHandler<Reporter> {
+public class ReporterPluginHandler
+  extends AbstractSpringPluginHandler<Reporter> {
 
-    private final static String PLUGIN_TYPE = "reporter";
+  private static final String PLUGIN_TYPE = "reporter";
 
-    @Autowired
-    private PluginClassLoaderFactory pluginClassLoaderFactory;
+  @Autowired
+  private PluginClassLoaderFactory pluginClassLoaderFactory;
 
-    @Autowired
-    private ReporterManager reporterManager;
+  @Autowired
+  private ReporterManager reporterManager;
 
-    @Override
-    public boolean canHandle(Plugin plugin) {
-        return PLUGIN_TYPE.equalsIgnoreCase(plugin.type());
-    }
+  @Override
+  public boolean canHandle(Plugin plugin) {
+    return PLUGIN_TYPE.equalsIgnoreCase(plugin.type());
+  }
 
-    @Override
-    protected String type() {
-        return "reporters";
-    }
+  @Override
+  protected String type() {
+    return "reporters";
+  }
 
-    @Override
-    protected ClassLoader getClassLoader(Plugin plugin) throws Exception {
-        return pluginClassLoaderFactory.getOrCreateClassLoader(plugin, this.getClass().getClassLoader());
-    }
+  @Override
+  protected ClassLoader getClassLoader(Plugin plugin) throws Exception {
+    return pluginClassLoaderFactory.getOrCreateClassLoader(
+      plugin,
+      this.getClass().getClassLoader()
+    );
+  }
 
-    @Override
-    protected void register(Reporter plugin) {
-        reporterManager.register(plugin);
-    }
+  @Override
+  protected void register(Reporter plugin) {
+    reporterManager.register(plugin);
+  }
 }

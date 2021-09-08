@@ -27,8 +27,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ServiceConfiguration {
 
-    @Bean
-    public ServiceManager serviceManager() {
-        return new ServiceManagerImpl();
-    }
+  @Bean
+  public ServiceManager serviceManager() {
+    return new ServiceManagerImpl();
+  }
 }

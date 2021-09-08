@@ -22,10 +22,9 @@ import java.util.List;
  * @author GraviteeSource Team
  */
 public interface ProbeManager {
+  List<Probe> getProbes();
 
-    List<Probe> getProbes();
+  void register(Probe probe);
 
-    void register(Probe probe);
-
-    void unregister(Probe probe);
+  void unregister(Probe probe);
 }

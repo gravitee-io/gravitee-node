@@ -25,223 +25,225 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class JettyHttpConfiguration {
 
-    @Value("${jetty.host:0.0.0.0}")
-    private String httpHost;
+  @Value("${jetty.host:0.0.0.0}")
+  private String httpHost;
 
-    @Value("${jetty.port:8093}")
-    private int httpPort;
+  @Value("${jetty.port:8093}")
+  private int httpPort;
 
-    @Value("${jetty.idleTimeout:30000}")
-    private int idleTimeout;
+  @Value("${jetty.idleTimeout:30000}")
+  private int idleTimeout;
 
-    @Value("${jetty.acceptors:-1}")
-    private int acceptors;
+  @Value("${jetty.acceptors:-1}")
+  private int acceptors;
 
-    @Value("${jetty.selectors:-1}")
-    private int selectors;
+  @Value("${jetty.selectors:-1}")
+  private int selectors;
 
-    @Value("${jetty.pool.minThreads:10}")
-    private int poolMinThreads;
+  @Value("${jetty.pool.minThreads:10}")
+  private int poolMinThreads;
 
-    @Value("${jetty.pool.maxThreads:200}")
-    private int poolMaxThreads;
+  @Value("${jetty.pool.maxThreads:200}")
+  private int poolMaxThreads;
 
-    @Value("${jetty.pool.idleTimeout:60000}")
-    private int poolIdleTimeout;
+  @Value("${jetty.pool.idleTimeout:60000}")
+  private int poolIdleTimeout;
 
-    @Value("${jetty.pool.queueSize:6000}")
-    private int poolQueueSize;
+  @Value("${jetty.pool.queueSize:6000}")
+  private int poolQueueSize;
 
-    @Value("${jetty.jmx:false}")
-    private boolean jmxEnabled;
+  @Value("${jetty.jmx:false}")
+  private boolean jmxEnabled;
 
-    @Value("${jetty.statistics:false}")
-    private boolean statisticsEnabled;
+  @Value("${jetty.statistics:false}")
+  private boolean statisticsEnabled;
 
-    @Value("${jetty.accesslog.enabled:true}")
-    private boolean accessLogEnabled;
+  @Value("${jetty.accesslog.enabled:true}")
+  private boolean accessLogEnabled;
 
-    @Value("${jetty.accesslog.path:${gravitee.home}/logs/gravitee_accesslog_yyyy_mm_dd.log}")
-    private String accessLogPath;
+  @Value(
+    "${jetty.accesslog.path:${gravitee.home}/logs/gravitee_accesslog_yyyy_mm_dd.log}"
+  )
+  private String accessLogPath;
 
-    @Value("${jetty.secured:false}")
-    private boolean secured;
+  @Value("${jetty.secured:false}")
+  private boolean secured;
 
-    @Value("${jetty.ssl.keystore.path:#{null}}")
-    private String keyStorePath;
+  @Value("${jetty.ssl.keystore.path:#{null}}")
+  private String keyStorePath;
 
-    @Value("${jetty.ssl.keystore.password:#{null}}")
-    private String keyStorePassword;
+  @Value("${jetty.ssl.keystore.password:#{null}}")
+  private String keyStorePassword;
 
-    @Value("${jetty.ssl.keystore.type:#{null}}")
-    private String keyStoreType;
+  @Value("${jetty.ssl.keystore.type:#{null}}")
+  private String keyStoreType;
 
-    @Value("${jetty.ssl.truststore.path:#{null}}")
-    private String trustStorePath;
+  @Value("${jetty.ssl.truststore.path:#{null}}")
+  private String trustStorePath;
 
-    @Value("${jetty.ssl.truststore.password:#{null}}")
-    private String trustStorePassword;
+  @Value("${jetty.ssl.truststore.password:#{null}}")
+  private String trustStorePassword;
 
-    @Value("${jetty.ssl.truststore.type:#{null}}")
-    private String trustStoreType;
+  @Value("${jetty.ssl.truststore.type:#{null}}")
+  private String trustStoreType;
 
-    public int getHttpPort() {
-        return httpPort;
-    }
+  public int getHttpPort() {
+    return httpPort;
+  }
 
-    public void setHttpPort(int httpPort) {
-        this.httpPort = httpPort;
-    }
+  public void setHttpPort(int httpPort) {
+    this.httpPort = httpPort;
+  }
 
-    public int getAcceptors() {
-        return acceptors;
-    }
+  public int getAcceptors() {
+    return acceptors;
+  }
 
-    public void setAcceptors(int acceptors) {
-        this.acceptors = acceptors;
-    }
+  public void setAcceptors(int acceptors) {
+    this.acceptors = acceptors;
+  }
 
-    public int getSelectors() {
-        return selectors;
-    }
+  public int getSelectors() {
+    return selectors;
+  }
 
-    public void setSelectors(int selectors) {
-        this.selectors = selectors;
-    }
+  public void setSelectors(int selectors) {
+    this.selectors = selectors;
+  }
 
-    public int getPoolMinThreads() {
-        return poolMinThreads;
-    }
+  public int getPoolMinThreads() {
+    return poolMinThreads;
+  }
 
-    public void setPoolMinThreads(int poolMinThreads) {
-        this.poolMinThreads = poolMinThreads;
-    }
+  public void setPoolMinThreads(int poolMinThreads) {
+    this.poolMinThreads = poolMinThreads;
+  }
 
-    public int getPoolMaxThreads() {
-        return poolMaxThreads;
-    }
+  public int getPoolMaxThreads() {
+    return poolMaxThreads;
+  }
 
-    public void setPoolMaxThreads(int poolMaxThreads) {
-        this.poolMaxThreads = poolMaxThreads;
-    }
+  public void setPoolMaxThreads(int poolMaxThreads) {
+    this.poolMaxThreads = poolMaxThreads;
+  }
 
-    public boolean isJmxEnabled() {
-        return jmxEnabled;
-    }
+  public boolean isJmxEnabled() {
+    return jmxEnabled;
+  }
 
-    public void setJmxEnabled(boolean jmxEnabled) {
-        this.jmxEnabled = jmxEnabled;
-    }
+  public void setJmxEnabled(boolean jmxEnabled) {
+    this.jmxEnabled = jmxEnabled;
+  }
 
-    public int getIdleTimeout() {
-        return idleTimeout;
-    }
+  public int getIdleTimeout() {
+    return idleTimeout;
+  }
 
-    public void setIdleTimeout(int idleTimeout) {
-        this.idleTimeout = idleTimeout;
-    }
+  public void setIdleTimeout(int idleTimeout) {
+    this.idleTimeout = idleTimeout;
+  }
 
-    public boolean isStatisticsEnabled() {
-        return statisticsEnabled;
-    }
+  public boolean isStatisticsEnabled() {
+    return statisticsEnabled;
+  }
 
-    public void setStatisticsEnabled(boolean statisticsEnabled) {
-        this.statisticsEnabled = statisticsEnabled;
-    }
+  public void setStatisticsEnabled(boolean statisticsEnabled) {
+    this.statisticsEnabled = statisticsEnabled;
+  }
 
-    public int getPoolIdleTimeout() {
-        return poolIdleTimeout;
-    }
+  public int getPoolIdleTimeout() {
+    return poolIdleTimeout;
+  }
 
-    public void setPoolIdleTimeout(int poolIdleTimeout) {
-        this.poolIdleTimeout = poolIdleTimeout;
-    }
+  public void setPoolIdleTimeout(int poolIdleTimeout) {
+    this.poolIdleTimeout = poolIdleTimeout;
+  }
 
-    public int getPoolQueueSize() {
-        return poolQueueSize;
-    }
+  public int getPoolQueueSize() {
+    return poolQueueSize;
+  }
 
-    public void setPoolQueueSize(int poolQueueSize) {
-        this.poolQueueSize = poolQueueSize;
-    }
+  public void setPoolQueueSize(int poolQueueSize) {
+    this.poolQueueSize = poolQueueSize;
+  }
 
-    public boolean isAccessLogEnabled() {
-        return accessLogEnabled;
-    }
+  public boolean isAccessLogEnabled() {
+    return accessLogEnabled;
+  }
 
-    public void setAccessLogEnabled(boolean accessLogEnabled) {
-        this.accessLogEnabled = accessLogEnabled;
-    }
+  public void setAccessLogEnabled(boolean accessLogEnabled) {
+    this.accessLogEnabled = accessLogEnabled;
+  }
 
-    public String getAccessLogPath() {
-        return accessLogPath;
-    }
+  public String getAccessLogPath() {
+    return accessLogPath;
+  }
 
-    public void setAccessLogPath(String accessLogPath) {
-        this.accessLogPath = accessLogPath;
-    }
+  public void setAccessLogPath(String accessLogPath) {
+    this.accessLogPath = accessLogPath;
+  }
 
-    public String getHttpHost() {
-        return httpHost;
-    }
+  public String getHttpHost() {
+    return httpHost;
+  }
 
-    public void setHttpHost(String httpHost) {
-        this.httpHost = httpHost;
-    }
+  public void setHttpHost(String httpHost) {
+    this.httpHost = httpHost;
+  }
 
-    public boolean isSecured() {
-        return secured;
-    }
+  public boolean isSecured() {
+    return secured;
+  }
 
-    public void setSecured(boolean secured) {
-        this.secured = secured;
-    }
+  public void setSecured(boolean secured) {
+    this.secured = secured;
+  }
 
-    public String getKeyStorePath() {
-        return keyStorePath;
-    }
+  public String getKeyStorePath() {
+    return keyStorePath;
+  }
 
-    public void setKeyStorePath(String keyStorePath) {
-        this.keyStorePath = keyStorePath;
-    }
+  public void setKeyStorePath(String keyStorePath) {
+    this.keyStorePath = keyStorePath;
+  }
 
-    public String getKeyStorePassword() {
-        return keyStorePassword;
-    }
+  public String getKeyStorePassword() {
+    return keyStorePassword;
+  }
 
-    public void setKeyStorePassword(String keyStorePassword) {
-        this.keyStorePassword = keyStorePassword;
-    }
+  public void setKeyStorePassword(String keyStorePassword) {
+    this.keyStorePassword = keyStorePassword;
+  }
 
-    public String getTrustStorePath() {
-        return trustStorePath;
-    }
+  public String getTrustStorePath() {
+    return trustStorePath;
+  }
 
-    public void setTrustStorePath(String trustStorePath) {
-        this.trustStorePath = trustStorePath;
-    }
+  public void setTrustStorePath(String trustStorePath) {
+    this.trustStorePath = trustStorePath;
+  }
 
-    public String getTrustStorePassword() {
-        return trustStorePassword;
-    }
+  public String getTrustStorePassword() {
+    return trustStorePassword;
+  }
 
-    public void setTrustStorePassword(String trustStorePassword) {
-        this.trustStorePassword = trustStorePassword;
-    }
+  public void setTrustStorePassword(String trustStorePassword) {
+    this.trustStorePassword = trustStorePassword;
+  }
 
-    public String getKeyStoreType() {
-        return keyStoreType;
-    }
+  public String getKeyStoreType() {
+    return keyStoreType;
+  }
 
-    public void setKeyStoreType(String keyStoreType) {
-        this.keyStoreType = keyStoreType;
-    }
+  public void setKeyStoreType(String keyStoreType) {
+    this.keyStoreType = keyStoreType;
+  }
 
-    public String getTrustStoreType() {
-        return trustStoreType;
-    }
+  public String getTrustStoreType() {
+    return trustStoreType;
+  }
 
-    public void setTrustStoreType(String trustStoreType) {
-        this.trustStoreType = trustStoreType;
-    }
+  public void setTrustStoreType(String trustStoreType) {
+    this.trustStoreType = trustStoreType;
+  }
 }

@@ -25,13 +25,13 @@ import org.springframework.context.annotation.Bean;
  */
 public class NodeConfiguration {
 
-    @Bean
-    public NodeDeployerFactoriesLoader nodeDeployerFactoriesLoader() {
-        return new NodeDeployerFactoriesLoader();
-    }
+  @Bean
+  public NodeDeployerFactoriesLoader nodeDeployerFactoriesLoader() {
+    return new NodeDeployerFactoriesLoader();
+  }
 
-    @Bean
-    public NodeDeploymentContextFactory nodeDeploymentContextFactory() {
-        return new NodeDeploymentContextFactory();
-    }
+  @Bean
+  public NodeDeploymentContextFactory nodeDeploymentContextFactory() {
+    return new NodeDeploymentContextFactory();
+  }
 }

@@ -22,17 +22,16 @@ import java.util.Collection;
  * @author GraviteeSource Team
  */
 public interface ClusterManager {
+  Collection<Member> getMembers();
 
-    Collection<Member> getMembers();
+  Member getLocalMember();
 
-    Member getLocalMember();
+  /**
+   * Indicates if the local node is the master node of the cluster
+   *
+   * @return Local node is master node?
+   */
+  boolean isMasterNode();
 
-    /**
-     * Indicates if the local node is the master node of the cluster
-     *
-     * @return Local node is master node?
-     */
-    boolean isMasterNode();
-
-    void addMemberListener(MemberListener listener);
+  void addMemberListener(MemberListener listener);
 }

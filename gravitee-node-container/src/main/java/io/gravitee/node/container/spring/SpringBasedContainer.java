@@ -24,13 +24,12 @@ import io.gravitee.node.monitoring.spring.MonitoringConfiguration;
 import io.gravitee.node.plugins.service.spring.ServiceConfiguration;
 import io.gravitee.node.reporter.spring.ReporterConfiguration;
 import io.gravitee.plugin.core.spring.PluginConfiguration;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -38,71 +37,75 @@ import java.util.List;
  */
 public abstract class SpringBasedContainer extends AbstractContainer {
 
-    private ConfigurableApplicationContext ctx;
+  private ConfigurableApplicationContext ctx;
 
-    public SpringBasedContainer() {
-        super();
+  public SpringBasedContainer() {
+    super();
+  }
+
+  @Override
+  protected void initialize() {
+    super.initialize();
+
+    this.initializeContext();
+  }
+
+  protected void initializeContext() {
+    ctx = new AnnotationConfigApplicationContext();
+
+    List<Class<?>> classes = annotatedClasses();
+    classes.forEach(
+      aClass -> ((AnnotationConfigApplicationContext) ctx).register(aClass)
+    );
+
+    // Finally refresh the context
+    ctx.refresh();
+  }
+
+  protected List<Class<?>> annotatedClasses() {
+    List<Class<?>> classes = new ArrayList<>();
+
+    classes.add(EnvironmentConfiguration.class);
+    classes.add(PropertiesConfiguration.class);
+
+    classes.add(PluginConfiguration.class);
+    classes.add(ServiceConfiguration.class);
+
+    classes.add(ManagementConfiguration.class);
+    classes.add(ReporterConfiguration.class);
+
+    classes.add(MonitoringConfiguration.class);
+
+    classes.add(NodeConfiguration.class);
+
+    return classes;
+  }
+
+  @Override
+  protected void doStop() throws Exception {
+    if (!stopped) {
+      LoggerFactory
+        .getLogger(this.getClass())
+        .info("Shutting-down {}...", name());
+
+      try {
+        node().stop();
+      } catch (Exception ex) {
+        LoggerFactory.getLogger(this.getClass()).error("Unexpected error", ex);
+      } finally {
+        ctx.close();
+        stopped = true;
+      }
     }
+  }
 
-    @Override
-    protected void initialize() {
-        super.initialize();
+  @Override
+  public Node node() {
+    // Get a reference to the node
+    return ctx.getBean(Node.class);
+  }
 
-        this.initializeContext();
-    }
-
-    protected void initializeContext() {
-        ctx = new AnnotationConfigApplicationContext();
-
-        List<Class<?>> classes = annotatedClasses();
-        classes.forEach(aClass -> ((AnnotationConfigApplicationContext)ctx).register(aClass));
-
-        // Finally refresh the context
-        ctx.refresh();
-    }
-
-    protected List<Class<?>> annotatedClasses() {
-        List<Class<?>> classes = new ArrayList<>();
-
-        classes.add(EnvironmentConfiguration.class);
-        classes.add(PropertiesConfiguration.class);
-
-        classes.add(PluginConfiguration.class);
-        classes.add(ServiceConfiguration.class);
-
-        classes.add(ManagementConfiguration.class);
-        classes.add(ReporterConfiguration.class);
-
-        classes.add(MonitoringConfiguration.class);
-
-        classes.add(NodeConfiguration.class);
-
-        return classes;
-    }
-
-    @Override
-    protected void doStop() throws Exception {
-        if (! stopped) {
-            LoggerFactory.getLogger(this.getClass()).info("Shutting-down {}...", name());
-
-            try {
-                node().stop();
-            } catch (Exception ex) {
-                LoggerFactory.getLogger(this.getClass()).error("Unexpected error", ex);
-            } finally {
-                ctx.close();
-                stopped = true;
-            }
-        }
-    }
-
-    @Override
-    public Node node() {
-        // Get a reference to the node
-        return ctx.getBean(Node.class);
-    }
-
-    public ApplicationContext applicationContext() {
-        return ctx;
-    }
+  public ApplicationContext applicationContext() {
+    return ctx;
+  }
 }

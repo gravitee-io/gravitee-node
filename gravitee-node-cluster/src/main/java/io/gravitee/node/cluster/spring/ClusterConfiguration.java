@@ -33,32 +33,41 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ClusterConfiguration {
 
-    @Value("${cluster.hazelcast.config.path:${gravitee.home}/config/hazelcast.xml}")
-    private String hazelcastConfigFilePath;
+  @Value(
+    "${cluster.hazelcast.config.path:${gravitee.home}/config/hazelcast.xml}"
+  )
+  private String hazelcastConfigFilePath;
 
-    @Bean
-    public HazelcastInstance distributedHazelcastInstance() throws Exception {
-        // Force Hazelcast to use SLF4J before loading any HZ classes
-        System.setProperty(ClusterProperty.LOGGING_TYPE.getName(), "slf4j");
-        System.setProperty(ClusterProperty.SHUTDOWNHOOK_ENABLED.getName(), "false");
+  @Bean
+  public HazelcastInstance distributedHazelcastInstance() throws Exception {
+    // Force Hazelcast to use SLF4J before loading any HZ classes
+    System.setProperty(ClusterProperty.LOGGING_TYPE.getName(), "slf4j");
+    System.setProperty(ClusterProperty.SHUTDOWNHOOK_ENABLED.getName(), "false");
 
-        FileSystemXmlConfig config = new FileSystemXmlConfig(hazelcastConfigFilePath);
+    FileSystemXmlConfig config = new FileSystemXmlConfig(
+      hazelcastConfigFilePath
+    );
 
-        // Force the classloader used by Hazelcast to the container's classloader.
-        config.setClassLoader(ClusterConfiguration.class.getClassLoader());
-        
-        config.setProperty(ClusterProperty.HEALTH_MONITORING_LEVEL.getName(), "OFF");
+    // Force the classloader used by Hazelcast to the container's classloader.
+    config.setClassLoader(ClusterConfiguration.class.getClassLoader());
 
-        return Hazelcast.newHazelcastInstance(new FileSystemXmlConfig(hazelcastConfigFilePath));
-    }
+    config.setProperty(
+      ClusterProperty.HEALTH_MONITORING_LEVEL.getName(),
+      "OFF"
+    );
 
-    @Bean
-    public ClusterManager clusterManager() {
-        return new HazelcastClusterManager();
-    }
+    return Hazelcast.newHazelcastInstance(
+      new FileSystemXmlConfig(hazelcastConfigFilePath)
+    );
+  }
 
-    @Bean
-    public ClusterService clusterService() {
-        return new ClusterService();
-    }
+  @Bean
+  public ClusterManager clusterManager() {
+    return new HazelcastClusterManager();
+  }
+
+  @Bean
+  public ClusterService clusterService() {
+    return new ClusterService();
+  }
 }

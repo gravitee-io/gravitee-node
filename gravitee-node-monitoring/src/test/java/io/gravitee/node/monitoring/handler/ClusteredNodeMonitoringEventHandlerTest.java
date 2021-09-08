@@ -15,6 +15,8 @@
  */
 package io.gravitee.node.monitoring.handler;
 
+import static org.mockito.Mockito.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.core.HazelcastInstance;
@@ -32,15 +34,12 @@ import io.gravitee.node.monitoring.monitor.probe.OsProbe;
 import io.gravitee.node.monitoring.monitor.probe.ProcessProbe;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
+import java.util.HashMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.HashMap;
-
-import static org.mockito.Mockito.*;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
@@ -48,94 +47,104 @@ import static org.mockito.Mockito.*;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ClusteredNodeMonitoringEventHandlerTest {
-    private static final String NODE_ID = "node#1";
 
-    @Mock
-    protected Vertx vertx;
+  private static final String NODE_ID = "node#1";
 
-    @Mock
-    protected Node node;
+  @Mock
+  protected Vertx vertx;
 
-    @Mock
-    protected NodeMonitoringService nodeMonitoringService;
+  @Mock
+  protected Node node;
 
-    @Mock
-    protected ObjectMapper objectMapper;
+  @Mock
+  protected NodeMonitoringService nodeMonitoringService;
 
-    @Mock
-    private ClusterManager clusterManager;
+  @Mock
+  protected ObjectMapper objectMapper;
 
-    @Mock
-    private HazelcastInstance hazelcastInstance;
+  @Mock
+  private ClusterManager clusterManager;
 
+  @Mock
+  private HazelcastInstance hazelcastInstance;
 
-    @Mock
-    private ITopic<HealthCheck> distributedHealthCheckTopic;
+  @Mock
+  private ITopic<HealthCheck> distributedHealthCheckTopic;
 
-    @Mock
-    private ITopic<Monitor> distributedMonitorTopic;
+  @Mock
+  private ITopic<Monitor> distributedMonitorTopic;
 
-    @Mock
-    private ITopic<NodeInfos> distributedNodeInfosTopic;
+  @Mock
+  private ITopic<NodeInfos> distributedNodeInfosTopic;
 
-    private ClusteredNodeMonitoringEventHandler cut;
+  private ClusteredNodeMonitoringEventHandler cut;
 
-    @Before
-    public void before() {
-        cut = new ClusteredNodeMonitoringEventHandler(vertx, objectMapper, node, nodeMonitoringService, clusterManager, hazelcastInstance);
-        cut.distributedHealthCheckTopic = distributedHealthCheckTopic;
-        cut.distributedMonitorTopic = distributedMonitorTopic;
-        cut.distributedNodeInfosTopic = distributedNodeInfosTopic;
-    }
+  @Before
+  public void before() {
+    cut =
+      new ClusteredNodeMonitoringEventHandler(
+        vertx,
+        objectMapper,
+        node,
+        nodeMonitoringService,
+        clusterManager,
+        hazelcastInstance
+      );
+    cut.distributedHealthCheckTopic = distributedHealthCheckTopic;
+    cut.distributedMonitorTopic = distributedMonitorTopic;
+    cut.distributedNodeInfosTopic = distributedNodeInfosTopic;
+  }
 
-    @Test
-    public void handleNodeInfosMessage() throws JsonProcessingException {
+  @Test
+  public void handleNodeInfosMessage() throws JsonProcessingException {
+    final Message<NodeInfos> message = mock(Message.class);
 
-        final Message<NodeInfos> message = mock(Message.class);
+    final NodeInfos nodeInfos = new NodeInfos();
+    nodeInfos.setEvaluatedAt(System.currentTimeMillis());
+    nodeInfos.setStatus(NodeStatus.STARTED);
+    nodeInfos.setId(NODE_ID);
 
-        final NodeInfos nodeInfos = new NodeInfos();
-        nodeInfos.setEvaluatedAt(System.currentTimeMillis());
-        nodeInfos.setStatus(NodeStatus.STARTED);
-        nodeInfos.setId(NODE_ID);
+    when(message.body()).thenReturn(nodeInfos);
 
-        when(message.body()).thenReturn(nodeInfos);
+    cut.handleNodeInfosMessage(message);
 
-        cut.handleNodeInfosMessage(message);
+    verify(distributedNodeInfosTopic).publish(nodeInfos);
+  }
 
-        verify(distributedNodeInfosTopic).publish(nodeInfos);
-    }
+  @Test
+  public void handleMonitorMessageNot() throws JsonProcessingException {
+    final Message<Monitor> message = mock(Message.class);
 
-    @Test
-    public void handleMonitorMessageNot() throws JsonProcessingException {
+    final Monitor monitor = Monitor
+      .on(NODE_ID)
+      .at(System.currentTimeMillis())
+      .os(OsProbe.getInstance().osInfo())
+      .jvm(JvmProbe.getInstance().jvmInfo())
+      .process(ProcessProbe.getInstance().processInfo())
+      .build();
 
-        final Message<Monitor> message = mock(Message.class);
+    when(message.body()).thenReturn(monitor);
 
-        final Monitor monitor = Monitor.on(NODE_ID).at(System.currentTimeMillis()).os(OsProbe.getInstance().osInfo())
-                .jvm(JvmProbe.getInstance().jvmInfo())
-                .process(ProcessProbe.getInstance().processInfo())
-                .build();
+    cut.handleMonitorMessage(message);
 
-        when(message.body()).thenReturn(monitor);
+    verify(distributedMonitorTopic).publish(monitor);
+  }
 
-        cut.handleMonitorMessage(message);
+  @Test
+  public void handleHealthCheckMessage() throws JsonProcessingException {
+    final Message<HealthCheck> message = mock(Message.class);
 
-        verify(distributedMonitorTopic).publish(monitor);
-    }
+    final HashMap<String, Result> results = new HashMap<>();
+    results.put("test", Result.healthy("ok"));
+    final HealthCheck healthCheck = new HealthCheck(
+      System.currentTimeMillis(),
+      results
+    );
 
+    when(message.body()).thenReturn(healthCheck);
 
-    @Test
-    public void handleHealthCheckMessage() throws JsonProcessingException {
+    cut.handleHealthCheckMessage(message);
 
-        final Message<HealthCheck> message = mock(Message.class);
-
-        final HashMap<String, Result> results = new HashMap<>();
-        results.put("test", Result.healthy("ok"));
-        final HealthCheck healthCheck = new HealthCheck(System.currentTimeMillis(), results);
-
-        when(message.body()).thenReturn(healthCheck);
-
-        cut.handleHealthCheckMessage(message);
-
-        verify(distributedHealthCheckTopic).publish(healthCheck);
-    }
+    verify(distributedHealthCheckTopic).publish(healthCheck);
+  }
 }
