@@ -28,13 +28,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class JettyContainerConfiguration {
 
-    @Bean
-    public JettyHttpConfiguration jettyConfiguration() {
-        return new JettyHttpConfiguration();
-    }
+  @Bean
+  public JettyHttpConfiguration jettyConfiguration() {
+    return new JettyHttpConfiguration();
+  }
 
-    @Bean
-    public JettyHttpServerFactory jettyServerFactory() {
-        return new JettyHttpServerFactory();
-    }
+  @Bean
+  public JettyHttpServerFactory jettyServerFactory() {
+    return new JettyHttpServerFactory();
+  }
 }

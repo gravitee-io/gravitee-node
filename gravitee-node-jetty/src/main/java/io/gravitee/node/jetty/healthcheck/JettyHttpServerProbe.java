@@ -21,10 +21,9 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
+import java.util.concurrent.CompletionStage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
-import java.util.concurrent.CompletionStage;
 
 /**
  * HTTP Probe used to check the Jetty Http Server is listening.
@@ -35,37 +34,41 @@ import java.util.concurrent.CompletionStage;
  */
 public class JettyHttpServerProbe implements Probe {
 
-    @Value("${jetty.port:8093}")
-    private int port;
+  @Value("${jetty.port:8093}")
+  private int port;
 
-    @Value("${jetty.host:localhost}")
-    private String host;
+  @Value("${jetty.host:localhost}")
+  private String host;
 
-    @Autowired
-    private Vertx vertx;
+  @Autowired
+  private Vertx vertx;
 
-    @Override
-    public String id() {
-        return "jetty-http-server";
-    }
+  @Override
+  public String id() {
+    return "jetty-http-server";
+  }
 
-    @Override
-    public CompletionStage<Result> check() {
-        Promise<Result> promise = Promise.promise();
+  @Override
+  public CompletionStage<Result> check() {
+    Promise<Result> promise = Promise.promise();
 
-        NetClientOptions options = new NetClientOptions().setConnectTimeout(500);
-        NetClient client = vertx.createNetClient(options);
+    NetClientOptions options = new NetClientOptions().setConnectTimeout(500);
+    NetClient client = vertx.createNetClient(options);
 
-        client.connect(port, host, res -> {
-            if (res.succeeded()) {
-                promise.complete(Result.healthy());
-            } else {
-                promise.complete(Result.unhealthy(res.cause()));
-            }
+    client.connect(
+      port,
+      host,
+      res -> {
+        if (res.succeeded()) {
+          promise.complete(Result.healthy());
+        } else {
+          promise.complete(Result.unhealthy(res.cause()));
+        }
 
-            client.close();
-        });
+        client.close();
+      }
+    );
 
-        return promise.future().toCompletionStage();
-    }
+    return promise.future().toCompletionStage();
+  }
 }

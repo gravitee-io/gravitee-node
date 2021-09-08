@@ -23,49 +23,49 @@ import java.util.Date;
  */
 public class Event {
 
-    private String id;
-    private EventType type;
-    private String payload;
-    private Date createdAt;
-    private Date updatedAt;
+  private String id;
+  private EventType type;
+  private String payload;
+  private Date createdAt;
+  private Date updatedAt;
 
-    public String getId() {
-        return id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    public EventType getType() {
-        return type;
-    }
+  public EventType getType() {
+    return type;
+  }
 
-    public void setType(EventType type) {
-        this.type = type;
-    }
+  public void setType(EventType type) {
+    this.type = type;
+  }
 
-    public String getPayload() {
-        return payload;
-    }
+  public String getPayload() {
+    return payload;
+  }
 
-    public void setPayload(String payload) {
-        this.payload = payload;
-    }
+  public void setPayload(String payload) {
+    this.payload = payload;
+  }
 
-    public Date getCreatedAt() {
-        return createdAt;
-    }
+  public Date getCreatedAt() {
+    return createdAt;
+  }
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
+  public void setCreatedAt(Date createdAt) {
+    this.createdAt = createdAt;
+  }
 
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
+  public Date getUpdatedAt() {
+    return updatedAt;
+  }
 
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+  public void setUpdatedAt(Date updatedAt) {
+    this.updatedAt = updatedAt;
+  }
 }

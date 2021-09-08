@@ -30,65 +30,73 @@ import org.slf4j.LoggerFactory;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class EventBusReporterWrapper implements Reporter, Handler<Message<Reportable>>{
+public class EventBusReporterWrapper
+  implements Reporter, Handler<Message<Reportable>> {
 
-    private final Logger logger = LoggerFactory.getLogger(EventBusReporterWrapper.class);
+  private final Logger logger = LoggerFactory.getLogger(
+    EventBusReporterWrapper.class
+  );
 
-    private static final String EVENT_BUS_ADDRESS = "node:metrics";
-    private final Reporter reporter;
-    private final Vertx vertx;
+  private static final String EVENT_BUS_ADDRESS = "node:metrics";
+  private final Reporter reporter;
+  private final Vertx vertx;
 
-    public EventBusReporterWrapper(final Vertx vertx, final Reporter reporter) {
-        this.vertx = vertx;
-        this.reporter = reporter;
-    }
+  public EventBusReporterWrapper(final Vertx vertx, final Reporter reporter) {
+    this.vertx = vertx;
+    this.reporter = reporter;
+  }
 
-    @Override
-    public void report(Reportable reportable) {
-        // Done by the event bus handler
-        // See handle method
-    }
+  @Override
+  public void report(Reportable reportable) {
+    // Done by the event bus handler
+    // See handle method
+  }
 
-    @Override
-    public Lifecycle.State lifecycleState() {
-        return reporter.lifecycleState();
-    }
+  @Override
+  public Lifecycle.State lifecycleState() {
+    return reporter.lifecycleState();
+  }
 
-    @Override
-    public Object start() throws Exception {
-        vertx.executeBlocking(new Handler<Promise<Object>>() {
-            @Override
-            public void handle(Promise<Object> event) {
-                try {
-                    reporter.start();
-                    event.complete(reporter);
-                } catch (Exception ex) {
-                    logger.error("Error while starting reporter", ex);
-                    event.fail(ex);
-                }
-            }
-        }, new Handler<AsyncResult<Object>>() {
-            @Override
-            public void handle(AsyncResult<Object> event) {
-                if (event.succeeded()) {
-                    vertx.eventBus().consumer(EVENT_BUS_ADDRESS, EventBusReporterWrapper.this);
-                }
-            }
-        });
-
-        return reporter;
-    }
-
-    @Override
-    public Object stop() throws Exception {
-        return reporter.stop();
-    }
-
-    @Override
-    public void handle(Message<Reportable> reportableMsg) {
-        Reportable reportable = reportableMsg.body();
-        if (reporter.canHandle(reportable)) {
-            reporter.report(reportable);
+  @Override
+  public Object start() throws Exception {
+    vertx.executeBlocking(
+      new Handler<Promise<Object>>() {
+        @Override
+        public void handle(Promise<Object> event) {
+          try {
+            reporter.start();
+            event.complete(reporter);
+          } catch (Exception ex) {
+            logger.error("Error while starting reporter", ex);
+            event.fail(ex);
+          }
         }
+      },
+      new Handler<AsyncResult<Object>>() {
+        @Override
+        public void handle(AsyncResult<Object> event) {
+          if (event.succeeded()) {
+            vertx
+              .eventBus()
+              .consumer(EVENT_BUS_ADDRESS, EventBusReporterWrapper.this);
+          }
+        }
+      }
+    );
+
+    return reporter;
+  }
+
+  @Override
+  public Object stop() throws Exception {
+    return reporter.stop();
+  }
+
+  @Override
+  public void handle(Message<Reportable> reportableMsg) {
+    Reportable reportable = reportableMsg.body();
+    if (reporter.canHandle(reportable)) {
+      reporter.report(reportable);
     }
+  }
 }

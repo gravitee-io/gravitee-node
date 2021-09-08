@@ -20,6 +20,5 @@ package io.gravitee.node.management.http.endpoint;
  * @author GraviteeSource Team
  */
 public interface ManagementEndpointManager {
-
-    void register(ManagementEndpoint endpoint);
+  void register(ManagementEndpoint endpoint);
 }

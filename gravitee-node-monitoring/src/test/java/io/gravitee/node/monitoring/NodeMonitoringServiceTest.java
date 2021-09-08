@@ -15,6 +15,9 @@
  */
 package io.gravitee.node.monitoring;
 
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+
 import io.gravitee.node.api.Monitoring;
 import io.gravitee.node.api.NodeMonitoringRepository;
 import io.reactivex.Flowable;
@@ -22,16 +25,12 @@ import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.observers.TestObserver;
 import io.reactivex.subscribers.TestSubscriber;
+import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Date;
-
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
@@ -40,99 +39,104 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class NodeMonitoringServiceTest {
 
-    @Mock
-    private NodeMonitoringRepository repository;
+  @Mock
+  private NodeMonitoringRepository repository;
 
-    private NodeMonitoringService cut;
+  private NodeMonitoringService cut;
 
-    @Before
-    public void before() {
-        cut = new NodeMonitoringService(repository);
-    }
+  @Before
+  public void before() {
+    cut = new NodeMonitoringService(repository);
+  }
 
-    @Test
-    public void shouldCreate() {
+  @Test
+  public void shouldCreate() {
+    final Monitoring monitoring = new Monitoring();
+    monitoring.setNodeId("node#1");
+    monitoring.setCreatedAt(new Date());
+    monitoring.setEvaluatedAt(new Date());
+    monitoring.setPayload("payload health check");
+    monitoring.setType(Monitoring.HEALTH_CHECK);
 
-        final Monitoring monitoring = new Monitoring();
-        monitoring.setNodeId("node#1");
-        monitoring.setCreatedAt(new Date());
-        monitoring.setEvaluatedAt(new Date());
-        monitoring.setPayload("payload health check");
-        monitoring.setType(Monitoring.HEALTH_CHECK);
+    when(repository.findByNodeIdAndType("node#1", Monitoring.HEALTH_CHECK))
+      .thenReturn(Maybe.empty());
+    when(repository.create(monitoring))
+      .thenAnswer(i -> Single.just(i.getArgument(0)));
 
-        when(repository.findByNodeIdAndType("node#1", Monitoring.HEALTH_CHECK)).thenReturn(Maybe.empty());
-        when(repository.create(monitoring)).thenAnswer(i -> Single.just(i.getArgument(0)));
+    final TestObserver<Monitoring> obs = cut.createOrUpdate(monitoring).test();
 
-        final TestObserver<Monitoring> obs = cut.createOrUpdate(monitoring).test();
+    obs.awaitTerminalEvent();
+    obs.assertValue(monitoring);
+  }
 
-        obs.awaitTerminalEvent();
-        obs.assertValue(monitoring);
-    }
+  @Test
+  public void shouldUpdate() {
+    Monitoring monitoring = new Monitoring();
+    monitoring.setNodeId("node#1");
+    monitoring.setCreatedAt(new Date());
+    monitoring.setEvaluatedAt(new Date());
+    monitoring.setPayload("payload health check");
+    monitoring.setType(Monitoring.HEALTH_CHECK);
 
-    @Test
-    public void shouldUpdate() {
+    when(repository.findByNodeIdAndType("node#1", Monitoring.HEALTH_CHECK))
+      .thenReturn(Maybe.empty());
+    when(repository.create(monitoring))
+      .thenAnswer(i -> Single.just(i.getArgument(0)));
 
-        Monitoring monitoring = new Monitoring();
-        monitoring.setNodeId("node#1");
-        monitoring.setCreatedAt(new Date());
-        monitoring.setEvaluatedAt(new Date());
-        monitoring.setPayload("payload health check");
-        monitoring.setType(Monitoring.HEALTH_CHECK);
+    monitoring = cut.createOrUpdate(monitoring).blockingGet();
 
-        when(repository.findByNodeIdAndType("node#1", Monitoring.HEALTH_CHECK)).thenReturn(Maybe.empty());
-        when(repository.create(monitoring)).thenAnswer(i -> Single.just(i.getArgument(0)));
+    when(repository.update(monitoring))
+      .thenAnswer(i -> Single.just(i.getArgument(0)));
 
-        monitoring = cut.createOrUpdate(monitoring).blockingGet();
+    final TestObserver<Monitoring> obs = cut.createOrUpdate(monitoring).test();
 
-        when(repository.update(monitoring)).thenAnswer(i -> Single.just(i.getArgument(0)));
+    obs.awaitTerminalEvent();
+    obs.assertValue(monitoring);
+  }
 
-        final TestObserver<Monitoring> obs = cut.createOrUpdate(monitoring).test();
+  @Test
+  public void shouldNotCreateOrUpdateIfNotRepository() {
+    final Monitoring monitoring = new Monitoring();
+    cut = new NodeMonitoringService(null);
 
-        obs.awaitTerminalEvent();
-        obs.assertValue(monitoring);
-    }
+    final TestObserver<Monitoring> obs = cut.createOrUpdate(monitoring).test();
 
-    @Test
-    public void shouldNotCreateOrUpdateIfNotRepository() {
+    obs.awaitTerminalEvent();
+    obs.assertValue(monitoring);
 
-        final Monitoring monitoring = new Monitoring();
-        cut = new NodeMonitoringService(null);
+    verifyZeroInteractions(repository);
+  }
 
-        final TestObserver<Monitoring> obs = cut.createOrUpdate(monitoring).test();
+  @Test
+  public void shouldFindByTypeAndTimeframe() {
+    long from = System.currentTimeMillis();
+    long to = System.currentTimeMillis() + 1000;
 
-        obs.awaitTerminalEvent();
-        obs.assertValue(monitoring);
+    final Monitoring monitoring = new Monitoring();
+    when(repository.findByTypeAndTimeFrame(Monitoring.HEALTH_CHECK, from, to))
+      .thenReturn(Flowable.just(monitoring));
 
-        verifyZeroInteractions(repository);
-    }
+    final TestSubscriber<Monitoring> obs = cut
+      .findByTypeAndTimeframe(Monitoring.HEALTH_CHECK, from, to)
+      .test();
 
-    @Test
-    public void shouldFindByTypeAndTimeframe() {
+    obs.awaitTerminalEvent();
+    obs.assertValue(monitoring);
+    obs.assertComplete();
+  }
 
-        long from = System.currentTimeMillis();
-        long to = System.currentTimeMillis() + 1000;
+  @Test
+  public void shouldNotFindByTypeAndTimeframeIfNoRepository() {
+    long from = System.currentTimeMillis();
+    long to = System.currentTimeMillis() + 1000;
 
-        final Monitoring monitoring = new Monitoring();
-        when(repository.findByTypeAndTimeFrame(Monitoring.HEALTH_CHECK, from, to)).thenReturn(Flowable.just(monitoring));
+    cut = new NodeMonitoringService(null);
+    final TestSubscriber<Monitoring> obs = cut
+      .findByTypeAndTimeframe(Monitoring.HEALTH_CHECK, from, to)
+      .test();
 
-        final TestSubscriber<Monitoring> obs = cut.findByTypeAndTimeframe(Monitoring.HEALTH_CHECK, from, to).test();
-
-        obs.awaitTerminalEvent();
-        obs.assertValue(monitoring);
-        obs.assertComplete();
-    }
-
-    @Test
-    public void shouldNotFindByTypeAndTimeframeIfNoRepository() {
-
-        long from = System.currentTimeMillis();
-        long to = System.currentTimeMillis() + 1000;
-
-        cut = new NodeMonitoringService(null);
-        final TestSubscriber<Monitoring> obs = cut.findByTypeAndTimeframe(Monitoring.HEALTH_CHECK, from, to).test();
-
-        obs.awaitTerminalEvent();
-        obs.assertNoValues();
-        obs.assertComplete();
-    }
+    obs.awaitTerminalEvent();
+    obs.assertNoValues();
+    obs.assertComplete();
+  }
 }

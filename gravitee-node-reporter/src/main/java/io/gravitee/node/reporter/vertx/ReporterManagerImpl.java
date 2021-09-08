@@ -22,79 +22,90 @@ import io.gravitee.node.reporter.vertx.verticle.ReporterVerticle;
 import io.gravitee.node.vertx.verticle.factory.SpringVerticleFactory;
 import io.gravitee.reporter.api.Reporter;
 import io.vertx.core.Vertx;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ReporterManagerImpl extends AbstractService<ReporterManager> implements ReporterManager {
+public class ReporterManagerImpl
+  extends AbstractService<ReporterManager>
+  implements ReporterManager {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ReporterManagerImpl.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(
+    ReporterManagerImpl.class
+  );
 
-    @Autowired
-    private Vertx vertx;
+  @Autowired
+  private Vertx vertx;
 
-    private String deploymentId;
+  private String deploymentId;
 
-    private final Collection<Reporter> reporters = new ArrayList<>();
+  private final Collection<Reporter> reporters = new ArrayList<>();
 
-    @Override
-    protected void doStart() throws Exception {
-        super.doStart();
+  @Override
+  protected void doStart() throws Exception {
+    super.doStart();
 
-        vertx.deployVerticle(SpringVerticleFactory.VERTICLE_PREFIX + ':' + ReporterVerticle.class.getName(), event -> {
-            if (event.failed()) {
-                LOGGER.error("Reporter service can not be started", event.cause());
-            } else {
-                if (! reporters.isEmpty()) {
-                    for (Reporter reporter : reporters) {
-                        try {
-                            LOGGER.info("Starting reporter: {}", reporter);
-                            reporter.start();
-                        } catch (Exception ex) {
-                            LOGGER.error("Unexpected error while starting reporter", ex);
-                        }
-                    }
-                } else {
-                    LOGGER.info("\tThere is no reporter to start");
-                }
+    vertx.deployVerticle(
+      SpringVerticleFactory.VERTICLE_PREFIX +
+      ':' +
+      ReporterVerticle.class.getName(),
+      event -> {
+        if (event.failed()) {
+          LOGGER.error("Reporter service can not be started", event.cause());
+        } else {
+          if (!reporters.isEmpty()) {
+            for (Reporter reporter : reporters) {
+              try {
+                LOGGER.info("Starting reporter: {}", reporter);
+                reporter.start();
+              } catch (Exception ex) {
+                LOGGER.error("Unexpected error while starting reporter", ex);
+              }
             }
-
-            deploymentId = event.result();
-        });
-    }
-
-    @Override
-    public void register(Reporter reporter) {
-        reporters.add(new EventBusReporterWrapper(vertx, reporter));
-    }
-
-    @Override
-    protected void doStop() throws Exception {
-        super.doStop();
-
-        if (deploymentId != null) {
-            vertx.undeploy(deploymentId, event -> {
-                for(Reporter reporter: reporters) {
-                    try {
-                        LOGGER.info("Stopping reporter: {}", reporter);
-                        reporter.stop();
-                    } catch (Exception ex) {
-                        LOGGER.error("Unexpected error while stopping reporter", ex);
-                    }
-                }
-            });
+          } else {
+            LOGGER.info("\tThere is no reporter to start");
+          }
         }
-    }
 
-    @Override
-    protected String name() {
-        return "Reporter service";
+        deploymentId = event.result();
+      }
+    );
+  }
+
+  @Override
+  public void register(Reporter reporter) {
+    reporters.add(new EventBusReporterWrapper(vertx, reporter));
+  }
+
+  @Override
+  protected void doStop() throws Exception {
+    super.doStop();
+
+    if (deploymentId != null) {
+      vertx.undeploy(
+        deploymentId,
+        event -> {
+          for (Reporter reporter : reporters) {
+            try {
+              LOGGER.info("Stopping reporter: {}", reporter);
+              reporter.stop();
+            } catch (Exception ex) {
+              LOGGER.error("Unexpected error while stopping reporter", ex);
+            }
+          }
+        }
+      );
     }
+  }
+
+  @Override
+  protected String name() {
+    return "Reporter service";
+  }
 }

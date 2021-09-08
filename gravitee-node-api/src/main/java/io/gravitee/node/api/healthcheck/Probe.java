@@ -22,12 +22,11 @@ import java.util.concurrent.CompletionStage;
  * @author GraviteeSource Team
  */
 public interface Probe {
+  String id();
 
-    String id();
+  CompletionStage<Result> check();
 
-    CompletionStage<Result> check();
-
-    default boolean isVisibleByDefault() {
-        return true;
-    }
+  default boolean isVisibleByDefault() {
+    return true;
+  }
 }

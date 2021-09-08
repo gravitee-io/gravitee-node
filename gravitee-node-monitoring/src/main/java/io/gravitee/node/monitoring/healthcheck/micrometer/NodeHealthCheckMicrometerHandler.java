@@ -21,10 +21,9 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import io.micrometer.core.lang.NonNull;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -32,25 +31,34 @@ import java.util.Map;
  */
 public class NodeHealthCheckMicrometerHandler implements MeterBinder {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NodeHealthCheckMicrometerHandler.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(
+    NodeHealthCheckMicrometerHandler.class
+  );
 
-    private final NodeHealthCheckThread statusRegistry;
+  private final NodeHealthCheckThread statusRegistry;
 
-    public NodeHealthCheckMicrometerHandler(NodeHealthCheckThread statusRegistry) {
-        this.statusRegistry = statusRegistry;
+  public NodeHealthCheckMicrometerHandler(
+    NodeHealthCheckThread statusRegistry
+  ) {
+    this.statusRegistry = statusRegistry;
+  }
+
+  @Override
+  public void bindTo(@NonNull MeterRegistry registry) {
+    for (Map.Entry<String, Result> status : statusRegistry
+      .getHealthCheck()
+      .getResults()
+      .entrySet()) {
+      Gauge
+        .builder(
+          "node",
+          status.getKey(),
+          probe -> status.getValue().isHealthy() ? 1 : 0
+        )
+        .tag("probe", status.getKey())
+        .description("The health-check of the " + status.getKey() + " probe")
+        .baseUnit("health")
+        .register(registry);
     }
-
-    @Override
-    public void bindTo(@NonNull MeterRegistry registry) {
-        for (Map.Entry<String, Result> status : statusRegistry.getHealthCheck().getResults().entrySet()) {
-            Gauge
-                    .builder("node", status.getKey(), probe -> status.getValue().isHealthy() ? 1 : 0)
-                    .tag("probe", status.getKey())
-                    .description("The health-check of the " + status.getKey() + " probe")
-                    .baseUnit("health")
-                    .register(registry);
-        }
-    }
-
-
+  }
 }

@@ -22,86 +22,110 @@ import io.gravitee.node.api.cluster.ClusterManager;
 import io.gravitee.node.api.cluster.Member;
 import io.gravitee.node.api.cluster.MemberListener;
 import io.gravitee.node.cluster.member.NodeMember;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class HazelcastClusterManager implements InitializingBean, ClusterManager, MembershipListener {
+public class HazelcastClusterManager
+  implements InitializingBean, ClusterManager, MembershipListener {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(HazelcastClusterManager.class);
+  private final Logger LOGGER = LoggerFactory.getLogger(
+    HazelcastClusterManager.class
+  );
 
-    @Autowired
-    private HazelcastInstance hazelcastInstance;
+  @Autowired
+  private HazelcastInstance hazelcastInstance;
 
-    private final Set<MemberListener> memberListeners = new HashSet<>();
+  private final Set<MemberListener> memberListeners = new HashSet<>();
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        hazelcastInstance.getCluster().addMembershipListener(this);
-    }
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    hazelcastInstance.getCluster().addMembershipListener(this);
+  }
 
-    private boolean isMaster(com.hazelcast.cluster.Member member) {
-        com.hazelcast.cluster.Member master = hazelcastInstance.getCluster().getMembers().iterator().next();
-        return member.equals(master);
-    }
+  private boolean isMaster(com.hazelcast.cluster.Member member) {
+    com.hazelcast.cluster.Member master = hazelcastInstance
+      .getCluster()
+      .getMembers()
+      .iterator()
+      .next();
+    return member.equals(master);
+  }
 
-    @Override
-    public Collection<Member> getMembers() {
-        return hazelcastInstance.getCluster().getMembers()
-                .stream()
-                .map(new Function<com.hazelcast.cluster.Member, Member>() {
-                    @Override
-                    public Member apply(com.hazelcast.cluster.Member member) {
-                        return new NodeMember(
-                                member, isMaster(member));
-                    }
-                })
-                .collect(Collectors.toSet());
-    }
+  @Override
+  public Collection<Member> getMembers() {
+    return hazelcastInstance
+      .getCluster()
+      .getMembers()
+      .stream()
+      .map(
+        new Function<com.hazelcast.cluster.Member, Member>() {
+          @Override
+          public Member apply(com.hazelcast.cluster.Member member) {
+            return new NodeMember(member, isMaster(member));
+          }
+        }
+      )
+      .collect(Collectors.toSet());
+  }
 
-    @Override
-    public Member getLocalMember() {
-        return new NodeMember(hazelcastInstance.getCluster().getLocalMember(),
-                isMaster(hazelcastInstance.getCluster().getLocalMember()));
-    }
+  @Override
+  public Member getLocalMember() {
+    return new NodeMember(
+      hazelcastInstance.getCluster().getLocalMember(),
+      isMaster(hazelcastInstance.getCluster().getLocalMember())
+    );
+  }
 
-    @Override
-    public boolean isMasterNode() {
-        return isMaster(hazelcastInstance.getCluster().getLocalMember());
-    }
+  @Override
+  public boolean isMasterNode() {
+    return isMaster(hazelcastInstance.getCluster().getLocalMember());
+  }
 
-    @Override
-    public void addMemberListener(MemberListener listener) {
-        memberListeners.add(listener);
-    }
+  @Override
+  public void addMemberListener(MemberListener listener) {
+    memberListeners.add(listener);
+  }
 
-    @Override
-    public void memberAdded(MembershipEvent event) {
-        LOGGER.info("A node join the cluster: {}", event);
-        com.hazelcast.cluster.Member master = hazelcastInstance.getCluster().getMembers().iterator().next();
-        Member newMember = new NodeMember(event.getMember(), master.equals(event.getMember()));
+  @Override
+  public void memberAdded(MembershipEvent event) {
+    LOGGER.info("A node join the cluster: {}", event);
+    com.hazelcast.cluster.Member master = hazelcastInstance
+      .getCluster()
+      .getMembers()
+      .iterator()
+      .next();
+    Member newMember = new NodeMember(
+      event.getMember(),
+      master.equals(event.getMember())
+    );
 
-        memberListeners.forEach(listener -> listener.memberAdded(newMember));
-    }
+    memberListeners.forEach(listener -> listener.memberAdded(newMember));
+  }
 
-    @Override
-    public void memberRemoved(MembershipEvent event) {
-        LOGGER.info("A node leave the cluster: {}", event);
-        com.hazelcast.cluster.Member master = hazelcastInstance.getCluster().getMembers().iterator().next();
-        Member newMember = new NodeMember(event.getMember(), master.equals(event.getMember()));
+  @Override
+  public void memberRemoved(MembershipEvent event) {
+    LOGGER.info("A node leave the cluster: {}", event);
+    com.hazelcast.cluster.Member master = hazelcastInstance
+      .getCluster()
+      .getMembers()
+      .iterator()
+      .next();
+    Member newMember = new NodeMember(
+      event.getMember(),
+      master.equals(event.getMember())
+    );
 
-        memberListeners.forEach(listener -> listener.memberRemoved(newMember));
-    }
-
+    memberListeners.forEach(listener -> listener.memberRemoved(newMember));
+  }
 }

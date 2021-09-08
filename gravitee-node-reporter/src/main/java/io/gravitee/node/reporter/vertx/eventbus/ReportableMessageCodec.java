@@ -18,7 +18,6 @@ package io.gravitee.node.reporter.vertx.eventbus;
 import io.gravitee.reporter.api.Reportable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageCodec;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -28,64 +27,65 @@ import java.io.ObjectOutputStream;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ReportableMessageCodec implements MessageCodec<Reportable, Reportable> {
+public class ReportableMessageCodec
+  implements MessageCodec<Reportable, Reportable> {
 
-    public static final String CODEC_NAME = "reportable-codec";
+  public static final String CODEC_NAME = "reportable-codec";
 
-    @Override
-    public void encodeToWire(Buffer buffer, Reportable reportable) {
-        try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
-            oos.writeObject(reportable);
-            oos.flush();
+  @Override
+  public void encodeToWire(Buffer buffer, Reportable reportable) {
+    try {
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      ObjectOutputStream oos = new ObjectOutputStream(bos);
+      oos.writeObject(reportable);
+      oos.flush();
 
-            byte[] data = bos.toByteArray();
-            int length = data.length;
+      byte[] data = bos.toByteArray();
+      int length = data.length;
 
-            // Write data into given buffer
-            buffer.appendInt(length);
-            buffer.appendBytes(data);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+      // Write data into given buffer
+      buffer.appendInt(length);
+      buffer.appendBytes(data);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+  }
+
+  @Override
+  public Reportable decodeFromWire(int position, Buffer buffer) {
+    try {
+      // My custom message starting from this *position* of buffer
+      int pos = position;
+
+      // Length of data
+      int length = buffer.getInt(pos);
+
+      byte[] data = buffer.getBytes(pos += 4, pos += length);
+
+      ByteArrayInputStream in = new ByteArrayInputStream(data);
+      ObjectInputStream is = new ObjectInputStream(in);
+      return (Reportable) is.readObject();
+    } catch (Exception ex) {
+      ex.printStackTrace();
     }
 
-    @Override
-    public Reportable decodeFromWire(int position, Buffer buffer) {
-        try {
-            // My custom message starting from this *position* of buffer
-            int pos = position;
+    return null;
+  }
 
-            // Length of data
-            int length = buffer.getInt(pos);
+  @Override
+  public Reportable transform(Reportable reportable) {
+    // If a message is sent *locally* across the event bus.
+    // This example sends message just as is
+    return reportable;
+  }
 
-            byte[] data = buffer.getBytes(pos += 4, pos += length);
+  @Override
+  public String name() {
+    return CODEC_NAME;
+  }
 
-            ByteArrayInputStream in = new ByteArrayInputStream(data);
-            ObjectInputStream is = new ObjectInputStream(in);
-            return (Reportable) is.readObject();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        return null;
-    }
-
-    @Override
-    public Reportable transform(Reportable reportable) {
-        // If a message is sent *locally* across the event bus.
-        // This example sends message just as is
-        return reportable;
-    }
-
-    @Override
-    public String name() {
-        return CODEC_NAME;
-    }
-
-    @Override
-    public byte systemCodecID() {
-        return -1;
-    }
+  @Override
+  public byte systemCodecID() {
+    return -1;
+  }
 }
