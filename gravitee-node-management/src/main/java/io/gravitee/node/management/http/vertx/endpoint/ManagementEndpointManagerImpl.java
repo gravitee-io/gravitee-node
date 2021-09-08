@@ -28,53 +28,65 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ManagementEndpointManagerImpl implements ManagementEndpointManager {
+public class ManagementEndpointManagerImpl
+  implements ManagementEndpointManager {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ManagementEndpointManagerImpl.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(
+    ManagementEndpointManagerImpl.class
+  );
 
-    @Autowired
-    @Qualifier("managementRouter")
-    private Router nodeRouter;
+  @Autowired
+  @Qualifier("managementRouter")
+  private Router nodeRouter;
 
-    @Autowired
-    @Qualifier("managementWebhookRouter")
-    private Router nodeWebhookRouter;
+  @Autowired
+  @Qualifier("managementWebhookRouter")
+  private Router nodeWebhookRouter;
 
-    @Override
-    public void register(ManagementEndpoint endpoint) {
-        LOGGER.info("Register a new endpoint for Management API: {} {} [{}]", endpoint.method(), endpoint.path(), endpoint.getClass().getName());
+  @Override
+  public void register(ManagementEndpoint endpoint) {
+    LOGGER.info(
+      "Register a new endpoint for Management API: {} {} [{}]",
+      endpoint.method(),
+      endpoint.path(),
+      endpoint.getClass().getName()
+    );
 
-        if (endpoint.isWebhook()) {
-            nodeWebhookRouter.route(convert(endpoint.method()), endpoint.path()).handler(endpoint::handle);
-        } else {
-            nodeRouter.route(convert(endpoint.method()), endpoint.path()).handler(endpoint::handle);
-        }
+    if (endpoint.isWebhook()) {
+      nodeWebhookRouter
+        .route(convert(endpoint.method()), endpoint.path())
+        .handler(endpoint::handle);
+    } else {
+      nodeRouter
+        .route(convert(endpoint.method()), endpoint.path())
+        .handler(endpoint::handle);
+    }
+  }
+
+  private HttpMethod convert(io.gravitee.common.http.HttpMethod httpMethod) {
+    switch (httpMethod) {
+      case CONNECT:
+        return HttpMethod.CONNECT;
+      case DELETE:
+        return HttpMethod.DELETE;
+      case GET:
+        return HttpMethod.GET;
+      case HEAD:
+        return HttpMethod.HEAD;
+      case OPTIONS:
+        return HttpMethod.OPTIONS;
+      case PATCH:
+        return HttpMethod.PATCH;
+      case POST:
+        return HttpMethod.POST;
+      case PUT:
+        return HttpMethod.PUT;
+      case TRACE:
+        return HttpMethod.TRACE;
+      case OTHER:
+        return HttpMethod.valueOf(httpMethod.name());
     }
 
-    private HttpMethod convert(io.gravitee.common.http.HttpMethod httpMethod) {
-        switch (httpMethod) {
-            case CONNECT:
-                return HttpMethod.CONNECT;
-            case DELETE:
-                return HttpMethod.DELETE;
-            case GET:
-                return HttpMethod.GET;
-            case HEAD:
-                return HttpMethod.HEAD;
-            case OPTIONS:
-                return HttpMethod.OPTIONS;
-            case PATCH:
-                return HttpMethod.PATCH;
-            case POST:
-                return HttpMethod.POST;
-            case PUT:
-                return HttpMethod.PUT;
-            case TRACE:
-                return HttpMethod.TRACE;
-            case OTHER:
-                return HttpMethod.valueOf(httpMethod.name());
-        }
-
-        return null;
-    }
+    return null;
+  }
 }

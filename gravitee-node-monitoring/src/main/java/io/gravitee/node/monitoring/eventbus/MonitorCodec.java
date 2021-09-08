@@ -18,13 +18,12 @@ package io.gravitee.node.monitoring.eventbus;
 import io.gravitee.node.api.monitor.Monitor;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageCodec;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
@@ -32,9 +31,9 @@ import java.io.ObjectOutputStream;
  */
 public class MonitorCodec extends AbstractCodec<Monitor> {
 
-    public static final String CODEC_NAME = "gio:bus:codec:node_monitor";
+  public static final String CODEC_NAME = "gio:bus:codec:node_monitor";
 
-    public MonitorCodec() {
-        super(CODEC_NAME);
-    }
+  public MonitorCodec() {
+    super(CODEC_NAME);
+  }
 }

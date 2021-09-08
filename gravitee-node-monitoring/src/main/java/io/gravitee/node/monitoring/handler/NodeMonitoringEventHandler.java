@@ -29,10 +29,9 @@ import io.gravitee.node.monitoring.infos.NodeInfosService;
 import io.gravitee.node.monitoring.monitor.NodeMonitorService;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
+import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Date;
 
 /**
  * This handler is responsible to listen to all produced monitoring events and persist them.
@@ -40,96 +39,119 @@ import java.util.Date;
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class NodeMonitoringEventHandler extends AbstractService<NodeMonitoringEventHandler> {
+public class NodeMonitoringEventHandler
+  extends AbstractService<NodeMonitoringEventHandler> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NodeMonitoringEventHandler.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(
+    NodeMonitoringEventHandler.class
+  );
 
-    protected final Vertx vertx;
-    protected final ObjectMapper objectMapper;
-    protected final Node node;
-    protected final NodeMonitoringService nodeMonitoringService;
+  protected final Vertx vertx;
+  protected final ObjectMapper objectMapper;
+  protected final Node node;
+  protected final NodeMonitoringService nodeMonitoringService;
 
-    public NodeMonitoringEventHandler(Vertx vertx, ObjectMapper objectMapper, Node node, NodeMonitoringService nodeMonitoringService) {
-        this.vertx = vertx;
-        this.objectMapper = objectMapper;
-        this.node = node;
-        this.nodeMonitoringService = nodeMonitoringService;
+  public NodeMonitoringEventHandler(
+    Vertx vertx,
+    ObjectMapper objectMapper,
+    Node node,
+    NodeMonitoringService nodeMonitoringService
+  ) {
+    this.vertx = vertx;
+    this.objectMapper = objectMapper;
+    this.node = node;
+    this.nodeMonitoringService = nodeMonitoringService;
+  }
+
+  @Override
+  protected void doStart() throws Exception {
+    super.doStart();
+    vertx
+      .eventBus()
+      .localConsumer(
+        NodeInfosService.GIO_NODE_INFOS_BUS,
+        this::handleNodeInfosMessage
+      );
+    vertx
+      .eventBus()
+      .localConsumer(
+        NodeHealthCheckService.GIO_NODE_HEALTHCHECK_BUS,
+        this::handleHealthCheckMessage
+      );
+    vertx
+      .eventBus()
+      .localConsumer(
+        NodeMonitorService.GIO_NODE_MONITOR_BUS,
+        this::handleMonitorMessage
+      );
+  }
+
+  protected void handleNodeInfosMessage(Message<NodeInfos> message) {
+    LOGGER.debug("Received node infos message from internal bus");
+    handleNodeInfos(message.body());
+  }
+
+  protected void handleHealthCheckMessage(Message<HealthCheck> message) {
+    LOGGER.debug("Received health check message from internal bus");
+    handleHealthCheck(message.body());
+  }
+
+  protected void handleMonitorMessage(Message<Monitor> message) {
+    LOGGER.debug("Received monitor message from internal bus");
+    handleMonitor(message.body());
+  }
+
+  protected void handleNodeInfos(NodeInfos nodeInfos) {
+    LOGGER.debug("Received node infos message from internal bus");
+    nodeMonitoringService.createOrUpdate(convert(nodeInfos)).subscribe();
+  }
+
+  protected void handleHealthCheck(HealthCheck healthCheck) {
+    LOGGER.debug("Processing health check data");
+    nodeMonitoringService.createOrUpdate(convert(healthCheck)).subscribe();
+  }
+
+  protected void handleMonitor(Monitor monitor) {
+    LOGGER.debug("Processing monitor data");
+    nodeMonitoringService.createOrUpdate(convert(monitor)).subscribe();
+  }
+
+  private Monitoring convert(NodeInfos nodeInfos) {
+    final Monitoring monitoring = buildMonitoring(nodeInfos);
+    monitoring.setEvaluatedAt(new Date(nodeInfos.getEvaluatedAt()));
+    monitoring.setType(Monitoring.NODE_INFOS);
+
+    return monitoring;
+  }
+
+  private Monitoring convert(HealthCheck healthCheck) {
+    final Monitoring monitoring = buildMonitoring(healthCheck);
+    monitoring.setEvaluatedAt(new Date(healthCheck.getEvaluatedAt()));
+    monitoring.setType(Monitoring.HEALTH_CHECK);
+
+    return monitoring;
+  }
+
+  private Monitoring convert(Monitor monitor) {
+    final Monitoring monitoring = buildMonitoring(monitor);
+    monitoring.setEvaluatedAt(new Date(monitor.getTimestamp()));
+    monitoring.setType(Monitoring.MONITOR);
+
+    return monitoring;
+  }
+
+  private Monitoring buildMonitoring(Object payload) {
+    final Monitoring monitoring = new Monitoring();
+    monitoring.setNodeId(node.id());
+
+    try {
+      monitoring.setPayload(objectMapper.writeValueAsString(payload));
+    } catch (JsonProcessingException e) {
+      LOGGER.error(
+        "An error occurred when trying to serialize monitoring payload to json"
+      );
     }
 
-    @Override
-    protected void doStart() throws Exception {
-        super.doStart();
-        vertx.eventBus().localConsumer(NodeInfosService.GIO_NODE_INFOS_BUS, this::handleNodeInfosMessage);
-        vertx.eventBus().localConsumer(NodeHealthCheckService.GIO_NODE_HEALTHCHECK_BUS, this::handleHealthCheckMessage);
-        vertx.eventBus().localConsumer(NodeMonitorService.GIO_NODE_MONITOR_BUS, this::handleMonitorMessage);
-    }
-
-    protected void handleNodeInfosMessage(Message<NodeInfos> message) {
-        LOGGER.debug("Received node infos message from internal bus");
-        handleNodeInfos(message.body());
-    }
-
-    protected void handleHealthCheckMessage(Message<HealthCheck> message) {
-        LOGGER.debug("Received health check message from internal bus");
-        handleHealthCheck(message.body());
-    }
-
-    protected void handleMonitorMessage(Message<Monitor> message) {
-        LOGGER.debug("Received monitor message from internal bus");
-        handleMonitor(message.body());
-    }
-
-    protected void handleNodeInfos(NodeInfos nodeInfos) {
-        LOGGER.debug("Received node infos message from internal bus");
-        nodeMonitoringService.createOrUpdate(convert(nodeInfos)).subscribe();
-    }
-
-    protected void handleHealthCheck(HealthCheck healthCheck) {
-        LOGGER.debug("Processing health check data");
-        nodeMonitoringService.createOrUpdate(convert(healthCheck)).subscribe();
-    }
-
-    protected void handleMonitor(Monitor monitor) {
-        LOGGER.debug("Processing monitor data");
-        nodeMonitoringService.createOrUpdate(convert(monitor)).subscribe();
-    }
-
-    private Monitoring convert(NodeInfos nodeInfos) {
-      final Monitoring monitoring = buildMonitoring(nodeInfos);
-      monitoring.setEvaluatedAt(new Date(nodeInfos.getEvaluatedAt()));
-      monitoring.setType(Monitoring.NODE_INFOS);
-
-      return monitoring;
-    }
-
-
-    private Monitoring convert(HealthCheck healthCheck) {
-        final Monitoring monitoring = buildMonitoring(healthCheck);
-        monitoring.setEvaluatedAt(new Date(healthCheck.getEvaluatedAt()));
-        monitoring.setType(Monitoring.HEALTH_CHECK);
-
-        return monitoring;
-    }
-
-    private Monitoring convert(Monitor monitor) {
-        final Monitoring monitoring = buildMonitoring(monitor);
-        monitoring.setEvaluatedAt(new Date(monitor.getTimestamp()));
-        monitoring.setType(Monitoring.MONITOR);
-
-        return monitoring;
-    }
-
-    private Monitoring buildMonitoring(Object payload) {
-
-        final Monitoring monitoring = new Monitoring();
-        monitoring.setNodeId(node.id());
-
-        try {
-            monitoring.setPayload(objectMapper.writeValueAsString(payload));
-        } catch (JsonProcessingException e) {
-            LOGGER.error("An error occurred when trying to serialize monitoring payload to json");
-        }
-
-        return monitoring;
-    }
+    return monitoring;
+  }
 }

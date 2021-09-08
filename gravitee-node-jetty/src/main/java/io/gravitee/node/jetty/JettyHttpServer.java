@@ -32,53 +32,58 @@ import org.springframework.context.annotation.Import;
  * @author GraviteeSource Team
  */
 @Import({ JettyContainerConfiguration.class })
-public abstract class JettyHttpServer extends AbstractLifecycleComponent<JettyHttpServer>{
+public abstract class JettyHttpServer
+  extends AbstractLifecycleComponent<JettyHttpServer> {
 
-    private final Logger logger = LoggerFactory.getLogger(JettyHttpServer.class);
+  private final Logger logger = LoggerFactory.getLogger(JettyHttpServer.class);
 
-    @Autowired
-    protected Server server;
+  @Autowired
+  protected Server server;
 
-    /**
-     * Allows to attach any handlers to the Jetty Http Server before it starts (ex : jaxrs with security configuration).
-     */
-    protected abstract void attachHandlers();
+  /**
+   * Allows to attach any handlers to the Jetty Http Server before it starts (ex : jaxrs with security configuration).
+   */
+  protected abstract void attachHandlers();
 
-    @Override
-    protected void doStart() throws Exception {
+  @Override
+  protected void doStart() throws Exception {
+    // This part is needed to avoid WARN while starting container.
+    this.attachNoContentHandler();
 
-        // This part is needed to avoid WARN while starting container.
-        this.attachNoContentHandler();
+    // Attach all custom handlers.
+    this.attachHandlers();
 
-        // Attach all custom handlers.
-        this.attachHandlers();
+    server.setStopAtShutdown(true);
 
-        server.setStopAtShutdown(true);
+    try {
+      server.join();
 
-        try {
-            server.join();
+      // Start HTTP server...
+      server.start();
 
-            // Start HTTP server...
-            server.start();
-
-            logger.info("HTTP Server is now started and listening on port {}",
-                    ((ServerConnector) server.getConnectors()[0]).getPort());
-        } catch (InterruptedException ex) {
-            logger.error("An error occurs while trying to initialize HTTP server", ex);
-            throw ex;
-        }
+      logger.info(
+        "HTTP Server is now started and listening on port {}",
+        ((ServerConnector) server.getConnectors()[0]).getPort()
+      );
+    } catch (InterruptedException ex) {
+      logger.error(
+        "An error occurs while trying to initialize HTTP server",
+        ex
+      );
+      throw ex;
     }
+  }
 
-    @Override
-    protected void doStop() throws Exception {
-        server.stop();
-    }
+  @Override
+  protected void doStop() throws Exception {
+    server.stop();
+  }
 
-    private void attachNoContentHandler() {
-        AbstractHandler noContentHandler = new NoContentOutputErrorHandler();
+  private void attachNoContentHandler() {
+    AbstractHandler noContentHandler = new NoContentOutputErrorHandler();
 
-        // This part is needed to avoid WARN while starting container.
-        noContentHandler.setServer(server);
-        server.addBean(noContentHandler);
-    }
+    // This part is needed to avoid WARN while starting container.
+    noContentHandler.setServer(server);
+    server.addBean(noContentHandler);
+  }
 }

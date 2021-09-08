@@ -28,17 +28,16 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.MessageProducer;
 import io.vertx.core.tracing.TracingPolicy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
@@ -79,8 +78,9 @@ public class NodeInfosService extends AbstractService<NodeInfosService> {
         .registerCodec(new NodeInfosCodec())
         .sender(
           GIO_NODE_INFOS_BUS,
-          new DeliveryOptions().setCodecName(NodeInfosCodec.CODEC_NAME)
-                  .setTracingPolicy(TracingPolicy.IGNORE)
+          new DeliveryOptions()
+            .setCodecName(NodeInfosCodec.CODEC_NAME)
+            .setTracingPolicy(TracingPolicy.IGNORE)
         );
 
     nodeInfos = buildNodeInfos();
@@ -122,7 +122,7 @@ public class NodeInfosService extends AbstractService<NodeInfosService> {
 
     try {
       nodeInfos.setPort(getPort());
-    }catch (NumberFormatException nfe) {
+    } catch (NumberFormatException nfe) {
       LOGGER.warn("Could not get http server port.", nfe);
     }
 
@@ -160,7 +160,7 @@ public class NodeInfosService extends AbstractService<NodeInfosService> {
   }
 
   private String getTenant() {
-      return environment.getProperty("tenant");
+    return environment.getProperty("tenant");
   }
 
   private String getZone() {
@@ -168,6 +168,11 @@ public class NodeInfosService extends AbstractService<NodeInfosService> {
   }
 
   private int getPort() {
-    return Integer.parseInt(environment.getProperty("http.port", environment.getProperty("jetty.port", "-1")));
+    return Integer.parseInt(
+      environment.getProperty(
+        "http.port",
+        environment.getProperty("jetty.port", "-1")
+      )
+    );
   }
 }

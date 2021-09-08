@@ -25,76 +25,76 @@ import java.util.Objects;
  */
 public class PluginInfos implements Serializable {
 
-    private String id;
+  private String id;
 
-    private String name;
+  private String name;
 
-    private String description;
+  private String description;
 
-    private String version;
+  private String version;
 
-    private String plugin;
+  private String plugin;
 
-    private String type;
+  private String type;
 
-    public String getDescription() {
-        return description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public String getId() {
-        return id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public String getPlugin() {
-        return plugin;
-    }
+  public String getPlugin() {
+    return plugin;
+  }
 
-    public void setPlugin(String plugin) {
-        this.plugin = plugin;
-    }
+  public void setPlugin(String plugin) {
+    this.plugin = plugin;
+  }
 
-    public String getType() {
-        return type;
-    }
+  public String getType() {
+    return type;
+  }
 
-    public void setType(String type) {
-        this.type = type;
-    }
+  public void setType(String type) {
+    this.type = type;
+  }
 
-    public String getVersion() {
-        return version;
-    }
+  public String getVersion() {
+    return version;
+  }
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
+  public void setVersion(String version) {
+    this.version = version;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PluginInfos plugin = (PluginInfos) o;
-        return Objects.equals(id, plugin.id) && Objects.equals(type, plugin.type);
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    PluginInfos plugin = (PluginInfos) o;
+    return Objects.equals(id, plugin.id) && Objects.equals(type, plugin.type);
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, type);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, type);
+  }
 }

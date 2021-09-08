@@ -15,11 +15,10 @@
  */
 package io.gravitee.node.jetty.handler;
 
-import org.eclipse.jetty.server.handler.ErrorHandler;
-
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Writer;
+import javax.servlet.http.HttpServletRequest;
+import org.eclipse.jetty.server.handler.ErrorHandler;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -28,33 +27,64 @@ import java.io.Writer;
  */
 public class NoContentOutputErrorHandler extends ErrorHandler {
 
-    @Override
-    protected void handleErrorPage(HttpServletRequest request, Writer writer, int code, String message) throws IOException {
-        writeErrorPage(request, writer, code, message, false);
-    }
+  @Override
+  protected void handleErrorPage(
+    HttpServletRequest request,
+    Writer writer,
+    int code,
+    String message
+  ) throws IOException {
+    writeErrorPage(request, writer, code, message, false);
+  }
 
-    @Override
-    protected void writeErrorPageStacks(HttpServletRequest request, Writer writer) throws IOException {
-        // We do not want to put stacks in response
-    }
+  @Override
+  protected void writeErrorPageStacks(
+    HttpServletRequest request,
+    Writer writer
+  ) throws IOException {
+    // We do not want to put stacks in response
+  }
 
-    @Override
-    protected void writeErrorPageMessage(HttpServletRequest request, Writer writer, int code, String message, String uri) throws IOException {
-        // We do not want to put message in response
-    }
+  @Override
+  protected void writeErrorPageMessage(
+    HttpServletRequest request,
+    Writer writer,
+    int code,
+    String message,
+    String uri
+  ) throws IOException {
+    // We do not want to put message in response
+  }
 
-    @Override
-    protected void writeErrorPageBody(HttpServletRequest request, Writer writer, int code, String message, boolean showStacks) throws IOException {
-        // We do not want to put body in response
-    }
+  @Override
+  protected void writeErrorPageBody(
+    HttpServletRequest request,
+    Writer writer,
+    int code,
+    String message,
+    boolean showStacks
+  ) throws IOException {
+    // We do not want to put body in response
+  }
 
-    @Override
-    protected void writeErrorPageHead(HttpServletRequest request, Writer writer, int code, String message) throws IOException {
-        // We do not want to put head in response
-    }
+  @Override
+  protected void writeErrorPageHead(
+    HttpServletRequest request,
+    Writer writer,
+    int code,
+    String message
+  ) throws IOException {
+    // We do not want to put head in response
+  }
 
-    @Override
-    protected void writeErrorPage(HttpServletRequest request, Writer writer, int code, String message, boolean showStacks) throws IOException {
-        // No error page
-    }
+  @Override
+  protected void writeErrorPage(
+    HttpServletRequest request,
+    Writer writer,
+    int code,
+    String message,
+    boolean showStacks
+  ) throws IOException {
+    // No error page
+  }
 }

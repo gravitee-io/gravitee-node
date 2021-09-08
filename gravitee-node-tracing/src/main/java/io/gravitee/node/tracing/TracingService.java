@@ -20,6 +20,8 @@ import io.gravitee.plugin.core.api.Plugin;
 import io.gravitee.plugin.core.api.PluginClassLoader;
 import io.gravitee.plugin.core.api.PluginClassLoaderFactory;
 import io.gravitee.plugin.core.api.PluginContextFactory;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -27,64 +29,70 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
 public class TracingService implements InitializingBean {
 
-    private final Logger logger = LoggerFactory.getLogger(TracingService.class);
+  private final Logger logger = LoggerFactory.getLogger(TracingService.class);
 
-    private final List<TracerListener> listeners = new ArrayList<>();
+  private final List<TracerListener> listeners = new ArrayList<>();
 
-    @Autowired
-    private PluginClassLoaderFactory pluginClassLoaderFactory;
+  @Autowired
+  private PluginClassLoaderFactory pluginClassLoaderFactory;
 
-    @Autowired
-    private Environment environment;
+  @Autowired
+  private Environment environment;
 
-    @Autowired
-    private PluginContextFactory pluginContextFactory;
+  @Autowired
+  private PluginContextFactory pluginContextFactory;
 
-    public void register(Plugin plugin) {
-            String tracerType = environment.getProperty("services.tracing.type");
+  public void register(Plugin plugin) {
+    String tracerType = environment.getProperty("services.tracing.type");
 
-        if (tracerType != null && plugin.id().contains(tracerType)) {
-            try {
-                PluginClassLoader classLoader = pluginClassLoaderFactory.getOrCreateClassLoader(plugin);
-                Class<?> clazz = classLoader.loadClass(plugin.clazz());
+    if (tracerType != null && plugin.id().contains(tracerType)) {
+      try {
+        PluginClassLoader classLoader = pluginClassLoaderFactory.getOrCreateClassLoader(
+          plugin
+        );
+        Class<?> clazz = classLoader.loadClass(plugin.clazz());
 
-                ApplicationContext context = this.pluginContextFactory.create(plugin);
-                Tracer tracer = (Tracer) context.getBean(clazz);
+        ApplicationContext context = this.pluginContextFactory.create(plugin);
+        Tracer tracer = (Tracer) context.getBean(clazz);
 
-                tracer.start();
+        tracer.start();
 
-                for (TracerListener listener : listeners) {
-                    listener.onRegister(tracer);
-                }
-            } catch (Exception ex) {
-                logger.error("Unable to create an instance of Tracer: {}", plugin.id(), ex);
-            }
-        } else {
-            logger.warn("Tracing support is enabled for tracer name[{}]. Skipping the {} tracer installation",
-                    tracerType, plugin.id());
+        for (TracerListener listener : listeners) {
+          listener.onRegister(tracer);
         }
+      } catch (Exception ex) {
+        logger.error(
+          "Unable to create an instance of Tracer: {}",
+          plugin.id(),
+          ex
+        );
+      }
+    } else {
+      logger.warn(
+        "Tracing support is enabled for tracer name[{}]. Skipping the {} tracer installation",
+        tracerType,
+        plugin.id()
+      );
     }
+  }
 
-    public void addTracerListener(TracerListener listener) {
-        listeners.add(listener);
-    }
+  public void addTracerListener(TracerListener listener) {
+    listeners.add(listener);
+  }
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        String tracerType = environment.getProperty("services.tracing.type");
-        logger.info("Tracing support is enabled with tracer: name[{}]", tracerType);
-    }
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    String tracerType = environment.getProperty("services.tracing.type");
+    logger.info("Tracing support is enabled with tracer: name[{}]", tracerType);
+  }
 
-    public interface TracerListener {
-        void onRegister(Tracer tracer);
-    }
+  public interface TracerListener {
+    void onRegister(Tracer tracer);
+  }
 }

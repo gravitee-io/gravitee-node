@@ -19,16 +19,18 @@ import io.gravitee.common.util.Version;
 import io.gravitee.node.api.Node;
 
 public class NodeUtils {
-    public static String userAgent(Node node) {
-        return node == null ? null :
-                "Gravitee.io/"
-                        + Version.RUNTIME_VERSION.MAJOR_VERSION
-                        + " ("
-                        + node.application()
-                        + "; "
-                        + node.name()
-                        + "; "
-                        + node.id()
-                        +")";
-    }
+
+  public static String userAgent(Node node) {
+    return node == null
+      ? null
+      : "Gravitee.io/" +
+      Version.RUNTIME_VERSION.MAJOR_VERSION +
+      " (" +
+      node.application() +
+      "; " +
+      node.name() +
+      "; " +
+      node.id() +
+      ")";
+  }
 }

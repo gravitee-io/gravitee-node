@@ -23,58 +23,61 @@ import java.io.Serializable;
  */
 public class OsInfo implements Serializable {
 
-    public long timestamp;
+  public long timestamp;
 
-    public Cpu cpu = null;
+  public Cpu cpu = null;
 
-    public Mem mem = null;
+  public Mem mem = null;
 
-    public Swap swap = null;
+  public Swap swap = null;
 
-    public static class Cpu implements Serializable {
-        public short percent = -1;
-        public double[] loadAverage = null;
+  public static class Cpu implements Serializable {
 
-        public short getPercent() {
-            return percent;
-        }
+    public short percent = -1;
+    public double[] loadAverage = null;
 
-        public double[] getLoadAverage() {
-            return loadAverage;
-        }
+    public short getPercent() {
+      return percent;
     }
 
-    public static class Mem implements Serializable {
-        public long total = -1;
-        public long free = -1;
+    public double[] getLoadAverage() {
+      return loadAverage;
+    }
+  }
 
-        public long getTotal() {
-            return total;
-        }
+  public static class Mem implements Serializable {
 
-        public long getUsed() {
-            return total - free;
-        }
+    public long total = -1;
+    public long free = -1;
 
-        public short getUsedPercent() {
-            return calculatePercentage(getUsed(), getTotal());
-        }
-
-        public long getFree() {
-            return free;
-        }
-
-        public short getFreePercent() {
-            return calculatePercentage(getFree(), getTotal());
-        }
+    public long getTotal() {
+      return total;
     }
 
-    public static class Swap implements Serializable {
-        public long total = -1;
-        public long free = -1;
+    public long getUsed() {
+      return total - free;
     }
 
-    private static short calculatePercentage(long used, long max) {
-        return max <= 0 ? 0 : (short) (Math.round((100d * used) / max));
+    public short getUsedPercent() {
+      return calculatePercentage(getUsed(), getTotal());
     }
+
+    public long getFree() {
+      return free;
+    }
+
+    public short getFreePercent() {
+      return calculatePercentage(getFree(), getTotal());
+    }
+  }
+
+  public static class Swap implements Serializable {
+
+    public long total = -1;
+    public long free = -1;
+  }
+
+  private static short calculatePercentage(long used, long max) {
+    return max <= 0 ? 0 : (short) (Math.round((100d * used) / max));
+  }
 }

@@ -24,19 +24,19 @@ import io.gravitee.tracing.api.Tracer;
  */
 public class LazyTracer implements Tracer, TracingService.TracerListener {
 
-    private io.gravitee.node.api.tracing.Tracer tracer;
+  private io.gravitee.node.api.tracing.Tracer tracer;
 
-    @Override
-    public Span span(String spanName) {
-        if (tracer != null) {
-            return tracer.trace(spanName);
-        }
-
-        return new NoOpSpan();
+  @Override
+  public Span span(String spanName) {
+    if (tracer != null) {
+      return tracer.trace(spanName);
     }
 
-    @Override
-    public void onRegister(io.gravitee.node.api.tracing.Tracer tracer) {
-        this.tracer = tracer;
-    }
+    return new NoOpSpan();
+  }
+
+  @Override
+  public void onRegister(io.gravitee.node.api.tracing.Tracer tracer) {
+    this.tracer = tracer;
+  }
 }

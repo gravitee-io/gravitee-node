@@ -26,15 +26,14 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.MessageProducer;
 import io.vertx.core.tracing.TracingPolicy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -42,111 +41,133 @@ import java.util.concurrent.TimeUnit;
  */
 public class NodeMonitorService extends AbstractService {
 
-    public static final String GIO_NODE_MONITOR_BUS = "gio:node:monitor";
+  public static final String GIO_NODE_MONITOR_BUS = "gio:node:monitor";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NodeMonitorService.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(
+    NodeMonitorService.class
+  );
 
-    private static final String PROPERTY_NODE_HOSTNAME = "node.hostname";
-    private static final String PROPERTY_NODE_APPLICATION = "node.application";
-    private static final String PROPERTY_NODE_ID = "node.id";
-    private static final String PROPERTY_NODE_EVENT = "node.event";
+  private static final String PROPERTY_NODE_HOSTNAME = "node.hostname";
+  private static final String PROPERTY_NODE_APPLICATION = "node.application";
+  private static final String PROPERTY_NODE_ID = "node.id";
+  private static final String PROPERTY_NODE_EVENT = "node.event";
 
-    private static final String NODE_LIFECYCLE = "NODE_LIFECYCLE";
-    private static final String NODE_EVENT_START = "NODE_START";
-    private static final String NODE_EVENT_STOP = "NODE_STOP";
+  private static final String NODE_LIFECYCLE = "NODE_LIFECYCLE";
+  private static final String NODE_EVENT_START = "NODE_START";
+  private static final String NODE_EVENT_STOP = "NODE_STOP";
 
-    @Value("${services.monitoring.enabled:true}")
-    private boolean enabled;
+  @Value("${services.monitoring.enabled:true}")
+  private boolean enabled;
 
-    @Value("${services.monitoring.delay:5000}")
-    private int delay;
+  @Value("${services.monitoring.delay:5000}")
+  private int delay;
 
-    @Value("${services.monitoring.unit:MILLISECONDS}")
-    private TimeUnit unit;
+  @Value("${services.monitoring.unit:MILLISECONDS}")
+  private TimeUnit unit;
 
-    private ExecutorService executorService;
+  private ExecutorService executorService;
 
-    @Autowired
-    private NodeMonitorManagementEndpoint nodeMonitorManagementEndpoint;
+  @Autowired
+  private NodeMonitorManagementEndpoint nodeMonitorManagementEndpoint;
 
-    @Autowired
-    private ManagementEndpointManager managementEndpointManager;
+  @Autowired
+  private ManagementEndpointManager managementEndpointManager;
 
-    @Autowired
-    private Node node;
+  @Autowired
+  private Node node;
 
-    @Autowired
-    private AlertEventProducer eventProducer;
+  @Autowired
+  private AlertEventProducer eventProducer;
 
-    @Autowired
-    private Vertx vertx;
+  @Autowired
+  private Vertx vertx;
 
-    private MessageProducer<Monitor> producer;
+  private MessageProducer<Monitor> producer;
 
-    @Override
-    protected void doStart() throws Exception {
-        if (enabled) {
-            super.doStart();
+  @Override
+  protected void doStart() throws Exception {
+    if (enabled) {
+      super.doStart();
 
-            executorService = Executors.newSingleThreadScheduledExecutor(
-                    r -> new Thread(r, "node-monitor"));
+      executorService =
+        Executors.newSingleThreadScheduledExecutor(
+          r -> new Thread(r, "node-monitor")
+        );
 
-            producer = vertx.eventBus()
-                    .registerCodec(new MonitorCodec())
-                    .sender(GIO_NODE_MONITOR_BUS, new DeliveryOptions()
-                            .setTracingPolicy(TracingPolicy.IGNORE)
-                            .setCodecName(MonitorCodec.CODEC_NAME));
+      producer =
+        vertx
+          .eventBus()
+          .registerCodec(new MonitorCodec())
+          .sender(
+            GIO_NODE_MONITOR_BUS,
+            new DeliveryOptions()
+              .setTracingPolicy(TracingPolicy.IGNORE)
+              .setCodecName(MonitorCodec.CODEC_NAME)
+          );
 
-            NodeMonitorThread monitorThread = new NodeMonitorThread(producer);
-            this.applicationContext.getAutowireCapableBeanFactory().autowireBean(monitorThread);
+      NodeMonitorThread monitorThread = new NodeMonitorThread(producer);
+      this.applicationContext.getAutowireCapableBeanFactory()
+        .autowireBean(monitorThread);
 
-            // Send an event to notify about the node status
-            eventProducer.send(Event
-                    .now()
-                    .type(NODE_LIFECYCLE)
-                    .property(PROPERTY_NODE_EVENT, NODE_EVENT_START)
-                    .property(PROPERTY_NODE_ID, node.id())
-                    .property(PROPERTY_NODE_HOSTNAME, node.hostname())
-                    .property(PROPERTY_NODE_APPLICATION, node.application())
-                    .build());
+      // Send an event to notify about the node status
+      eventProducer.send(
+        Event
+          .now()
+          .type(NODE_LIFECYCLE)
+          .property(PROPERTY_NODE_EVENT, NODE_EVENT_START)
+          .property(PROPERTY_NODE_ID, node.id())
+          .property(PROPERTY_NODE_HOSTNAME, node.hostname())
+          .property(PROPERTY_NODE_APPLICATION, node.application())
+          .build()
+      );
 
-            LOGGER.info("Node monitoring scheduled with fixed delay {} {} ", delay, unit.name());
+      LOGGER.info(
+        "Node monitoring scheduled with fixed delay {} {} ",
+        delay,
+        unit.name()
+      );
 
-            ((ScheduledExecutorService) executorService).scheduleWithFixedDelay(
-                    monitorThread, 0, delay, unit);
+      ((ScheduledExecutorService) executorService).scheduleWithFixedDelay(
+          monitorThread,
+          0,
+          delay,
+          unit
+        );
 
-            managementEndpointManager.register(nodeMonitorManagementEndpoint);
-        }
+      managementEndpointManager.register(nodeMonitorManagementEndpoint);
     }
+  }
 
-    @Override
-    protected void doStop() throws Exception {
-        if (enabled) {
-            if (!executorService.isShutdown()) {
-                LOGGER.info("Stop node monitor");
-                executorService.shutdownNow();
-            } else {
-                LOGGER.info("Gateway monitor already shut-downed");
-            }
+  @Override
+  protected void doStop() throws Exception {
+    if (enabled) {
+      if (!executorService.isShutdown()) {
+        LOGGER.info("Stop node monitor");
+        executorService.shutdownNow();
+      } else {
+        LOGGER.info("Gateway monitor already shut-downed");
+      }
 
-            super.doStop();
+      super.doStop();
 
-            // Send an event to notify about the node status
-            eventProducer.send(Event
-                    .now()
-                    .type(NODE_LIFECYCLE)
-                    .property(PROPERTY_NODE_EVENT, NODE_EVENT_STOP)
-                    .property(PROPERTY_NODE_ID, node.id())
-                    .property(PROPERTY_NODE_HOSTNAME, node.hostname())
-                    .property(PROPERTY_NODE_APPLICATION, node.application())
-                    .build());
+      // Send an event to notify about the node status
+      eventProducer.send(
+        Event
+          .now()
+          .type(NODE_LIFECYCLE)
+          .property(PROPERTY_NODE_EVENT, NODE_EVENT_STOP)
+          .property(PROPERTY_NODE_ID, node.id())
+          .property(PROPERTY_NODE_HOSTNAME, node.hostname())
+          .property(PROPERTY_NODE_APPLICATION, node.application())
+          .build()
+      );
 
-            LOGGER.info("Stop node monitor : DONE");
-        }
+      LOGGER.info("Stop node monitor : DONE");
     }
+  }
 
-    @Override
-    protected String name() {
-        return "Node Monitor Service";
-    }
+  @Override
+  protected String name() {
+    return "Node Monitor Service";
+  }
 }

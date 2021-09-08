@@ -30,13 +30,13 @@ import org.springframework.context.annotation.Import;
 @Import(TracingConfiguration.class)
 public class VertxConfiguration {
 
-    @Bean
-    public VertxFactory vertxFactory() {
-        return new VertxFactory();
-    }
+  @Bean
+  public VertxFactory vertxFactory() {
+    return new VertxFactory();
+  }
 
-    @Bean
-    public SpringVerticleFactory springVerticleFactory() {
-        return new SpringVerticleFactory();
-    }
+  @Bean
+  public SpringVerticleFactory springVerticleFactory() {
+    return new SpringVerticleFactory();
+  }
 }

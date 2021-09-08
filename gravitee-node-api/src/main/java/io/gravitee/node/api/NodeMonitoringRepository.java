@@ -18,7 +18,6 @@ package io.gravitee.node.api;
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
-
 import java.util.List;
 
 /**
@@ -26,41 +25,40 @@ import java.util.List;
  * @author GraviteeSource Team
  */
 public interface NodeMonitoringRepository {
+  /**
+   * Returns the {@link Monitoring} object corresponding to the specified type for the specified node identifier.
+   *
+   * @param nodeId the node identifier.
+   * @param type the type of monitoring (MONITOR, HEALTH_CHECK, NODE_INFOS).
+   *
+   * @return the {@link Monitoring} found or none if no corresponding monitoring object has been found.
+   */
+  Maybe<Monitoring> findByNodeIdAndType(String nodeId, String type);
 
-    /**
-     * Returns the {@link Monitoring} object corresponding to the specified type for the specified node identifier.
-     *
-     * @param nodeId the node identifier.
-     * @param type the type of monitoring (MONITOR, HEALTH_CHECK, NODE_INFOS).
-     *
-     * @return the {@link Monitoring} found or none if no corresponding monitoring object has been found.
-     */
-    Maybe<Monitoring> findByNodeIdAndType(String nodeId, String type);
+  /**
+   * Creates a {@link Monitoring} object.
+   * @param monitoring the monitoring object to create.
+   *
+   * @return the created {@link Monitoring} object.
+   */
+  Single<Monitoring> create(Monitoring monitoring);
 
-    /**
-     * Creates a {@link Monitoring} object.
-     * @param monitoring the monitoring object to create.
-     *
-     * @return the created {@link Monitoring} object.
-     */
-    Single<Monitoring> create(Monitoring monitoring);
+  /**
+   * Updates a {@link Monitoring} object.
+   * @param monitoring the monitoring object to update.
+   *
+   * @return the updated {@link Monitoring} object.
+   */
+  Single<Monitoring> update(Monitoring monitoring);
 
-    /**
-     * Updates a {@link Monitoring} object.
-     * @param monitoring the monitoring object to update.
-     *
-     * @return the updated {@link Monitoring} object.
-     */
-    Single<Monitoring> update(Monitoring monitoring);
-
-    /**
-     * Returns all the {@link Monitoring} objects corresponding to the specified type for the specified time frame.
-     *
-     * @param type the type of monitoring (MONITOR, HEALTH_CHECK, NODE_INFOS).
-     * @param from the beginning of the timeframe.
-     * @param to the end of the timeframe.
-     *
-     * @return the {@link Monitoring} found or none if no corresponding monitoring object has been found.
-     */
-    Flowable<Monitoring> findByTypeAndTimeFrame(String type, long from, long to);
+  /**
+   * Returns all the {@link Monitoring} objects corresponding to the specified type for the specified time frame.
+   *
+   * @param type the type of monitoring (MONITOR, HEALTH_CHECK, NODE_INFOS).
+   * @param from the beginning of the timeframe.
+   * @param to the end of the timeframe.
+   *
+   * @return the {@link Monitoring} found or none if no corresponding monitoring object has been found.
+   */
+  Flowable<Monitoring> findByTypeAndTimeFrame(String type, long from, long to);
 }

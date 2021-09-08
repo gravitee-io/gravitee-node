@@ -20,10 +20,9 @@ package io.gravitee.node.api.cluster;
  * @author GraviteeSource Team
  */
 public interface MemberListener {
+  void memberAdded(Member member);
 
-    void memberAdded(Member member);
+  void memberRemoved(Member member);
 
-    void memberRemoved(Member member);
-
-    void memberChanged(Member member);
+  void memberChanged(Member member);
 }

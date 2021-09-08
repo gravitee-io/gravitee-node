@@ -23,6 +23,5 @@ import io.gravitee.node.api.Node;
  * @author GraviteeSource Team
  */
 public interface Container extends LifecycleComponent<Container> {
-
-    Node node();
+  Node node();
 }

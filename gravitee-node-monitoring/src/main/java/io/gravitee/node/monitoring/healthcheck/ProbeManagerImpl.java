@@ -18,7 +18,6 @@ package io.gravitee.node.monitoring.healthcheck;
 import io.gravitee.common.spring.factory.SpringFactoriesLoader;
 import io.gravitee.node.api.healthcheck.Probe;
 import io.gravitee.node.api.healthcheck.ProbeManager;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,32 +27,33 @@ import java.util.Map;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ProbeManagerImpl extends SpringFactoriesLoader<Probe> implements ProbeManager {
+public class ProbeManagerImpl
+  extends SpringFactoriesLoader<Probe>
+  implements ProbeManager {
 
-    @Override
-    protected Class<Probe> getObjectType() {
-        return Probe.class;
+  @Override
+  protected Class<Probe> getObjectType() {
+    return Probe.class;
+  }
+
+  private Map<String, Probe> probes = new HashMap<>();
+
+  @Override
+  public List<Probe> getProbes() {
+    ArrayList<Probe> probes = new ArrayList<>(getFactoriesInstances());
+    probes.addAll(this.probes.values());
+    return probes;
+  }
+
+  @Override
+  public void register(Probe probe) {
+    probes.put(probe.id(), probe);
+  }
+
+  @Override
+  public void unregister(Probe probe) {
+    if (probes.containsKey(probe.id())) {
+      probes.remove(probe.id());
     }
-
-    private Map<String, Probe> probes = new HashMap<>();
-
-    @Override
-    public List<Probe> getProbes() {
-        ArrayList<Probe> probes = new ArrayList<>(getFactoriesInstances());
-        probes.addAll(this.probes.values());
-        return probes;
-    }
-
-    @Override
-    public void register(Probe probe) {
-        probes.put(probe.id(), probe);
-    }
-
-    @Override
-    public void unregister(Probe probe) {
-        if (probes.containsKey(probe.id())) {
-            probes.remove(probe.id());
-        }
-    }
-
+  }
 }

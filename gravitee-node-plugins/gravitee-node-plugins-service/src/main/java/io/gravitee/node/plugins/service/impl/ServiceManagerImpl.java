@@ -17,55 +17,58 @@ package io.gravitee.node.plugins.service.impl;
 
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.plugins.service.ServiceManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ServiceManagerImpl extends AbstractService implements ServiceManager {
+public class ServiceManagerImpl
+  extends AbstractService
+  implements ServiceManager {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceManagerImpl.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(
+    ServiceManagerImpl.class
+  );
 
-    private final List<AbstractService> services = new ArrayList<>();
+  private final List<AbstractService> services = new ArrayList<>();
 
-    @Override
-    public void register(AbstractService service) {
-        services.add(service);
+  @Override
+  public void register(AbstractService service) {
+    services.add(service);
+  }
+
+  @Override
+  protected void doStart() throws Exception {
+    super.doStart();
+
+    for (AbstractService service : services) {
+      try {
+        service.start();
+      } catch (Exception ex) {
+        LOGGER.error("Unexpected error while starting service", ex);
+      }
     }
+  }
 
-    @Override
-    protected void doStart() throws Exception {
-        super.doStart();
+  @Override
+  protected void doStop() throws Exception {
+    super.doStop();
 
-        for (AbstractService service : services) {
-            try {
-                service.start();
-            } catch (Exception ex) {
-                LOGGER.error("Unexpected error while starting service", ex);
-            }
-        }
+    for (AbstractService service : services) {
+      try {
+        service.stop();
+      } catch (Exception ex) {
+        LOGGER.error("Unexpected error while stopping service", ex);
+      }
     }
+  }
 
-    @Override
-    protected void doStop() throws Exception {
-        super.doStop();
-
-        for(AbstractService service: services) {
-            try {
-                service.stop();
-            } catch (Exception ex) {
-                LOGGER.error("Unexpected error while stopping service", ex);
-            }
-        }
-    }
-
-    @Override
-    protected String name() {
-        return "Plugins - Services Manager";
-    }
+  @Override
+  protected String name() {
+    return "Plugins - Services Manager";
+  }
 }

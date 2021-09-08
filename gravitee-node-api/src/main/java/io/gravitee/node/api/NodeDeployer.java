@@ -20,6 +20,5 @@ package io.gravitee.node.api;
  * @author GraviteeSource Team
  */
 public interface NodeDeployer {
-
-    Node deploy(Node node);
+  Node deploy(Node node);
 }
