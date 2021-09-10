@@ -24,13 +24,12 @@ import io.reactivex.Observable;
  * @since 3.9.11
  */
 public interface PropertyResolver {
-
   /**
    * Check if this property can be resolved
-   * @param propertyName
+   * @param currentValue
    * @return
    */
-  boolean supports(String propertyName);
+  boolean supports(String currentValue);
 
   /**
    * @param propertyName
@@ -40,8 +39,9 @@ public interface PropertyResolver {
   Maybe<Object> resolve(String propertyName, String currentValue);
 
   /**
-   * Watch dor any changes in the property and emmit the new values
+   * Watch for any changes in the property and emmit the new values
    * @param propertyName
+   * @param currentValue
    * @return last value
    */
   Observable<Object> watch(String propertyName, String currentValue);

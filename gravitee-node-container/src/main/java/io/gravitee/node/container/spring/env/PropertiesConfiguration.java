@@ -16,6 +16,8 @@
 package io.gravitee.node.container.spring.env;
 
 import io.gravitee.node.kubernetes.propertyresolver.PropertyResolverFactoriesLoader;
+import java.io.IOException;
+import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
@@ -24,9 +26,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
-import java.io.IOException;
-import java.util.Properties;
-
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
@@ -34,30 +33,35 @@ import java.util.Properties;
 @Configuration
 public class PropertiesConfiguration {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PropertiesConfiguration.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(
+    PropertiesConfiguration.class
+  );
 
-    public static final String GRAVITEE_CONFIGURATION = "gravitee.conf";
+  public static final String GRAVITEE_CONFIGURATION = "gravitee.conf";
 
-    @Bean(name = "graviteeProperties")
-    public static Properties graviteeProperties() throws IOException {
-        LOGGER.info("Loading Gravitee configuration.");
+  @Bean(name = "graviteeProperties")
+  public static Properties graviteeProperties() throws IOException {
+    LOGGER.info("Loading Gravitee configuration.");
 
-        YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
+    YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
 
-        String yamlConfiguration = System.getProperty(GRAVITEE_CONFIGURATION);
-        Resource yamlResource = new FileSystemResource(yamlConfiguration);
+    String yamlConfiguration = System.getProperty(GRAVITEE_CONFIGURATION);
+    Resource yamlResource = new FileSystemResource(yamlConfiguration);
 
-        LOGGER.info("\tGravitee configuration loaded from {}", yamlResource.getURL().getPath());
+    LOGGER.info(
+      "\tGravitee configuration loaded from {}",
+      yamlResource.getURL().getPath()
+    );
 
-        yaml.setResources(yamlResource);
-        Properties properties = yaml.getObject();
-        LOGGER.info("Loading Gravitee configuration. DONE");
+    yaml.setResources(yamlResource);
+    Properties properties = yaml.getObject();
+    LOGGER.info("Loading Gravitee configuration. DONE");
 
-        return properties;
-    }
+    return properties;
+  }
 
-    @Bean
-    public static PropertyResolverFactoriesLoader propertyResolverFactoriesLoader() {
-        return new PropertyResolverFactoriesLoader();
-    }
+  @Bean
+  public static PropertyResolverFactoriesLoader propertyResolverFactoriesLoader() {
+    return new PropertyResolverFactoriesLoader();
+  }
 }
