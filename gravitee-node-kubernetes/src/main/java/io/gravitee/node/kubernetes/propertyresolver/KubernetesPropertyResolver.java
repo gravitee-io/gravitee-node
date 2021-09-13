@@ -15,10 +15,10 @@
  */
 package io.gravitee.node.kubernetes.propertyresolver;
 
-import io.gravitee.gateway.services.kube.client.KubernetesClient;
-import io.gravitee.gateway.services.kube.client.KubernetesConfigMapV1Watcher;
-import io.gravitee.gateway.services.kube.client.KubernetesSecretV1Watcher;
-import io.gravitee.gateway.services.kube.client.model.v1.KubernetesEventType;
+import io.gravitee.kubernetes.client.KubernetesClient;
+import io.gravitee.kubernetes.client.KubernetesConfigMapV1Watcher;
+import io.gravitee.kubernetes.client.KubernetesSecretV1Watcher;
+import io.gravitee.kubernetes.client.model.v1.KubernetesEventType;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import java.util.Base64;
