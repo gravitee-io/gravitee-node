@@ -1,0 +1,636 @@
+/**
+ * Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.gravitee.node.vertx.configuration;
+
+import io.vertx.core.http.ClientAuth;
+import io.vertx.core.http.HttpServerOptions;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
+/**
+ * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author GraviteeSource Team
+ */
+public class HttpServerConfiguration {
+
+  private final int port;
+  private final String host;
+  private final String authenticationType;
+  private final boolean secured;
+  private final boolean alpn;
+  private final boolean sni;
+  private final String tlsProtocols;
+  private final String keyStorePath;
+  private final String keyStorePassword;
+  private final String keyStoreType;
+  private final String trustStorePath;
+  private final String trustStorePassword;
+  private final String trustStoreType;
+  private final boolean compressionSupported;
+  private final int idleTimeout;
+  private final boolean tcpKeepAlive;
+  private final int maxHeaderSize;
+  private final int maxChunkSize;
+  private final int maxInitialLineLength;
+  private final int maxFormAttributeSize;
+  private final boolean websocketEnabled;
+  private final String websocketSubProtocols;
+  private final boolean perMessageWebSocketCompressionSupported;
+  private final boolean perFrameWebSocketCompressionSupported;
+  private final boolean proxyProtocol;
+  private final long proxyProtocolTimeout;
+  private final ClientAuth clientAuth;
+  private final List<String> authorizedTlsCipherSuites;
+
+  private HttpServerConfiguration(HttpServerConfigurationBuilder builder) {
+    this.port = builder.port;
+    this.host = builder.host;
+    this.authenticationType = builder.authenticationType;
+    this.secured = builder.secured;
+    this.alpn = builder.alpn;
+    this.sni = builder.sni;
+    this.tlsProtocols = builder.tlsProtocols;
+    this.keyStorePath = builder.keyStorePath;
+    this.keyStorePassword = builder.keyStorePassword;
+    this.keyStoreType = builder.keyStoreType;
+    this.trustStorePath = builder.trustStorePath;
+    this.trustStorePassword = builder.trustStorePassword;
+    this.trustStoreType = builder.trustStoreType;
+    this.compressionSupported = builder.compressionSupported;
+    this.idleTimeout = builder.idleTimeout;
+    this.tcpKeepAlive = builder.tcpKeepAlive;
+    this.maxHeaderSize = builder.maxHeaderSize;
+    this.maxChunkSize = builder.maxChunkSize;
+    this.maxInitialLineLength = builder.maxInitialLineLength;
+    this.maxFormAttributeSize = builder.maxFormAttributeSize;
+    this.websocketEnabled = builder.websocketEnabled;
+    this.websocketSubProtocols = builder.websocketSubProtocols;
+    this.perMessageWebSocketCompressionSupported =
+      builder.perMessageWebSocketCompressionSupported;
+    this.perFrameWebSocketCompressionSupported =
+      builder.perFrameWebSocketCompressionSupported;
+    this.proxyProtocol = builder.proxyProtocol;
+    this.proxyProtocolTimeout = builder.proxyProtocolTimeout;
+    this.clientAuth = builder.clientAuth;
+    this.authorizedTlsCipherSuites = builder.authorizedTlsCipherSuites;
+  }
+
+  // Property methods
+  public int getPort() {
+    return port;
+  }
+
+  public String getHost() {
+    return host;
+  }
+
+  public String getAuthenticationType() {
+    return authenticationType;
+  }
+
+  public boolean isSecured() {
+    return secured;
+  }
+
+  public boolean isAlpn() {
+    return alpn;
+  }
+
+  public boolean isSni() {
+    return sni;
+  }
+
+  public String getTlsProtocols() {
+    return tlsProtocols;
+  }
+
+  public String getKeyStorePath() {
+    return keyStorePath;
+  }
+
+  public String getKeyStorePassword() {
+    return keyStorePassword;
+  }
+
+  public String getKeyStoreType() {
+    return keyStoreType;
+  }
+
+  public String getTrustStorePath() {
+    return trustStorePath;
+  }
+
+  public String getTrustStorePassword() {
+    return trustStorePassword;
+  }
+
+  public String getTrustStoreType() {
+    return trustStoreType;
+  }
+
+  public boolean isCompressionSupported() {
+    return compressionSupported;
+  }
+
+  public int getIdleTimeout() {
+    return idleTimeout;
+  }
+
+  public boolean isTcpKeepAlive() {
+    return tcpKeepAlive;
+  }
+
+  public int getMaxHeaderSize() {
+    return maxHeaderSize;
+  }
+
+  public int getMaxChunkSize() {
+    return maxChunkSize;
+  }
+
+  public int getMaxInitialLineLength() {
+    return maxInitialLineLength;
+  }
+
+  public int getMaxFormAttributeSize() {
+    return maxFormAttributeSize;
+  }
+
+  public boolean isWebsocketEnabled() {
+    return websocketEnabled;
+  }
+
+  public String getWebsocketSubProtocols() {
+    return websocketSubProtocols;
+  }
+
+  public boolean isPerMessageWebSocketCompressionSupported() {
+    return perMessageWebSocketCompressionSupported;
+  }
+
+  public boolean isPerFrameWebSocketCompressionSupported() {
+    return perFrameWebSocketCompressionSupported;
+  }
+
+  public boolean isProxyProtocol() {
+    return proxyProtocol;
+  }
+
+  public long getProxyProtocolTimeout() {
+    return proxyProtocolTimeout;
+  }
+
+  public ClientAuth getClientAuth() {
+    return clientAuth;
+  }
+
+  public List<String> getAuthorizedTlsCipherSuites() {
+    return authorizedTlsCipherSuites;
+  }
+
+  public static class HttpServerConfigurationBuilder {
+
+    private int port = 8080;
+    private String host = "0.0.0.0";
+    private String authenticationType;
+    private boolean secured;
+    private boolean alpn;
+    private boolean sni;
+    private String tlsProtocols;
+    private String keyStorePath;
+    private String keyStorePassword;
+    private String keyStoreType;
+    private String trustStorePath;
+    private String trustStorePassword;
+    private String trustStoreType;
+    private boolean compressionSupported;
+    private int idleTimeout;
+    private boolean tcpKeepAlive = true;
+    private int maxHeaderSize;
+    private int maxChunkSize;
+    private int maxInitialLineLength;
+    private int maxFormAttributeSize;
+    private boolean websocketEnabled;
+    private String websocketSubProtocols;
+    private boolean perMessageWebSocketCompressionSupported;
+    private boolean perFrameWebSocketCompressionSupported;
+    private boolean proxyProtocol;
+    private long proxyProtocolTimeout;
+    private ClientAuth clientAuth;
+    private List<String> authorizedTlsCipherSuites;
+
+    @Autowired
+    private ConfigurableEnvironment environment;
+
+    private String prefix;
+
+    public HttpServerConfigurationBuilder withDefaultPort(int port) {
+      Assert.isTrue(port > 0, "Port should be bigger than 0");
+      this.port = port;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultHost(String host) {
+      Assert.hasText(host, "Host can't be null or empty");
+      this.host = host;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultAuthenticationType(
+      String authenticationType
+    ) {
+      this.authenticationType = authenticationType;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultSecured(boolean secured) {
+      this.secured = secured;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultAlpn(boolean alpn) {
+      this.alpn = alpn;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultSni(boolean sni) {
+      this.sni = sni;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultTlsProtocols(
+      String tlsProtocols
+    ) {
+      this.tlsProtocols = tlsProtocols;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultKeyStorePath(
+      String keyStorePath
+    ) {
+      this.keyStorePath = keyStorePath;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultKeyStorePassword(
+      String keyStorePassword
+    ) {
+      this.keyStorePassword = keyStorePassword;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultKeyStoreType(
+      String keyStoreType
+    ) {
+      this.keyStoreType = keyStoreType;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultTrustStorePath(
+      String trustStorePath
+    ) {
+      this.trustStorePath = trustStorePath;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultTrustStorePassword(
+      String trustStorePassword
+    ) {
+      this.trustStorePassword = trustStorePassword;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultTrustStoreType(
+      String trustStoreType
+    ) {
+      this.trustStoreType = trustStoreType;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultCompressionSupported(
+      boolean compressionSupported
+    ) {
+      this.compressionSupported = compressionSupported;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultIdleTimeout(
+      int idleTimeout
+    ) {
+      this.idleTimeout = idleTimeout;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultTcpKeepAlive(
+      boolean tcpKeepAlive
+    ) {
+      this.tcpKeepAlive = tcpKeepAlive;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultMaxHeaderSize(
+      int maxHeaderSize
+    ) {
+      this.maxHeaderSize = maxHeaderSize;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultMaxChunkSize(
+      int maxChunkSize
+    ) {
+      this.maxChunkSize = maxChunkSize;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultMaxInitialLineLength(
+      int maxInitialLineLength
+    ) {
+      this.maxInitialLineLength = maxInitialLineLength;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultMaxFormAttributeSize(
+      int maxFormAttributeSize
+    ) {
+      this.maxFormAttributeSize = maxFormAttributeSize;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultWebsocketEnabled(
+      boolean websocketEnabled
+    ) {
+      this.websocketEnabled = websocketEnabled;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultWebsocketSubProtocols(
+      String websocketSubProtocols
+    ) {
+      this.websocketSubProtocols = websocketSubProtocols;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultPerMessageWebSocketCompressionSupported(
+      boolean perMessageWebSocketCompressionSupported
+    ) {
+      this.perMessageWebSocketCompressionSupported =
+        perMessageWebSocketCompressionSupported;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultPerFrameWebSocketCompressionSupported(
+      boolean perFrameWebSocketCompressionSupported
+    ) {
+      this.perFrameWebSocketCompressionSupported =
+        perFrameWebSocketCompressionSupported;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultProxyProtocol(
+      boolean proxyProtocol
+    ) {
+      this.proxyProtocol = proxyProtocol;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultProxyProtocolTimeout(
+      long proxyProtocolTimeout
+    ) {
+      this.proxyProtocolTimeout = proxyProtocolTimeout;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultClientAuth(
+      ClientAuth clientAuth
+    ) {
+      this.clientAuth = clientAuth;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultAuthorizedTlsCipherSuites(
+      List<String> authorizedTlsCipherSuites
+    ) {
+      this.authorizedTlsCipherSuites = authorizedTlsCipherSuites;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultEnvironment(
+      ConfigurableEnvironment environment
+    ) {
+      this.environment = environment;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withPrefix(String prefix) {
+      Assert.notNull(prefix, "Prefix can't be null");
+      if (StringUtils.hasText(prefix) && !prefix.endsWith(".")) {
+        prefix = prefix + ".";
+      }
+      this.prefix = prefix;
+      return this;
+    }
+
+    public HttpServerConfiguration defaultConfig() {
+      withDefaultCompressionSupported(
+        HttpServerOptions.DEFAULT_COMPRESSION_SUPPORTED
+      );
+      withDefaultIdleTimeout(HttpServerOptions.DEFAULT_IDLE_TIMEOUT);
+      withDefaultMaxHeaderSize(8192);
+      withDefaultMaxChunkSize(8192);
+      withDefaultMaxInitialLineLength(4096);
+      withDefaultPerMessageWebSocketCompressionSupported(true);
+      withDefaultPerFrameWebSocketCompressionSupported(true);
+      withDefaultProxyProtocolTimeout(10000);
+
+      return withPrefix("").build();
+    }
+
+    public HttpServerConfiguration build() {
+      this.port =
+        Integer.parseInt(
+          environment.getProperty(prefix + "http.port", String.valueOf(port))
+        );
+      this.host = environment.getProperty(prefix + "http.host", host);
+      this.authenticationType =
+        environment.getProperty(
+          prefix + "http.authentication",
+          authenticationType
+        );
+      this.secured =
+        Boolean.getBoolean(
+          environment.getProperty(
+            prefix + "http.secured",
+            String.valueOf(secured)
+          )
+        );
+      this.alpn =
+        Boolean.getBoolean(
+          environment.getProperty(prefix + "http.alpn", String.valueOf(alpn))
+        );
+      this.sni =
+        Boolean.getBoolean(
+          environment.getProperty(prefix + "http.ssl.sni", String.valueOf(sni))
+        );
+      this.tlsProtocols =
+        environment.getProperty(prefix + "http.ssl.tlsProtocols", tlsProtocols);
+      this.authorizedTlsCipherSuites =
+        environment.getProperty(
+          prefix + "http.ssl.tlsProtocols",
+          List.class,
+          authorizedTlsCipherSuites
+        );
+
+      String sClientAuthMode = environment.getProperty(
+        "http.ssl.clientAuth",
+        ClientAuth.NONE.name()
+      );
+      if (sClientAuthMode.equalsIgnoreCase(Boolean.TRUE.toString())) {
+        this.clientAuth = ClientAuth.REQUIRED;
+      } else if (sClientAuthMode.equalsIgnoreCase(Boolean.FALSE.toString())) {
+        this.clientAuth = ClientAuth.NONE;
+      } else {
+        this.clientAuth = ClientAuth.valueOf(sClientAuthMode.toUpperCase());
+      }
+
+      this.keyStoreType =
+        environment.getProperty(
+          prefix + "http.ssl.keystore.type",
+          keyStoreType
+        );
+      this.keyStorePath =
+        environment.getProperty(
+          prefix + "http.ssl.keystore.path",
+          keyStorePath
+        );
+      this.keyStorePassword =
+        environment.getProperty(
+          prefix + "http.ssl.keystore.password",
+          keyStorePassword
+        );
+
+      this.trustStoreType =
+        environment.getProperty(
+          prefix + "http.ssl.truststore.type",
+          trustStoreType
+        );
+      this.trustStorePath =
+        environment.getProperty(
+          prefix + "http.ssl.truststore.path",
+          trustStorePath
+        );
+      this.trustStorePassword =
+        environment.getProperty(
+          prefix + "http.ssl.truststore.password",
+          trustStorePassword
+        );
+
+      this.compressionSupported =
+        Boolean.getBoolean(
+          environment.getProperty(
+            prefix + "http.compressionSupported",
+            String.valueOf(compressionSupported)
+          )
+        );
+      this.idleTimeout =
+        Integer.parseInt(
+          environment.getProperty(
+            prefix + "http.idleTimeout",
+            String.valueOf(idleTimeout)
+          )
+        );
+      this.tcpKeepAlive =
+        Boolean.getBoolean(
+          environment.getProperty(
+            prefix + "http.tcpKeepAlive",
+            String.valueOf(tcpKeepAlive)
+          )
+        );
+      this.maxHeaderSize =
+        Integer.parseInt(
+          environment.getProperty(
+            prefix + "http.maxHeaderSize",
+            String.valueOf(maxHeaderSize)
+          )
+        );
+      this.maxChunkSize =
+        Integer.parseInt(
+          environment.getProperty(
+            prefix + "http.maxChunkSize",
+            String.valueOf(maxChunkSize)
+          )
+        );
+      this.maxInitialLineLength =
+        Integer.parseInt(
+          environment.getProperty(
+            prefix + "http.maxInitialLineLength",
+            String.valueOf(maxInitialLineLength)
+          )
+        );
+      this.maxFormAttributeSize =
+        Integer.parseInt(
+          environment.getProperty(
+            prefix + "http.maxFormAttributeSize",
+            String.valueOf(maxFormAttributeSize)
+          )
+        );
+      this.websocketEnabled =
+        Boolean.getBoolean(
+          environment.getProperty(
+            prefix + "http.websocket.enabled",
+            String.valueOf(websocketEnabled)
+          )
+        );
+      this.websocketSubProtocols =
+        environment.getProperty(
+          prefix + "http.websocket.subProtocols",
+          websocketSubProtocols
+        );
+      this.perMessageWebSocketCompressionSupported =
+        Boolean.getBoolean(
+          environment.getProperty(
+            prefix + "http.websocket.perMessageWebSocketCompressionSupported",
+            String.valueOf(perMessageWebSocketCompressionSupported)
+          )
+        );
+      this.perFrameWebSocketCompressionSupported =
+        Boolean.getBoolean(
+          environment.getProperty(
+            prefix + "http.websocket.perFrameWebSocketCompressionSupported",
+            String.valueOf(perFrameWebSocketCompressionSupported)
+          )
+        );
+      this.proxyProtocol =
+        Boolean.getBoolean(
+          environment.getProperty(
+            prefix + "http.haproxy.proxyProtocol",
+            String.valueOf(proxyProtocol)
+          )
+        );
+      this.proxyProtocolTimeout =
+        Long.parseLong(
+          environment.getProperty(
+            prefix + "http.haproxy.proxyProtocolTimeout",
+            String.valueOf(proxyProtocolTimeout)
+          )
+        );
+
+      return new HttpServerConfiguration(this);
+    }
+  }
+}
