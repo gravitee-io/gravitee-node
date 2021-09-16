@@ -17,7 +17,6 @@ package io.gravitee.node.vertx.spring;
 
 import io.gravitee.node.tracing.spring.TracingConfiguration;
 import io.gravitee.node.vertx.VertxFactory;
-import io.gravitee.node.vertx.configuration.HttpServerConfiguration.HttpServerConfigurationBuilder;
 import io.gravitee.node.vertx.verticle.factory.SpringVerticleFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,11 +29,6 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @Import(TracingConfiguration.class)
 public class VertxConfiguration {
-
-  @Bean
-  public HttpServerConfigurationBuilder httpServerConfigurationBuilder() {
-    return new HttpServerConfigurationBuilder();
-  }
 
   @Bean
   public VertxFactory vertxFactory() {

@@ -17,9 +17,15 @@ package io.gravitee.node.vertx.configuration;
 
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.net.JksOptions;
+import io.vertx.core.net.PemKeyCertOptions;
+import io.vertx.core.net.PemTrustOptions;
+import io.vertx.core.net.PfxOptions;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -28,6 +34,10 @@ import org.springframework.util.StringUtils;
  * @author GraviteeSource Team
  */
 public class HttpServerConfiguration {
+
+  private static final String CERTIFICATE_FORMAT_JKS = "JKS";
+  private static final String CERTIFICATE_FORMAT_PEM = "PEM";
+  private static final String CERTIFICATE_FORMAT_PKCS12 = "PKCS12";
 
   private final int port;
   private final String host;
@@ -42,6 +52,7 @@ public class HttpServerConfiguration {
   private final String trustStorePath;
   private final String trustStorePassword;
   private final String trustStoreType;
+  private final boolean handle100Continue;
   private final boolean compressionSupported;
   private final int idleTimeout;
   private final boolean tcpKeepAlive;
@@ -72,6 +83,7 @@ public class HttpServerConfiguration {
     this.trustStorePath = builder.trustStorePath;
     this.trustStorePassword = builder.trustStorePassword;
     this.trustStoreType = builder.trustStoreType;
+    this.handle100Continue = builder.handle100Continue;
     this.compressionSupported = builder.compressionSupported;
     this.idleTimeout = builder.idleTimeout;
     this.tcpKeepAlive = builder.tcpKeepAlive;
@@ -144,6 +156,10 @@ public class HttpServerConfiguration {
     return trustStoreType;
   }
 
+  public boolean isHandle100Continue() {
+    return handle100Continue;
+  }
+
   public boolean isCompressionSupported() {
     return compressionSupported;
   }
@@ -204,6 +220,126 @@ public class HttpServerConfiguration {
     return authorizedTlsCipherSuites;
   }
 
+  public HttpServerOptions getHttpServerOptions() {
+    HttpServerOptions options = new HttpServerOptions();
+
+    // Binding port
+    options.setPort(this.getPort());
+    options.setHost(this.getHost());
+
+    if (this.isSecured()) {
+      options.setSsl(this.isSecured());
+      options.setUseAlpn(this.isAlpn());
+      options.setSni(this.isSni());
+
+      // TLS protocol support
+      if (this.getTlsProtocols() != null) {
+        options.setEnabledSecureTransportProtocols(
+          new HashSet<>(
+            Arrays.asList(this.getTlsProtocols().split("\\s*,\\s*"))
+          )
+        );
+      }
+
+      // restrict the authorized ciphers
+      if (this.getAuthorizedTlsCipherSuites() != null) {
+        this.getAuthorizedTlsCipherSuites()
+          .stream()
+          .map(String::trim)
+          .forEach(options::addEnabledCipherSuite);
+      }
+
+      options.setClientAuth(this.getClientAuth());
+
+      if (this.getTrustStorePath() != null) {
+        if (
+          this.getTrustStoreType() == null ||
+          this.getTrustStoreType().isEmpty() ||
+          this.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)
+        ) {
+          options.setTrustStoreOptions(
+            new JksOptions()
+              .setPath(this.getTrustStorePath())
+              .setPassword(this.getTrustStorePassword())
+          );
+        } else if (
+          this.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)
+        ) {
+          options.setPemTrustOptions(
+            new PemTrustOptions().addCertPath(this.getTrustStorePath())
+          );
+        } else if (
+          this.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)
+        ) {
+          options.setPfxTrustOptions(
+            new PfxOptions()
+              .setPath(this.getTrustStorePath())
+              .setPassword(this.getTrustStorePassword())
+          );
+        }
+      }
+
+      if (this.getKeyStorePath() != null) {
+        if (
+          this.getKeyStoreType() == null ||
+          this.getKeyStoreType().isEmpty() ||
+          this.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)
+        ) {
+          options.setKeyStoreOptions(
+            new JksOptions()
+              .setPath(this.getKeyStorePath())
+              .setPassword(this.getKeyStorePassword())
+          );
+        } else if (
+          this.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)
+        ) {
+          options.setPemKeyCertOptions(
+            new PemKeyCertOptions().addCertPath(this.getKeyStorePath())
+          );
+        } else if (
+          this.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)
+        ) {
+          options.setPfxKeyCertOptions(
+            new PfxOptions()
+              .setPath(this.getKeyStorePath())
+              .setPassword(this.getKeyStorePassword())
+          );
+        }
+      }
+    }
+
+    // Customizable configuration
+    options.setHandle100ContinueAutomatically(this.isHandle100Continue());
+    options.setCompressionSupported(this.isCompressionSupported());
+    options.setIdleTimeout(this.getIdleTimeout());
+    options.setTcpKeepAlive(this.isTcpKeepAlive());
+    options.setMaxChunkSize(this.getMaxChunkSize());
+    options.setMaxHeaderSize(this.getMaxHeaderSize());
+    options.setMaxInitialLineLength(this.getMaxInitialLineLength());
+    options.setMaxFormAttributeSize(this.getMaxFormAttributeSize());
+
+    // Configure websocket
+    System.setProperty(
+      "vertx.disableWebsockets",
+      Boolean.toString(!this.isWebsocketEnabled())
+    );
+    if (this.isWebsocketEnabled() && this.getWebsocketSubProtocols() != null) {
+      options.setWebSocketSubProtocols(
+        new ArrayList<>(
+          Arrays.asList(this.getWebsocketSubProtocols().split("\\s*,\\s*"))
+        )
+      );
+      options.setPerMessageWebSocketCompressionSupported(
+        this.isPerMessageWebSocketCompressionSupported()
+      );
+      options.setPerFrameWebSocketCompressionSupported(
+        this.isPerFrameWebSocketCompressionSupported()
+      );
+    }
+
+    return options;
+  }
+
   public static class HttpServerConfigurationBuilder {
 
     private int port = 8080;
@@ -219,6 +355,7 @@ public class HttpServerConfiguration {
     private String trustStorePath;
     private String trustStorePassword;
     private String trustStoreType;
+    private boolean handle100Continue;
     private boolean compressionSupported;
     private int idleTimeout;
     private boolean tcpKeepAlive = true;
@@ -235,8 +372,7 @@ public class HttpServerConfiguration {
     private ClientAuth clientAuth;
     private List<String> authorizedTlsCipherSuites;
 
-    @Autowired
-    private ConfigurableEnvironment environment;
+    private Environment environment;
 
     private String prefix;
 
@@ -320,6 +456,13 @@ public class HttpServerConfiguration {
       String trustStoreType
     ) {
       this.trustStoreType = trustStoreType;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultHandle100Continue(
+      boolean handle100Continue
+    ) {
+      this.handle100Continue = handle100Continue;
       return this;
     }
 
@@ -430,8 +573,8 @@ public class HttpServerConfiguration {
       return this;
     }
 
-    public HttpServerConfigurationBuilder withDefaultEnvironment(
-      ConfigurableEnvironment environment
+    public HttpServerConfigurationBuilder withEnvironment(
+      Environment environment
     ) {
       this.environment = environment;
       return this;
@@ -458,46 +601,45 @@ public class HttpServerConfiguration {
       withDefaultPerFrameWebSocketCompressionSupported(true);
       withDefaultProxyProtocolTimeout(10000);
 
-      return withPrefix("").build();
+      return withPrefix("http").build();
     }
 
     public HttpServerConfiguration build() {
+      Assert.notNull(
+        environment,
+        "Environment is null. Call withEnvironment method first to configured it"
+      );
+
       this.port =
         Integer.parseInt(
-          environment.getProperty(prefix + "http.port", String.valueOf(port))
+          environment.getProperty(prefix + "port", String.valueOf(port))
         );
-      this.host = environment.getProperty(prefix + "http.host", host);
+      this.host = environment.getProperty(prefix + "host", host);
       this.authenticationType =
-        environment.getProperty(
-          prefix + "http.authentication",
-          authenticationType
-        );
+        environment.getProperty(prefix + "authentication", authenticationType);
       this.secured =
         Boolean.getBoolean(
-          environment.getProperty(
-            prefix + "http.secured",
-            String.valueOf(secured)
-          )
+          environment.getProperty(prefix + "secured", String.valueOf(secured))
         );
       this.alpn =
         Boolean.getBoolean(
-          environment.getProperty(prefix + "http.alpn", String.valueOf(alpn))
+          environment.getProperty(prefix + "alpn", String.valueOf(alpn))
         );
       this.sni =
         Boolean.getBoolean(
-          environment.getProperty(prefix + "http.ssl.sni", String.valueOf(sni))
+          environment.getProperty(prefix + "ssl.sni", String.valueOf(sni))
         );
       this.tlsProtocols =
-        environment.getProperty(prefix + "http.ssl.tlsProtocols", tlsProtocols);
+        environment.getProperty(prefix + "ssl.tlsProtocols", tlsProtocols);
       this.authorizedTlsCipherSuites =
         environment.getProperty(
-          prefix + "http.ssl.tlsProtocols",
+          prefix + "ssl.tlsProtocols",
           List.class,
           authorizedTlsCipherSuites
         );
 
       String sClientAuthMode = environment.getProperty(
-        "http.ssl.clientAuth",
+        "ssl.clientAuth",
         ClientAuth.NONE.name()
       );
       if (sClientAuthMode.equalsIgnoreCase(Boolean.TRUE.toString())) {
@@ -509,123 +651,111 @@ public class HttpServerConfiguration {
       }
 
       this.keyStoreType =
-        environment.getProperty(
-          prefix + "http.ssl.keystore.type",
-          keyStoreType
-        );
+        environment.getProperty(prefix + "ssl.keystore.type", keyStoreType);
       this.keyStorePath =
-        environment.getProperty(
-          prefix + "http.ssl.keystore.path",
-          keyStorePath
-        );
+        environment.getProperty(prefix + "ssl.keystore.path", keyStorePath);
       this.keyStorePassword =
         environment.getProperty(
-          prefix + "http.ssl.keystore.password",
+          prefix + "ssl.keystore.password",
           keyStorePassword
         );
 
       this.trustStoreType =
-        environment.getProperty(
-          prefix + "http.ssl.truststore.type",
-          trustStoreType
-        );
+        environment.getProperty(prefix + "ssl.truststore.type", trustStoreType);
       this.trustStorePath =
-        environment.getProperty(
-          prefix + "http.ssl.truststore.path",
-          trustStorePath
-        );
+        environment.getProperty(prefix + "ssl.truststore.path", trustStorePath);
       this.trustStorePassword =
         environment.getProperty(
-          prefix + "http.ssl.truststore.password",
+          prefix + "ssl.truststore.password",
           trustStorePassword
         );
 
       this.compressionSupported =
         Boolean.getBoolean(
           environment.getProperty(
-            prefix + "http.compressionSupported",
+            prefix + "compressionSupported",
             String.valueOf(compressionSupported)
           )
         );
       this.idleTimeout =
         Integer.parseInt(
           environment.getProperty(
-            prefix + "http.idleTimeout",
+            prefix + "idleTimeout",
             String.valueOf(idleTimeout)
           )
         );
       this.tcpKeepAlive =
         Boolean.getBoolean(
           environment.getProperty(
-            prefix + "http.tcpKeepAlive",
+            prefix + "tcpKeepAlive",
             String.valueOf(tcpKeepAlive)
           )
         );
       this.maxHeaderSize =
         Integer.parseInt(
           environment.getProperty(
-            prefix + "http.maxHeaderSize",
+            prefix + "maxHeaderSize",
             String.valueOf(maxHeaderSize)
           )
         );
       this.maxChunkSize =
         Integer.parseInt(
           environment.getProperty(
-            prefix + "http.maxChunkSize",
+            prefix + "maxChunkSize",
             String.valueOf(maxChunkSize)
           )
         );
       this.maxInitialLineLength =
         Integer.parseInt(
           environment.getProperty(
-            prefix + "http.maxInitialLineLength",
+            prefix + "maxInitialLineLength",
             String.valueOf(maxInitialLineLength)
           )
         );
       this.maxFormAttributeSize =
         Integer.parseInt(
           environment.getProperty(
-            prefix + "http.maxFormAttributeSize",
+            prefix + "maxFormAttributeSize",
             String.valueOf(maxFormAttributeSize)
           )
         );
       this.websocketEnabled =
         Boolean.getBoolean(
           environment.getProperty(
-            prefix + "http.websocket.enabled",
+            prefix + "websocket.enabled",
             String.valueOf(websocketEnabled)
           )
         );
       this.websocketSubProtocols =
         environment.getProperty(
-          prefix + "http.websocket.subProtocols",
+          prefix + "websocket.subProtocols",
           websocketSubProtocols
         );
       this.perMessageWebSocketCompressionSupported =
         Boolean.getBoolean(
           environment.getProperty(
-            prefix + "http.websocket.perMessageWebSocketCompressionSupported",
+            prefix + "websocket.perMessageWebSocketCompressionSupported",
             String.valueOf(perMessageWebSocketCompressionSupported)
           )
         );
       this.perFrameWebSocketCompressionSupported =
         Boolean.getBoolean(
           environment.getProperty(
-            prefix + "http.websocket.perFrameWebSocketCompressionSupported",
+            prefix + "websocket.perFrameWebSocketCompressionSupported",
             String.valueOf(perFrameWebSocketCompressionSupported)
           )
         );
       this.proxyProtocol =
         Boolean.getBoolean(
           environment.getProperty(
-            prefix + "http.haproxy.proxyProtocol",
+            prefix + "haproxy.proxyProtocol",
             String.valueOf(proxyProtocol)
           )
         );
       this.proxyProtocolTimeout =
         Long.parseLong(
           environment.getProperty(
-            prefix + "http.haproxy.proxyProtocolTimeout",
+            prefix + "haproxy.proxyProtocolTimeout",
             String.valueOf(proxyProtocolTimeout)
           )
         );

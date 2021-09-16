@@ -16,16 +16,8 @@
 package io.gravitee.node.vertx;
 
 import io.gravitee.node.vertx.configuration.HttpServerConfiguration;
-import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.net.JksOptions;
-import io.vertx.core.net.PemKeyCertOptions;
-import io.vertx.core.net.PemTrustOptions;
-import io.vertx.core.net.PfxOptions;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.http.HttpServer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -35,10 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ReactivexVertxHttpServerFactory
   implements FactoryBean<HttpServer> {
-
-  private static final String CERTIFICATE_FORMAT_JKS = "JKS";
-  private static final String CERTIFICATE_FORMAT_PEM = "PEM";
-  private static final String CERTIFICATE_FORMAT_PKCS12 = "PKCS12";
 
   private final Vertx vertx;
   private final HttpServerConfiguration httpServerConfiguration;
@@ -54,152 +42,10 @@ public class ReactivexVertxHttpServerFactory
 
   @Override
   public HttpServer getObject() throws Exception {
-    HttpServerOptions options = new HttpServerOptions();
-
-    // Binding port
-    options.setPort(httpServerConfiguration.getPort());
-    options.setHost(httpServerConfiguration.getHost());
-
-    if (httpServerConfiguration.isSecured()) {
-      options.setSsl(httpServerConfiguration.isSecured());
-      options.setUseAlpn(httpServerConfiguration.isAlpn());
-      options.setSni(httpServerConfiguration.isSni());
-
-      // TLS protocol support
-      if (httpServerConfiguration.getTlsProtocols() != null) {
-        options.setEnabledSecureTransportProtocols(
-          new HashSet<>(
-            Arrays.asList(
-              httpServerConfiguration.getTlsProtocols().split("\\s*,\\s*")
-            )
-          )
-        );
-      }
-
-      // restrict the authorized ciphers
-      if (httpServerConfiguration.getAuthorizedTlsCipherSuites() != null) {
-        httpServerConfiguration
-          .getAuthorizedTlsCipherSuites()
-          .stream()
-          .map(String::trim)
-          .forEach(options::addEnabledCipherSuite);
-      }
-
-      options.setClientAuth(httpServerConfiguration.getClientAuth());
-
-      if (httpServerConfiguration.getTrustStorePath() != null) {
-        if (
-          httpServerConfiguration.getTrustStoreType() == null ||
-          httpServerConfiguration.getTrustStoreType().isEmpty() ||
-          httpServerConfiguration
-            .getTrustStoreType()
-            .equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)
-        ) {
-          options.setTrustStoreOptions(
-            new JksOptions()
-              .setPath(httpServerConfiguration.getTrustStorePath())
-              .setPassword(httpServerConfiguration.getTrustStorePassword())
-          );
-        } else if (
-          httpServerConfiguration
-            .getTrustStoreType()
-            .equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)
-        ) {
-          options.setPemTrustOptions(
-            new PemTrustOptions()
-            .addCertPath(httpServerConfiguration.getTrustStorePath())
-          );
-        } else if (
-          httpServerConfiguration
-            .getTrustStoreType()
-            .equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)
-        ) {
-          options.setPfxTrustOptions(
-            new PfxOptions()
-              .setPath(httpServerConfiguration.getTrustStorePath())
-              .setPassword(httpServerConfiguration.getTrustStorePassword())
-          );
-        }
-      }
-
-      if (httpServerConfiguration.getKeyStorePath() != null) {
-        if (
-          httpServerConfiguration.getKeyStoreType() == null ||
-          httpServerConfiguration.getKeyStoreType().isEmpty() ||
-          httpServerConfiguration
-            .getKeyStoreType()
-            .equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)
-        ) {
-          options.setKeyStoreOptions(
-            new JksOptions()
-              .setPath(httpServerConfiguration.getKeyStorePath())
-              .setPassword(httpServerConfiguration.getKeyStorePassword())
-          );
-        } else if (
-          httpServerConfiguration
-            .getKeyStoreType()
-            .equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)
-        ) {
-          options.setPemKeyCertOptions(
-            new PemKeyCertOptions()
-            .addCertPath(httpServerConfiguration.getKeyStorePath())
-          );
-        } else if (
-          httpServerConfiguration
-            .getKeyStoreType()
-            .equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)
-        ) {
-          options.setPfxKeyCertOptions(
-            new PfxOptions()
-              .setPath(httpServerConfiguration.getKeyStorePath())
-              .setPassword(httpServerConfiguration.getKeyStorePassword())
-          );
-        }
-      }
-    }
-
-    // Customizable configuration
-    options.setCompressionSupported(
-      httpServerConfiguration.isCompressionSupported()
+    return VertxHttpServerProvider.creat(
+      vertx,
+      httpServerConfiguration.getHttpServerOptions()
     );
-    options.setIdleTimeout(httpServerConfiguration.getIdleTimeout());
-    options.setTcpKeepAlive(httpServerConfiguration.isTcpKeepAlive());
-    options.setMaxChunkSize(httpServerConfiguration.getMaxChunkSize());
-    options.setMaxHeaderSize(httpServerConfiguration.getMaxHeaderSize());
-    options.setMaxInitialLineLength(
-      httpServerConfiguration.getMaxInitialLineLength()
-    );
-    options.setMaxFormAttributeSize(
-      httpServerConfiguration.getMaxFormAttributeSize()
-    );
-
-    // Configure websocket
-    System.setProperty(
-      "vertx.disableWebsockets",
-      Boolean.toString(!httpServerConfiguration.isWebsocketEnabled())
-    );
-    if (
-      httpServerConfiguration.isWebsocketEnabled() &&
-      httpServerConfiguration.getWebsocketSubProtocols() != null
-    ) {
-      options.setWebSocketSubProtocols(
-        new ArrayList<>(
-          Arrays.asList(
-            httpServerConfiguration
-              .getWebsocketSubProtocols()
-              .split("\\s*,\\s*")
-          )
-        )
-      );
-      options.setPerMessageWebSocketCompressionSupported(
-        httpServerConfiguration.isPerMessageWebSocketCompressionSupported()
-      );
-      options.setPerFrameWebSocketCompressionSupported(
-        httpServerConfiguration.isPerFrameWebSocketCompressionSupported()
-      );
-    }
-
-    return vertx.createHttpServer(options);
   }
 
   @Override
