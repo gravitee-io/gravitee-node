@@ -16,8 +16,8 @@
 package io.gravitee.node.vertx;
 
 import io.gravitee.node.vertx.configuration.HttpServerConfiguration;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServer;
+import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.http.HttpServer;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -25,13 +25,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class VertxHttpServerFactory implements FactoryBean<HttpServer> {
+public class ReactivexVertxHttpServerFactory
+  implements FactoryBean<HttpServer> {
 
   private final Vertx vertx;
   private final HttpServerConfiguration httpServerConfiguration;
 
   @Autowired
-  public VertxHttpServerFactory(
+  public ReactivexVertxHttpServerFactory(
     Vertx vertx,
     HttpServerConfiguration httpServerConfiguration
   ) {
