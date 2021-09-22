@@ -28,14 +28,14 @@ public class VertxHttpServerProvider {
 
   private VertxHttpServerProvider() {}
 
-  public static HttpServer creat(
+  public static HttpServer create(
     Vertx vertx,
     HttpServerOptions httpServerOptions
   ) {
     return vertx.createHttpServer(httpServerOptions);
   }
 
-  public static io.vertx.reactivex.core.http.HttpServer creat(
+  public static io.vertx.reactivex.core.http.HttpServer create(
     io.vertx.reactivex.core.Vertx vertx,
     HttpServerOptions httpServerOptions
   ) {
