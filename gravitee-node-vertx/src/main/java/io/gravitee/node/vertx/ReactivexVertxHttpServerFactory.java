@@ -42,7 +42,7 @@ public class ReactivexVertxHttpServerFactory
 
   @Override
   public HttpServer getObject() throws Exception {
-    return VertxHttpServerProvider.creat(
+    return VertxHttpServerProvider.create(
       vertx,
       httpServerConfiguration.getHttpServerOptions()
     );

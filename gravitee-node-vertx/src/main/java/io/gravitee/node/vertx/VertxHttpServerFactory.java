@@ -41,7 +41,7 @@ public class VertxHttpServerFactory implements FactoryBean<HttpServer> {
 
   @Override
   public HttpServer getObject() throws Exception {
-    return VertxHttpServerProvider.creat(
+    return VertxHttpServerProvider.create(
       vertx,
       httpServerConfiguration.getHttpServerOptions()
     );
