@@ -380,6 +380,8 @@ public class HttpServerConfiguration {
 
     private String prefix;
 
+    private HttpServerConfigurationBuilder() {}
+
     public HttpServerConfigurationBuilder withDefaultPort(int port) {
       Assert.isTrue(port > 0, "Port should be bigger than 0");
       this.port = port;
