@@ -103,6 +103,10 @@ public class HttpServerConfiguration {
     this.authorizedTlsCipherSuites = builder.authorizedTlsCipherSuites;
   }
 
+  public static HttpServerConfiguration.HttpServerConfigurationBuilder builder() {
+    return new HttpServerConfiguration.HttpServerConfigurationBuilder();
+  }
+
   // Property methods
   public int getPort() {
     return port;
@@ -607,7 +611,7 @@ public class HttpServerConfiguration {
     public HttpServerConfiguration build() {
       Assert.notNull(
         environment,
-        "Environment is null. Call withEnvironment method first to configured it"
+        "Environment can not be null. Call withEnvironment method first to configured it"
       );
 
       this.port =
