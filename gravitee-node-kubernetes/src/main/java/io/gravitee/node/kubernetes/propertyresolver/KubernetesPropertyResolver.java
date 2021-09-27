@@ -175,7 +175,7 @@ public class KubernetesPropertyResolver implements PropertyResolver {
       .flatMap(
         configMap -> {
           String value = configMap.getData().get(kubeProperty.key);
-          if (!StringUtils.isEmpty(value)) {
+          if (!StringUtils.hasText(value)) {
             return Maybe.just(value);
           } else {
             LOGGER.warn(
@@ -195,7 +195,7 @@ public class KubernetesPropertyResolver implements PropertyResolver {
       .flatMap(
         secret -> {
           String encodedValue = secret.getData().get(kubeProperty.key);
-          if (!StringUtils.isEmpty(encodedValue)) {
+          if (!StringUtils.hasText(encodedValue)) {
             return Maybe.just(
               new String(Base64.getDecoder().decode(encodedValue))
             );
