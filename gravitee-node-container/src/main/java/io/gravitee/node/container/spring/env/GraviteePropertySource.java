@@ -86,34 +86,12 @@ public class GraviteePropertySource
     propertyResolver
       .watch(name, value.toString())
       .doOnNext(
-        newValue -> {
-          System.out.println(
-            name +
-            " next value: " +
-            newValue +
-            " old value: " +
-            value.toString()
-          );
-          source.put(name, newValue);
-        }
+        newValue -> source.put(name, newValue)
       )
       .doOnError(t -> LOGGER.error("Unable to update property {}", name, t))
       .doOnComplete(
-        () -> {
-          watchProperty(propertyResolver, name, value);
-          System.out.println(
-            "//////////////// doOnComplete " +
-            name +
-            " old value: " +
-            value.toString()
-          );
-        }
+        () -> watchProperty(propertyResolver, name, value)
       )
-      .doAfterTerminate(
-        () -> System.out.println("*********** doAfterTerminate" + name)
-      )
-      .doOnDispose(() -> System.out.println("+++++++++++++ dispose " + name))
-      .doFinally(() -> System.out.println("****************finally" + name))
       .subscribe();
   }
 
