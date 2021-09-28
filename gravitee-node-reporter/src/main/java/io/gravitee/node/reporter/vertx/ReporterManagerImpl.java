@@ -54,17 +54,41 @@ public class ReporterManagerImpl extends AbstractService<ReporterManager> implem
             } else {
                 if (! reporters.isEmpty()) {
                     for (Reporter reporter : reporters) {
-                        try {
-                            LOGGER.info("Starting reporter: {}", reporter);
-                            reporter.start();
+                      try {
+                          LOGGER.debug("Pre-starting reporter: {}", reporter);
+                          reporter.preStart();
                         } catch (Exception ex) {
-                            LOGGER.error("Unexpected error while starting reporter", ex);
+                          LOGGER.error(
+                            "Unexpected error while pre-starting reporter",
+                            ex
+                          );
                         }
                     }
-                } else {
-                    LOGGER.info("\tThere is no reporter to start");
-                }
-            }
+
+                    for (Reporter reporter : reporters) {
+                      try {
+                        LOGGER.info("Starting reporter: {}", reporter);
+                        reporter.start();
+                      } catch (Exception ex) {
+                        LOGGER.error("Unexpected error while starting reporter", ex);
+                      }
+                    }
+
+                    for (Reporter reporter : reporters) {
+                      try {
+                        LOGGER.debug("Port-starting reporter: {}", reporter);
+                        reporter.postStart();
+                      } catch (Exception ex) {
+                        LOGGER.error(
+                          "Unexpected error while post-starting reporter",
+                          ex
+                        );
+                                }
+                            }
+                        } else {
+                            LOGGER.info("\tThere is no reporter to start");
+                        }
+                    }
 
             deploymentId = event.result();
         });
@@ -80,16 +104,36 @@ public class ReporterManagerImpl extends AbstractService<ReporterManager> implem
         super.doStop();
 
         if (deploymentId != null) {
-            vertx.undeploy(deploymentId, event -> {
-                for(Reporter reporter: reporters) {
-                    try {
-                        LOGGER.info("Stopping reporter: {}", reporter);
-                        reporter.stop();
-                    } catch (Exception ex) {
-                        LOGGER.error("Unexpected error while stopping reporter", ex);
-                    }
-                }
-            });
+            vertx.undeploy(
+                    deploymentId,
+                    event -> {
+                        for (Reporter reporter : reporters) {
+                            try {
+                                LOGGER.debug("Pre-stopping reporter: {}", reporter);
+                                reporter.preStop();
+                            } catch (Exception ex) {
+                                LOGGER.error("Unexpected error while pre-stopping reporter", ex);
+                            }
+                        }
+
+                        for (Reporter reporter : reporters) {
+                            try {
+                                LOGGER.info("Stopping reporter: {}", reporter);
+                                reporter.stop();
+                            } catch (Exception ex) {
+                                LOGGER.error("Unexpected error while stopping reporter", ex);
+                            }
+                        }
+
+                        for (Reporter reporter : reporters) {
+                            try {
+                                LOGGER.debug("Post-stopping reporter: {}", reporter);
+                                reporter.postStop();
+                            } catch (Exception ex) {
+                                LOGGER.error("Unexpected error while post-stopping reporter", ex);
+                            }
+                        }
+                    });
         }
     }
 
