@@ -118,7 +118,7 @@ public class ReporterManagerImpl
           for (Reporter reporter : reporters) {
             try {
               LOGGER.debug("Pre-stopping reporter: {}", reporter);
-              reporter.stop();
+              reporter.preStop();
             } catch (Exception ex) {
               LOGGER.error("Unexpected error while pre-stopping reporter", ex);
             }
@@ -136,7 +136,7 @@ public class ReporterManagerImpl
           for (Reporter reporter : reporters) {
             try {
               LOGGER.debug("Post-stopping reporter: {}", reporter);
-              reporter.stop();
+              reporter.postStop();
             } catch (Exception ex) {
               LOGGER.error("Unexpected error while post-stopping reporter", ex);
             }
