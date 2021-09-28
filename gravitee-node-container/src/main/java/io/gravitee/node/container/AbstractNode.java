@@ -36,7 +36,6 @@ import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -63,24 +62,14 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
         this.LOGGER.info("{} is now starting...", this.name());
         long startTime = System.currentTimeMillis();
         List<Class<? extends LifecycleComponent>> components = this.components();
-        Iterator<Class<? extends LifecycleComponent>> componentsIte = components.iterator();
 
-        while(componentsIte.hasNext()) {
-            Class<? extends LifecycleComponent> componentClass = componentsIte.next();
-            this.LOGGER.info("\tStarting component: {}", componentClass.getSimpleName());
-
-            try {
-                LifecycleComponent lifecyclecomponent = this.applicationContext.getBean(componentClass);
-                lifecyclecomponent.start();
-            } catch (Exception var7) {
-                this.LOGGER.error("An error occurs while starting component {}", componentClass.getSimpleName(), var7);
-                throw var7;
-            }
-        }
+        preStartComponents(components);
+        startComponents(components);
+        postStartComponents(components);
 
         long endTime = System.currentTimeMillis();
         String processId = ManagementFactory.getRuntimeMXBean().getName();
-        if(processId.contains("@")) {
+        if (processId.contains("@")) {
             processId = processId.split("@")[0];
         }
 
@@ -95,22 +84,12 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
 
     protected void doStop() throws Exception {
         this.LOGGER.info("{} is stopping", this.name());
-        ListReverser<Class<? extends LifecycleComponent>> components = new ListReverser(this.components());
-        Iterator var2 = components.iterator();
 
-        while(var2.hasNext()) {
-            Class componentClass = (Class)var2.next();
+        final List<Class<? extends LifecycleComponent>> components = this.components();
 
-            try {
-                LifecycleComponent lifecyclecomponent = (LifecycleComponent)this.applicationContext.getBean(componentClass);
-                if(lifecyclecomponent.lifecycleState() == Lifecycle.State.STARTED) {
-                    this.LOGGER.info("\tStopping component: {}", componentClass.getSimpleName());
-                    lifecyclecomponent.stop();
-                }
-            } catch (Exception var5) {
-                this.LOGGER.error("An error occurs while stopping component {}", componentClass.getSimpleName(), var5);
-            }
-        }
+        preStopComponents(new ListReverser(components));
+        stopComponents(new ListReverser(components));
+        postStopComponents(new ListReverser(components));
 
         this.LOGGER.info("{} stopped", this.name());
     }
@@ -137,5 +116,119 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+    }
+
+    private void preStartComponents(Iterable<Class<? extends LifecycleComponent>> components) throws Exception {
+        for (Class<? extends LifecycleComponent> componentClass : components) {
+            try {
+                LOGGER.debug(
+                        "\tPre-starting component: {}",
+                        componentClass.getSimpleName()
+                );
+                this.applicationContext.getBean(componentClass).preStart();
+            } catch (Exception e) {
+                this.LOGGER.error(
+                        "An error occurred while pre-starting component {}",
+                        componentClass,
+                        e
+                );
+                throw e;
+            }
+        }
+    }
+
+    private void startComponents(Iterable<Class<? extends LifecycleComponent>> components) throws Exception {
+        for (Class<? extends LifecycleComponent> componentClass : components) {
+            try {
+                LOGGER.info("\tStarting component: {}", componentClass.getSimpleName());
+                this.applicationContext.getBean(componentClass).start();
+            } catch (Exception e) {
+                this.LOGGER.error(
+                        "An error occurred while starting component {}",
+                        componentClass,
+                        e
+                );
+                throw e;
+            }
+        }
+    }
+
+    private void postStartComponents(Iterable<Class<? extends LifecycleComponent>> components) throws Exception {
+        for (Class<? extends LifecycleComponent> componentClass : components) {
+            try {
+                LOGGER.debug("Post-starting component: {}", componentClass.getSimpleName());
+                this.applicationContext.getBean(componentClass).postStart();
+            } catch (Exception e) {
+                this.LOGGER.error(
+                        "An error occurred while post-starting component {}",
+                        componentClass,
+                        e
+                );
+                throw e;
+            }
+        }
+    }
+
+    private void preStopComponents(Iterable<Class<? extends LifecycleComponent>> components) {
+        for (Class<? extends LifecycleComponent> componentClass : components) {
+            try {
+                LifecycleComponent<?> lifecycleComponent =
+                        this.applicationContext.getBean(componentClass);
+                if (lifecycleComponent.lifecycleState() == Lifecycle.State.STARTED) {
+                    this.LOGGER.debug(
+                            "Pre-stopping component: {}",
+                            componentClass.getSimpleName()
+                    );
+                    lifecycleComponent.preStop();
+                }
+            } catch (Exception e) {
+                this.LOGGER.error(
+                        "An error occurred while pre-stopping component {}",
+                        componentClass.getSimpleName(),
+                        e
+                );
+            }
+        }
+    }
+
+    private void stopComponents(Iterable<Class<? extends LifecycleComponent>> components) {
+        for (Class<? extends LifecycleComponent> componentClass : components) {
+            try {
+                LifecycleComponent<?> lifecycleComponent =
+                        this.applicationContext.getBean(componentClass);
+                if (lifecycleComponent.lifecycleState() == Lifecycle.State.STARTED) {
+                    this.LOGGER.info(
+                            "Stopping component: {}",
+                            componentClass.getSimpleName()
+                    );
+                    lifecycleComponent.stop();
+                }
+            } catch (Exception e) {
+                this.LOGGER.error(
+                        "An error occurred while stopping component {}",
+                        componentClass.getSimpleName(),
+                        e
+                );
+            }
+        }
+    }
+
+    private void postStopComponents(Iterable<Class<? extends LifecycleComponent>> components) throws Exception {
+        for (Class<? extends LifecycleComponent> componentClass : components) {
+            try {
+                LOGGER.debug(
+                        "Post-stopping component: {}",
+                        componentClass.getSimpleName()
+                );
+                this.applicationContext.getBean(componentClass).postStop();
+            } catch (Exception e) {
+                this.LOGGER.error(
+                        "An error occurred while post-stopping component {}",
+                        componentClass,
+                        e
+                );
+                throw e;
+            }
+        }
     }
 }

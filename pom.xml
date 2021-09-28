@@ -132,7 +132,7 @@
     </dependencyManagement>
 
     <properties>
-        <gravitee-common.version>1.16.2</gravitee-common.version>
+        <gravitee-common.version>1.19.4-SNAPSHOT</gravitee-common.version>
         <gravitee-plugin.version>1.16.0</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.17.1</gravitee-reporter-api.version>
         <snakeyaml.version>1.26</snakeyaml.version>

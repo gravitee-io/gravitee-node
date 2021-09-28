@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class MonitoringService extends AbstractService {
+public class MonitoringService extends AbstractService<MonitoringService> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MonitoringService.class);
 
@@ -102,26 +102,35 @@ public class MonitoringService extends AbstractService {
     }
 
     @Override
-    protected void doStop() throws Exception {
+    public MonitoringService preStop() throws Exception {
         if (enabled) {
-            if (! executorService.isShutdown()) {
-                LOGGER.info("Stop node monitor");
-                executorService.shutdownNow();
-            } else {
-                LOGGER.info("Gateway monitor already shut-downed");
-            }
-
-            super.doStop();
-
             // Send an event to notify about the node status
-            eventProducer.send(Event
+            eventProducer.send(
+                Event
                     .now()
                     .type(NODE_LIFECYCLE)
                     .property(PROPERTY_NODE_EVENT, NODE_EVENT_STOP)
                     .property(PROPERTY_NODE_ID, node.id())
                     .property(PROPERTY_NODE_HOSTNAME, node.hostname())
                     .property(PROPERTY_NODE_APPLICATION, node.application())
-                    .build());
+                    .build()
+            );
+        }
+
+        return this;
+    }
+
+    @Override
+    protected void doStop() throws Exception {
+        if (enabled) {
+            if (! executorService.isShutdown()) {
+                LOGGER.info("Stop node monitor");
+                executorService.shutdownNow();
+            } else {
+                LOGGER.info("Node monitor already shutdown");
+            }
+
+            super.doStop();
 
             LOGGER.info("Stop node monitor : DONE");
         }
