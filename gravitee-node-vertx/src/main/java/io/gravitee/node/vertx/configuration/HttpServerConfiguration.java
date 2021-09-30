@@ -17,14 +17,14 @@ package io.gravitee.node.vertx.configuration;
 
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.net.JksOptions;
-import io.vertx.core.net.PemKeyCertOptions;
-import io.vertx.core.net.PemTrustOptions;
-import io.vertx.core.net.PfxOptions;
+import io.vertx.core.net.*;
+import io.vertx.core.tracing.TracingPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -35,23 +35,32 @@ import org.springframework.util.StringUtils;
  */
 public class HttpServerConfiguration {
 
+  private static final Logger logger = LoggerFactory.getLogger(
+    HttpServerConfiguration.class
+  );
+
   private static final String CERTIFICATE_FORMAT_JKS = "JKS";
   private static final String CERTIFICATE_FORMAT_PEM = "PEM";
   private static final String CERTIFICATE_FORMAT_PKCS12 = "PKCS12";
+  private static final String CERTIFICATE_FORMAT_SELF_SIGNED = "SELF-SIGNED";
 
+  private final TracingPolicy tracingPolicy;
   private final int port;
   private final String host;
   private final String authenticationType;
   private final boolean secured;
   private final boolean alpn;
   private final boolean sni;
+  private final boolean openssl;
   private final String tlsProtocols;
   private final String keyStorePath;
   private final String keyStorePassword;
   private final String keyStoreType;
+  private final List<Certificate> keyStoreCertificates;
   private final String trustStorePath;
   private final String trustStorePassword;
   private final String trustStoreType;
+  private final List<String> trustStorePaths;
   private final boolean handle100Continue;
   private final boolean compressionSupported;
   private final int idleTimeout;
@@ -70,19 +79,23 @@ public class HttpServerConfiguration {
   private final List<String> authorizedTlsCipherSuites;
 
   private HttpServerConfiguration(HttpServerConfigurationBuilder builder) {
+    this.tracingPolicy = builder.tracingPolicy;
     this.port = builder.port;
     this.host = builder.host;
     this.authenticationType = builder.authenticationType;
     this.secured = builder.secured;
     this.alpn = builder.alpn;
     this.sni = builder.sni;
+    this.openssl = builder.openssl;
     this.tlsProtocols = builder.tlsProtocols;
     this.keyStorePath = builder.keyStorePath;
     this.keyStorePassword = builder.keyStorePassword;
     this.keyStoreType = builder.keyStoreType;
+    this.keyStoreCertificates = builder.keyStoreCertificates;
     this.trustStorePath = builder.trustStorePath;
     this.trustStorePassword = builder.trustStorePassword;
     this.trustStoreType = builder.trustStoreType;
+    this.trustStorePaths = builder.trustStorePaths;
     this.handle100Continue = builder.handle100Continue;
     this.compressionSupported = builder.compressionSupported;
     this.idleTimeout = builder.idleTimeout;
@@ -108,6 +121,10 @@ public class HttpServerConfiguration {
   }
 
   // Property methods
+  public TracingPolicy getTracingPolicy() {
+    return tracingPolicy;
+  }
+
   public int getPort() {
     return port;
   }
@@ -132,6 +149,10 @@ public class HttpServerConfiguration {
     return sni;
   }
 
+  public boolean isOpenssl() {
+    return openssl;
+  }
+
   public String getTlsProtocols() {
     return tlsProtocols;
   }
@@ -148,6 +169,10 @@ public class HttpServerConfiguration {
     return keyStoreType;
   }
 
+  public List<Certificate> getKeyStoreCertificates() {
+    return keyStoreCertificates;
+  }
+
   public String getTrustStorePath() {
     return trustStorePath;
   }
@@ -158,6 +183,10 @@ public class HttpServerConfiguration {
 
   public String getTrustStoreType() {
     return trustStoreType;
+  }
+
+  public List<String> getTrustStorePaths() {
+    return trustStorePaths;
   }
 
   public boolean isHandle100Continue() {
@@ -226,12 +255,17 @@ public class HttpServerConfiguration {
 
   public HttpServerOptions getHttpServerOptions() {
     HttpServerOptions options = new HttpServerOptions();
+    options.setTracingPolicy(this.getTracingPolicy());
 
     // Binding port
     options.setPort(this.getPort());
     options.setHost(this.getHost());
 
     if (this.isSecured()) {
+      if (this.isOpenssl()) {
+        options.setSslEngineOptions(new OpenSSLEngineOptions());
+      }
+
       options.setSsl(this.isSecured());
       options.setUseAlpn(this.isAlpn());
       options.setSni(this.isSni());
@@ -255,7 +289,10 @@ public class HttpServerConfiguration {
 
       options.setClientAuth(this.getClientAuth());
 
-      if (this.getTrustStorePath() != null) {
+      if (
+        this.getTrustStorePaths() != null &&
+        !this.getTrustStorePaths().isEmpty()
+      ) {
         if (
           this.getTrustStoreType() == null ||
           this.getTrustStoreType().isEmpty() ||
@@ -263,26 +300,93 @@ public class HttpServerConfiguration {
         ) {
           options.setTrustStoreOptions(
             new JksOptions()
-              .setPath(this.getTrustStorePath())
+              .setPath(this.getTrustStorePaths().get(0))
               .setPassword(this.getTrustStorePassword())
           );
         } else if (
           this.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)
         ) {
-          options.setPemTrustOptions(
-            new PemTrustOptions().addCertPath(this.getTrustStorePath())
-          );
+          final PemTrustOptions pemTrustOptions = new PemTrustOptions();
+          this.getTrustStorePaths().forEach(pemTrustOptions::addCertPath);
+          options.setPemTrustOptions(pemTrustOptions);
         } else if (
           this.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)
         ) {
           options.setPfxTrustOptions(
             new PfxOptions()
-              .setPath(this.getTrustStorePath())
+              .setPath(this.getTrustStorePaths().get(0))
               .setPassword(this.getTrustStorePassword())
           );
         }
+      } else if (
+        this.getTrustStoreType()
+          .equalsIgnoreCase(CERTIFICATE_FORMAT_SELF_SIGNED)
+      ) {
+        options.setPemTrustOptions(
+          SelfSignedCertificate.create().trustOptions()
+        );
       }
 
+      if (this.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)) {
+        if (
+          this.getKeyStorePath() == null || this.getKeyStorePath().isEmpty()
+        ) {
+          logger.error(
+            "A JKS Keystore is missing. Skipping SSL keystore configuration..."
+          );
+        } else {
+          options.setKeyStoreOptions(
+            new JksOptions()
+              .setPath(this.getKeyStorePath())
+              .setPassword(this.getKeyStorePassword())
+          );
+        }
+      } else if (
+        this.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)
+      ) {
+        if (
+          this.getKeyStoreCertificates() == null ||
+          this.getKeyStoreCertificates().isEmpty()
+        ) {
+          logger.error(
+            "A PEM Keystore is missing. Skipping SSL keystore configuration..."
+          );
+        } else {
+          final PemKeyCertOptions pemKeyCertOptions = new PemKeyCertOptions();
+
+          this.getKeyStoreCertificates()
+            .forEach(
+              certificate ->
+                pemKeyCertOptions
+                  .addCertPath(certificate.getCertificate())
+                  .addKeyPath(certificate.getPrivateKey())
+            );
+
+          options.setPemKeyCertOptions(pemKeyCertOptions);
+        }
+      } else if (
+        this.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)
+      ) {
+        if (
+          this.getKeyStorePath() == null || this.getKeyStorePath().isEmpty()
+        ) {
+          logger.error(
+            "A PKCS#12 Keystore is missing. Skipping SSL keystore configuration..."
+          );
+        } else {
+          options.setPfxKeyCertOptions(
+            new PfxOptions()
+              .setPath(this.getKeyStorePath())
+              .setPassword(this.getKeyStorePassword())
+          );
+        }
+      } else if (
+        this.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_SELF_SIGNED)
+      ) {
+        options.setPemKeyCertOptions(
+          SelfSignedCertificate.create().keyCertOptions()
+        );
+      }
       if (this.getKeyStorePath() != null) {
         if (
           this.getKeyStoreType() == null ||
@@ -310,6 +414,12 @@ public class HttpServerConfiguration {
           );
         }
       }
+    }
+
+    if (this.isProxyProtocol()) {
+      options
+        .setUseProxyProtocol(true)
+        .setProxyProtocolTimeout(this.getProxyProtocolTimeout());
     }
 
     // Customizable configuration
@@ -344,21 +454,44 @@ public class HttpServerConfiguration {
     return options;
   }
 
+  public static class Certificate {
+
+    private final String certificate;
+    private final String privateKey;
+
+    public Certificate(String certificate, String privateKey) {
+      this.certificate = certificate;
+      this.privateKey = privateKey;
+    }
+
+    public String getCertificate() {
+      return certificate;
+    }
+
+    public String getPrivateKey() {
+      return privateKey;
+    }
+  }
+
   public static class HttpServerConfigurationBuilder {
 
+    private TracingPolicy tracingPolicy;
     private int port = 8080;
     private String host = "0.0.0.0";
     private String authenticationType;
     private boolean secured;
     private boolean alpn;
     private boolean sni;
+    private boolean openssl;
     private String tlsProtocols;
     private String keyStorePath;
     private String keyStorePassword;
     private String keyStoreType;
+    private List<Certificate> keyStoreCertificates;
     private String trustStorePath;
     private String trustStorePassword;
     private String trustStoreType;
+    private List<String> trustStorePaths;
     private boolean handle100Continue;
     private boolean compressionSupported;
     private int idleTimeout;
@@ -416,6 +549,11 @@ public class HttpServerConfiguration {
       return this;
     }
 
+    public HttpServerConfigurationBuilder withDefaultOpenssl(boolean openssl) {
+      this.openssl = openssl;
+      return this;
+    }
+
     public HttpServerConfigurationBuilder withDefaultTlsProtocols(
       String tlsProtocols
     ) {
@@ -444,6 +582,13 @@ public class HttpServerConfiguration {
       return this;
     }
 
+    public HttpServerConfigurationBuilder withDefaultKeyStoreCertificates(
+      List<Certificate> keyStoreCertificates
+    ) {
+      this.keyStoreCertificates = keyStoreCertificates;
+      return this;
+    }
+
     public HttpServerConfigurationBuilder withDefaultTrustStorePath(
       String trustStorePath
     ) {
@@ -462,6 +607,13 @@ public class HttpServerConfiguration {
       String trustStoreType
     ) {
       this.trustStoreType = trustStoreType;
+      return this;
+    }
+
+    public HttpServerConfigurationBuilder withDefaultTrustStorePaths(
+      List<String> trustStorePaths
+    ) {
+      this.trustStorePaths = trustStorePaths;
       return this;
     }
 
@@ -595,6 +747,59 @@ public class HttpServerConfiguration {
       return this;
     }
 
+    private List<Certificate> getCertificateValues(String prefix) {
+      final List<Certificate> certificates = new ArrayList<>();
+
+      boolean found = true;
+      int idx = 0;
+
+      while (found) {
+        final String cert = environment.getProperty(
+          prefix + '[' + idx + "].cert"
+        );
+        found = (cert != null && !cert.isEmpty());
+
+        if (found) {
+          certificates.add(
+            new Certificate(
+              cert,
+              environment.getProperty(prefix + '[' + idx + "].key")
+            )
+          );
+        }
+
+        idx++;
+      }
+
+      return certificates;
+    }
+
+    private List<String> getArrayValues(String prefix) {
+      final List<String> values = new ArrayList<>();
+
+      boolean found = true;
+      int idx = 0;
+
+      while (found) {
+        String value = environment.getProperty(prefix + '[' + idx++ + ']');
+        found = (value != null && !value.isEmpty());
+
+        if (found) {
+          values.add(value);
+        }
+      }
+
+      if (values.isEmpty()) {
+        // Check for a single value
+        final String single = environment.getProperty(prefix);
+        if (single != null && !single.isEmpty()) {
+          values.add(single);
+        }
+      }
+
+      return values;
+    }
+
     public HttpServerConfiguration defaultConfig() {
       withDefaultCompressionSupported(
         HttpServerOptions.DEFAULT_COMPRESSION_SUPPORTED
@@ -624,15 +829,15 @@ public class HttpServerConfiguration {
       this.authenticationType =
         environment.getProperty(prefix + "authentication", authenticationType);
       this.secured =
-        Boolean.getBoolean(
+        Boolean.parseBoolean(
           environment.getProperty(prefix + "secured", String.valueOf(secured))
         );
       this.alpn =
-        Boolean.getBoolean(
+        Boolean.parseBoolean(
           environment.getProperty(prefix + "alpn", String.valueOf(alpn))
         );
       this.sni =
-        Boolean.getBoolean(
+        Boolean.parseBoolean(
           environment.getProperty(prefix + "ssl.sni", String.valueOf(sni))
         );
       this.tlsProtocols =
@@ -660,6 +865,8 @@ public class HttpServerConfiguration {
         environment.getProperty(prefix + "ssl.keystore.type", keyStoreType);
       this.keyStorePath =
         environment.getProperty(prefix + "ssl.keystore.path", keyStorePath);
+      this.keyStoreCertificates =
+        getCertificateValues("http.ssl.keystore.certificates");
       this.keyStorePassword =
         environment.getProperty(
           prefix + "ssl.keystore.password",
@@ -670,6 +877,7 @@ public class HttpServerConfiguration {
         environment.getProperty(prefix + "ssl.truststore.type", trustStoreType);
       this.trustStorePath =
         environment.getProperty(prefix + "ssl.truststore.path", trustStorePath);
+      this.trustStorePaths = getArrayValues("http.ssl.truststore.path");
       this.trustStorePassword =
         environment.getProperty(
           prefix + "ssl.truststore.password",
@@ -677,7 +885,7 @@ public class HttpServerConfiguration {
         );
 
       this.compressionSupported =
-        Boolean.getBoolean(
+        Boolean.parseBoolean(
           environment.getProperty(
             prefix + "compressionSupported",
             String.valueOf(compressionSupported)
@@ -691,7 +899,7 @@ public class HttpServerConfiguration {
           )
         );
       this.tcpKeepAlive =
-        Boolean.getBoolean(
+        Boolean.parseBoolean(
           environment.getProperty(
             prefix + "tcpKeepAlive",
             String.valueOf(tcpKeepAlive)
@@ -726,7 +934,7 @@ public class HttpServerConfiguration {
           )
         );
       this.websocketEnabled =
-        Boolean.getBoolean(
+        Boolean.parseBoolean(
           environment.getProperty(
             prefix + "websocket.enabled",
             String.valueOf(websocketEnabled)
@@ -738,21 +946,21 @@ public class HttpServerConfiguration {
           websocketSubProtocols
         );
       this.perMessageWebSocketCompressionSupported =
-        Boolean.getBoolean(
+        Boolean.parseBoolean(
           environment.getProperty(
             prefix + "websocket.perMessageWebSocketCompressionSupported",
             String.valueOf(perMessageWebSocketCompressionSupported)
           )
         );
       this.perFrameWebSocketCompressionSupported =
-        Boolean.getBoolean(
+        Boolean.parseBoolean(
           environment.getProperty(
             prefix + "websocket.perFrameWebSocketCompressionSupported",
             String.valueOf(perFrameWebSocketCompressionSupported)
           )
         );
       this.proxyProtocol =
-        Boolean.getBoolean(
+        Boolean.parseBoolean(
           environment.getProperty(
             prefix + "haproxy.proxyProtocol",
             String.valueOf(proxyProtocol)
