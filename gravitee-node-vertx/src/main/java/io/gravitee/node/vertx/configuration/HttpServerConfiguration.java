@@ -387,33 +387,6 @@ public class HttpServerConfiguration {
           SelfSignedCertificate.create().keyCertOptions()
         );
       }
-      if (this.getKeyStorePath() != null) {
-        if (
-          this.getKeyStoreType() == null ||
-          this.getKeyStoreType().isEmpty() ||
-          this.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)
-        ) {
-          options.setKeyStoreOptions(
-            new JksOptions()
-              .setPath(this.getKeyStorePath())
-              .setPassword(this.getKeyStorePassword())
-          );
-        } else if (
-          this.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)
-        ) {
-          options.setPemKeyCertOptions(
-            new PemKeyCertOptions().addCertPath(this.getKeyStorePath())
-          );
-        } else if (
-          this.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)
-        ) {
-          options.setPfxKeyCertOptions(
-            new PfxOptions()
-              .setPath(this.getKeyStorePath())
-              .setPassword(this.getKeyStorePassword())
-          );
-        }
-      }
     }
 
     if (this.isProxyProtocol()) {
