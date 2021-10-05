@@ -813,6 +813,13 @@ public class HttpServerConfiguration {
         Boolean.parseBoolean(
           environment.getProperty(prefix + "ssl.sni", String.valueOf(sni))
         );
+      this.openssl =
+        Boolean.parseBoolean(
+          environment.getProperty(
+            prefix + "ssl.openssl",
+            String.valueOf(openssl)
+          )
+        );
       this.tlsProtocols =
         environment.getProperty(prefix + "ssl.tlsProtocols", tlsProtocols);
       this.authorizedTlsCipherSuites =
