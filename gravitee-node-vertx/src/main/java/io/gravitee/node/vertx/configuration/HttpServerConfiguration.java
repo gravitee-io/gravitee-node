@@ -846,7 +846,7 @@ public class HttpServerConfiguration {
       this.keyStorePath =
         environment.getProperty(prefix + "ssl.keystore.path", keyStorePath);
       this.keyStoreCertificates =
-        getCertificateValues("http.ssl.keystore.certificates");
+        getCertificateValues(prefix + "ssl.keystore.certificates");
       this.keyStorePassword =
         environment.getProperty(
           prefix + "ssl.keystore.password",
@@ -857,7 +857,7 @@ public class HttpServerConfiguration {
         environment.getProperty(prefix + "ssl.truststore.type", trustStoreType);
       this.trustStorePath =
         environment.getProperty(prefix + "ssl.truststore.path", trustStorePath);
-      this.trustStorePaths = getArrayValues("http.ssl.truststore.path");
+      this.trustStorePaths = getArrayValues(prefix + "ssl.truststore.path");
       this.trustStorePassword =
         environment.getProperty(
           prefix + "ssl.truststore.password",
