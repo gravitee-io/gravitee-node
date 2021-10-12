@@ -830,7 +830,7 @@ public class HttpServerConfiguration {
         );
 
       String sClientAuthMode = environment.getProperty(
-        "ssl.clientAuth",
+        prefix + "ssl.clientAuth",
         ClientAuth.NONE.name()
       );
       if (sClientAuthMode.equalsIgnoreCase(Boolean.TRUE.toString())) {
