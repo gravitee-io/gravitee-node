@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class NodeMonitorService extends AbstractService {
+public class NodeMonitorService extends AbstractService<NodeMonitorService> {
 
     public static final String GIO_NODE_MONITOR_BUS = "gio:node:monitor";
 
@@ -117,6 +117,24 @@ public class NodeMonitorService extends AbstractService {
 
             managementEndpointManager.register(nodeMonitorManagementEndpoint);
         }
+    }
+
+    @Override
+    public NodeMonitorService preStop() throws Exception {
+        if (enabled) {
+            // Send an event to notify about the node status
+            eventProducer.send(
+                    Event
+                            .now()
+                            .type(NODE_LIFECYCLE)
+                            .property(PROPERTY_NODE_EVENT, NODE_EVENT_STOP)
+                            .property(PROPERTY_NODE_ID, node.id())
+                            .property(PROPERTY_NODE_HOSTNAME, node.hostname())
+                            .property(PROPERTY_NODE_APPLICATION, node.application())
+                            .build()
+            );
+        }
+        return this;
     }
 
     @Override

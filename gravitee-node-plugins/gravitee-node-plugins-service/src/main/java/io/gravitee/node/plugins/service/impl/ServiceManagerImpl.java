@@ -44,9 +44,23 @@ public class ServiceManagerImpl extends AbstractService implements ServiceManage
 
         for (AbstractService service : services) {
             try {
+                service.preStart();
+            } catch (Exception ex) {
+                LOGGER.error("Unexpected error while pre-starting service", ex);
+            }
+        }
+        for (AbstractService service : services) {
+            try {
                 service.start();
             } catch (Exception ex) {
                 LOGGER.error("Unexpected error while starting service", ex);
+            }
+        }
+        for (AbstractService service : services) {
+            try {
+                service.postStart();
+            } catch (Exception ex) {
+                LOGGER.error("Unexpected error while post-starting service", ex);
             }
         }
     }
@@ -55,11 +69,25 @@ public class ServiceManagerImpl extends AbstractService implements ServiceManage
     protected void doStop() throws Exception {
         super.doStop();
 
-        for(AbstractService service: services) {
+        for (AbstractService service : services) {
+            try {
+                service.preStop();
+            } catch (Exception ex) {
+                LOGGER.error("Unexpected error while pre-stopping service", ex);
+            }
+        }
+        for (AbstractService service : services) {
             try {
                 service.stop();
             } catch (Exception ex) {
                 LOGGER.error("Unexpected error while stopping service", ex);
+            }
+        }
+        for (AbstractService service : services) {
+            try {
+                service.postStop();
+            } catch (Exception ex) {
+                LOGGER.error("Unexpected error while post-stopping service", ex);
             }
         }
     }
