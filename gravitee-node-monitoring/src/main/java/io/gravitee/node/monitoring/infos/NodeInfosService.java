@@ -90,12 +90,16 @@ public class NodeInfosService extends AbstractService<NodeInfosService> {
     LOGGER.info("Start node infos service: DONE");
   }
 
+  public NodeInfosService preStop() {
+    nodeInfos.setStatus(NodeStatus.STOPPED);
+    messageProducer.write(nodeInfos);
+
+    return this;
+  }
+
   @Override
   protected void doStop() throws Exception {
     LOGGER.info("Stopping node infos service");
-
-    nodeInfos.setStatus(NodeStatus.STOPPED);
-    messageProducer.write(nodeInfos);
 
     super.doStop();
 

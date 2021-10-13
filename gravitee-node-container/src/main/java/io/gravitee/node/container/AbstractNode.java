@@ -130,7 +130,7 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
         for (Class<? extends LifecycleComponent> componentClass : components) {
             try {
                 LOGGER.debug(
-                        "\tPre-starting component: {}",
+                        "Pre-starting component: {}",
                         componentClass.getSimpleName()
                 );
                 this.applicationContext.getBean(componentClass).preStart();
@@ -148,7 +148,7 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
     private void startComponents(Iterable<Class<? extends LifecycleComponent>> components) throws Exception {
         for (Class<? extends LifecycleComponent> componentClass : components) {
             try {
-                LOGGER.info("\tStarting component: {}", componentClass.getSimpleName());
+                LOGGER.info("Starting component: {}", componentClass.getSimpleName());
                 this.applicationContext.getBean(componentClass).start();
             } catch (Exception e) {
                 this.LOGGER.error(
