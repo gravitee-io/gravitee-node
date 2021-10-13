@@ -122,32 +122,6 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
     @Override
     public NodeMonitorService preStop() throws Exception {
         if (enabled) {
-            // Send an event to notify about the node status
-            eventProducer.send(
-                    Event
-                            .now()
-                            .type(NODE_LIFECYCLE)
-                            .property(PROPERTY_NODE_EVENT, NODE_EVENT_STOP)
-                            .property(PROPERTY_NODE_ID, node.id())
-                            .property(PROPERTY_NODE_HOSTNAME, node.hostname())
-                            .property(PROPERTY_NODE_APPLICATION, node.application())
-                            .build()
-            );
-        }
-        return this;
-    }
-
-    @Override
-    protected void doStop() throws Exception {
-        if (enabled) {
-            if (!executorService.isShutdown()) {
-                LOGGER.info("Stop node monitor");
-                executorService.shutdownNow();
-            } else {
-                LOGGER.info("Gateway monitor already shut-downed");
-            }
-
-            super.doStop();
 
             // Send an event to notify about the node status
             eventProducer.send(Event
@@ -158,6 +132,22 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
                     .property(PROPERTY_NODE_HOSTNAME, node.hostname())
                     .property(PROPERTY_NODE_APPLICATION, node.application())
                     .build());
+        }
+
+        return this;
+    }
+
+    @Override
+    protected void doStop() throws Exception {
+        if (enabled) {
+            if (!executorService.isShutdown()) {
+                LOGGER.info("Stop node monitor");
+                executorService.shutdownNow();
+            } else {
+                LOGGER.info("Node monitor already shutdown");
+            }
+
+            super.doStop();
 
             LOGGER.info("Stop node monitor : DONE");
         }

@@ -36,13 +36,10 @@ import java.util.Collection;
 public class ReporterManagerImpl extends AbstractService<ReporterManager> implements ReporterManager {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ReporterManagerImpl.class);
-
+    private final Collection<Reporter> reporters = new ArrayList<>();
     @Autowired
     private Vertx vertx;
-
     private String deploymentId;
-
-    private final Collection<Reporter> reporters = new ArrayList<>();
 
     @Override
     protected void doStart() throws Exception {
@@ -52,7 +49,7 @@ public class ReporterManagerImpl extends AbstractService<ReporterManager> implem
             if (event.failed()) {
                 LOGGER.error("Reporter service can not be started", event.cause());
             } else {
-                if (! reporters.isEmpty()) {
+                if (!reporters.isEmpty()) {
                     for (Reporter reporter : reporters) {
                       try {
                           LOGGER.debug("Pre-starting reporter: {}", reporter);
@@ -75,20 +72,20 @@ public class ReporterManagerImpl extends AbstractService<ReporterManager> implem
                     }
 
                     for (Reporter reporter : reporters) {
-                      try {
-                        LOGGER.debug("Port-starting reporter: {}", reporter);
-                        reporter.postStart();
-                      } catch (Exception ex) {
-                        LOGGER.error(
-                          "Unexpected error while post-starting reporter",
-                          ex
-                        );
-                                }
-                            }
-                        } else {
-                            LOGGER.info("\tThere is no reporter to start");
+                        try {
+                            LOGGER.debug("Port-starting reporter: {}", reporter);
+                            reporter.postStart();
+                        } catch (Exception ex) {
+                            LOGGER.error(
+                                    "Unexpected error while post-starting reporter",
+                                    ex
+                            );
                         }
                     }
+                } else {
+                    LOGGER.info("There is no reporter to start");
+                }
+            }
 
             deploymentId = event.result();
         });
@@ -133,7 +130,8 @@ public class ReporterManagerImpl extends AbstractService<ReporterManager> implem
                                 LOGGER.error("Unexpected error while post-stopping reporter", ex);
                             }
                         }
-                    });
+                    }
+            );
         }
     }
 
