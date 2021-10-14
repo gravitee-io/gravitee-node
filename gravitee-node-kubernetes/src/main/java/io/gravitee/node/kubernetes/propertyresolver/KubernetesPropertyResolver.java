@@ -16,17 +16,16 @@
 package io.gravitee.node.kubernetes.propertyresolver;
 
 import io.gravitee.kubernetes.client.KubernetesClient;
-import io.gravitee.kubernetes.client.KubernetesConfigMapV1Watcher;
-import io.gravitee.kubernetes.client.KubernetesSecretV1Watcher;
+import io.gravitee.kubernetes.client.model.v1.ConfigMapEvent;
 import io.gravitee.kubernetes.client.model.v1.KubernetesEventType;
+import io.gravitee.kubernetes.client.model.v1.SecretEvent;
+import io.reactivex.Flowable;
 import io.reactivex.Maybe;
-import io.reactivex.Observable;
 import java.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
@@ -42,12 +41,6 @@ public class KubernetesPropertyResolver implements PropertyResolver {
   @Autowired
   private KubernetesClient kubernetesClient;
 
-  @Autowired
-  private KubernetesConfigMapV1Watcher kubernetesConfigMapV1Watcher;
-
-  @Autowired
-  private KubernetesSecretV1Watcher kubernetesSecretV1Watcher;
-
   @Override
   public boolean supports(String currentValue) {
     Assert.notNull(currentValue, "Current value can not be null");
@@ -60,89 +53,84 @@ public class KubernetesPropertyResolver implements PropertyResolver {
     Assert.notNull(propertyName, "Property name can not be null");
     Assert.notNull(currentValue, "Current value can not be null");
 
-    KubeProperty kubeProperty = parsePropertyName(propertyName, currentValue); // kube://default/configmap/gravitee-config
-    if (kubeProperty == null) {
+    String[] properties = parsePropertyName(propertyName, currentValue); // kube://default/configmap/gravitee-config
+    if (properties == null) {
       return Maybe.empty();
     }
 
     LOGGER.debug(
       "Resolve property [{}] in namespace [{}] using resource [{}]",
       propertyName,
-      kubeProperty.namespace,
-      kubeProperty.resourceName
+      properties[0], // namespace
+      properties[2] // resourceName
     );
-    if (PropertyType.SECRET == kubeProperty.resourceType) {
-      return resolvePropertyFromSecret(kubeProperty);
-    } else if (PropertyType.CONFIGMAP == kubeProperty.resourceType) {
-      return resolvePropertyFromConfigMap(kubeProperty);
+
+    if ("secret".equals(properties[1])) { // type
+      return resolvePropertyFromSecret(generateLocation(properties))
+        .map(encodeData -> Base64.getDecoder().decode(encodeData));
+    } else if ("configmap".equals(properties[1])) {
+      return resolvePropertyFromConfigMap(generateLocation(properties))
+        .map(String::strip);
     } else {
-      LOGGER.warn(
-        "Property type [{}] is not supported",
-        kubeProperty.resourceType.value
-      );
+      LOGGER.warn("Property type [{}] is not supported", currentValue);
     }
 
     return Maybe.empty();
   }
 
   @Override
-  public Observable<Object> watch(String propertyName, String currentValue) {
+  public Flowable<Object> watch(String propertyName, String currentValue) {
     Assert.notNull(propertyName, "Property name can not be null");
     Assert.notNull(currentValue, "Current value can not be null");
 
-    KubeProperty kubeProperty = parsePropertyName(propertyName, currentValue); // kube://default/configmap/gravitee-config
-    if (kubeProperty == null) {
-      return Observable.empty();
+    String[] properties = parsePropertyName(propertyName, currentValue); // kube://default/configmap/gravitee-config
+    if (properties == null) {
+      return Flowable.empty();
     }
 
     LOGGER.debug(
       "Start watching property [{}] in namespace [{}] using resource [{}]",
       propertyName,
-      kubeProperty.namespace,
-      kubeProperty.resourceName
+      properties[0], // namespace
+      properties[2] // resourceName
     );
 
-    if (PropertyType.SECRET == kubeProperty.resourceType) {
-      return kubernetesSecretV1Watcher
-        .watch(
-          kubeProperty.namespace,
-          "metadata.name=" + kubeProperty.resourceName
-        )
+    if ("secret".equals(properties[1])) { // type
+      return kubernetesClient
+        .watch(generateLocation(properties), SecretEvent.class)
         .filter(
           event ->
             event.getType().equals(KubernetesEventType.MODIFIED.name()) ||
             event.getType().equals(KubernetesEventType.ADDED.name())
         )
-        .flatMap(
-          event -> resolvePropertyFromSecret(kubeProperty).toObservable()
+        .map(
+          secretEvent -> {
+            String encodedData = secretEvent
+              .getObject()
+              .getData()
+              .get(properties[3]);
+            return Base64.getDecoder().decode(encodedData);
+          }
         );
-    } else if (PropertyType.CONFIGMAP == kubeProperty.resourceType) {
-      return kubernetesConfigMapV1Watcher
-        .watch(
-          kubeProperty.namespace,
-          "metadata.name=" + kubeProperty.resourceName
-        )
+    } else if ("configmap".equals(properties[1])) {
+      return kubernetesClient
+        .watch(generateLocation(properties), ConfigMapEvent.class)
         .filter(
           event ->
             event.getType().equals(KubernetesEventType.MODIFIED.name()) ||
             event.getType().equals(KubernetesEventType.ADDED.name())
         )
-        .flatMap(
-          event -> resolvePropertyFromConfigMap(kubeProperty).toObservable()
+        .map(
+          configMapEvent ->
+            configMapEvent.getObject().getData().get(properties[3])
         );
     } else {
-      LOGGER.warn(
-        "Property type [{}] is not supported",
-        kubeProperty.resourceType.value
-      );
-      return Observable.empty();
+      LOGGER.warn("Property type [{}] is not supported", properties[1]);
+      return Flowable.empty();
     }
   }
 
-  private KubeProperty parsePropertyName(
-    String propertyName,
-    String currentValue
-  ) {
+  private String[] parsePropertyName(String propertyName, String currentValue) {
     if (!supports(currentValue)) {
       LOGGER.error("Does not support scheme {}", currentValue);
       return null;
@@ -150,99 +138,61 @@ public class KubernetesPropertyResolver implements PropertyResolver {
 
     String[] properties = currentValue.substring(7).split("/"); // eliminate initial kube://
 
-    if (properties.length < 3) {
+    if (properties.length < 3 || properties.length > 4) {
       LOGGER.error(
         "Wrong property value. A correct format looks like this \"kube://{namespace}/configmap/{configmap-name}\""
       );
       return null;
+    } else if (properties.length == 3) {
+      return new String[] {
+        properties[0],
+        properties[1],
+        properties[2],
+        propertyName,
+      };
     }
 
-    String key = properties.length == 4 ? properties[3] : propertyName;
-    PropertyType propertyType = null;
-    for (PropertyType type : PropertyType.values()) {
-      if (type.value().equals(properties[1])) {
-        propertyType = type;
-      }
-    }
-    return new KubeProperty(properties[0], propertyType, properties[2], key);
+    return properties;
   }
 
-  private Maybe<Object> resolvePropertyFromConfigMap(
-    KubeProperty kubeProperty
-  ) {
+  private String generateLocation(String[] properties) {
+    return String.format(
+      "%s%s/%s/%s/%s",
+      CloudScheme.KUBE.value(),
+      properties[0],
+      properties[1],
+      properties[2],
+      properties[3]
+    );
+  }
+
+  private Maybe<String> resolvePropertyFromConfigMap(String location) {
     return kubernetesClient
-      .configMap(kubeProperty.namespace, kubeProperty.resourceName)
+      .get(location, String.class)
       .flatMap(
-        configMap -> {
-          String value = configMap.getData().get(kubeProperty.key);
-          if (!StringUtils.hasText(value)) {
-            return Maybe.just(value);
+        data -> {
+          if (data != null) {
+            return Maybe.just(data);
           } else {
-            LOGGER.warn(
-              "Key [{}] not found in configmap [{}]",
-              kubeProperty.key,
-              kubeProperty.resourceName
-            );
+            LOGGER.warn("Key not found in this location [{}]", location);
             return Maybe.empty();
           }
         }
       );
   }
 
-  private Maybe<Object> resolvePropertyFromSecret(KubeProperty kubeProperty) {
+  private Maybe<String> resolvePropertyFromSecret(String location) {
     return kubernetesClient
-      .secret(kubeProperty.namespace, kubeProperty.resourceName)
+      .get(location, String.class)
       .flatMap(
-        secret -> {
-          String encodedValue = secret.getData().get(kubeProperty.key);
-          if (!StringUtils.hasText(encodedValue)) {
-            return Maybe.just(
-              new String(Base64.getDecoder().decode(encodedValue))
-            );
+        data -> {
+          if (data != null) {
+            return Maybe.just(data);
           } else {
-            LOGGER.debug(
-              "Key [{}] not found in secret [{}]",
-              kubeProperty.key,
-              kubeProperty.resourceName
-            );
+            LOGGER.debug("Key not found in this location [{}]", location);
             return Maybe.empty();
           }
         }
       );
-  }
-
-  private static class KubeProperty {
-
-    private final String namespace;
-    private final PropertyType resourceType;
-    private final String resourceName;
-    private final String key;
-
-    private KubeProperty(
-      String namespace,
-      PropertyType resourceType,
-      String resourceName,
-      String key
-    ) {
-      this.namespace = namespace;
-      this.resourceType = resourceType;
-      this.resourceName = resourceName;
-      this.key = key;
-    }
-  }
-
-  private enum PropertyType {
-    SECRET("secret"),
-    CONFIGMAP("configmap");
-
-    private final String value;
-
-    PropertyType(String value) {
-      this.value = value;
-    }
-
-    public String value() {
-      return this.value;
-    }
   }
 }

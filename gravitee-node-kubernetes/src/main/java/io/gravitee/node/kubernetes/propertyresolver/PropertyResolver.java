@@ -15,8 +15,8 @@
  */
 package io.gravitee.node.kubernetes.propertyresolver;
 
+import io.reactivex.Flowable;
 import io.reactivex.Maybe;
-import io.reactivex.Observable;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
@@ -44,5 +44,5 @@ public interface PropertyResolver {
    * @param currentValue
    * @return last value
    */
-  Observable<Object> watch(String propertyName, String currentValue);
+  Flowable<Object> watch(String propertyName, String currentValue);
 }

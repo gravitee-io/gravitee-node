@@ -18,7 +18,6 @@ package io.gravitee.node.container.spring.env;
 import io.gravitee.node.kubernetes.propertyresolver.CloudScheme;
 import io.gravitee.node.kubernetes.propertyresolver.PropertyResolver;
 import io.gravitee.node.kubernetes.propertyresolver.PropertyResolverFactoriesLoader;
-import io.reactivex.Observable;
 import java.util.Map;
 import java.util.Objects;
 import org.slf4j.Logger;
