@@ -39,7 +39,7 @@ import org.springframework.beans.factory.annotation.Value;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class NodeMonitorService extends AbstractService {
+public class NodeMonitorService extends AbstractService<NodeMonitorService> {
 
   public static final String GIO_NODE_MONITOR_BUS = "gio:node:monitor";
 
