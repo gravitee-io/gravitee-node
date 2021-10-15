@@ -157,8 +157,7 @@ public class KubernetesPropertyResolver implements PropertyResolver {
 
   private String generateLocation(String[] properties) {
     return String.format(
-      "%s%s/%s/%s/%s",
-      CloudScheme.KUBE.value(),
+      "/%s/%s/%s/%s",
       properties[0],
       properties[1],
       properties[2],
