@@ -466,25 +466,26 @@ public class HttpServerConfiguration {
     private String trustStoreType;
     private List<String> trustStorePaths;
     private boolean handle100Continue;
-    private boolean compressionSupported;
-    private int idleTimeout;
+    private boolean compressionSupported =
+      HttpServerOptions.DEFAULT_COMPRESSION_SUPPORTED;
+    private int idleTimeout = HttpServerOptions.DEFAULT_IDLE_TIMEOUT;
     private boolean tcpKeepAlive = true;
-    private int maxHeaderSize;
-    private int maxChunkSize;
-    private int maxInitialLineLength;
+    private int maxHeaderSize = 8192;
+    private int maxChunkSize = 8192;
+    private int maxInitialLineLength = 4096;
     private int maxFormAttributeSize;
     private boolean websocketEnabled;
     private String websocketSubProtocols;
-    private boolean perMessageWebSocketCompressionSupported;
-    private boolean perFrameWebSocketCompressionSupported;
+    private boolean perMessageWebSocketCompressionSupported = true;
+    private boolean perFrameWebSocketCompressionSupported = true;
     private boolean proxyProtocol;
-    private long proxyProtocolTimeout;
+    private long proxyProtocolTimeout = 10000;
     private ClientAuth clientAuth;
     private List<String> authorizedTlsCipherSuites;
 
     private Environment environment;
 
-    private String prefix;
+    private String prefix = "http";
 
     private HttpServerConfigurationBuilder() {}
 
@@ -771,21 +772,6 @@ public class HttpServerConfiguration {
       }
 
       return values;
-    }
-
-    public HttpServerConfiguration defaultConfig() {
-      withDefaultCompressionSupported(
-        HttpServerOptions.DEFAULT_COMPRESSION_SUPPORTED
-      );
-      withDefaultIdleTimeout(HttpServerOptions.DEFAULT_IDLE_TIMEOUT);
-      withDefaultMaxHeaderSize(8192);
-      withDefaultMaxChunkSize(8192);
-      withDefaultMaxInitialLineLength(4096);
-      withDefaultPerMessageWebSocketCompressionSupported(true);
-      withDefaultPerFrameWebSocketCompressionSupported(true);
-      withDefaultProxyProtocolTimeout(10000);
-
-      return withPrefix("http").build();
     }
 
     public HttpServerConfiguration build() {
