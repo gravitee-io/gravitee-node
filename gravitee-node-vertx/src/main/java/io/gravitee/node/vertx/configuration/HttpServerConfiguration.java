@@ -485,7 +485,7 @@ public class HttpServerConfiguration {
 
     private Environment environment;
 
-    private String prefix = "http";
+    private String prefix = "http.";
 
     private HttpServerConfigurationBuilder() {}
 
