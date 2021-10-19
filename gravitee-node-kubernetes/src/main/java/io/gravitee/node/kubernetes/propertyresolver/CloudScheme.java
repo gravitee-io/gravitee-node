@@ -21,7 +21,7 @@ package io.gravitee.node.kubernetes.propertyresolver;
  * @since 3.9.11
  */
 public enum CloudScheme {
-  KUBE("kube://");
+  KUBERNETES("kubernetes://");
 
   private final String scheme;
 

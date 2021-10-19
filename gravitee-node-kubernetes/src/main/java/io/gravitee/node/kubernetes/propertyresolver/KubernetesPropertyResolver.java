@@ -45,7 +45,7 @@ public class KubernetesPropertyResolver implements PropertyResolver {
   public boolean supports(String currentValue) {
     Assert.notNull(currentValue, "Current value can not be null");
 
-    return currentValue.startsWith(CloudScheme.KUBE.value());
+    return currentValue.startsWith(CloudScheme.KUBERNETES.value());
   }
 
   @Override
@@ -53,7 +53,7 @@ public class KubernetesPropertyResolver implements PropertyResolver {
     Assert.notNull(propertyName, "Property name can not be null");
     Assert.notNull(currentValue, "Current value can not be null");
 
-    String[] properties = parsePropertyName(propertyName, currentValue); // kube://default/configmap/gravitee-config
+    String[] properties = parsePropertyName(propertyName, currentValue); // kubernetes://default/configmaps/gravitee-config
     if (properties == null) {
       return Maybe.empty();
     }
@@ -65,17 +65,19 @@ public class KubernetesPropertyResolver implements PropertyResolver {
       properties[2] // resourceName
     );
 
-    if ("secret".equals(properties[1])) { // type
+    if ("secrets".equals(properties[1])) { // type
       return resolvePropertyFromSecret(generateLocation(properties))
         .map(encodeData -> Base64.getDecoder().decode(encodeData));
-    } else if ("configmap".equals(properties[1])) {
+    } else if ("configmaps".equals(properties[1])) {
       return resolvePropertyFromConfigMap(generateLocation(properties))
         .map(String::strip);
     } else {
-      LOGGER.warn("Property type [{}] is not supported", currentValue);
+      return Maybe.error(
+        new RuntimeException(
+          "Property type " + currentValue + " is not supported"
+        )
+      );
     }
-
-    return Maybe.empty();
   }
 
   @Override
@@ -83,7 +85,7 @@ public class KubernetesPropertyResolver implements PropertyResolver {
     Assert.notNull(propertyName, "Property name can not be null");
     Assert.notNull(currentValue, "Current value can not be null");
 
-    String[] properties = parsePropertyName(propertyName, currentValue); // kube://default/configmap/gravitee-config
+    String[] properties = parsePropertyName(propertyName, currentValue); // kubernetes://default/configmaps/gravitee-config
     if (properties == null) {
       return Flowable.empty();
     }
@@ -95,7 +97,7 @@ public class KubernetesPropertyResolver implements PropertyResolver {
       properties[2] // resourceName
     );
 
-    if ("secret".equals(properties[1])) { // type
+    if ("secrets".equals(properties[1])) { // type
       return kubernetesClient
         .watch(generateLocation(properties), SecretEvent.class)
         .filter(
@@ -112,7 +114,7 @@ public class KubernetesPropertyResolver implements PropertyResolver {
             return Base64.getDecoder().decode(encodedData);
           }
         );
-    } else if ("configmap".equals(properties[1])) {
+    } else if ("configmaps".equals(properties[1])) {
       return kubernetesClient
         .watch(generateLocation(properties), ConfigMapEvent.class)
         .filter(
@@ -125,8 +127,11 @@ public class KubernetesPropertyResolver implements PropertyResolver {
             configMapEvent.getObject().getData().get(properties[3])
         );
     } else {
-      LOGGER.warn("Property type [{}] is not supported", properties[1]);
-      return Flowable.empty();
+      return Flowable.error(
+        new RuntimeException(
+          "Property type " + properties[1] + " is not supported"
+        )
+      );
     }
   }
 
@@ -136,11 +141,11 @@ public class KubernetesPropertyResolver implements PropertyResolver {
       return null;
     }
 
-    String[] properties = currentValue.substring(7).split("/"); // eliminate initial kube://
+    String[] properties = currentValue.substring(13).split("/"); // eliminate initial kubernetes://
 
     if (properties.length < 3 || properties.length > 4) {
       LOGGER.error(
-        "Wrong property value. A correct format looks like this \"kube://{namespace}/configmap/{configmap-name}\""
+        "Wrong property value. A correct format looks like this \"kube://{namespace}/configmaps/{configmap-name}\""
       );
       return null;
     } else if (properties.length == 3) {
@@ -158,10 +163,10 @@ public class KubernetesPropertyResolver implements PropertyResolver {
   private String generateLocation(String[] properties) {
     return String.format(
       "/%s/%s/%s/%s",
-      properties[0],
-      properties[1],
-      properties[2],
-      properties[3]
+      properties[0], // namespace
+      properties[1], // resource type
+      properties[2], // name
+      properties[3] // key
     );
   }
 

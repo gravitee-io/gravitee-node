@@ -84,13 +84,9 @@ public class GraviteePropertySource
   ) {
     propertyResolver
       .watch(name, value.toString())
-      .doOnNext(
-        newValue -> source.put(name, newValue)
-      )
+      .doOnNext(newValue -> source.put(name, newValue))
       .doOnError(t -> LOGGER.error("Unable to update property {}", name, t))
-      .doOnComplete(
-        () -> watchProperty(propertyResolver, name, value)
-      )
+      .doOnComplete(() -> watchProperty(propertyResolver, name, value))
       .subscribe();
   }
 
