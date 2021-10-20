@@ -33,6 +33,14 @@
     <dependencies>
         <!-- Gravitee.io -->
         <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-certificates</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.gravitee.common</groupId>
             <artifactId>gravitee-common</artifactId>
         </dependency>
@@ -40,7 +48,6 @@
             <groupId>io.gravitee.kubernetes</groupId>
             <artifactId>gravitee-kubernetes-client</artifactId>
         </dependency>
-
 
         <!-- Logging -->
         <dependency>
@@ -101,11 +108,29 @@
             <artifactId>vertx-rx-java2</artifactId>
         </dependency>
 
-        <!-- Used to load configuration file -->
+
+        <!-- TEST -->
         <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>${snakeyaml.version}</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Bouncy Castle -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

@@ -15,36 +15,35 @@
  */
 package io.gravitee.node.vertx;
 
+import io.gravitee.node.certificates.KeyStoreLoaderManager;
 import io.gravitee.node.vertx.configuration.HttpServerConfiguration;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.vertx.core.http.HttpServerOptions;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class VertxHttpServerFactory implements FactoryBean<HttpServer> {
+public class VertxHttpServerFactory
+  extends AbstractVertxHttpServerFactory<HttpServer> {
 
   private final Vertx vertx;
-  private final HttpServerConfiguration httpServerConfiguration;
 
-  @Autowired
   public VertxHttpServerFactory(
     Vertx vertx,
-    HttpServerConfiguration httpServerConfiguration
+    HttpServerConfiguration httpServerConfiguration,
+    KeyStoreLoaderManager keyStoreLoaderManager
   ) {
+    super(httpServerConfiguration, keyStoreLoaderManager);
     this.vertx = vertx;
-    this.httpServerConfiguration = httpServerConfiguration;
   }
 
   @Override
   public HttpServer getObject() throws Exception {
-    return VertxHttpServerProvider.create(
-      vertx,
-      httpServerConfiguration.getHttpServerOptions()
-    );
+    final HttpServerOptions httpServerOptions = getHttpServerOptions();
+
+    return VertxHttpServerProvider.create(vertx, httpServerOptions);
   }
 
   @Override

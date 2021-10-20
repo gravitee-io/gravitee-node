@@ -15,13 +15,11 @@
  */
 package io.gravitee.node.vertx.configuration;
 
+import io.gravitee.node.api.certificate.CertificateOptions;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.net.*;
 import io.vertx.core.tracing.TracingPolicy;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,9 +52,11 @@ public class HttpServerConfiguration {
   private final boolean openssl;
   private final String tlsProtocols;
   private final String keyStorePath;
+  private final List<String> keyStoreKubernetes;
+  private final String keyStoreDefaultAlias;
   private final String keyStorePassword;
   private final String keyStoreType;
-  private final List<Certificate> keyStoreCertificates;
+  private final List<CertificateOptions> keyStoreCertificates;
   private final String trustStorePath;
   private final String trustStorePassword;
   private final String trustStoreType;
@@ -89,6 +89,8 @@ public class HttpServerConfiguration {
     this.openssl = builder.openssl;
     this.tlsProtocols = builder.tlsProtocols;
     this.keyStorePath = builder.keyStorePath;
+    this.keyStoreKubernetes = builder.keyStoreKubernetes;
+    this.keyStoreDefaultAlias = builder.keyStoreDefaultAlias;
     this.keyStorePassword = builder.keyStorePassword;
     this.keyStoreType = builder.keyStoreType;
     this.keyStoreCertificates = builder.keyStoreCertificates;
@@ -161,6 +163,14 @@ public class HttpServerConfiguration {
     return keyStorePath;
   }
 
+  public List<String> getKeystoreKubernetes() {
+    return keyStoreKubernetes;
+  }
+
+  public String getKeyStoreDefaultAlias() {
+    return this.keyStoreDefaultAlias;
+  }
+
   public String getKeyStorePassword() {
     return keyStorePassword;
   }
@@ -169,7 +179,7 @@ public class HttpServerConfiguration {
     return keyStoreType;
   }
 
-  public List<Certificate> getKeyStoreCertificates() {
+  public List<CertificateOptions> getKeyStoreCertificates() {
     return keyStoreCertificates;
   }
 
@@ -253,195 +263,6 @@ public class HttpServerConfiguration {
     return authorizedTlsCipherSuites;
   }
 
-  public HttpServerOptions getHttpServerOptions() {
-    HttpServerOptions options = new HttpServerOptions();
-    options.setTracingPolicy(this.getTracingPolicy());
-
-    // Binding port
-    options.setPort(this.getPort());
-    options.setHost(this.getHost());
-
-    if (this.isSecured()) {
-      if (this.isOpenssl()) {
-        options.setSslEngineOptions(new OpenSSLEngineOptions());
-      }
-
-      options.setSsl(this.isSecured());
-      options.setUseAlpn(this.isAlpn());
-      options.setSni(this.isSni());
-
-      // TLS protocol support
-      if (this.getTlsProtocols() != null) {
-        options.setEnabledSecureTransportProtocols(
-          new HashSet<>(
-            Arrays.asList(this.getTlsProtocols().split("\\s*,\\s*"))
-          )
-        );
-      }
-
-      // restrict the authorized ciphers
-      if (this.getAuthorizedTlsCipherSuites() != null) {
-        this.getAuthorizedTlsCipherSuites()
-          .stream()
-          .map(String::trim)
-          .forEach(options::addEnabledCipherSuite);
-      }
-
-      options.setClientAuth(this.getClientAuth());
-
-      if (
-        this.getTrustStorePaths() != null &&
-        !this.getTrustStorePaths().isEmpty()
-      ) {
-        if (this.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)) {
-          options.setTrustStoreOptions(
-            new JksOptions()
-              .setPath(this.getTrustStorePaths().get(0))
-              .setPassword(this.getTrustStorePassword())
-          );
-        } else if (
-          this.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)
-        ) {
-          final PemTrustOptions pemTrustOptions = new PemTrustOptions();
-          this.getTrustStorePaths().forEach(pemTrustOptions::addCertPath);
-          options.setPemTrustOptions(pemTrustOptions);
-        } else if (
-          this.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)
-        ) {
-          options.setPfxTrustOptions(
-            new PfxOptions()
-              .setPath(this.getTrustStorePaths().get(0))
-              .setPassword(this.getTrustStorePassword())
-          );
-        }
-      } else if (
-        this.getTrustStoreType()
-          .equalsIgnoreCase(CERTIFICATE_FORMAT_SELF_SIGNED)
-      ) {
-        options.setPemTrustOptions(
-          SelfSignedCertificate.create().trustOptions()
-        );
-      }
-
-      if (this.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)) {
-        if (
-          this.getKeyStorePath() == null || this.getKeyStorePath().isEmpty()
-        ) {
-          logger.error(
-            "A JKS Keystore is missing. Skipping SSL keystore configuration..."
-          );
-        } else {
-          options.setKeyStoreOptions(
-            new JksOptions()
-              .setPath(this.getKeyStorePath())
-              .setPassword(this.getKeyStorePassword())
-          );
-        }
-      } else if (
-        this.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)
-      ) {
-        if (
-          this.getKeyStoreCertificates() == null ||
-          this.getKeyStoreCertificates().isEmpty()
-        ) {
-          logger.error(
-            "A PEM Keystore is missing. Skipping SSL keystore configuration..."
-          );
-        } else {
-          final PemKeyCertOptions pemKeyCertOptions = new PemKeyCertOptions();
-
-          this.getKeyStoreCertificates()
-            .forEach(
-              certificate ->
-                pemKeyCertOptions
-                  .addCertPath(certificate.getCertificate())
-                  .addKeyPath(certificate.getPrivateKey())
-            );
-
-          options.setPemKeyCertOptions(pemKeyCertOptions);
-        }
-      } else if (
-        this.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)
-      ) {
-        if (
-          this.getKeyStorePath() == null || this.getKeyStorePath().isEmpty()
-        ) {
-          logger.error(
-            "A PKCS#12 Keystore is missing. Skipping SSL keystore configuration..."
-          );
-        } else {
-          options.setPfxKeyCertOptions(
-            new PfxOptions()
-              .setPath(this.getKeyStorePath())
-              .setPassword(this.getKeyStorePassword())
-          );
-        }
-      } else if (
-        this.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_SELF_SIGNED)
-      ) {
-        options.setPemKeyCertOptions(
-          SelfSignedCertificate.create().keyCertOptions()
-        );
-      }
-    }
-
-    if (this.isProxyProtocol()) {
-      options
-        .setUseProxyProtocol(true)
-        .setProxyProtocolTimeout(this.getProxyProtocolTimeout());
-    }
-
-    // Customizable configuration
-    options.setHandle100ContinueAutomatically(this.isHandle100Continue());
-    options.setCompressionSupported(this.isCompressionSupported());
-    options.setIdleTimeout(this.getIdleTimeout());
-    options.setTcpKeepAlive(this.isTcpKeepAlive());
-    options.setMaxChunkSize(this.getMaxChunkSize());
-    options.setMaxHeaderSize(this.getMaxHeaderSize());
-    options.setMaxInitialLineLength(this.getMaxInitialLineLength());
-    options.setMaxFormAttributeSize(this.getMaxFormAttributeSize());
-
-    // Configure websocket
-    System.setProperty(
-      "vertx.disableWebsockets",
-      Boolean.toString(!this.isWebsocketEnabled())
-    );
-    if (this.isWebsocketEnabled() && this.getWebsocketSubProtocols() != null) {
-      options.setWebSocketSubProtocols(
-        new ArrayList<>(
-          Arrays.asList(this.getWebsocketSubProtocols().split("\\s*,\\s*"))
-        )
-      );
-      options.setPerMessageWebSocketCompressionSupported(
-        this.isPerMessageWebSocketCompressionSupported()
-      );
-      options.setPerFrameWebSocketCompressionSupported(
-        this.isPerFrameWebSocketCompressionSupported()
-      );
-    }
-
-    return options;
-  }
-
-  public static class Certificate {
-
-    private final String certificate;
-    private final String privateKey;
-
-    public Certificate(String certificate, String privateKey) {
-      this.certificate = certificate;
-      this.privateKey = privateKey;
-    }
-
-    public String getCertificate() {
-      return certificate;
-    }
-
-    public String getPrivateKey() {
-      return privateKey;
-    }
-  }
-
   public static class HttpServerConfigurationBuilder {
 
     private TracingPolicy tracingPolicy;
@@ -456,9 +277,11 @@ public class HttpServerConfiguration {
     private boolean openssl;
     private String tlsProtocols;
     private String keyStorePath;
+    private List<String> keyStoreKubernetes;
+    private String keyStoreDefaultAlias;
     private String keyStorePassword;
     private String keyStoreType = CERTIFICATE_FORMAT_JKS;
-    private List<Certificate> keyStoreCertificates;
+    private List<CertificateOptions> keyStoreCertificates;
     private String trustStorePath;
     private String trustStorePassword;
     private String trustStoreType = CERTIFICATE_FORMAT_JKS;
@@ -562,6 +385,13 @@ public class HttpServerConfiguration {
       return this;
     }
 
+    public HttpServerConfigurationBuilder withDefaultKeyStoreKubernetes(
+      List<String> keyStoreKubernetes
+    ) {
+      this.keyStoreKubernetes = keyStoreKubernetes;
+      return this;
+    }
+
     public HttpServerConfigurationBuilder withDefaultKeyStorePassword(
       String keyStorePassword
     ) {
@@ -577,7 +407,7 @@ public class HttpServerConfiguration {
     }
 
     public HttpServerConfigurationBuilder withDefaultKeyStoreCertificates(
-      List<Certificate> keyStoreCertificates
+      List<CertificateOptions> keyStoreCertificates
     ) {
       this.keyStoreCertificates = keyStoreCertificates;
       return this;
@@ -741,8 +571,8 @@ public class HttpServerConfiguration {
       return this;
     }
 
-    private List<Certificate> getCertificateValues(String prefix) {
-      final List<Certificate> certificates = new ArrayList<>();
+    private List<CertificateOptions> getCertificateValues(String prefix) {
+      final List<CertificateOptions> certificates = new ArrayList<>();
 
       boolean found = true;
       int idx = 0;
@@ -755,7 +585,7 @@ public class HttpServerConfiguration {
 
         if (found) {
           certificates.add(
-            new Certificate(
+            new CertificateOptions(
               cert,
               environment.getProperty(prefix + '[' + idx + "].key")
             )
@@ -858,6 +688,10 @@ public class HttpServerConfiguration {
         environment.getProperty(prefix + "ssl.keystore.path", keyStorePath);
       this.keyStoreCertificates =
         getCertificateValues(prefix + "ssl.keystore.certificates");
+      this.keyStoreKubernetes =
+        getArrayValues(prefix + "ssl.keystore.kubernetes");
+      this.keyStoreDefaultAlias =
+        environment.getProperty(prefix + "ssl.keystore.defaultAlias");
       this.keyStorePassword =
         environment.getProperty(
           prefix + "ssl.keystore.password",
