@@ -21,6 +21,7 @@ import io.gravitee.common.service.AbstractService;
 import io.gravitee.common.util.ListReverser;
 import io.gravitee.common.util.Version;
 import io.gravitee.node.api.Node;
+import io.gravitee.node.certificates.KeyStoreLoaderManager;
 import io.gravitee.node.management.http.ManagementService;
 import io.gravitee.node.monitoring.handler.NodeMonitoringEventHandler;
 import io.gravitee.node.monitoring.healthcheck.NodeHealthCheckService;
@@ -126,6 +127,7 @@ public abstract class AbstractNode
     components.add(NodeHealthCheckService.class);
     components.add(NodeMonitorService.class);
     components.add(ReporterManager.class);
+    components.add(KeyStoreLoaderManager.class);
 
     return components;
   }

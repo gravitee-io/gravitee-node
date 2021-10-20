@@ -1,0 +1,9 @@
+[ req ]
+req_extensions = v3_req
+extensions = server
+prompt = no
+
+[ v3_req ]
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = xyz.localhost.com
