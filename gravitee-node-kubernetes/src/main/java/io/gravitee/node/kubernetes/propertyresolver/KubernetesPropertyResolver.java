@@ -145,7 +145,7 @@ public class KubernetesPropertyResolver implements PropertyResolver {
 
     if (properties.length < 3 || properties.length > 4) {
       LOGGER.error(
-        "Wrong property value. A correct format looks like this \"kube://{namespace}/configmaps/{configmap-name}\""
+        "Wrong property value. A correct format looks like this \"kubernetes://{namespace}/configmaps/{configmap-name}\""
       );
       return null;
     } else if (properties.length == 3) {
