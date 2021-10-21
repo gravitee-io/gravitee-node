@@ -15,13 +15,15 @@
  */
 package io.gravitee.node.container.spring.env;
 
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.PropertiesPropertySource;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -30,13 +32,18 @@ import org.springframework.core.env.PropertiesPropertySource;
 public class PropertySourceBeanProcessor
   implements BeanFactoryPostProcessor, Ordered {
 
-  private Environment environment;
+  private final ApplicationContext applicationContext;
+  private final Environment environment;
+  private final Properties properties;
 
-  private Properties properties;
-
-  PropertySourceBeanProcessor(Properties properties, Environment environment) {
+  PropertySourceBeanProcessor(
+    Properties properties,
+    Environment environment,
+    ApplicationContext applicationContext
+  ) {
     this.properties = properties;
     this.environment = environment;
+    this.applicationContext = applicationContext;
   }
 
   @Override
@@ -48,9 +55,23 @@ public class PropertySourceBeanProcessor
   public void postProcessBeanFactory(
     ConfigurableListableBeanFactory beanFactory
   ) {
+    Map<String, Object> source = properties
+      .entrySet()
+      .stream()
+      .collect(
+        Collectors.toMap(
+          entry -> entry.getKey().toString(),
+          Map.Entry::getValue
+        )
+      );
+
     ((ConfigurableEnvironment) environment).getPropertySources()
       .addLast(
-        new PropertiesPropertySource("graviteeConfiguration", properties)
+        new GraviteePropertySource(
+          "graviteeConfiguration",
+          source,
+          applicationContext
+        )
       );
   }
 }

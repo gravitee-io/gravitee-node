@@ -51,23 +51,19 @@ public class EnvironmentBeanFactoryPostProcessor
       Map<String, Object> prefixlessSystemEnvironment = new HashMap<>(
         systemEnvironment.size()
       );
-      systemEnvironment
-        .keySet()
-        .forEach(
-          key -> {
-            String prefixKey = key;
-            for (String propertyPrefix : PROPERTY_PREFIXES) {
-              if (key.startsWith(propertyPrefix)) {
-                prefixKey = key.substring(propertyPrefix.length());
-                break;
-              }
+      systemEnvironment.forEach(
+        (key, value) -> {
+          for (String propertyPrefix : PROPERTY_PREFIXES) {
+            if (key.startsWith(propertyPrefix)) {
+              prefixlessSystemEnvironment.put(
+                key.substring(propertyPrefix.length()),
+                value
+              );
+              break;
             }
-            prefixlessSystemEnvironment.put(
-              prefixKey,
-              systemEnvironment.get(key)
-            );
           }
-        );
+        }
+      );
 
       environment
         .getPropertySources()
