@@ -148,6 +148,12 @@
                 <artifactId>gravitee-alert-api</artifactId>
                 <version>${gravitee-alert-api.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>io.gravitee.gateway.services</groupId>
+                <artifactId>gravitee-kubernetes-client</artifactId>
+                <version>${gravitee-k8s-client.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
