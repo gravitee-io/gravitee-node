@@ -1,0 +1,2 @@
+io.gravitee.node.kubernetes.propertyresolver.PropertyResolver=\
+  io.gravitee.node.kubernetes.propertyresolver.KubernetesPropertyResolver
