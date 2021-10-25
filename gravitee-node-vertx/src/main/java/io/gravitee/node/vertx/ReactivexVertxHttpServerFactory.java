@@ -25,37 +25,30 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ReactivexVertxHttpServerFactory
-  implements FactoryBean<HttpServer> {
+public class ReactivexVertxHttpServerFactory implements FactoryBean<HttpServer> {
 
-  private final Vertx vertx;
-  private final HttpServerConfiguration httpServerConfiguration;
+    private final Vertx vertx;
+    private final HttpServerConfiguration httpServerConfiguration;
 
-  @Autowired
-  public ReactivexVertxHttpServerFactory(
-    Vertx vertx,
-    HttpServerConfiguration httpServerConfiguration
-  ) {
-    this.vertx = vertx;
-    this.httpServerConfiguration = httpServerConfiguration;
-  }
+    @Autowired
+    public ReactivexVertxHttpServerFactory(Vertx vertx, HttpServerConfiguration httpServerConfiguration) {
+        this.vertx = vertx;
+        this.httpServerConfiguration = httpServerConfiguration;
+    }
 
-  @Override
-  public HttpServer getObject() throws Exception {
-    return VertxHttpServerProvider.create(
-      vertx,
-      httpServerConfiguration.getHttpServerOptions()
-    );
-  }
+    @Override
+    public HttpServer getObject() throws Exception {
+        return VertxHttpServerProvider.create(vertx, httpServerConfiguration.getHttpServerOptions());
+    }
 
-  @Override
-  public Class<?> getObjectType() {
-    return HttpServer.class;
-  }
+    @Override
+    public Class<?> getObjectType() {
+        return HttpServer.class;
+    }
 
-  @Override
-  public boolean isSingleton() {
-    // Scope is managed indirectly by Vertx verticle.
-    return false;
-  }
+    @Override
+    public boolean isSingleton() {
+        // Scope is managed indirectly by Vertx verticle.
+        return false;
+    }
 }

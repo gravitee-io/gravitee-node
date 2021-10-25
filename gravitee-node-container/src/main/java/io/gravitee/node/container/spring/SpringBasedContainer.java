@@ -37,75 +37,71 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  */
 public abstract class SpringBasedContainer extends AbstractContainer {
 
-  private ConfigurableApplicationContext ctx;
+    private ConfigurableApplicationContext ctx;
 
-  public SpringBasedContainer() {
-    super();
-  }
-
-  @Override
-  protected void initialize() {
-    super.initialize();
-
-    this.initializeContext();
-  }
-
-  protected void initializeContext() {
-    ctx = new AnnotationConfigApplicationContext();
-
-    List<Class<?>> classes = annotatedClasses();
-    classes.forEach(
-      aClass -> ((AnnotationConfigApplicationContext) ctx).register(aClass)
-    );
-
-    // Finally refresh the context
-    ctx.refresh();
-  }
-
-  protected List<Class<?>> annotatedClasses() {
-    List<Class<?>> classes = new ArrayList<>();
-
-    classes.add(EnvironmentConfiguration.class);
-    classes.add(PropertiesConfiguration.class);
-
-    classes.add(PluginConfiguration.class);
-    classes.add(ServiceConfiguration.class);
-
-    classes.add(ManagementConfiguration.class);
-    classes.add(ReporterConfiguration.class);
-
-    classes.add(MonitoringConfiguration.class);
-
-    classes.add(NodeConfiguration.class);
-
-    return classes;
-  }
-
-  @Override
-  protected void doStop() throws Exception {
-    if (!stopped) {
-      LoggerFactory
-        .getLogger(this.getClass())
-        .info("Shutting-down {}...", name());
-
-      try {
-        node().stop();
-      } catch (Exception ex) {
-        LoggerFactory.getLogger(this.getClass()).error("Unexpected error", ex);
-      } finally {
-        ctx.close();
-        stopped = true;
-      }
+    public SpringBasedContainer() {
+        super();
     }
-  }
 
-  @Override
-  public Node node() {
-    // Get a reference to the node
-    return ctx.getBean(Node.class);
-  }
+    @Override
+    protected void initialize() {
+        super.initialize();
 
-  public ApplicationContext applicationContext() {
-    return ctx;
-  }
+        this.initializeContext();
+    }
+
+    protected void initializeContext() {
+        ctx = new AnnotationConfigApplicationContext();
+
+        List<Class<?>> classes = annotatedClasses();
+        classes.forEach(aClass -> ((AnnotationConfigApplicationContext) ctx).register(aClass));
+
+        // Finally refresh the context
+        ctx.refresh();
+    }
+
+    protected List<Class<?>> annotatedClasses() {
+        List<Class<?>> classes = new ArrayList<>();
+
+        classes.add(EnvironmentConfiguration.class);
+        classes.add(PropertiesConfiguration.class);
+
+        classes.add(PluginConfiguration.class);
+        classes.add(ServiceConfiguration.class);
+
+        classes.add(ManagementConfiguration.class);
+        classes.add(ReporterConfiguration.class);
+
+        classes.add(MonitoringConfiguration.class);
+
+        classes.add(NodeConfiguration.class);
+
+        return classes;
+    }
+
+    @Override
+    protected void doStop() throws Exception {
+        if (!stopped) {
+            LoggerFactory.getLogger(this.getClass()).info("Shutting-down {}...", name());
+
+            try {
+                node().stop();
+            } catch (Exception ex) {
+                LoggerFactory.getLogger(this.getClass()).error("Unexpected error", ex);
+            } finally {
+                ctx.close();
+                stopped = true;
+            }
+        }
+    }
+
+    @Override
+    public Node node() {
+        // Get a reference to the node
+        return ctx.getBean(Node.class);
+    }
+
+    public ApplicationContext applicationContext() {
+        return ctx;
+    }
 }

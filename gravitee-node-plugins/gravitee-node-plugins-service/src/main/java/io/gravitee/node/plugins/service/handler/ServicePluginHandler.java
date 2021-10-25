@@ -26,37 +26,33 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ServicePluginHandler
-  extends AbstractSpringPluginHandler<AbstractService> {
+public class ServicePluginHandler extends AbstractSpringPluginHandler<AbstractService> {
 
-  private static final String PLUGIN_TYPE = "service";
+    private static final String PLUGIN_TYPE = "service";
 
-  @Autowired
-  private ServiceManager serviceManager;
+    @Autowired
+    private ServiceManager serviceManager;
 
-  @Autowired
-  private PluginClassLoaderFactory pluginClassLoaderFactory;
+    @Autowired
+    private PluginClassLoaderFactory pluginClassLoaderFactory;
 
-  @Override
-  public boolean canHandle(Plugin plugin) {
-    return PLUGIN_TYPE.equalsIgnoreCase(plugin.type());
-  }
+    @Override
+    public boolean canHandle(Plugin plugin) {
+        return PLUGIN_TYPE.equalsIgnoreCase(plugin.type());
+    }
 
-  @Override
-  protected String type() {
-    return "services";
-  }
+    @Override
+    protected String type() {
+        return "services";
+    }
 
-  @Override
-  protected ClassLoader getClassLoader(Plugin plugin) throws Exception {
-    return pluginClassLoaderFactory.getOrCreateClassLoader(
-      plugin,
-      this.getClass().getClassLoader()
-    );
-  }
+    @Override
+    protected ClassLoader getClassLoader(Plugin plugin) throws Exception {
+        return pluginClassLoaderFactory.getOrCreateClassLoader(plugin, this.getClass().getClassLoader());
+    }
 
-  @Override
-  protected void register(AbstractService plugin) {
-    serviceManager.register(plugin);
-  }
+    @Override
+    protected void register(AbstractService plugin) {
+        serviceManager.register(plugin);
+    }
 }

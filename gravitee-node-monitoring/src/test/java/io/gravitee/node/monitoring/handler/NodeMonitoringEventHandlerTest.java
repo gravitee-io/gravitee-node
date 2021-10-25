@@ -50,134 +50,110 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class NodeMonitoringEventHandlerTest {
 
-  private static final String NODE_ID = "node#1";
+    private static final String NODE_ID = "node#1";
 
-  @Mock
-  protected Vertx vertx;
+    @Mock
+    protected Vertx vertx;
 
-  @Mock
-  protected Node node;
+    @Mock
+    protected Node node;
 
-  @Mock
-  protected NodeMonitoringService nodeMonitoringService;
+    @Mock
+    protected NodeMonitoringService nodeMonitoringService;
 
-  @Mock
-  protected ObjectMapper objectMapper;
+    @Mock
+    protected ObjectMapper objectMapper;
 
-  private NodeMonitoringEventHandler cut;
+    private NodeMonitoringEventHandler cut;
 
-  @Before
-  public void before() {
-    cut =
-      new NodeMonitoringEventHandler(
-        vertx,
-        objectMapper,
-        node,
-        nodeMonitoringService
-      );
-  }
+    @Before
+    public void before() {
+        cut = new NodeMonitoringEventHandler(vertx, objectMapper, node, nodeMonitoringService);
+    }
 
-  @Test
-  public void handleNodeInfosMessage() throws JsonProcessingException {
-    final Message<NodeInfos> message = mock(Message.class);
+    @Test
+    public void handleNodeInfosMessage() throws JsonProcessingException {
+        final Message<NodeInfos> message = mock(Message.class);
 
-    final NodeInfos nodeInfos = new NodeInfos();
-    nodeInfos.setEvaluatedAt(System.currentTimeMillis());
-    nodeInfos.setStatus(NodeStatus.STARTED);
-    nodeInfos.setId(NODE_ID);
+        final NodeInfos nodeInfos = new NodeInfos();
+        nodeInfos.setEvaluatedAt(System.currentTimeMillis());
+        nodeInfos.setStatus(NodeStatus.STARTED);
+        nodeInfos.setId(NODE_ID);
 
-    when(node.id()).thenReturn(NODE_ID);
-    when(message.body()).thenReturn(nodeInfos);
-    when(objectMapper.writeValueAsString(nodeInfos)).thenReturn("expected");
+        when(node.id()).thenReturn(NODE_ID);
+        when(message.body()).thenReturn(nodeInfos);
+        when(objectMapper.writeValueAsString(nodeInfos)).thenReturn("expected");
 
-    ArgumentCaptor<Monitoring> captor = ArgumentCaptor.forClass(
-      Monitoring.class
-    );
+        ArgumentCaptor<Monitoring> captor = ArgumentCaptor.forClass(Monitoring.class);
 
-    when(nodeMonitoringService.createOrUpdate(any(Monitoring.class)))
-      .thenAnswer(i -> Single.just(i.getArgument(0)));
-    cut.handleNodeInfosMessage(message);
+        when(nodeMonitoringService.createOrUpdate(any(Monitoring.class))).thenAnswer(i -> Single.just(i.getArgument(0)));
+        cut.handleNodeInfosMessage(message);
 
-    verify(nodeMonitoringService).createOrUpdate(captor.capture());
+        verify(nodeMonitoringService).createOrUpdate(captor.capture());
 
-    final Monitoring monitoring = captor.getValue();
+        final Monitoring monitoring = captor.getValue();
 
-    assertEquals(NODE_ID, monitoring.getNodeId());
-    assertEquals(
-      nodeInfos.getEvaluatedAt(),
-      monitoring.getEvaluatedAt().getTime()
-    );
-    assertEquals(Monitoring.NODE_INFOS, monitoring.getType());
-    assertEquals("expected", monitoring.getPayload());
-  }
+        assertEquals(NODE_ID, monitoring.getNodeId());
+        assertEquals(nodeInfos.getEvaluatedAt(), monitoring.getEvaluatedAt().getTime());
+        assertEquals(Monitoring.NODE_INFOS, monitoring.getType());
+        assertEquals("expected", monitoring.getPayload());
+    }
 
-  @Test
-  public void handleMonitorMessage() throws JsonProcessingException {
-    final Message<Monitor> message = mock(Message.class);
+    @Test
+    public void handleMonitorMessage() throws JsonProcessingException {
+        final Message<Monitor> message = mock(Message.class);
 
-    final Monitor monitor = Monitor
-      .on(NODE_ID)
-      .at(System.currentTimeMillis())
-      .os(OsProbe.getInstance().osInfo())
-      .jvm(JvmProbe.getInstance().jvmInfo())
-      .process(ProcessProbe.getInstance().processInfo())
-      .build();
+        final Monitor monitor = Monitor
+            .on(NODE_ID)
+            .at(System.currentTimeMillis())
+            .os(OsProbe.getInstance().osInfo())
+            .jvm(JvmProbe.getInstance().jvmInfo())
+            .process(ProcessProbe.getInstance().processInfo())
+            .build();
 
-    when(node.id()).thenReturn(NODE_ID);
-    when(message.body()).thenReturn(monitor);
-    when(objectMapper.writeValueAsString(monitor)).thenReturn("expected");
+        when(node.id()).thenReturn(NODE_ID);
+        when(message.body()).thenReturn(monitor);
+        when(objectMapper.writeValueAsString(monitor)).thenReturn("expected");
 
-    ArgumentCaptor<Monitoring> captor = ArgumentCaptor.forClass(
-      Monitoring.class
-    );
+        ArgumentCaptor<Monitoring> captor = ArgumentCaptor.forClass(Monitoring.class);
 
-    when(nodeMonitoringService.createOrUpdate(any(Monitoring.class)))
-      .thenAnswer(i -> Single.just(i.getArgument(0)));
-    cut.handleMonitorMessage(message);
+        when(nodeMonitoringService.createOrUpdate(any(Monitoring.class))).thenAnswer(i -> Single.just(i.getArgument(0)));
+        cut.handleMonitorMessage(message);
 
-    verify(nodeMonitoringService).createOrUpdate(captor.capture());
+        verify(nodeMonitoringService).createOrUpdate(captor.capture());
 
-    final Monitoring monitoring = captor.getValue();
+        final Monitoring monitoring = captor.getValue();
 
-    assertEquals(NODE_ID, monitoring.getNodeId());
-    assertEquals(monitor.getTimestamp(), monitoring.getEvaluatedAt().getTime());
-    assertEquals(Monitoring.MONITOR, monitoring.getType());
-    assertEquals("expected", monitoring.getPayload());
-  }
+        assertEquals(NODE_ID, monitoring.getNodeId());
+        assertEquals(monitor.getTimestamp(), monitoring.getEvaluatedAt().getTime());
+        assertEquals(Monitoring.MONITOR, monitoring.getType());
+        assertEquals("expected", monitoring.getPayload());
+    }
 
-  @Test
-  public void handleHealthCheckMessage() throws JsonProcessingException {
-    final Message<HealthCheck> message = mock(Message.class);
+    @Test
+    public void handleHealthCheckMessage() throws JsonProcessingException {
+        final Message<HealthCheck> message = mock(Message.class);
 
-    final HashMap<String, Result> results = new HashMap<>();
-    results.put("test", Result.healthy("ok"));
-    final HealthCheck healthCheck = new HealthCheck(
-      System.currentTimeMillis(),
-      results
-    );
+        final HashMap<String, Result> results = new HashMap<>();
+        results.put("test", Result.healthy("ok"));
+        final HealthCheck healthCheck = new HealthCheck(System.currentTimeMillis(), results);
 
-    when(node.id()).thenReturn(NODE_ID);
-    when(message.body()).thenReturn(healthCheck);
-    when(objectMapper.writeValueAsString(healthCheck)).thenReturn("expected");
+        when(node.id()).thenReturn(NODE_ID);
+        when(message.body()).thenReturn(healthCheck);
+        when(objectMapper.writeValueAsString(healthCheck)).thenReturn("expected");
 
-    ArgumentCaptor<Monitoring> captor = ArgumentCaptor.forClass(
-      Monitoring.class
-    );
+        ArgumentCaptor<Monitoring> captor = ArgumentCaptor.forClass(Monitoring.class);
 
-    when(nodeMonitoringService.createOrUpdate(any(Monitoring.class)))
-      .thenAnswer(i -> Single.just(i.getArgument(0)));
-    cut.handleHealthCheckMessage(message);
+        when(nodeMonitoringService.createOrUpdate(any(Monitoring.class))).thenAnswer(i -> Single.just(i.getArgument(0)));
+        cut.handleHealthCheckMessage(message);
 
-    verify(nodeMonitoringService).createOrUpdate(captor.capture());
+        verify(nodeMonitoringService).createOrUpdate(captor.capture());
 
-    final Monitoring monitoring = captor.getValue();
+        final Monitoring monitoring = captor.getValue();
 
-    assertEquals(NODE_ID, monitoring.getNodeId());
-    assertEquals(
-      healthCheck.getEvaluatedAt(),
-      monitoring.getEvaluatedAt().getTime()
-    );
-    assertEquals(Monitoring.HEALTH_CHECK, monitoring.getType());
-    assertEquals("expected", monitoring.getPayload());
-  }
+        assertEquals(NODE_ID, monitoring.getNodeId());
+        assertEquals(healthCheck.getEvaluatedAt(), monitoring.getEvaluatedAt().getTime());
+        assertEquals(Monitoring.HEALTH_CHECK, monitoring.getType());
+        assertEquals("expected", monitoring.getPayload());
+    }
 }

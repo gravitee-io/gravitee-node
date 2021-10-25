@@ -24,53 +24,53 @@ import java.util.Map;
  */
 public class HealthCheck implements Serializable {
 
-  /**
-   * Flag indicating if the global status of health check is healthy or not.
-   * It is basically based on the healthiness of all the health check probes.
-   */
-  private boolean isHealthy;
+    /**
+     * Flag indicating if the global status of health check is healthy or not.
+     * It is basically based on the healthiness of all the health check probes.
+     */
+    private boolean isHealthy;
 
-  /**
-   * The date on which the health check has been performed.
-   */
-  private long evaluatedAt;
+    /**
+     * The date on which the health check has been performed.
+     */
+    private long evaluatedAt;
 
-  /**
-   * Map of probe and associated result.
-   */
-  private Map<String, Result> results;
+    /**
+     * Map of probe and associated result.
+     */
+    private Map<String, Result> results;
 
-  public HealthCheck() {
-    super();
-  }
+    public HealthCheck() {
+        super();
+    }
 
-  public HealthCheck(long evaluatedAt, Map<String, Result> results) {
-    this.evaluatedAt = evaluatedAt;
-    this.results = results;
-    this.isHealthy = this.results.values().stream().allMatch(Result::isHealthy);
-  }
+    public HealthCheck(long evaluatedAt, Map<String, Result> results) {
+        this.evaluatedAt = evaluatedAt;
+        this.results = results;
+        this.isHealthy = this.results.values().stream().allMatch(Result::isHealthy);
+    }
 
-  public Map<String, Result> getResults() {
-    return results;
-  }
+    public Map<String, Result> getResults() {
+        return results;
+    }
 
-  public boolean isHealthy() {
-    return isHealthy;
-  }
+    public boolean isHealthy() {
+        return isHealthy;
+    }
 
-  public void setHealthy(boolean healthy) {
-    isHealthy = healthy;
-  }
+    public void setHealthy(boolean healthy) {
+        isHealthy = healthy;
+    }
 
-  public void setResults(Map<String, Result> results) {
-    this.results = results;
-  }
+    public void setResults(Map<String, Result> results) {
+        this.results = results;
+    }
 
-  public long getEvaluatedAt() {
-    return evaluatedAt;
-  }
+    public long getEvaluatedAt() {
+        return evaluatedAt;
+    }
 
-  public void setEvaluatedAt(long evaluatedAt) {
-    this.evaluatedAt = evaluatedAt;
-  }
+    public void setEvaluatedAt(long evaluatedAt) {
+        this.evaluatedAt = evaluatedAt;
+    }
 }

@@ -31,9 +31,9 @@ import org.slf4j.LoggerFactory;
  */
 public class MonitorCodec extends AbstractCodec<Monitor> {
 
-  public static final String CODEC_NAME = "gio:bus:codec:node_monitor";
+    public static final String CODEC_NAME = "gio:bus:codec:node_monitor";
 
-  public MonitorCodec() {
-    super(CODEC_NAME);
-  }
+    public MonitorCodec() {
+        super(CODEC_NAME);
+    }
 }

@@ -32,75 +32,69 @@ import org.slf4j.LoggerFactory;
  */
 abstract class AbstractCodec<T> implements MessageCodec<T, T> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-    AbstractCodec.class
-  );
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractCodec.class);
 
-  private final String codecName;
+    private final String codecName;
 
-  protected AbstractCodec(String codecName) {
-    this.codecName = codecName;
-  }
-
-  @Override
-  public void encodeToWire(Buffer buffer, T item) {
-    try {
-      final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      final ObjectOutputStream oos = new ObjectOutputStream(bos);
-      oos.writeObject(item);
-      oos.flush();
-
-      byte[] data = bos.toByteArray();
-      int length = data.length;
-
-      buffer.appendInt(length);
-      buffer.appendBytes(data);
-    } catch (final Exception ex) {
-      LOGGER.error("Error while trying to encode a Monitor object", ex);
-    }
-  }
-
-  @Override
-  public T decodeFromWire(int position, Buffer buffer) {
-    try {
-      // My custom message starting from this *position* of buffer
-      int pos = position;
-
-      // Length of data
-      int length = buffer.getInt(pos);
-
-      pos += 4;
-      final int start = pos;
-      final int end = pos + length;
-      byte[] data = buffer.getBytes(start, end);
-
-      ByteArrayInputStream in = new ByteArrayInputStream(data);
-      ObjectInputStream is = new ObjectInputStream(in);
-      return (T) is.readObject();
-    } catch (Exception ex) {
-      LOGGER.error(
-        "Error while trying to decode object using codec {}",
-        this.codecName,
-        ex
-      );
+    protected AbstractCodec(String codecName) {
+        this.codecName = codecName;
     }
 
-    return null;
-  }
+    @Override
+    public void encodeToWire(Buffer buffer, T item) {
+        try {
+            final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            final ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(item);
+            oos.flush();
 
-  @Override
-  public T transform(T item) {
-    // If a message is sent *locally* across the event bus, just send message just as is.
-    return item;
-  }
+            byte[] data = bos.toByteArray();
+            int length = data.length;
 
-  @Override
-  public String name() {
-    return this.codecName;
-  }
+            buffer.appendInt(length);
+            buffer.appendBytes(data);
+        } catch (final Exception ex) {
+            LOGGER.error("Error while trying to encode a Monitor object", ex);
+        }
+    }
 
-  @Override
-  public byte systemCodecID() {
-    return -1;
-  }
+    @Override
+    public T decodeFromWire(int position, Buffer buffer) {
+        try {
+            // My custom message starting from this *position* of buffer
+            int pos = position;
+
+            // Length of data
+            int length = buffer.getInt(pos);
+
+            pos += 4;
+            final int start = pos;
+            final int end = pos + length;
+            byte[] data = buffer.getBytes(start, end);
+
+            ByteArrayInputStream in = new ByteArrayInputStream(data);
+            ObjectInputStream is = new ObjectInputStream(in);
+            return (T) is.readObject();
+        } catch (Exception ex) {
+            LOGGER.error("Error while trying to decode object using codec {}", this.codecName, ex);
+        }
+
+        return null;
+    }
+
+    @Override
+    public T transform(T item) {
+        // If a message is sent *locally* across the event bus, just send message just as is.
+        return item;
+    }
+
+    @Override
+    public String name() {
+        return this.codecName;
+    }
+
+    @Override
+    public byte systemCodecID() {
+        return -1;
+    }
 }

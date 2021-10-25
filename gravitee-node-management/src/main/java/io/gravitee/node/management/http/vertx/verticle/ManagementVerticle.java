@@ -39,160 +39,138 @@ import org.springframework.core.env.Environment;
  */
 public class ManagementVerticle extends AbstractVerticle {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-    ManagementVerticle.class
-  );
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagementVerticle.class);
 
-  private static final String PATH = "/_node";
-  private static final String WEBHOOK_PATH = "/hooks";
+    private static final String PATH = "/_node";
+    private static final String WEBHOOK_PATH = "/hooks";
 
-  private static final String AUTHENTICATION_TYPE_NONE = "none";
-  private static final String AUTHENTICATION_TYPE_BASIC = "basic";
-  private static final String AUTHENTICATION_BASIC_REALM = "gravitee.io";
+    private static final String AUTHENTICATION_TYPE_NONE = "none";
+    private static final String AUTHENTICATION_TYPE_BASIC = "basic";
+    private static final String AUTHENTICATION_BASIC_REALM = "gravitee.io";
 
-  @Autowired
-  @Qualifier("managementHttpServer")
-  private HttpServer httpServer;
+    @Autowired
+    @Qualifier("managementHttpServer")
+    private HttpServer httpServer;
 
-  @Autowired
-  @Qualifier("managementRouter")
-  private Router nodeRouter;
+    @Autowired
+    @Qualifier("managementRouter")
+    private Router nodeRouter;
 
-  @Autowired
-  @Qualifier("managementWebhookRouter")
-  private Router nodeWebhookRouter;
+    @Autowired
+    @Qualifier("managementWebhookRouter")
+    private Router nodeWebhookRouter;
 
-  @Autowired
-  private Vertx vertx;
+    @Autowired
+    private Vertx vertx;
 
-  @Autowired
-  @Qualifier("managementAuthProvider")
-  private AuthProvider authProvider;
+    @Autowired
+    @Qualifier("managementAuthProvider")
+    private AuthProvider authProvider;
 
-  @Autowired
-  private HttpServerConfiguration httpServerConfiguration;
+    @Autowired
+    private HttpServerConfiguration httpServerConfiguration;
 
-  @Autowired
-  private NodeEndpoint nodeEndpoint;
+    @Autowired
+    private NodeEndpoint nodeEndpoint;
 
-  @Autowired
-  private ConfigurationEndpoint configurationEndpoint;
+    @Autowired
+    private ConfigurationEndpoint configurationEndpoint;
 
-  @Autowired
-  private PrometheusEndpoint prometheusEndpoint;
+    @Autowired
+    private PrometheusEndpoint prometheusEndpoint;
 
-  @Autowired
-  private ManagementEndpointManager managementEndpointManager;
+    @Autowired
+    private ManagementEndpointManager managementEndpointManager;
 
-  @Autowired
-  private Environment environment;
+    @Autowired
+    private Environment environment;
 
-  @Override
-  public void start(Promise<Void> promise) throws Exception {
-    if (httpServerConfiguration.isEnabled()) {
-      doStart(promise);
-    } else {
-      promise.complete();
-      LOGGER.info("Node Management API is disabled, skipping...");
-    }
-  }
-
-  @Override
-  public void stop(Promise<Void> promise) throws Exception {
-    if (httpServerConfiguration.isEnabled()) {
-      LOGGER.info("Stopping Management API...");
-      httpServer.close(
-        new Handler<AsyncResult<Void>>() {
-          @Override
-          public void handle(AsyncResult<Void> event) {
-            if (event.succeeded()) {
-              LOGGER.info("HTTP Server has been correctly stopped");
-              promise.complete();
-            } else {
-              LOGGER.error(
-                "Unexpected error while stopping HTTP listener for Node Management API",
-                event.cause()
-              );
-              promise.fail(event.cause());
-            }
-          }
-        }
-      );
-    }
-  }
-
-  private void doStart(Promise<Void> promise) throws Exception {
-    LOGGER.info("Start HTTP listener for Node Management API");
-
-    // Start HTTP server
-    Router mainRouter = Router.router(vertx);
-    mainRouter.mountSubRouter(WEBHOOK_PATH, nodeWebhookRouter);
-    mainRouter.mountSubRouter(PATH, nodeRouter);
-
-    AuthenticationHandler authHandler = null;
-    switch (httpServerConfiguration.getAuthenticationType().toLowerCase()) {
-      case AUTHENTICATION_TYPE_NONE:
-        break;
-      case AUTHENTICATION_TYPE_BASIC:
-        authHandler =
-          BasicAuthHandler.create(authProvider, AUTHENTICATION_BASIC_REALM);
-        break;
-      default:
-        throw new IllegalArgumentException(
-          "Unsupported Authentication type " +
-          httpServerConfiguration.getAuthenticationType() +
-          " for HTTP core services"
-        );
-    }
-
-    // Set security handler is defined
-    if (authHandler != null) {
-      mainRouter.route().order(-1).handler(authHandler);
-      nodeRouter.route().order(-1).handler(authHandler);
-    }
-
-    // Set default handler
-    mainRouter.route().handler(ctx -> ctx.fail(HttpStatusCode.NOT_FOUND_404));
-
-    // Add request handler
-    httpServer
-      .requestHandler(mainRouter)
-      .listen(
-        event -> {
-          if (event.failed()) {
-            LOGGER.error(
-              "HTTP listener for Node Management can not be started properly",
-              event.cause()
-            );
-            promise.fail(event.cause());
-          } else {
-            managementEndpointManager.register(nodeEndpoint);
-            managementEndpointManager.register(configurationEndpoint);
-
-            // Metrics
-            boolean metricsEnabled = environment.getProperty(
-              "services.metrics.enabled",
-              Boolean.class,
-              false
-            );
-            if (metricsEnabled) {
-              // Register Prometheus endpoint
-              boolean prometheusEnabled = environment.getProperty(
-                "services.metrics.prometheus.enabled",
-                Boolean.class,
-                true
-              );
-              if (prometheusEnabled) {
-                managementEndpointManager.register(prometheusEndpoint);
-              }
-            }
-            LOGGER.info(
-              "HTTP listener for Node Management bind to port TCP:{}",
-              event.result().actualPort()
-            );
+    @Override
+    public void start(Promise<Void> promise) throws Exception {
+        if (httpServerConfiguration.isEnabled()) {
+            doStart(promise);
+        } else {
             promise.complete();
-          }
+            LOGGER.info("Node Management API is disabled, skipping...");
         }
-      );
-  }
+    }
+
+    @Override
+    public void stop(Promise<Void> promise) throws Exception {
+        if (httpServerConfiguration.isEnabled()) {
+            LOGGER.info("Stopping Management API...");
+            httpServer.close(
+                new Handler<AsyncResult<Void>>() {
+                    @Override
+                    public void handle(AsyncResult<Void> event) {
+                        if (event.succeeded()) {
+                            LOGGER.info("HTTP Server has been correctly stopped");
+                            promise.complete();
+                        } else {
+                            LOGGER.error("Unexpected error while stopping HTTP listener for Node Management API", event.cause());
+                            promise.fail(event.cause());
+                        }
+                    }
+                }
+            );
+        }
+    }
+
+    private void doStart(Promise<Void> promise) throws Exception {
+        LOGGER.info("Start HTTP listener for Node Management API");
+
+        // Start HTTP server
+        Router mainRouter = Router.router(vertx);
+        mainRouter.mountSubRouter(WEBHOOK_PATH, nodeWebhookRouter);
+        mainRouter.mountSubRouter(PATH, nodeRouter);
+
+        AuthenticationHandler authHandler = null;
+        switch (httpServerConfiguration.getAuthenticationType().toLowerCase()) {
+            case AUTHENTICATION_TYPE_NONE:
+                break;
+            case AUTHENTICATION_TYPE_BASIC:
+                authHandler = BasicAuthHandler.create(authProvider, AUTHENTICATION_BASIC_REALM);
+                break;
+            default:
+                throw new IllegalArgumentException(
+                    "Unsupported Authentication type " + httpServerConfiguration.getAuthenticationType() + " for HTTP core services"
+                );
+        }
+
+        // Set security handler is defined
+        if (authHandler != null) {
+            mainRouter.route().order(-1).handler(authHandler);
+            nodeRouter.route().order(-1).handler(authHandler);
+        }
+
+        // Set default handler
+        mainRouter.route().handler(ctx -> ctx.fail(HttpStatusCode.NOT_FOUND_404));
+
+        // Add request handler
+        httpServer
+            .requestHandler(mainRouter)
+            .listen(
+                event -> {
+                    if (event.failed()) {
+                        LOGGER.error("HTTP listener for Node Management can not be started properly", event.cause());
+                        promise.fail(event.cause());
+                    } else {
+                        managementEndpointManager.register(nodeEndpoint);
+                        managementEndpointManager.register(configurationEndpoint);
+
+                        // Metrics
+                        boolean metricsEnabled = environment.getProperty("services.metrics.enabled", Boolean.class, false);
+                        if (metricsEnabled) {
+                            // Register Prometheus endpoint
+                            boolean prometheusEnabled = environment.getProperty("services.metrics.prometheus.enabled", Boolean.class, true);
+                            if (prometheusEnabled) {
+                                managementEndpointManager.register(prometheusEndpoint);
+                            }
+                        }
+                        LOGGER.info("HTTP listener for Node Management bind to port TCP:{}", event.result().actualPort());
+                        promise.complete();
+                    }
+                }
+            );
+    }
 }

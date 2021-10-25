@@ -27,34 +27,28 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VertxHttpServerFactory implements FactoryBean<HttpServer> {
 
-  private final Vertx vertx;
-  private final HttpServerConfiguration httpServerConfiguration;
+    private final Vertx vertx;
+    private final HttpServerConfiguration httpServerConfiguration;
 
-  @Autowired
-  public VertxHttpServerFactory(
-    Vertx vertx,
-    HttpServerConfiguration httpServerConfiguration
-  ) {
-    this.vertx = vertx;
-    this.httpServerConfiguration = httpServerConfiguration;
-  }
+    @Autowired
+    public VertxHttpServerFactory(Vertx vertx, HttpServerConfiguration httpServerConfiguration) {
+        this.vertx = vertx;
+        this.httpServerConfiguration = httpServerConfiguration;
+    }
 
-  @Override
-  public HttpServer getObject() throws Exception {
-    return VertxHttpServerProvider.create(
-      vertx,
-      httpServerConfiguration.getHttpServerOptions()
-    );
-  }
+    @Override
+    public HttpServer getObject() throws Exception {
+        return VertxHttpServerProvider.create(vertx, httpServerConfiguration.getHttpServerOptions());
+    }
 
-  @Override
-  public Class<?> getObjectType() {
-    return HttpServer.class;
-  }
+    @Override
+    public Class<?> getObjectType() {
+        return HttpServer.class;
+    }
 
-  @Override
-  public boolean isSingleton() {
-    // Scope is managed indirectly by Vertx verticle.
-    return false;
-  }
+    @Override
+    public boolean isSingleton() {
+        // Scope is managed indirectly by Vertx verticle.
+        return false;
+    }
 }

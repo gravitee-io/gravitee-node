@@ -28,22 +28,20 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class TracingConfiguration {
 
-  @Bean
-  public TracingService tracingService() {
-    return new TracingService();
-  }
+    @Bean
+    public TracingService tracingService() {
+        return new TracingService();
+    }
 
-  @Bean
-  public LazyVertxTracerFactory vertxTracerFactory(
-    TracingService tracingService
-  ) {
-    return new LazyVertxTracerFactory(tracingService);
-  }
+    @Bean
+    public LazyVertxTracerFactory vertxTracerFactory(TracingService tracingService) {
+        return new LazyVertxTracerFactory(tracingService);
+    }
 
-  @Bean
-  public LazyTracer lazyTracer(TracingService tracingService) {
-    LazyTracer tracer = new LazyTracer();
-    tracingService.addTracerListener(tracer);
-    return tracer;
-  }
+    @Bean
+    public LazyTracer lazyTracer(TracingService tracingService) {
+        LazyTracer tracer = new LazyTracer();
+        tracingService.addTracerListener(tracer);
+        return tracer;
+    }
 }

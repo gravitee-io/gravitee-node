@@ -28,59 +28,54 @@ import org.springframework.context.ApplicationContextAware;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class NodeFactory
-  extends AbstractFactoryBean<Node>
-  implements ApplicationContextAware {
+public class NodeFactory extends AbstractFactoryBean<Node> implements ApplicationContextAware {
 
-  @Autowired
-  private NodeDeployerFactoriesLoader nodeDeployerFactoriesLoader;
+    @Autowired
+    private NodeDeployerFactoriesLoader nodeDeployerFactoriesLoader;
 
-  private ApplicationContext applicationContext;
+    private ApplicationContext applicationContext;
 
-  private final Class<? extends Node> nodeClass;
+    private final Class<? extends Node> nodeClass;
 
-  public NodeFactory(Class<? extends Node> nodeClass) {
-    this.nodeClass = nodeClass;
-  }
-
-  @Override
-  public Class<?> getObjectType() {
-    return Node.class;
-  }
-
-  @Override
-  protected Node createInstance() throws Exception {
-    Node node = nodeClass.newInstance();
-    autowire(node);
-
-    List<NodeDeployer> deployers = nodeDeployerFactoriesLoader.getNodeDeployers();
-
-    for (NodeDeployer deployer : deployers) {
-      node = deployer.deploy(node);
-      autowire(node);
+    public NodeFactory(Class<? extends Node> nodeClass) {
+        this.nodeClass = nodeClass;
     }
 
-    return node;
-  }
-
-  private void autowire(Node node) throws Exception {
-    if (node != null) {
-      this.applicationContext.getAutowireCapableBeanFactory()
-        .autowireBean(node);
-      if (node instanceof ApplicationContextAware) {
-        ((ApplicationContextAware) node).setApplicationContext(
-            this.applicationContext
-          );
-      }
-
-      if (node instanceof InitializingBean) {
-        ((InitializingBean) node).afterPropertiesSet();
-      }
+    @Override
+    public Class<?> getObjectType() {
+        return Node.class;
     }
-  }
 
-  @Override
-  public void setApplicationContext(ApplicationContext applicationContext) {
-    this.applicationContext = applicationContext;
-  }
+    @Override
+    protected Node createInstance() throws Exception {
+        Node node = nodeClass.newInstance();
+        autowire(node);
+
+        List<NodeDeployer> deployers = nodeDeployerFactoriesLoader.getNodeDeployers();
+
+        for (NodeDeployer deployer : deployers) {
+            node = deployer.deploy(node);
+            autowire(node);
+        }
+
+        return node;
+    }
+
+    private void autowire(Node node) throws Exception {
+        if (node != null) {
+            this.applicationContext.getAutowireCapableBeanFactory().autowireBean(node);
+            if (node instanceof ApplicationContextAware) {
+                ((ApplicationContextAware) node).setApplicationContext(this.applicationContext);
+            }
+
+            if (node instanceof InitializingBean) {
+                ((InitializingBean) node).afterPropertiesSet();
+            }
+        }
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 }

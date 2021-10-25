@@ -39,78 +39,67 @@ import org.slf4j.LoggerFactory;
  */
 public class NodeHealthCheckManagementEndpoint implements ManagementEndpoint {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-    NodeHealthCheckManagementEndpoint.class
-  );
+    private static final Logger LOGGER = LoggerFactory.getLogger(NodeHealthCheckManagementEndpoint.class);
 
-  private NodeHealthCheckThread registry;
+    private NodeHealthCheckThread registry;
 
-  final ObjectMapper objectMapper;
+    final ObjectMapper objectMapper;
 
-  public static final String PROBE_FILTER = "probes";
+    public static final String PROBE_FILTER = "probes";
 
-  public NodeHealthCheckManagementEndpoint() {
-    objectMapper = DatabindCodec.prettyMapper();
-    objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-  }
-
-  @Override
-  public HttpMethod method() {
-    return HttpMethod.GET;
-  }
-
-  @Override
-  public String path() {
-    return "/health";
-  }
-
-  @Override
-  public void handle(RoutingContext ctx) {
-    Map<Probe, Result> probes = registry
-      .getResults()
-      .entrySet()
-      .stream()
-      .filter(
-        entry ->
-          ctx.queryParams().contains(PROBE_FILTER)
-            ? ctx.queryParams().get(PROBE_FILTER).contains(entry.getKey().id())
-            : entry.getKey().isVisibleByDefault()
-      )
-      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-    boolean healthyProbe = probes.values().stream().allMatch(Result::isHealthy);
-
-    HttpServerResponse response = ctx.response();
-    response.setStatusCode(
-      healthyProbe
-        ? HttpStatusCode.OK_200
-        : HttpStatusCode.INTERNAL_SERVER_ERROR_500
-    );
-    response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-    response.setChunked(true);
-
-    Map<String, Result> results = probes
-      .entrySet()
-      .stream()
-      .collect(
-        Collectors.toMap(
-          probeResultEntry -> probeResultEntry.getKey().id(),
-          Map.Entry::getValue
-        )
-      );
-
-    try {
-      final ObjectMapper objectMapper = DatabindCodec.prettyMapper();
-      response.write(objectMapper.writeValueAsString(results));
-    } catch (JsonProcessingException e) {
-      LOGGER.warn("Unable to encode health check result into json.", e);
+    public NodeHealthCheckManagementEndpoint() {
+        objectMapper = DatabindCodec.prettyMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
-    // End the response
-    response.end();
-  }
+    @Override
+    public HttpMethod method() {
+        return HttpMethod.GET;
+    }
 
-  public void setRegistry(NodeHealthCheckThread registry) {
-    this.registry = registry;
-  }
+    @Override
+    public String path() {
+        return "/health";
+    }
+
+    @Override
+    public void handle(RoutingContext ctx) {
+        Map<Probe, Result> probes = registry
+            .getResults()
+            .entrySet()
+            .stream()
+            .filter(
+                entry ->
+                    ctx.queryParams().contains(PROBE_FILTER)
+                        ? ctx.queryParams().get(PROBE_FILTER).contains(entry.getKey().id())
+                        : entry.getKey().isVisibleByDefault()
+            )
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        boolean healthyProbe = probes.values().stream().allMatch(Result::isHealthy);
+
+        HttpServerResponse response = ctx.response();
+        response.setStatusCode(healthyProbe ? HttpStatusCode.OK_200 : HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+        response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        response.setChunked(true);
+
+        Map<String, Result> results = probes
+            .entrySet()
+            .stream()
+            .collect(Collectors.toMap(probeResultEntry -> probeResultEntry.getKey().id(), Map.Entry::getValue));
+
+        try {
+            final ObjectMapper objectMapper = DatabindCodec.prettyMapper();
+            response.write(objectMapper.writeValueAsString(results));
+        } catch (JsonProcessingException e) {
+            LOGGER.warn("Unable to encode health check result into json.", e);
+        }
+
+        // End the response
+        response.end();
+    }
+
+    public void setRegistry(NodeHealthCheckThread registry) {
+        this.registry = registry;
+    }
 }

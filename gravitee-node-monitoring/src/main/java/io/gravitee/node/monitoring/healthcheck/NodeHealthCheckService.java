@@ -39,76 +39,69 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class NodeHealthCheckService extends AbstractService {
 
-  public static final String GIO_NODE_HEALTHCHECK_BUS = "gio:node:healthcheck";
+    public static final String GIO_NODE_HEALTHCHECK_BUS = "gio:node:healthcheck";
 
-  @Autowired
-  private ManagementEndpointManager managementEndpointManager;
+    @Autowired
+    private ManagementEndpointManager managementEndpointManager;
 
-  @Autowired
-  private ProbeManager probeManager;
+    @Autowired
+    private ProbeManager probeManager;
 
-  @Autowired
-  private NodeHealthCheckManagementEndpoint healthCheckEndpoint;
+    @Autowired
+    private NodeHealthCheckManagementEndpoint healthCheckEndpoint;
 
-  @Autowired
-  private Vertx vertx;
+    @Autowired
+    private Vertx vertx;
 
-  private long metricsPollerId = -1;
+    private long metricsPollerId = -1;
 
-  private static final long NODE_CHECKER_DELAY = 5000;
+    private static final long NODE_CHECKER_DELAY = 5000;
 
-  private MessageProducer<HealthCheck> producer;
+    private MessageProducer<HealthCheck> producer;
 
-  @Override
-  protected void doStart() throws Exception {
-    super.doStart();
+    @Override
+    protected void doStart() throws Exception {
+        super.doStart();
 
-    producer =
-      vertx
-        .eventBus()
-        .registerCodec(new HealthCheckCodec())
-        .sender(
-          GIO_NODE_HEALTHCHECK_BUS,
-          new DeliveryOptions()
-            .setTracingPolicy(TracingPolicy.IGNORE)
-            .setCodecName(HealthCheckCodec.CODEC_NAME)
-        );
+        producer =
+            vertx
+                .eventBus()
+                .registerCodec(new HealthCheckCodec())
+                .sender(
+                    GIO_NODE_HEALTHCHECK_BUS,
+                    new DeliveryOptions().setTracingPolicy(TracingPolicy.IGNORE).setCodecName(HealthCheckCodec.CODEC_NAME)
+                );
 
-    // Poll data
-    NodeHealthCheckThread statusRegistry = new NodeHealthCheckThread(
-      probeManager.getProbes(),
-      producer
-    );
+        // Poll data
+        NodeHealthCheckThread statusRegistry = new NodeHealthCheckThread(probeManager.getProbes(), producer);
 
-    applicationContext
-      .getAutowireCapableBeanFactory()
-      .autowireBean(statusRegistry);
+        applicationContext.getAutowireCapableBeanFactory().autowireBean(statusRegistry);
 
-    metricsPollerId = vertx.setPeriodic(NODE_CHECKER_DELAY, statusRegistry);
+        metricsPollerId = vertx.setPeriodic(NODE_CHECKER_DELAY, statusRegistry);
 
-    healthCheckEndpoint.setRegistry(statusRegistry);
-    managementEndpointManager.register(healthCheckEndpoint);
+        healthCheckEndpoint.setRegistry(statusRegistry);
+        managementEndpointManager.register(healthCheckEndpoint);
 
-    MeterRegistry registry = BackendRegistries.getDefaultNow();
+        MeterRegistry registry = BackendRegistries.getDefaultNow();
 
-    if (registry instanceof PrometheusMeterRegistry) {
-      new NodeHealthCheckMicrometerHandler(statusRegistry).bindTo(registry);
-    }
-  }
-
-  @Override
-  protected void doStop() throws Exception {
-    super.doStop();
-
-    if (metricsPollerId > 0) {
-      vertx.cancelTimer(metricsPollerId);
+        if (registry instanceof PrometheusMeterRegistry) {
+            new NodeHealthCheckMicrometerHandler(statusRegistry).bindTo(registry);
+        }
     }
 
-    producer.close();
-  }
+    @Override
+    protected void doStop() throws Exception {
+        super.doStop();
 
-  @Override
-  protected String name() {
-    return "Node Health-check service";
-  }
+        if (metricsPollerId > 0) {
+            vertx.cancelTimer(metricsPollerId);
+        }
+
+        producer.close();
+    }
+
+    @Override
+    protected String name() {
+        return "Node Health-check service";
+    }
 }

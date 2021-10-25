@@ -30,33 +30,25 @@ import org.springframework.core.env.Environment;
  */
 public class BasicAuthProvider implements AuthProvider {
 
-  private static final String USERS_PREFIX_KEY =
-    "services.core.http.authentication.users.";
+    private static final String USERS_PREFIX_KEY = "services.core.http.authentication.users.";
 
-  @Autowired
-  private Environment environment;
+    @Autowired
+    private Environment environment;
 
-  @Override
-  public void authenticate(
-    JsonObject authInfo,
-    Handler<AsyncResult<User>> resultHandler
-  ) {
-    String password = environment.getProperty(
-      USERS_PREFIX_KEY + authInfo.getString("username")
-    );
+    @Override
+    public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
+        String password = environment.getProperty(USERS_PREFIX_KEY + authInfo.getString("username"));
 
-    if (password != null) {
-      // Get password from incoming HTTP request
-      String presentedPassword = authInfo.getString("password");
+        if (password != null) {
+            // Get password from incoming HTTP request
+            String presentedPassword = authInfo.getString("password");
 
-      if (password.equals(presentedPassword)) {
-        resultHandler.handle(
-          Future.succeededFuture(User.fromName(authInfo.getString("username")))
-        );
-        return;
-      }
+            if (password.equals(presentedPassword)) {
+                resultHandler.handle(Future.succeededFuture(User.fromName(authInfo.getString("username"))));
+                return;
+            }
+        }
+
+        resultHandler.handle(Future.failedFuture("Unauthorized user"));
     }
-
-    resultHandler.handle(Future.failedFuture("Unauthorized user"));
-  }
 }

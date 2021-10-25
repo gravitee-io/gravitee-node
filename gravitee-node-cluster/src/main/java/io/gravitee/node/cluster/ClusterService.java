@@ -22,21 +22,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class ClusterService extends AbstractService<ClusterService> {
 
-  @Autowired
-  private HazelcastInstance hazelcastInstance;
+    @Autowired
+    private HazelcastInstance hazelcastInstance;
 
-  @Autowired
-  private Node node;
+    @Autowired
+    private Node node;
 
-  @Override
-  protected void doStart() throws Exception {
-    //        Member member = hazelcastInstance.getCluster().getLocalMember();
-    node.metadata().put("node.id", node.id());
-    node.metadata().put("node.hostname", node.hostname());
-  }
+    @Override
+    protected void doStart() throws Exception {
+        //        Member member = hazelcastInstance.getCluster().getLocalMember();
+        node.metadata().put("node.id", node.id());
+        node.metadata().put("node.hostname", node.hostname());
+    }
 
-  @Override
-  protected void doStop() throws Exception {
-    hazelcastInstance.shutdown();
-  }
+    @Override
+    protected void doStop() throws Exception {
+        hazelcastInstance.shutdown();
+    }
 }

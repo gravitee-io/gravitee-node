@@ -23,5 +23,5 @@ import io.gravitee.reporter.api.Reporter;
  * @author GraviteeSource Team
  */
 public interface ReporterManager extends Service<ReporterManager> {
-  void register(Reporter reporter);
+    void register(Reporter reporter);
 }

@@ -29,47 +29,40 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ManagementService extends AbstractService<ManagementService> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-    ManagementService.class
-  );
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagementService.class);
 
-  @Autowired
-  private Vertx vertx;
+    @Autowired
+    private Vertx vertx;
 
-  private String deploymentId;
+    private String deploymentId;
 
-  @Override
-  protected void doStart() throws Exception {
-    super.doStart();
+    @Override
+    protected void doStart() throws Exception {
+        super.doStart();
 
-    vertx.deployVerticle(
-      SpringVerticleFactory.VERTICLE_PREFIX +
-      ':' +
-      ManagementVerticle.class.getName(),
-      event -> {
-        if (event.failed()) {
-          LOGGER.error(
-            "Node Management API service can not be started",
-            event.cause()
-          );
-        }
+        vertx.deployVerticle(
+            SpringVerticleFactory.VERTICLE_PREFIX + ':' + ManagementVerticle.class.getName(),
+            event -> {
+                if (event.failed()) {
+                    LOGGER.error("Node Management API service can not be started", event.cause());
+                }
 
-        deploymentId = event.result();
-      }
-    );
-  }
-
-  @Override
-  protected void doStop() throws Exception {
-    super.doStop();
-
-    if (deploymentId != null) {
-      vertx.undeploy(deploymentId);
+                deploymentId = event.result();
+            }
+        );
     }
-  }
 
-  @Override
-  protected String name() {
-    return "Node Management API service";
-  }
+    @Override
+    protected void doStop() throws Exception {
+        super.doStop();
+
+        if (deploymentId != null) {
+            vertx.undeploy(deploymentId);
+        }
+    }
+
+    @Override
+    protected String name() {
+        return "Node Management API service";
+    }
 }

@@ -25,9 +25,9 @@ import org.slf4j.LoggerFactory;
  */
 public class HealthCheckCodec extends AbstractCodec<HealthCheck> {
 
-  public static final String CODEC_NAME = "gio:bus:codec:node_healthcheck";
+    public static final String CODEC_NAME = "gio:bus:codec:node_healthcheck";
 
-  public HealthCheckCodec() {
-    super(CODEC_NAME);
-  }
+    public HealthCheckCodec() {
+        super(CODEC_NAME);
+    }
 }

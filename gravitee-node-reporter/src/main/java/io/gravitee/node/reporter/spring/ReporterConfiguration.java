@@ -29,13 +29,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ReporterConfiguration {
 
-  @Bean
-  public ReporterManager reporterManager() {
-    return new ReporterManagerImpl();
-  }
+    @Bean
+    public ReporterManager reporterManager() {
+        return new ReporterManagerImpl();
+    }
 
-  @Bean
-  public ReporterVerticle reporterVerticle() {
-    return new ReporterVerticle();
-  }
+    @Bean
+    public ReporterVerticle reporterVerticle() {
+        return new ReporterVerticle();
+    }
 }

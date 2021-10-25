@@ -27,35 +27,30 @@ import org.springframework.beans.factory.annotation.Value;
  */
 public class CPUProbe implements Probe {
 
-  @Value("${services.health.threshold.cpu:80}")
-  private int threshold;
+    @Value("${services.health.threshold.cpu:80}")
+    private int threshold;
 
-  @Override
-  public String id() {
-    return "cpu";
-  }
-
-  @Override
-  public boolean isVisibleByDefault() {
-    return false;
-  }
-
-  @Override
-  public CompletableFuture<Result> check() {
-    try {
-      return CompletableFuture.supplyAsync(
-        () ->
-          ProcessProbe.getInstance().getProcessCpuPercent() < threshold
-            ? Result.healthy()
-            : Result.unhealthy(
-              String.format(
-                "CPU percent is over the threshold of %d %%",
-                threshold
-              )
-            )
-      );
-    } catch (Exception ex) {
-      return CompletableFuture.completedFuture(Result.unhealthy(ex));
+    @Override
+    public String id() {
+        return "cpu";
     }
-  }
+
+    @Override
+    public boolean isVisibleByDefault() {
+        return false;
+    }
+
+    @Override
+    public CompletableFuture<Result> check() {
+        try {
+            return CompletableFuture.supplyAsync(
+                () ->
+                    ProcessProbe.getInstance().getProcessCpuPercent() < threshold
+                        ? Result.healthy()
+                        : Result.unhealthy(String.format("CPU percent is over the threshold of %d %%", threshold))
+            );
+        } catch (Exception ex) {
+            return CompletableFuture.completedFuture(Result.unhealthy(ex));
+        }
+    }
 }

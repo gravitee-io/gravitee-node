@@ -23,5 +23,5 @@ import io.gravitee.plugin.api.DeploymentContext;
  * @author GraviteeSource Team
  */
 public interface NodeDeploymentContext extends DeploymentContext {
-  Node node();
+    Node node();
 }

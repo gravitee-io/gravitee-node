@@ -29,130 +29,105 @@ import org.slf4j.impl.StaticLoggerBinder;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public abstract class AbstractContainer
-  extends AbstractService<Container>
-  implements Container {
+public abstract class AbstractContainer extends AbstractService<Container> implements Container {
 
-  private static final String GRAVITEE_HOME_PROPERTY = "gravitee.home";
-  private static final String GRAVITEE_CONFIGURATION_PROPERTY = "gravitee.conf";
+    private static final String GRAVITEE_HOME_PROPERTY = "gravitee.home";
+    private static final String GRAVITEE_CONFIGURATION_PROPERTY = "gravitee.conf";
 
-  protected boolean stopped = false;
+    protected boolean stopped = false;
 
-  public AbstractContainer() {
-    initialize();
-  }
-
-  protected void initialize() {
-    initializeEnvironment();
-    initializeLogging();
-  }
-
-  protected void initializeEnvironment() {
-    // Set system properties if needed
-    String graviteeConfiguration = System.getProperty(
-      GRAVITEE_CONFIGURATION_PROPERTY
-    );
-    if (graviteeConfiguration == null || graviteeConfiguration.isEmpty()) {
-      String graviteeHome = System.getProperty(GRAVITEE_HOME_PROPERTY);
-      System.setProperty(
-        GRAVITEE_CONFIGURATION_PROPERTY,
-        graviteeHome +
-        File.separator +
-        "config" +
-        File.separator +
-        "gravitee.yml"
-      );
+    public AbstractContainer() {
+        initialize();
     }
-  }
 
-  protected void initializeLogging() {
-    String graviteeHome = System.getProperty(GRAVITEE_HOME_PROPERTY);
-    String logbackConfiguration =
-      graviteeHome + File.separator + "config" + File.separator + "logback.xml";
-    File logbackConfigurationfile = new File(logbackConfiguration);
-
-    // If logback configuration available, load it, else, load default logback configuration
-    if (logbackConfigurationfile.exists()) {
-      System.setProperty(
-        "logback.configurationFile",
-        logbackConfigurationfile.getAbsolutePath()
-      );
-      StaticLoggerBinder loggerBinder = StaticLoggerBinder.getSingleton();
-      LoggerContext loggerContext = (LoggerContext) loggerBinder.getLoggerFactory();
-      loggerContext.reset();
-      JoranConfigurator configurator = new JoranConfigurator();
-      configurator.setContext(loggerContext);
-      try {
-        configurator.doConfigure(logbackConfigurationfile);
-      } catch (JoranException e) {
-        LoggerFactory
-          .getLogger(this.getClass())
-          .error("An error occurs while initializing logging system", e);
-      }
-
-      // Internal status data is printed in case of warnings or errors.
-      StatusPrinter.printInCaseOfErrorsOrWarnings(loggerContext);
+    protected void initialize() {
+        initializeEnvironment();
+        initializeLogging();
     }
-  }
 
-  @Override
-  protected void doStart() throws Exception {
-    LoggerFactory
-      .getLogger(AbstractContainer.class)
-      .info("Starting {}...", name());
-
-    try {
-      final Node node = node();
-      node.start();
-
-      // Register shutdown hook
-      Thread shutdownHook = new ContainerShutdownHook(node);
-      shutdownHook.setName("graviteeio-finalizer");
-      Runtime.getRuntime().addShutdownHook(shutdownHook);
-    } catch (Exception ex) {
-      LoggerFactory
-        .getLogger(this.getClass())
-        .error("An unexpected error occurs while starting {}", name(), ex);
-      stop();
+    protected void initializeEnvironment() {
+        // Set system properties if needed
+        String graviteeConfiguration = System.getProperty(GRAVITEE_CONFIGURATION_PROPERTY);
+        if (graviteeConfiguration == null || graviteeConfiguration.isEmpty()) {
+            String graviteeHome = System.getProperty(GRAVITEE_HOME_PROPERTY);
+            System.setProperty(GRAVITEE_CONFIGURATION_PROPERTY, graviteeHome + File.separator + "config" + File.separator + "gravitee.yml");
+        }
     }
-  }
 
-  @Override
-  protected void doStop() throws Exception {
-    if (!stopped) {
-      LoggerFactory
-        .getLogger(this.getClass())
-        .info("Shutting-down {}...", name());
+    protected void initializeLogging() {
+        String graviteeHome = System.getProperty(GRAVITEE_HOME_PROPERTY);
+        String logbackConfiguration = graviteeHome + File.separator + "config" + File.separator + "logback.xml";
+        File logbackConfigurationfile = new File(logbackConfiguration);
 
-      try {
-        node().stop();
-      } catch (Exception ex) {
-        LoggerFactory.getLogger(this.getClass()).error("Unexpected error", ex);
-      } finally {
-        stopped = true;
-      }
-    }
-  }
+        // If logback configuration available, load it, else, load default logback configuration
+        if (logbackConfigurationfile.exists()) {
+            System.setProperty("logback.configurationFile", logbackConfigurationfile.getAbsolutePath());
+            StaticLoggerBinder loggerBinder = StaticLoggerBinder.getSingleton();
+            LoggerContext loggerContext = (LoggerContext) loggerBinder.getLoggerFactory();
+            loggerContext.reset();
+            JoranConfigurator configurator = new JoranConfigurator();
+            configurator.setContext(loggerContext);
+            try {
+                configurator.doConfigure(logbackConfigurationfile);
+            } catch (JoranException e) {
+                LoggerFactory.getLogger(this.getClass()).error("An error occurs while initializing logging system", e);
+            }
 
-  private class ContainerShutdownHook extends Thread {
-
-    private final Node node;
-
-    private ContainerShutdownHook(Node node) {
-      this.node = node;
+            // Internal status data is printed in case of warnings or errors.
+            StatusPrinter.printInCaseOfErrorsOrWarnings(loggerContext);
+        }
     }
 
     @Override
-    public void run() {
-      if (node != null) {
+    protected void doStart() throws Exception {
+        LoggerFactory.getLogger(AbstractContainer.class).info("Starting {}...", name());
+
         try {
-          AbstractContainer.this.stop();
+            final Node node = node();
+            node.start();
+
+            // Register shutdown hook
+            Thread shutdownHook = new ContainerShutdownHook(node);
+            shutdownHook.setName("graviteeio-finalizer");
+            Runtime.getRuntime().addShutdownHook(shutdownHook);
         } catch (Exception ex) {
-          LoggerFactory
-            .getLogger(this.getClass())
-            .error("Unexpected error while stopping {}", name(), ex);
+            LoggerFactory.getLogger(this.getClass()).error("An unexpected error occurs while starting {}", name(), ex);
+            stop();
         }
-      }
     }
-  }
+
+    @Override
+    protected void doStop() throws Exception {
+        if (!stopped) {
+            LoggerFactory.getLogger(this.getClass()).info("Shutting-down {}...", name());
+
+            try {
+                node().stop();
+            } catch (Exception ex) {
+                LoggerFactory.getLogger(this.getClass()).error("Unexpected error", ex);
+            } finally {
+                stopped = true;
+            }
+        }
+    }
+
+    private class ContainerShutdownHook extends Thread {
+
+        private final Node node;
+
+        private ContainerShutdownHook(Node node) {
+            this.node = node;
+        }
+
+        @Override
+        public void run() {
+            if (node != null) {
+                try {
+                    AbstractContainer.this.stop();
+                } catch (Exception ex) {
+                    LoggerFactory.getLogger(this.getClass()).error("Unexpected error while stopping {}", name(), ex);
+                }
+            }
+        }
+    }
 }

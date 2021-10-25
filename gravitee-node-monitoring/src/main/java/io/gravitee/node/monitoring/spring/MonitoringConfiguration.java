@@ -43,83 +43,73 @@ import org.springframework.context.annotation.Import;
 @Import(NodeMonitoringService.class)
 public class MonitoringConfiguration {
 
-  @Value("${services.monitoring.distributed:false}")
-  protected boolean distributed;
+    @Value("${services.monitoring.distributed:false}")
+    protected boolean distributed;
 
-  @Bean
-  public NodeMonitorService nodeMonitorService() {
-    return new NodeMonitorService();
-  }
-
-  @Bean
-  public NodeMonitorManagementEndpoint nodeMonitorManagementEndpoint() {
-    return new NodeMonitorManagementEndpoint();
-  }
-
-  @Bean
-  public NodeHealthCheckService nodeHealthCheckService() {
-    return new NodeHealthCheckService();
-  }
-
-  @Bean
-  public NodeHealthCheckManagementEndpoint nodeHealthCheckManagementEndpoint() {
-    return new NodeHealthCheckManagementEndpoint();
-  }
-
-  @Bean
-  public NodeInfosService nodeInfosService() {
-    return new NodeInfosService();
-  }
-
-  @Bean
-  public NodeMonitoringEventHandler nodeMonitoringEventHandler(
-    Vertx vertx,
-    ApplicationContext context,
-    ObjectMapper objectMapper,
-    Node node,
-    NodeMonitoringService nodeMonitoringService
-  ) {
-    // Instantiate the monitoring event handler depending on the clustering mode.
-    NodeMonitoringEventHandler nodeMonitoringEventHandler = null;
-
-    if (distributed) {
-      try {
-        // Try to retrieve cluster beans.
-        final ClusterManager clusterManager = context.getBean(
-          ClusterManager.class
-        );
-        final HazelcastInstance hazelcastInstance = context.getBean(
-          HazelcastInstance.class
-        );
-        nodeMonitoringEventHandler =
-          new ClusteredNodeMonitoringEventHandler(
-            vertx,
-            objectMapper,
-            node,
-            nodeMonitoringService,
-            clusterManager,
-            hazelcastInstance
-          );
-      } catch (NoClassDefFoundError | NoSuchBeanDefinitionException e) {
-        // There is no clustering on that node.
-      }
+    @Bean
+    public NodeMonitorService nodeMonitorService() {
+        return new NodeMonitorService();
     }
 
-    if (nodeMonitoringEventHandler == null) {
-      nodeMonitoringEventHandler =
-        new NodeMonitoringEventHandler(
-          vertx,
-          objectMapper,
-          node,
-          nodeMonitoringService
-        );
+    @Bean
+    public NodeMonitorManagementEndpoint nodeMonitorManagementEndpoint() {
+        return new NodeMonitorManagementEndpoint();
     }
 
-    return nodeMonitoringEventHandler;
-  }
+    @Bean
+    public NodeHealthCheckService nodeHealthCheckService() {
+        return new NodeHealthCheckService();
+    }
 
-  @Bean
-  public ProbeManager probeManager() {
-    return new ProbeManagerImpl();
-  }
+    @Bean
+    public NodeHealthCheckManagementEndpoint nodeHealthCheckManagementEndpoint() {
+        return new NodeHealthCheckManagementEndpoint();
+    }
+
+    @Bean
+    public NodeInfosService nodeInfosService() {
+        return new NodeInfosService();
+    }
+
+    @Bean
+    public NodeMonitoringEventHandler nodeMonitoringEventHandler(
+        Vertx vertx,
+        ApplicationContext context,
+        ObjectMapper objectMapper,
+        Node node,
+        NodeMonitoringService nodeMonitoringService
+    ) {
+        // Instantiate the monitoring event handler depending on the clustering mode.
+        NodeMonitoringEventHandler nodeMonitoringEventHandler = null;
+
+        if (distributed) {
+            try {
+                // Try to retrieve cluster beans.
+                final ClusterManager clusterManager = context.getBean(ClusterManager.class);
+                final HazelcastInstance hazelcastInstance = context.getBean(HazelcastInstance.class);
+                nodeMonitoringEventHandler =
+                    new ClusteredNodeMonitoringEventHandler(
+                        vertx,
+                        objectMapper,
+                        node,
+                        nodeMonitoringService,
+                        clusterManager,
+                        hazelcastInstance
+                    );
+            } catch (NoClassDefFoundError | NoSuchBeanDefinitionException e) {
+                // There is no clustering on that node.
+            }
+        }
+
+        if (nodeMonitoringEventHandler == null) {
+            nodeMonitoringEventHandler = new NodeMonitoringEventHandler(vertx, objectMapper, node, nodeMonitoringService);
+        }
+
+        return nodeMonitoringEventHandler;
+    }
+
+    @Bean
+    public ProbeManager probeManager() {
+        return new ProbeManagerImpl();
+    }
 }

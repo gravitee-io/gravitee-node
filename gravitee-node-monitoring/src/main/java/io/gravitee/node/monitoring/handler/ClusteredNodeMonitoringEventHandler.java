@@ -36,117 +36,103 @@ import org.slf4j.LoggerFactory;
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ClusteredNodeMonitoringEventHandler
-  extends NodeMonitoringEventHandler {
+public class ClusteredNodeMonitoringEventHandler extends NodeMonitoringEventHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-    ClusteredNodeMonitoringEventHandler.class
-  );
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClusteredNodeMonitoringEventHandler.class);
 
-  private final ClusterManager clusterManager;
-  private final HazelcastInstance hazelcastInstance;
+    private final ClusterManager clusterManager;
+    private final HazelcastInstance hazelcastInstance;
 
-  protected ITopic<HealthCheck> distributedHealthCheckTopic;
-  protected ITopic<Monitor> distributedMonitorTopic;
-  protected ITopic<NodeInfos> distributedNodeInfosTopic;
-  private UUID healthCheckTopicListenerId;
-  private UUID monitorTopicListenerId;
-  private UUID nodeInfosTopicListenerId;
+    protected ITopic<HealthCheck> distributedHealthCheckTopic;
+    protected ITopic<Monitor> distributedMonitorTopic;
+    protected ITopic<NodeInfos> distributedNodeInfosTopic;
+    private UUID healthCheckTopicListenerId;
+    private UUID monitorTopicListenerId;
+    private UUID nodeInfosTopicListenerId;
 
-  public ClusteredNodeMonitoringEventHandler(
-    Vertx vertx,
-    ObjectMapper objectMapper,
-    Node node,
-    NodeMonitoringService nodeMonitoringService,
-    ClusterManager clusterManager,
-    HazelcastInstance hazelcastInstance
-  ) {
-    super(vertx, objectMapper, node, nodeMonitoringService);
-    this.clusterManager = clusterManager;
-    this.hazelcastInstance = hazelcastInstance;
-  }
+    public ClusteredNodeMonitoringEventHandler(
+        Vertx vertx,
+        ObjectMapper objectMapper,
+        Node node,
+        NodeMonitoringService nodeMonitoringService,
+        ClusterManager clusterManager,
+        HazelcastInstance hazelcastInstance
+    ) {
+        super(vertx, objectMapper, node, nodeMonitoringService);
+        this.clusterManager = clusterManager;
+        this.hazelcastInstance = hazelcastInstance;
+    }
 
-  @Override
-  protected void doStart() throws Exception {
-    super.doStart();
-    prepareListeners();
-  }
+    @Override
+    protected void doStart() throws Exception {
+        super.doStart();
+        prepareListeners();
+    }
 
-  @Override
-  protected void doStop() throws Exception {
-    super.doStop();
-    removeListeners();
-  }
+    @Override
+    protected void doStop() throws Exception {
+        super.doStop();
+        removeListeners();
+    }
 
-  private void prepareListeners() {
-    this.distributedHealthCheckTopic =
-      hazelcastInstance.getReliableTopic("node-healthcheck");
-    this.distributedMonitorTopic =
-      hazelcastInstance.getReliableTopic("node-monitor");
-    this.distributedNodeInfosTopic =
-      hazelcastInstance.getReliableTopic("node-infos");
+    private void prepareListeners() {
+        this.distributedHealthCheckTopic = hazelcastInstance.getReliableTopic("node-healthcheck");
+        this.distributedMonitorTopic = hazelcastInstance.getReliableTopic("node-monitor");
+        this.distributedNodeInfosTopic = hazelcastInstance.getReliableTopic("node-infos");
 
-    this.healthCheckTopicListenerId =
-      distributedHealthCheckTopic.addMessageListener(
-        message -> {
-          if (clusterManager.isMasterNode()) {
-            LOGGER.debug(
-              "Received health check message from distributed topic"
+        this.healthCheckTopicListenerId =
+            distributedHealthCheckTopic.addMessageListener(
+                message -> {
+                    if (clusterManager.isMasterNode()) {
+                        LOGGER.debug("Received health check message from distributed topic");
+                        handleHealthCheck(message.getMessageObject());
+                    }
+                }
             );
-            handleHealthCheck(message.getMessageObject());
-          }
-        }
-      );
 
-    this.monitorTopicListenerId =
-      distributedMonitorTopic.addMessageListener(
-        message -> {
-          if (clusterManager.isMasterNode()) {
-            LOGGER.debug("Received monitor message from distributed topic");
-            handleMonitor(message.getMessageObject());
-          }
-        }
-      );
+        this.monitorTopicListenerId =
+            distributedMonitorTopic.addMessageListener(
+                message -> {
+                    if (clusterManager.isMasterNode()) {
+                        LOGGER.debug("Received monitor message from distributed topic");
+                        handleMonitor(message.getMessageObject());
+                    }
+                }
+            );
 
-    this.nodeInfosTopicListenerId =
-      distributedNodeInfosTopic.addMessageListener(
-        message -> {
-          if (clusterManager.isMasterNode()) {
-            LOGGER.debug("Received node infos message from distributed topic");
-            handleNodeInfos(message.getMessageObject());
-          }
-        }
-      );
-  }
+        this.nodeInfosTopicListenerId =
+            distributedNodeInfosTopic.addMessageListener(
+                message -> {
+                    if (clusterManager.isMasterNode()) {
+                        LOGGER.debug("Received node infos message from distributed topic");
+                        handleNodeInfos(message.getMessageObject());
+                    }
+                }
+            );
+    }
 
-  private void removeListeners() {
-    this.distributedHealthCheckTopic.removeMessageListener(
-        this.healthCheckTopicListenerId
-      );
-    this.distributedMonitorTopic.removeMessageListener(
-        this.monitorTopicListenerId
-      );
-    this.distributedNodeInfosTopic.removeMessageListener(
-        this.nodeInfosTopicListenerId
-      );
-  }
+    private void removeListeners() {
+        this.distributedHealthCheckTopic.removeMessageListener(this.healthCheckTopicListenerId);
+        this.distributedMonitorTopic.removeMessageListener(this.monitorTopicListenerId);
+        this.distributedNodeInfosTopic.removeMessageListener(this.nodeInfosTopicListenerId);
+    }
 
-  @Override
-  protected void handleHealthCheckMessage(Message<HealthCheck> message) {
-    LOGGER.debug("Received health check message from internal bus");
-    // We are in a cluster and distributed node monitoring is enabled. Propagate monitoring data across the cluster, it will be handled by the master node.
-    distributedHealthCheckTopic.publish(message.body());
-  }
+    @Override
+    protected void handleHealthCheckMessage(Message<HealthCheck> message) {
+        LOGGER.debug("Received health check message from internal bus");
+        // We are in a cluster and distributed node monitoring is enabled. Propagate monitoring data across the cluster, it will be handled by the master node.
+        distributedHealthCheckTopic.publish(message.body());
+    }
 
-  @Override
-  protected void handleMonitorMessage(Message<Monitor> message) {
-    LOGGER.debug("Received monitor message from internal bus");
-    distributedMonitorTopic.publish(message.body());
-  }
+    @Override
+    protected void handleMonitorMessage(Message<Monitor> message) {
+        LOGGER.debug("Received monitor message from internal bus");
+        distributedMonitorTopic.publish(message.body());
+    }
 
-  @Override
-  protected void handleNodeInfosMessage(Message<NodeInfos> message) {
-    LOGGER.debug("Received health check message from internal bus");
-    distributedNodeInfosTopic.publish(message.body());
-  }
+    @Override
+    protected void handleNodeInfosMessage(Message<NodeInfos> message) {
+        LOGGER.debug("Received health check message from internal bus");
+        distributedNodeInfosTopic.publish(message.body());
+    }
 }

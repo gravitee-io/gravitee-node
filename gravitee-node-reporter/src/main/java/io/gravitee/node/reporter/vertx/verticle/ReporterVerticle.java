@@ -31,65 +31,54 @@ import org.slf4j.LoggerFactory;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ReporterVerticle
-  extends AbstractVerticle
-  implements ReporterService {
+public class ReporterVerticle extends AbstractVerticle implements ReporterService {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-    ReporterVerticle.class
-  );
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReporterVerticle.class);
 
-  private static final String EVENT_BUS_ADDRESS = "node:metrics";
+    private static final String EVENT_BUS_ADDRESS = "node:metrics";
 
-  private MessageProducer<Reportable> producer;
+    private MessageProducer<Reportable> producer;
 
-  @Override
-  public void start(Promise<Void> promise) throws Exception {
-    // Register specific codec
-    vertx.eventBus().registerCodec(new ReportableMessageCodec());
+    @Override
+    public void start(Promise<Void> promise) throws Exception {
+        // Register specific codec
+        vertx.eventBus().registerCodec(new ReportableMessageCodec());
 
-    producer =
-      vertx
-        .eventBus()
-        .<Reportable>publisher(
-          EVENT_BUS_ADDRESS,
-          new DeliveryOptions()
-            .setCodecName(ReportableMessageCodec.CODEC_NAME)
-            .setTracingPolicy(TracingPolicy.IGNORE)
-        );
+        producer =
+            vertx
+                .eventBus()
+                .<Reportable>publisher(
+                    EVENT_BUS_ADDRESS,
+                    new DeliveryOptions().setCodecName(ReportableMessageCodec.CODEC_NAME).setTracingPolicy(TracingPolicy.IGNORE)
+                );
 
-    // By default we report node monitor data.
-    vertx
-      .eventBus()
-      .<Monitor>localConsumer(
-        "gio:node:monitor",
-        event -> producer.write(event.body())
-      );
+        // By default we report node monitor data.
+        vertx.eventBus().<Monitor>localConsumer("gio:node:monitor", event -> producer.write(event.body()));
 
-    promise.complete();
-  }
+        promise.complete();
+    }
 
-  @Override
-  public void stop(Promise<Void> promise) throws Exception {
-    if (producer != null) {
-      producer.close(
-        event -> {
-          if (event.succeeded()) {
-            LOGGER.debug("Reporter publisher has been closed successfully.");
+    @Override
+    public void stop(Promise<Void> promise) throws Exception {
+        if (producer != null) {
+            producer.close(
+                event -> {
+                    if (event.succeeded()) {
+                        LOGGER.debug("Reporter publisher has been closed successfully.");
+                        promise.complete();
+                    } else {
+                        promise.fail(event.cause());
+                    }
+                }
+            );
+        } else {
             promise.complete();
-          } else {
-            promise.fail(event.cause());
-          }
         }
-      );
-    } else {
-      promise.complete();
     }
-  }
 
-  public void report(Reportable reportable) {
-    if (producer != null) {
-      producer.write(reportable);
+    public void report(Reportable reportable) {
+        if (producer != null) {
+            producer.write(reportable);
+        }
     }
-  }
 }
