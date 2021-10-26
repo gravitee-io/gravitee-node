@@ -67,7 +67,7 @@ public class KubernetesPropertyResolver implements PropertyResolver {
 
     if ("secrets".equals(properties[1])) { // type
       return resolvePropertyFromSecret(generateLocation(properties))
-        .map(encodeData -> Base64.getDecoder().decode(encodeData));
+        .map(encodeData -> new String(Base64.getDecoder().decode(encodeData)));
     } else if ("configmaps".equals(properties[1])) {
       return resolvePropertyFromConfigMap(generateLocation(properties))
         .map(String::strip);
