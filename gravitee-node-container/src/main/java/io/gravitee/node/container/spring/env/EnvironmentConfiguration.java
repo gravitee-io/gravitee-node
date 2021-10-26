@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.container.spring.env;
 
+import io.gravitee.node.kubernetes.propertyresolver.PropertyResolverFactoriesLoader;
 import java.util.Properties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
@@ -60,7 +61,13 @@ public class EnvironmentConfiguration {
   }
 
   @Bean
-  public static EnvironmentBeanFactoryPostProcessor environmentBeanFactoryPostProcessor() {
-    return new EnvironmentBeanFactoryPostProcessor();
+  public static EnvironmentBeanFactoryPostProcessor environmentBeanFactoryPostProcessor(
+    Environment environment,
+    ApplicationContext applicationContext
+  ) {
+    return new EnvironmentBeanFactoryPostProcessor(
+      environment,
+      applicationContext
+    );
   }
 }

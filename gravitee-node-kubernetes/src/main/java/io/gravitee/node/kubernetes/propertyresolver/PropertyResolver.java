@@ -32,17 +32,15 @@ public interface PropertyResolver {
   boolean supports(String currentValue);
 
   /**
-   * @param propertyName
-   * @param currentValue
+   * @param location
    * @return The values of the given property if exist
    */
-  Maybe<Object> resolve(String propertyName, String currentValue);
+  Maybe<Object> resolve(String location);
 
   /**
    * Watch for any changes in the property and emmit the new values
-   * @param propertyName
-   * @param currentValue
+   * @param location
    * @return last value
    */
-  Flowable<Object> watch(String propertyName, String currentValue);
+  Flowable<Object> watch(String location);
 }

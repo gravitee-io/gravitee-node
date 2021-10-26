@@ -49,21 +49,15 @@ public class KubernetesPropertyResolver implements PropertyResolver {
   }
 
   @Override
-  public Maybe<Object> resolve(String propertyName, String currentValue) {
-    Assert.notNull(propertyName, "Property name can not be null");
-    Assert.notNull(currentValue, "Current value can not be null");
+  public Maybe<Object> resolve(String location) {
+    Assert.notNull(location, "Location can not be null");
 
-    String[] properties = parsePropertyName(propertyName, currentValue); // kubernetes://default/configmaps/gravitee-config
+    String[] properties = parsePropertyName(location); // kubernetes://default/configmaps/gravitee-config/management.db.name
     if (properties == null) {
       return Maybe.empty();
     }
 
-    LOGGER.debug(
-      "Resolve property [{}] in namespace [{}] using resource [{}]",
-      propertyName,
-      properties[0], // namespace
-      properties[2] // resourceName
-    );
+    LOGGER.debug("Resolve location [{}]", location);
 
     if ("secrets".equals(properties[1])) { // type
       return resolvePropertyFromSecret(generateLocation(properties))
@@ -74,28 +68,22 @@ public class KubernetesPropertyResolver implements PropertyResolver {
     } else {
       return Maybe.error(
         new RuntimeException(
-          "Property type " + currentValue + " is not supported"
+          "Property type " + properties[1] + " is not supported"
         )
       );
     }
   }
 
   @Override
-  public Flowable<Object> watch(String propertyName, String currentValue) {
-    Assert.notNull(propertyName, "Property name can not be null");
-    Assert.notNull(currentValue, "Current value can not be null");
+  public Flowable<Object> watch(String location) {
+    Assert.notNull(location, "Location can not be null");
 
-    String[] properties = parsePropertyName(propertyName, currentValue); // kubernetes://default/configmaps/gravitee-config
+    String[] properties = parsePropertyName(location); // kubernetes://default/configmaps/gravitee-config/my_key
     if (properties == null) {
       return Flowable.empty();
     }
 
-    LOGGER.debug(
-      "Start watching property [{}] in namespace [{}] using resource [{}]",
-      propertyName,
-      properties[0], // namespace
-      properties[2] // resourceName
-    );
+    LOGGER.debug("Start watching location [{}]", location);
 
     if ("secrets".equals(properties[1])) { // type
       return kubernetesClient
@@ -135,7 +123,7 @@ public class KubernetesPropertyResolver implements PropertyResolver {
     }
   }
 
-  private String[] parsePropertyName(String propertyName, String currentValue) {
+  private String[] parsePropertyName(String currentValue) {
     if (!supports(currentValue)) {
       LOGGER.error("Does not support scheme {}", currentValue);
       return null;
@@ -143,18 +131,11 @@ public class KubernetesPropertyResolver implements PropertyResolver {
 
     String[] properties = currentValue.substring(13).split("/"); // eliminate initial kubernetes://
 
-    if (properties.length < 3 || properties.length > 4) {
+    if (properties.length != 4) {
       LOGGER.error(
-        "Wrong property value. A correct format looks like this \"kubernetes://{namespace}/configmaps/{configmap-name}\""
+        "Wrong property value. A correct format looks like this \"kubernetes://{namespace}/configmaps/{configmap-name}/key\""
       );
       return null;
-    } else if (properties.length == 3) {
-      return new String[] {
-        properties[0],
-        properties[1],
-        properties[2],
-        propertyName,
-      };
     }
 
     return properties;

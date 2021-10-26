@@ -68,7 +68,7 @@
         </dependency>
 
         <dependency>
-            <groupId>io.gravitee.gateway.services</groupId>
+            <groupId>io.gravitee.kubernetes</groupId>
             <artifactId>gravitee-kubernetes-client</artifactId>
         </dependency>
 

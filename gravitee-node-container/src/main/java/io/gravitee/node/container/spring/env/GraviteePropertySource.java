@@ -60,9 +60,12 @@ public class GraviteePropertySource
       for (PropertyResolver propertyResolver : propertyResolverLoader.getPropertyResolvers()) {
         if (propertyResolver.supports(value.toString())) {
           Object resolvedValue = propertyResolver
-            .resolve(name, value.toString())
+            .resolve(value.toString())
             .doOnError(
-              t -> LOGGER.error("Unable to resolve property {}", name, t)
+              t -> {
+                LOGGER.error("Unable to resolve property {}", name, t);
+                source.put(name, null);
+              }
             )
             .blockingGet(); // property must be resolved before continuing with the rest of the code
           source.put(name, resolvedValue); // to avoid resolving this property again
@@ -83,7 +86,7 @@ public class GraviteePropertySource
     Object value
   ) {
     propertyResolver
-      .watch(name, value.toString())
+      .watch(value.toString())
       .doOnNext(newValue -> source.put(name, newValue))
       .doOnError(t -> LOGGER.error("Unable to update property {}", name, t))
       .doOnComplete(() -> watchProperty(propertyResolver, name, value))
