@@ -111,7 +111,7 @@ public class KubernetesPropertyResolver implements PropertyResolver {
               .getObject()
               .getData()
               .get(properties[3]);
-            return Base64.getDecoder().decode(encodedData);
+            return new String(Base64.getDecoder().decode(encodedData));
           }
         );
     } else if ("configmaps".equals(properties[1])) {
