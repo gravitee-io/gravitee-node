@@ -60,10 +60,10 @@ public class EnvironmentConfiguration {
   }
 
   @Bean
-  public static EnvironmentSourceBeanProcessor environmentBeanFactoryPostProcessor(
+  public static EnvironmentPropertySourceBeanProcessor environmentBeanFactoryPostProcessor(
     Environment environment,
     ApplicationContext applicationContext
   ) {
-    return new EnvironmentSourceBeanProcessor(environment, applicationContext);
+    return new EnvironmentPropertySourceBeanProcessor(environment, applicationContext);
   }
 }
