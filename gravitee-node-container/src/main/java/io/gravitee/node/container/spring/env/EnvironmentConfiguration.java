@@ -64,6 +64,9 @@ public class EnvironmentConfiguration {
     Environment environment,
     ApplicationContext applicationContext
   ) {
-    return new EnvironmentPropertySourceBeanProcessor(environment, applicationContext);
+    return new EnvironmentPropertySourceBeanProcessor(
+      environment,
+      applicationContext
+    );
   }
 }
