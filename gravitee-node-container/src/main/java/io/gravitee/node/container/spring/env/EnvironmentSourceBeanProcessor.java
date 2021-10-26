@@ -29,7 +29,7 @@ import org.springframework.core.env.StandardEnvironment;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class EnvironmentBeanProcessor
+public class EnvironmentSourceBeanProcessor
   implements BeanFactoryPostProcessor, Ordered {
 
   private static final String[] PROPERTY_PREFIXES = new String[] {
@@ -41,7 +41,7 @@ public class EnvironmentBeanProcessor
   private final Environment environment;
   private final ApplicationContext applicationContext;
 
-  EnvironmentBeanProcessor(
+  EnvironmentSourceBeanProcessor(
     Environment environment,
     ApplicationContext applicationContext
   ) {
