@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.container.spring.env;
 
+import io.gravitee.node.container.spring.SpringEnvironmentConfiguration;
 import java.util.Properties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
@@ -68,5 +69,12 @@ public class EnvironmentConfiguration {
       environment,
       applicationContext
     );
+  }
+
+  @Bean
+  public static io.gravitee.node.api.configuration.Configuration graviteeEnvironment(
+    Environment environment
+  ) {
+    return new SpringEnvironmentConfiguration(environment);
   }
 }
