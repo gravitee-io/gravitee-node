@@ -294,8 +294,6 @@ public class HttpServerConfiguration {
         !this.getTrustStorePaths().isEmpty()
       ) {
         if (
-          this.getTrustStoreType() == null ||
-          this.getTrustStoreType().isEmpty() ||
           this.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)
         ) {
           options.setTrustStoreOptions(
@@ -459,11 +457,11 @@ public class HttpServerConfiguration {
     private String tlsProtocols;
     private String keyStorePath;
     private String keyStorePassword;
-    private String keyStoreType;
+    private String keyStoreType = CERTIFICATE_FORMAT_JKS;
     private List<Certificate> keyStoreCertificates;
     private String trustStorePath;
     private String trustStorePassword;
-    private String trustStoreType;
+    private String trustStoreType = CERTIFICATE_FORMAT_JKS;
     private List<String> trustStorePaths;
     private boolean handle100Continue;
     private boolean compressionSupported =
