@@ -70,15 +70,6 @@ public class EnvironmentPropertySourceBeanProcessor
         }
       );
 
-    ((StandardEnvironment) environment).getSystemProperties()
-      .forEach(
-        (key, value) -> {
-          if (key.startsWith("gravitee.")) {
-            source.put(key.substring(9), value); // eliminate initial "gravitee."
-          }
-        }
-      );
-
     ((ConfigurableEnvironment) environment).getPropertySources()
       .addFirst(
         new GraviteePropertySource(
