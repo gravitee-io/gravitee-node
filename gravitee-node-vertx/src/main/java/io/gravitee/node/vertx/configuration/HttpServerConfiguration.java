@@ -293,9 +293,7 @@ public class HttpServerConfiguration {
         this.getTrustStorePaths() != null &&
         !this.getTrustStorePaths().isEmpty()
       ) {
-        if (
-          this.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)
-        ) {
+        if (this.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)) {
           options.setTrustStoreOptions(
             new JksOptions()
               .setPath(this.getTrustStorePaths().get(0))
