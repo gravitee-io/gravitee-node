@@ -18,6 +18,7 @@ package io.gravitee.node.container.spring.env;
 import io.gravitee.node.container.spring.SpringEnvironmentConfiguration;
 import java.util.Properties;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -48,15 +49,33 @@ public class EnvironmentConfiguration {
   @Bean
   public static PropertySourceBeanProcessor propertySourceBeanProcessor(
     @Qualifier("graviteeProperties") Properties graviteeProperties,
-    Environment environment
+    Environment environment,
+    ApplicationContext applicationContext
   ) {
     // Using this we are now able to use {@link org.springframework.core.env.Environment} in Spring beans
-    return new PropertySourceBeanProcessor(graviteeProperties, environment);
+    return new PropertySourceBeanProcessor(
+      graviteeProperties,
+      environment,
+      applicationContext
+    );
   }
 
   @Bean
-  public static EnvironmentBeanFactoryPostProcessor environmentBeanFactoryPostProcessor() {
-    return new EnvironmentBeanFactoryPostProcessor();
+  public static EnvironmentPropertySourceBeanProcessor environmentBeanFactoryPostProcessor(
+    Environment environment,
+    ApplicationContext applicationContext
+  ) {
+    return new EnvironmentPropertySourceBeanProcessor(
+      environment,
+      applicationContext
+    );
+  }
+
+  @Bean
+  public static io.gravitee.node.api.configuration.Configuration graviteeEnvironment(
+    Environment environment
+  ) {
+    return new SpringEnvironmentConfiguration(environment);
   }
 
   @Bean

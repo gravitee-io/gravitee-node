@@ -27,8 +27,8 @@
         <version>1.18.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>gravitee-node-container</artifactId>
-    <name>Gravitee.io - Node - Container</name>
+    <artifactId>gravitee-node-kubernetes</artifactId>
+    <name>Gravitee.io - Node - Kubernetes</name>
 
     <dependencies>
         <!-- Gravitee.io -->
@@ -63,15 +63,15 @@
         </dependency>
 
         <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-kubernetes</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>io.gravitee.common</groupId>
             <artifactId>gravitee-common</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>io.gravitee.kubernetes</groupId>
+            <artifactId>gravitee-kubernetes-client</artifactId>
+        </dependency>
+
 
         <!-- Logging -->
         <dependency>
@@ -129,6 +129,49 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <!-- Vert.x-->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-rx-java2</artifactId>
+        </dependency>
+
+
+        <!-- TEST -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-unit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.jayway.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>1.7.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Test against kubernetes and openshift mock servers -->
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>kubernetes-server-mock</artifactId>
+            <version>2.6.1</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Used to load configuration file -->

@@ -16,59 +16,64 @@
 package io.gravitee.node.container.spring.env;
 
 import java.util.Map;
-import java.util.Properties;
-import java.util.stream.Collectors;
+import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.StandardEnvironment;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class PropertySourceBeanProcessor
+public class EnvironmentPropertySourceBeanProcessor
   implements BeanFactoryPostProcessor, Ordered {
 
-  private final ApplicationContext applicationContext;
+  private static final String[] PROPERTY_PREFIXES = new String[] {
+    "gravitee.",
+    "gravitee_",
+    "GRAVITEE.",
+    "GRAVITEE_",
+  };
   private final Environment environment;
-  private final Properties properties;
+  private final ApplicationContext applicationContext;
 
-  PropertySourceBeanProcessor(
-    Properties properties,
+  EnvironmentPropertySourceBeanProcessor(
     Environment environment,
     ApplicationContext applicationContext
   ) {
-    this.properties = properties;
     this.environment = environment;
     this.applicationContext = applicationContext;
   }
 
   @Override
   public int getOrder() {
-    return Ordered.HIGHEST_PRECEDENCE + 10;
+    return Ordered.HIGHEST_PRECEDENCE;
   }
 
   @Override
   public void postProcessBeanFactory(
     ConfigurableListableBeanFactory beanFactory
   ) {
-    Map<String, Object> source = properties
-      .entrySet()
-      .stream()
-      .collect(
-        Collectors.toMap(
-          entry -> entry.getKey().toString(),
-          Map.Entry::getValue
-        )
+    Map<String, Object> source = new ConcurrentHashMap<>();
+    ((StandardEnvironment) environment).getSystemEnvironment()
+      .forEach(
+        (key, value) -> {
+          for (String propertyPrefix : PROPERTY_PREFIXES) {
+            if (key.startsWith(propertyPrefix)) {
+              source.put(key.substring(propertyPrefix.length()), value);
+            }
+          }
+        }
       );
 
     ((ConfigurableEnvironment) environment).getPropertySources()
-      .addLast(
+      .addFirst(
         new GraviteePropertySource(
-          "graviteeConfiguration",
+          "graviteeEnvironmentPropertySource",
           source,
           applicationContext
         )
