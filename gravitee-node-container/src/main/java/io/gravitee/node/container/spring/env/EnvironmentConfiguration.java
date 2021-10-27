@@ -77,11 +77,4 @@ public class EnvironmentConfiguration {
   ) {
     return new SpringEnvironmentConfiguration(environment);
   }
-
-  @Bean
-  public static io.gravitee.node.api.configuration.Configuration graviteeEnvironment(
-    Environment environment
-  ) {
-    return new SpringEnvironmentConfiguration(environment);
-  }
 }
