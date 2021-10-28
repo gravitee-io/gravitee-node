@@ -67,8 +67,8 @@ public class PropertySourceBeanProcessor
 
     ((ConfigurableEnvironment) environment).getPropertySources()
       .addLast(
-        new GraviteePropertySource(
-          "graviteeConfiguration",
+        new GraviteeYamlPropertySource(
+          "graviteeYamlConfiguration",
           source,
           applicationContext
         )
