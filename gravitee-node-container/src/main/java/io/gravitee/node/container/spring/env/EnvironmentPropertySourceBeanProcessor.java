@@ -72,7 +72,7 @@ public class EnvironmentPropertySourceBeanProcessor
 
     ((ConfigurableEnvironment) environment).getPropertySources()
       .addFirst(
-        new GraviteePropertySource(
+        new GraviteeEnvironmentPropertySource(
           "graviteeEnvironmentPropertySource",
           source,
           applicationContext

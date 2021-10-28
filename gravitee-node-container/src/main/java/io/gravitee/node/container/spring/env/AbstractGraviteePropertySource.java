@@ -19,28 +19,25 @@ import io.gravitee.node.kubernetes.propertyresolver.CloudScheme;
 import io.gravitee.node.kubernetes.propertyresolver.PropertyResolver;
 import io.gravitee.node.kubernetes.propertyresolver.PropertyResolverFactoriesLoader;
 import java.util.Map;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.PropertySource;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
- * @since 3.9.11
  */
-public class GraviteePropertySource
+public abstract class AbstractGraviteePropertySource
   extends PropertySource<Map<String, Object>> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(
-    GraviteePropertySource.class
+    AbstractGraviteePropertySource.class
   );
   private final PropertyResolverFactoriesLoader propertyResolverLoader;
 
-  public GraviteePropertySource(
+  protected AbstractGraviteePropertySource(
     String name,
     Map<String, Object> source,
     ApplicationContext applicationContext
@@ -51,11 +48,14 @@ public class GraviteePropertySource
   }
 
   @Override
-  @Nullable
   public Object getProperty(String name) {
     Assert.notNull(name, "Property name can not be null.");
+    Object value = getValue(name);
 
-    Object value = source.get(name);
+    if (value == null) {
+      return null;
+    }
+
     if (isCloudBased(value)) {
       for (PropertyResolver propertyResolver : propertyResolverLoader.getPropertyResolvers()) {
         if (propertyResolver.supports(value.toString())) {
@@ -80,6 +80,18 @@ public class GraviteePropertySource
     return source.get(name);
   }
 
+  protected abstract Object getValue(String key);
+
+  private boolean isCloudBased(Object value) {
+    for (CloudScheme cloudScheme : CloudScheme.values()) {
+      if (value.toString().startsWith(cloudScheme.value())) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   private void watchProperty(
     PropertyResolver propertyResolver,
     String name,
@@ -91,33 +103,5 @@ public class GraviteePropertySource
       .doOnError(t -> LOGGER.error("Unable to update property {}", name, t))
       .doOnComplete(() -> watchProperty(propertyResolver, name, value))
       .subscribe();
-  }
-
-  private boolean isCloudBased(Object value) {
-    if (value == null) {
-      return false;
-    }
-
-    for (CloudScheme cloudScheme : CloudScheme.values()) {
-      if (value.toString().startsWith(cloudScheme.value())) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    if (!super.equals(o)) return false;
-    GraviteePropertySource that = (GraviteePropertySource) o;
-    return propertyResolverLoader.equals(that.propertyResolverLoader);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(super.hashCode(), propertyResolverLoader);
   }
 }
