@@ -77,7 +77,7 @@ public abstract class AbstractGraviteePropertySource
       }
     }
 
-    return source.get(name);
+    return getValue(name);
   }
 
   protected abstract Object getValue(String key);
