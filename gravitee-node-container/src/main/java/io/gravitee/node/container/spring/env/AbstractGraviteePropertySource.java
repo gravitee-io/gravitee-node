@@ -50,7 +50,7 @@ public abstract class AbstractGraviteePropertySource
   @Override
   public Object getProperty(String name) {
     Assert.notNull(name, "Property name can not be null.");
-    Object value = getValue(name);
+    Object value = source.getOrDefault(name, getValue(name));
 
     if (value == null) {
       return null;
