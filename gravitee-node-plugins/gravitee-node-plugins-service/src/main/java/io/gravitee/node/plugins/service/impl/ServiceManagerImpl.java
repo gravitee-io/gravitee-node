@@ -23,6 +23,10 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.reverseOrder;
+import static java.util.stream.Collectors.toList;
+
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
@@ -42,21 +46,23 @@ public class ServiceManagerImpl extends AbstractService implements ServiceManage
     protected void doStart() throws Exception {
         super.doStart();
 
-        for (AbstractService service : services) {
+        List<AbstractService> orderedServices = services.stream().sorted(comparing(AbstractService::getOrder)).collect(toList());
+
+        for (AbstractService service : orderedServices) {
             try {
                 service.preStart();
             } catch (Exception ex) {
                 LOGGER.error("Unexpected error while pre-starting service", ex);
             }
         }
-        for (AbstractService service : services) {
+        for (AbstractService service : orderedServices) {
             try {
                 service.start();
             } catch (Exception ex) {
                 LOGGER.error("Unexpected error while starting service", ex);
             }
         }
-        for (AbstractService service : services) {
+        for (AbstractService service : orderedServices) {
             try {
                 service.postStart();
             } catch (Exception ex) {
@@ -69,21 +75,23 @@ public class ServiceManagerImpl extends AbstractService implements ServiceManage
     protected void doStop() throws Exception {
         super.doStop();
 
-        for (AbstractService service : services) {
+        List<AbstractService> orderedServices = services.stream().sorted(comparing(AbstractService::getOrder, reverseOrder())).collect(toList());
+
+        for (AbstractService service : orderedServices) {
             try {
                 service.preStop();
             } catch (Exception ex) {
                 LOGGER.error("Unexpected error while pre-stopping service", ex);
             }
         }
-        for (AbstractService service : services) {
+        for (AbstractService service : orderedServices) {
             try {
                 service.stop();
             } catch (Exception ex) {
                 LOGGER.error("Unexpected error while stopping service", ex);
             }
         }
-        for (AbstractService service : services) {
+        for (AbstractService service : orderedServices) {
             try {
                 service.postStop();
             } catch (Exception ex) {
