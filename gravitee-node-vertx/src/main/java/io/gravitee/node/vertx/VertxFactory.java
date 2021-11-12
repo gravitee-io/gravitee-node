@@ -122,10 +122,10 @@ public class VertxFactory implements FactoryBean<Vertx> {
       .setDisabledMetricsCategories(
         new HashSet<>(
           Arrays.asList(
-            MetricsDomain.DATAGRAM_SOCKET.name(),
-            MetricsDomain.NAMED_POOLS.name(),
-            MetricsDomain.VERTICLES.name(),
-            MetricsDomain.EVENT_BUS.name()
+            MetricsDomain.DATAGRAM_SOCKET.toCategory(),
+            MetricsDomain.NAMED_POOLS.toCategory(),
+            MetricsDomain.VERTICLES.toCategory(),
+            MetricsDomain.EVENT_BUS.toCategory()
           )
         )
       )
@@ -145,8 +145,6 @@ public class VertxFactory implements FactoryBean<Vertx> {
         EnumSet.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE)
       );
     }
-
-    options.setMetricsOptions(micrometerMetricsOptions);
 
     boolean prometheusEnabled = environment.getProperty(
       "services.metrics.prometheus.enabled",
