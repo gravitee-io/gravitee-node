@@ -446,7 +446,9 @@ public class HttpServerConfiguration {
 
     private TracingPolicy tracingPolicy;
     private int port = 8080;
+    private int predefinedPort = 0;
     private String host = "0.0.0.0";
+    private String predefinedHost = null;
     private String authenticationType;
     private boolean secured;
     private boolean alpn;
@@ -491,9 +493,31 @@ public class HttpServerConfiguration {
       return this;
     }
 
+    /**
+     * Once port is set using this method, the builder will not lookup anywhere else for the port number
+     * @param port number
+     * @return
+     */
+    public HttpServerConfigurationBuilder withPort(int port) {
+      Assert.isTrue(port > 0, "Port should be bigger than 0");
+      this.predefinedPort = port;
+      return this;
+    }
+
     public HttpServerConfigurationBuilder withDefaultHost(String host) {
       Assert.hasText(host, "Host can't be null or empty");
       this.host = host;
+      return this;
+    }
+
+    /**
+     * Once host is set using this method, the builder will not lookup anywhere else for the host name
+     * @param host
+     * @return
+     */
+    public HttpServerConfigurationBuilder withHost(String host) {
+      Assert.hasText(host, "Host can't be null or empty");
+      this.predefinedHost = host;
       return this;
     }
 
@@ -777,10 +801,15 @@ public class HttpServerConfiguration {
       );
 
       this.port =
-        Integer.parseInt(
-          environment.getProperty(prefix + "port", String.valueOf(port))
-        );
-      this.host = environment.getProperty(prefix + "host", host);
+        predefinedPort > 0
+          ? predefinedPort
+          : Integer.parseInt(
+            environment.getProperty(prefix + "port", String.valueOf(port))
+          );
+      this.host =
+        predefinedHost != null
+          ? predefinedHost
+          : environment.getProperty(prefix + "host", host);
       this.authenticationType =
         environment.getProperty(prefix + "authentication", authenticationType);
       this.secured =
