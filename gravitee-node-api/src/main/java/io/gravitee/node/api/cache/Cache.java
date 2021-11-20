@@ -13,31 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.cluster.spring;
+package io.gravitee.node.api.cache;
 
-import io.gravitee.node.cache.CacheManagerFactoriesLoader;
-import io.gravitee.node.cluster.ClusterService;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Configuration
-@Import(
-  { HazelcastClusterConfiguration.class, StandaloneClusterConfiguration.class }
-)
-public class ClusterConfiguration {
+public interface Cache<K, V> {
+  String getName();
 
-  @Bean
-  public ClusterService clusterService() {
-    return new ClusterService();
-  }
+  int size();
 
-  @Bean
-  CacheManagerFactoriesLoader cacheManagerFactoriesLoader() {
-    return new CacheManagerFactoriesLoader();
-  }
+  boolean isEmpty();
+
+  Collection<V> values();
+
+  V get(K key);
+
+  V put(K key, V value);
+
+  V put(K key, V value, long ttl, TimeUnit ttlUnit);
+
+  void putAll(Map<? extends K, ? extends V> m);
+
+  V evict(K key);
+
+  void clear();
+
+  void addCacheListener(CacheListener<K, V> listener);
+
+  boolean removeCacheListener(CacheListener<K, V> listener);
 }
