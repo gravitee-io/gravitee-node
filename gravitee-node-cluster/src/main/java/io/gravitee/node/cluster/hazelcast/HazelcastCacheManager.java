@@ -13,28 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.cluster.spring;
+package io.gravitee.node.cluster.hazelcast;
 
-import io.gravitee.node.api.Node;
+import com.hazelcast.core.HazelcastInstance;
 import io.gravitee.node.api.cache.CacheManager;
-import io.gravitee.node.api.cluster.ClusterManager;
-import io.gravitee.node.cluster.ClusterService;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Configuration
-@Import(
-  { HazelcastClusterConfiguration.class, StandaloneClusterConfiguration.class }
-)
-public class ClusterConfiguration {
+public class HazelcastCacheManager implements CacheManager {
 
-  @Bean
-  public ClusterService clusterService() {
-    return new ClusterService();
+  @Autowired
+  private HazelcastInstance hazelcastInstance;
+
+  @Override
+  public <K, V> Map<K, V> getMap(String name) {
+    return hazelcastInstance.getMap(name);
   }
 }

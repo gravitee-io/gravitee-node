@@ -13,27 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.api.cluster;
+package io.gravitee.node.cluster.standalone;
 
-import java.util.Collection;
+import io.gravitee.node.api.message.MessageProducer;
+import io.gravitee.node.api.message.Topic;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface ClusterManager {
-  Collection<Member> getMembers();
+public class StandaloneMessageProducer implements MessageProducer {
 
-  Member getLocalMember();
-
-  /**
-   * Indicates if the local node is the master node of the cluster
-   *
-   * @return Local node is master node?
-   */
-  boolean isMasterNode();
-
-  void addMemberListener(MemberListener listener);
-
-  void stop();
+  @Override
+  public <T> Topic<T> getTopic(String name) {
+    return new StandaloneTopic<>(name);
+  }
 }

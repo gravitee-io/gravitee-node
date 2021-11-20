@@ -13,28 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.cluster.spring;
+package io.gravitee.node.cluster.standalone;
 
-import io.gravitee.node.api.Node;
-import io.gravitee.node.api.cache.CacheManager;
 import io.gravitee.node.api.cluster.ClusterManager;
-import io.gravitee.node.cluster.ClusterService;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import io.gravitee.node.api.cluster.Member;
+import io.gravitee.node.api.cluster.MemberListener;
+import java.util.Collection;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Configuration
-@Import(
-  { HazelcastClusterConfiguration.class, StandaloneClusterConfiguration.class }
-)
-public class ClusterConfiguration {
+public class StandaloneClusterManager implements ClusterManager {
 
-  @Bean
-  public ClusterService clusterService() {
-    return new ClusterService();
+  // TODO - Kamiel - 19/11/2021: Implement all the methods
+
+  @Override
+  public Collection<Member> getMembers() {
+    return null;
   }
+
+  @Override
+  public Member getLocalMember() {
+    return null;
+  }
+
+  @Override
+  public boolean isMasterNode() {
+    return true;
+  }
+
+  @Override
+  public void addMemberListener(MemberListener listener) {}
+
+  @Override
+  public void stop() {}
 }

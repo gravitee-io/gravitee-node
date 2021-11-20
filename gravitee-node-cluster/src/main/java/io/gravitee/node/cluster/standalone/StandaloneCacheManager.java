@@ -13,28 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.cluster.spring;
+package io.gravitee.node.cluster.standalone;
 
-import io.gravitee.node.api.Node;
 import io.gravitee.node.api.cache.CacheManager;
-import io.gravitee.node.api.cluster.ClusterManager;
-import io.gravitee.node.cluster.ClusterService;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Configuration
-@Import(
-  { HazelcastClusterConfiguration.class, StandaloneClusterConfiguration.class }
-)
-public class ClusterConfiguration {
+public class StandaloneCacheManager implements CacheManager {
 
-  @Bean
-  public ClusterService clusterService() {
-    return new ClusterService();
+  private Map<String, Map> maps = new ConcurrentHashMap<>();
+
+  @Override
+  public <K, V> Map<K, V> getMap(String name) {
+    Map<K, V> map = maps.get(name);
+
+    if (map == null) {
+      return maps.put(name, new ConcurrentHashMap<K, V>());
+    }
+
+    return map;
   }
 }
