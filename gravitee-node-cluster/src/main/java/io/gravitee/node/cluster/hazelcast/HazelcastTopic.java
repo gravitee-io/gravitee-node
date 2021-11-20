@@ -16,6 +16,7 @@
 package io.gravitee.node.cluster.hazelcast;
 
 import com.hazelcast.topic.ITopic;
+import io.gravitee.node.api.message.Message;
 import io.gravitee.node.api.message.MessageConsumer;
 import io.gravitee.node.api.message.Topic;
 import java.util.UUID;
@@ -38,17 +39,17 @@ public class HazelcastTopic<T> implements Topic<T> {
   }
 
   @Override
-  public UUID addMessageListener(MessageConsumer<T> messageConsumer) {
+  public UUID addMessageConsumer(MessageConsumer<T> messageConsumer) {
     return iTopic.addMessageListener(
       message ->
         messageConsumer.onMessage(
-          new HazelcastMessage<>(iTopic.getName(), message.getMessageObject())
+          new Message<>(iTopic.getName(), message.getMessageObject())
         )
     );
   }
 
   @Override
-  public boolean removeMessageListener(UUID uuid) {
+  public boolean removeMessageConsumer(UUID uuid) {
     return iTopic.removeMessageListener(uuid);
   }
 }

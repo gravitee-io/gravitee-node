@@ -30,7 +30,7 @@ public class HazelcastCacheManager implements CacheManager {
   private HazelcastInstance hazelcastInstance;
 
   @Override
-  public <K, V> Map<K, V> getMap(String name) {
+  public <K, V> Map<K, V> getCache(String name) {
     return hazelcastInstance.getMap(name);
   }
 }

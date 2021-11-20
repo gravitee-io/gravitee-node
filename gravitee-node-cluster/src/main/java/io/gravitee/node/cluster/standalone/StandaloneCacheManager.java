@@ -28,7 +28,7 @@ public class StandaloneCacheManager implements CacheManager {
   private Map<String, Map> maps = new ConcurrentHashMap<>();
 
   @Override
-  public <K, V> Map<K, V> getMap(String name) {
+  public <K, V> Map<K, V> getCache(String name) {
     Map<K, V> map = maps.get(name);
 
     if (map == null) {

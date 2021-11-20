@@ -43,7 +43,7 @@ public class StandaloneTopic<T> implements Topic<T> {
   }
 
   @Override
-  public UUID addMessageListener(MessageConsumer<T> messageConsumer) {
+  public UUID addMessageConsumer(MessageConsumer<T> messageConsumer) {
     UUID uuid = io.gravitee.common.utils.UUID.random();
     consumerMap.put(uuid, messageConsumer);
 
@@ -51,7 +51,7 @@ public class StandaloneTopic<T> implements Topic<T> {
   }
 
   @Override
-  public boolean removeMessageListener(UUID uuid) {
+  public boolean removeMessageConsumer(UUID uuid) {
     if (!consumerMap.containsKey(uuid)) {
       return false;
     } else {

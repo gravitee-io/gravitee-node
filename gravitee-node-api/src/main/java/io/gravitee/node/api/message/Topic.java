@@ -23,6 +23,6 @@ import java.util.UUID;
  */
 public interface Topic<T> {
   void publish(T event);
-  UUID addMessageListener(MessageConsumer<T> messageConsumer);
-  boolean removeMessageListener(UUID uuid);
+  UUID addMessageConsumer(MessageConsumer<T> messageConsumer);
+  boolean removeMessageConsumer(UUID uuid);
 }
