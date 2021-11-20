@@ -32,7 +32,9 @@ public class StandaloneCacheManager implements CacheManager {
     Map<K, V> map = maps.get(name);
 
     if (map == null) {
-      return maps.put(name, new ConcurrentHashMap<K, V>());
+      ConcurrentHashMap<K, V> value = new ConcurrentHashMap<>();
+      maps.put(name, value);
+      return value;
     }
 
     return map;
