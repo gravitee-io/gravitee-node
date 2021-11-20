@@ -13,31 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.cluster.spring;
-
-import io.gravitee.node.cache.CacheManagerFactoriesLoader;
-import io.gravitee.node.cluster.ClusterService;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+package io.gravitee.node.api.cache;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Configuration
-@Import(
-  { HazelcastClusterConfiguration.class, StandaloneClusterConfiguration.class }
-)
-public class ClusterConfiguration {
+public class CacheConfiguration {
 
-  @Bean
-  public ClusterService clusterService() {
-    return new ClusterService();
+  private long maxSize = -1;
+
+  private long timeToLiveSeconds = -1;
+
+  private long timeToIdleSeconds = -1;
+
+  public long getMaxSize() {
+    return maxSize;
   }
 
-  @Bean
-  CacheManagerFactoriesLoader cacheManagerFactoriesLoader() {
-    return new CacheManagerFactoriesLoader();
+  public void setMaxSize(long maxSize) {
+    this.maxSize = maxSize;
+  }
+
+  public long getTimeToLiveSeconds() {
+    return timeToLiveSeconds;
+  }
+
+  public void setTimeToLiveSeconds(long timeToLiveSeconds) {
+    this.timeToLiveSeconds = timeToLiveSeconds;
+  }
+
+  public long getTimeToIdleSeconds() {
+    return timeToIdleSeconds;
+  }
+
+  public void setTimeToIdleSeconds(long timeToIdleSeconds) {
+    this.timeToIdleSeconds = timeToIdleSeconds;
   }
 }

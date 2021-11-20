@@ -37,8 +37,9 @@
 
     <modules>
         <module>gravitee-node-api</module>
-        <module>gravitee-node-container</module>
+        <module>gravitee-node-cache</module>
         <module>gravitee-node-cluster</module>
+        <module>gravitee-node-container</module>
         <module>gravitee-node-tracing</module>
         <module>gravitee-node-vertx</module>
         <module>gravitee-node-management</module>
@@ -117,6 +118,16 @@
                 <artifactId>gravitee-node-certificates</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-kubernetes</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-cache</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- Gravitee.io -->
             <dependency>
@@ -163,6 +174,26 @@
                 <artifactId>bcpkix-jdk15on</artifactId>
                 <version>${bouncycastle.version}</version>
             </dependency>
+
+            <!-- Spring -->
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-redis</artifactId>
+                <version>${spring-data-redis.version}</version>
+            </dependency>
+
+            <!-- Hazelcast -->
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast</artifactId>
+                <version>${hazelcast.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-pool2</artifactId>
+                <version>${commons-pool2.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -189,6 +220,7 @@
         <micrometer-registry-prometheus.version>1.6.2</micrometer-registry-prometheus.version>
         <LatencyUtils.version>2.0.3</LatencyUtils.version>
         <bouncycastle.version>1.69</bouncycastle.version>
+        <guava.version>31.0.1-jre</guava.version>
     </properties>
     <build>
         <plugins>

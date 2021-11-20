@@ -98,6 +98,11 @@ public class HazelcastClusterManager
   }
 
   @Override
+  public void stop() {
+    hazelcastInstance.shutdown();
+  }
+
+  @Override
   public void memberAdded(MembershipEvent event) {
     LOGGER.info("A node join the cluster: {}", event);
     com.hazelcast.cluster.Member master = hazelcastInstance

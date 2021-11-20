@@ -25,12 +25,13 @@ import io.gravitee.node.monitoring.spring.MonitoringConfiguration;
 import io.gravitee.node.plugins.service.spring.ServiceConfiguration;
 import io.gravitee.node.reporter.spring.ReporterConfiguration;
 import io.gravitee.plugin.core.spring.PluginConfiguration;
-import java.util.ArrayList;
-import java.util.List;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)

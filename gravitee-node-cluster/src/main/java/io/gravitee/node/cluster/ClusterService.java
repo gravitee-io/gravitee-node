@@ -15,15 +15,15 @@
  */
 package io.gravitee.node.cluster;
 
-import com.hazelcast.core.HazelcastInstance;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.Node;
+import io.gravitee.node.api.cluster.ClusterManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class ClusterService extends AbstractService<ClusterService> {
 
   @Autowired
-  private HazelcastInstance hazelcastInstance;
+  private ClusterManager clusterManager;
 
   @Autowired
   private Node node;
@@ -38,6 +38,6 @@ public class ClusterService extends AbstractService<ClusterService> {
 
   @Override
   protected void doStop() throws Exception {
-    hazelcastInstance.shutdown();
+    clusterManager.stop();
   }
 }

@@ -13,27 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.api.cluster;
+package io.gravitee.node.cache;
 
-import java.util.Collection;
+import io.gravitee.common.spring.factory.SpringFactoriesLoader;
+import io.gravitee.node.api.cache.CacheManager;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface ClusterManager {
-  Collection<Member> getMembers();
+public class CacheManagerFactoriesLoader
+  extends SpringFactoriesLoader<CacheManager> {
 
-  Member getLocalMember();
+  @Override
+  protected Class<CacheManager> getObjectType() {
+    return CacheManager.class;
+  }
 
-  /**
-   * Indicates if the local node is the master node of the cluster
-   *
-   * @return Local node is master node?
-   */
-  boolean isMasterNode();
-
-  void addMemberListener(MemberListener listener);
-
-  void stop();
+  public List<CacheManager> getCacheManagers() {
+    return new ArrayList<>(getFactoriesInstances());
+  }
 }

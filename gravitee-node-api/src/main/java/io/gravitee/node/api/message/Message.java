@@ -13,27 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.api.cluster;
+package io.gravitee.node.api.message;
 
-import java.util.Collection;
+import java.util.EventObject;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface ClusterManager {
-  Collection<Member> getMembers();
+public class Message<T> extends EventObject {
 
-  Member getLocalMember();
+  private T messageObject;
 
   /**
-   * Indicates if the local node is the master node of the cluster
+   * Constructs a prototypical Event.
    *
-   * @return Local node is master node?
+   * @param topicName the object on which the Event initially occurred
+   * @throws IllegalArgumentException if source is null
    */
-  boolean isMasterNode();
+  public Message(String topicName, T messageObject) {
+    super(topicName);
+    this.messageObject = messageObject;
+  }
 
-  void addMemberListener(MemberListener listener);
+  public T getMessageObject() {
+    return messageObject;
+  }
 
-  void stop();
+  public void setMessageObject(T messageObject) {
+    this.messageObject = messageObject;
+  }
 }
