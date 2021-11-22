@@ -22,5 +22,5 @@ import java.util.Map;
  * @author GraviteeSource Team
  */
 public interface CacheManager {
-  <K, V> Map<K, V> getCache(String name);
+  <K, V> Map<K, V> getMap(String name);
 }

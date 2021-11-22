@@ -13,24 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.cluster.hazelcast;
+package io.gravitee.node.api.cache;
 
-import com.hazelcast.core.HazelcastInstance;
-import io.gravitee.node.api.cache.CacheManager;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.UUID;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class HazelcastCacheManager implements CacheManager {
-
-  @Autowired
-  private HazelcastInstance hazelcastInstance;
-
-  @Override
-  public <K, V> Map<K, V> getMap(String name) {
-    return new HazelcastMap<>(hazelcastInstance.getMap(name));
-  }
+public interface GMap<K, V> extends Map<K, V> {
+  UUID addMapListener(MapListener<K, V> mapListener, boolean includeValue);
+  boolean removeMapListener(UUID id);
 }

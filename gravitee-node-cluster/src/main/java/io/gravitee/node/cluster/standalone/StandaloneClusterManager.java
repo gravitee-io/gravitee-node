@@ -15,10 +15,13 @@
  */
 package io.gravitee.node.cluster.standalone;
 
+import io.gravitee.common.utils.UUID;
 import io.gravitee.node.api.cluster.ClusterManager;
 import io.gravitee.node.api.cluster.Member;
 import io.gravitee.node.api.cluster.MemberListener;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
@@ -26,16 +29,41 @@ import java.util.Collection;
  */
 public class StandaloneClusterManager implements ClusterManager {
 
-  // TODO - Kamiel - 19/11/2021: Implement all the methods
+  private static final Member localMember = new Member() {
+    @Override
+    public String uuid() {
+      return UUID.random().toString();
+    }
+
+    @Override
+    public boolean master() {
+      return true;
+    }
+
+    @Override
+    public String host() {
+      return "localhost";
+    }
+
+    @Override
+    public Map<String, String> attributes() {
+      return Collections.emptyMap();
+    }
+
+    @Override
+    public Member attribute(String key, String value) {
+      return null;
+    }
+  };
 
   @Override
   public Collection<Member> getMembers() {
-    return null;
+    return Collections.singleton(localMember);
   }
 
   @Override
   public Member getLocalMember() {
-    return null;
+    return localMember;
   }
 
   @Override

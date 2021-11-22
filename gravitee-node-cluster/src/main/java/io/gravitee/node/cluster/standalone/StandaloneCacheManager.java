@@ -17,7 +17,6 @@ package io.gravitee.node.cluster.standalone;
 
 import io.gravitee.node.api.cache.CacheManager;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
@@ -25,18 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class StandaloneCacheManager implements CacheManager {
 
-  private Map<String, Map> maps = new ConcurrentHashMap<>();
-
   @Override
-  public <K, V> Map<K, V> getCache(String name) {
-    Map<K, V> map = maps.get(name);
-
-    if (map == null) {
-      ConcurrentHashMap<K, V> value = new ConcurrentHashMap<>();
-      maps.put(name, value);
-      return value;
-    }
-
-    return map;
+  public <K, V> Map<K, V> getMap(String name) {
+    return new StandaloneMap<>(name);
   }
 }
