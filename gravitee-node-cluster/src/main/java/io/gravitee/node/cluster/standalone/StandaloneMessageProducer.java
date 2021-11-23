@@ -17,6 +17,8 @@ package io.gravitee.node.cluster.standalone;
 
 import io.gravitee.node.api.message.MessageProducer;
 import io.gravitee.node.api.message.Topic;
+import io.vertx.core.Vertx;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
@@ -24,8 +26,11 @@ import io.gravitee.node.api.message.Topic;
  */
 public class StandaloneMessageProducer implements MessageProducer {
 
+  @Autowired
+  private Vertx vertx;
+
   @Override
   public <T> Topic<T> getTopic(String name) {
-    return new StandaloneTopic<>(name);
+    return new StandaloneTopic<>(vertx, name);
   }
 }

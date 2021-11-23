@@ -16,8 +16,10 @@
 package io.gravitee.node.cluster.standalone;
 
 import io.gravitee.node.api.message.Message;
-import io.gravitee.node.api.message.MessageConsumer;
 import io.gravitee.node.api.message.Topic;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.MessageConsumer;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,24 +30,32 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class StandaloneTopic<T> implements Topic<T> {
 
+  private final Vertx vertx;
   private final String topicName;
   Map<UUID, MessageConsumer<T>> consumerMap = new ConcurrentHashMap<>();
 
-  public StandaloneTopic(String topicName) {
+  public StandaloneTopic(Vertx vertx, String topicName) {
+    this.vertx = vertx;
     this.topicName = topicName;
   }
 
   @Override
   public void publish(T event) {
-    consumerMap
-      .values()
-      .forEach(consumer -> consumer.onMessage(new Message<>(topicName, event)));
+    vertx.eventBus().publish(topicName, event);
   }
 
   @Override
-  public UUID addMessageConsumer(MessageConsumer<T> messageConsumer) {
+  public UUID addMessageConsumer(
+    io.gravitee.node.api.message.MessageConsumer<T> messageConsumer
+  ) {
     UUID uuid = io.gravitee.common.utils.UUID.random();
-    consumerMap.put(uuid, messageConsumer);
+
+    MessageConsumer<T> vertxConsumer = vertx.eventBus().consumer(topicName);
+    consumerMap.put(uuid, vertxConsumer);
+
+    vertxConsumer.handler(
+      event -> messageConsumer.onMessage(new Message<>(topicName, event.body()))
+    );
 
     return uuid;
   }
@@ -55,8 +65,14 @@ public class StandaloneTopic<T> implements Topic<T> {
     if (!consumerMap.containsKey(uuid)) {
       return false;
     } else {
-      consumerMap.remove(uuid);
-      return true;
+      Future<Void> unregister = consumerMap.get(uuid).unregister();
+
+      if (unregister.succeeded()) {
+        consumerMap.remove(uuid);
+        return true;
+      } else {
+        return false;
+      }
     }
   }
 }
