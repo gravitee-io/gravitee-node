@@ -19,6 +19,7 @@ import io.gravitee.node.api.message.Message;
 import io.gravitee.node.api.message.Topic;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.MessageConsumer;
 import java.util.Map;
 import java.util.UUID;
@@ -41,7 +42,10 @@ public class StandaloneTopic<T> implements Topic<T> {
 
   @Override
   public void publish(T event) {
-    vertx.eventBus().publish(topicName, event);
+    DeliveryOptions deliveryOptions = new DeliveryOptions();
+    deliveryOptions.setCodecName(event.getClass().getName());
+
+    vertx.eventBus().publish(topicName, event, deliveryOptions);
   }
 
   @Override
