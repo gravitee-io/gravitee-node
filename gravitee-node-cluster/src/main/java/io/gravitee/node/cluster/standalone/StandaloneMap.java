@@ -15,11 +15,15 @@
  */
 package io.gravitee.node.cluster.standalone;
 
+import io.gravitee.node.api.cache.EntryEvent;
+import io.gravitee.node.api.cache.EntryEventType;
 import io.gravitee.node.api.cache.GMap;
 import io.gravitee.node.api.cache.MapListener;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.util.Assert;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
@@ -33,7 +37,28 @@ public class StandaloneMap<K, V>
   private Map<UUID, MapListener<K, V>> mapListeners = new ConcurrentHashMap<>();
 
   public StandaloneMap(String name) {
+    Assert.notNull(name, "Name can't be null");
     this.name = name;
+  }
+
+  @Override
+  public V put(K key, V value) {
+    Assert.notNull(key, "Key can't be null");
+    Assert.notNull(value, "Value can't be null");
+
+    mapListeners.forEach(
+      (uuid, mapListener) ->
+        mapListener.onEntryEvent(
+          new EntryEvent<>(
+            name,
+            EntryEventType.ADDED,
+            key,
+            super.get(key),
+            value
+          )
+        )
+    );
+    return super.put(key, value);
   }
 
   @Override
@@ -48,6 +73,26 @@ public class StandaloneMap<K, V>
   }
 
   @Override
+  public void putAll(Map<? extends K, ? extends V> m) {
+    super.putAll(m);
+    m.forEach(
+      (key, value) ->
+        mapListeners.forEach(
+          (uuid, mapListener) ->
+            mapListener.onEntryEvent(
+              new EntryEvent<>(
+                name,
+                EntryEventType.ADDED,
+                key,
+                super.get(key),
+                value
+              )
+            )
+        )
+    );
+  }
+
+  @Override
   public boolean removeMapListener(UUID id) {
     if (!mapListeners.containsKey(id)) {
       return false;
@@ -55,5 +100,24 @@ public class StandaloneMap<K, V>
       mapListeners.remove(id);
       return true;
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o != this) {
+      if (!(o instanceof StandaloneMap)) {
+        return false;
+      }
+
+      StandaloneMap<?, ?> m = (StandaloneMap<?, ?>) o;
+      return super.equals(o) && this.name.equals(m.name);
+    }
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), name);
   }
 }
