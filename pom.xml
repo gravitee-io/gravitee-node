@@ -148,6 +148,23 @@
                 <artifactId>gravitee-kubernetes-client</artifactId>
                 <version>${gravitee-k8s-client.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.gravitee.resource</groupId>
+                <artifactId>gravitee-resource-cache-provider-api</artifactId>
+                <version>${gravitee-resource-cache-provider-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.resource</groupId>
+                <artifactId>gravitee-resource-cache</artifactId>
+                <version>${gravitee-resource-cache.version}</version>
+            </dependency>
+
+            <!-- Hazelcast -->
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast</artifactId>
+                <version>${hazelcast.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -166,6 +183,8 @@
         <gravitee-k8s-client.version>0.2.0</gravitee-k8s-client.version>
         <gravitee-reporter-api.version>1.17.1</gravitee-reporter-api.version>
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
+        <gravitee-resource-cache-provider-api.version>1.2.0-SNAPSHOT</gravitee-resource-cache-provider-api.version>
+        <gravitee-resource-cache.version>1.7.0-SNAPSHOT</gravitee-resource-cache.version>
         <snakeyaml.version>1.26</snakeyaml.version>
         <hazelcast.version>4.1.1</hazelcast.version>
         <gravitee-alert-api.version>1.8.0</gravitee-alert-api.version>

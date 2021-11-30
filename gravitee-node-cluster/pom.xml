@@ -61,11 +61,15 @@
             <artifactId>gravitee-common</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.gravitee.resource</groupId>
+            <artifactId>gravitee-resource-cache</artifactId>
+        </dependency>
+
         <!-- Hazelcast -->
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
-            <version>${hazelcast.version}</version>
         </dependency>
 
         <!-- Logging -->

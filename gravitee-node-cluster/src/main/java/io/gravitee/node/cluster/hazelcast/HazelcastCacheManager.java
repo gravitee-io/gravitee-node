@@ -17,6 +17,8 @@ package io.gravitee.node.cluster.hazelcast;
 
 import com.hazelcast.core.HazelcastInstance;
 import io.gravitee.node.api.cache.CacheManager;
+import io.gravitee.resource.cache.api.Cache;
+import io.gravitee.resource.cache.hazelcast.HazelcastDelegate;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -30,7 +32,7 @@ public class HazelcastCacheManager implements CacheManager {
   private HazelcastInstance hazelcastInstance;
 
   @Override
-  public <K, V> Map<K, V> getMap(String name) {
-    return new HazelcastMap<>(hazelcastInstance.getMap(name));
+  public <K, V> Cache<K, V> getCache(String name) {
+    return new HazelcastDelegate<>(hazelcastInstance.getMap(name), 0);
   }
 }

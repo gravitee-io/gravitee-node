@@ -16,7 +16,8 @@
 package io.gravitee.node.cluster.standalone;
 
 import io.gravitee.node.api.cache.CacheManager;
-import java.util.Map;
+import io.gravitee.resource.cache.api.Cache;
+import io.gravitee.resource.cache.standalone.StandaloneCache;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
@@ -25,7 +26,7 @@ import java.util.Map;
 public class StandaloneCacheManager implements CacheManager {
 
   @Override
-  public <K, V> Map<K, V> getMap(String name) {
-    return new StandaloneMap<>(name);
+  public <K, V> Cache<K, V> getCache(String name) {
+    return new StandaloneCache<>(name, 0);
   }
 }

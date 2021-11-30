@@ -19,8 +19,12 @@ import io.gravitee.node.api.message.Message;
 import io.gravitee.node.api.message.Topic;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.MessageCodec;
 import io.vertx.core.eventbus.MessageConsumer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,16 +38,52 @@ public class StandaloneTopic<T> implements Topic<T> {
   private final Vertx vertx;
   private final String topicName;
   Map<UUID, MessageConsumer<T>> consumerMap = new ConcurrentHashMap<>();
+  private static final List<String> messageCodecs = new ArrayList<>();
 
   public StandaloneTopic(Vertx vertx, String topicName) {
     this.vertx = vertx;
     this.topicName = topicName;
+
+    if (!messageCodecs.contains(topicName)) {
+      messageCodecs.add(topicName);
+
+      vertx
+        .eventBus()
+        .registerCodec(
+          new MessageCodec<T, T>() {
+            // Will not be used for local transformations
+            @Override
+            public void encodeToWire(Buffer buffer, T o) {}
+
+            // Will not be used for local transformations
+            @Override
+            public T decodeFromWire(int pos, Buffer buffer) {
+              return null;
+            }
+
+            @Override
+            public T transform(T o) {
+              return o;
+            }
+
+            @Override
+            public String name() {
+              return topicName;
+            }
+
+            @Override
+            public byte systemCodecID() {
+              return -1;
+            }
+          }
+        );
+    }
   }
 
   @Override
   public void publish(T event) {
     DeliveryOptions deliveryOptions = new DeliveryOptions();
-    deliveryOptions.setCodecName(event.getClass().getName());
+    deliveryOptions.setCodecName(topicName);
 
     vertx.eventBus().publish(topicName, event, deliveryOptions);
   }

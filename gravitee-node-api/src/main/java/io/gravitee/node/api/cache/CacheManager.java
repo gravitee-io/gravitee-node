@@ -15,12 +15,12 @@
  */
 package io.gravitee.node.api.cache;
 
-import java.util.Map;
+import io.gravitee.resource.cache.api.Cache;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
 public interface CacheManager {
-  <K, V> Map<K, V> getMap(String name);
+  <K, V> Cache<K, V> getCache(String name);
 }

@@ -53,6 +53,11 @@
             <artifactId>gravitee-tracing-api</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.gravitee.resource</groupId>
+            <artifactId>gravitee-resource-cache-provider-api</artifactId>
+        </dependency>
+
         <!-- RxJava 2 -->
         <dependency>
             <groupId>io.reactivex.rxjava2</groupId>
