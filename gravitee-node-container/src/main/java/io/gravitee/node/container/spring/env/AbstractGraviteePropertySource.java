@@ -22,6 +22,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.PropertySource;
 import org.springframework.util.Assert;
 
@@ -30,7 +31,7 @@ import org.springframework.util.Assert;
  * @author GraviteeSource Team
  */
 public abstract class AbstractGraviteePropertySource
-  extends PropertySource<Map<String, Object>> {
+  extends EnumerablePropertySource<Map<String, Object>> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(
     AbstractGraviteePropertySource.class
@@ -45,6 +46,11 @@ public abstract class AbstractGraviteePropertySource
     super(name, source);
     this.propertyResolverLoader =
       applicationContext.getBean(PropertyResolverFactoriesLoader.class);
+  }
+
+  @Override
+  public String[] getPropertyNames() {
+    return source.keySet().toArray(new String[0]);
   }
 
   @Override
