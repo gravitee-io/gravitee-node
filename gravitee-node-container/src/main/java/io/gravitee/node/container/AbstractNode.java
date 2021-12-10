@@ -31,12 +31,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.env.Environment;
 
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -80,6 +83,21 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
                 Version.RUNTIME_VERSION.BUILD_NUMBER, Version.RUNTIME_VERSION.REVISION,
                 ManagementFactory.getRuntimeMXBean().getVmVendor(), ManagementFactory.getRuntimeMXBean().getVmName(),
                 ManagementFactory.getRuntimeMXBean().getVmVersion(), endTime - startTime);
+    }
+
+    @Override
+    public Node preStop() throws Exception {
+        super.preStop();
+
+        final Environment environment = this.applicationContext.getBean(Environment.class);
+        final Integer shutdownDelay = environment.getProperty("gracefulShutdown.delay", Integer.class, 0);
+        final TimeUnit shutdownUnit = TimeUnit.valueOf(environment.getProperty("gracefulShutdown.unit", String.class, "MILLISECONDS"));
+
+        LOGGER.info("Applying graceful shutdown delay {} {}", shutdownDelay, shutdownUnit);
+        Thread.sleep(Duration.ofMillis(shutdownUnit.toMillis(shutdownDelay)).toMillis());
+        LOGGER.info("Graceful shutdown delay exhausted");
+
+        return this;
     }
 
     protected void doStop() throws Exception {
@@ -174,7 +192,7 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
             try {
                 LifecycleComponent<?> lifecycleComponent =
                         this.applicationContext.getBean(componentClass);
-                if (lifecycleComponent.lifecycleState() == Lifecycle.State.STARTED) {
+                if (lifecycleComponent.lifecycleState() != Lifecycle.State.STOPPING) {
                     this.LOGGER.debug(
                             "Pre-stopping component: {}",
                             componentClass.getSimpleName()
@@ -196,7 +214,7 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
             try {
                 LifecycleComponent<?> lifecycleComponent =
                         this.applicationContext.getBean(componentClass);
-                if (lifecycleComponent.lifecycleState() == Lifecycle.State.STARTED) {
+                if (lifecycleComponent.lifecycleState() != Lifecycle.State.STOPPED) {
                     this.LOGGER.info(
                             "Stopping component: {}",
                             componentClass.getSimpleName()
