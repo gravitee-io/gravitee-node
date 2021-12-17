@@ -100,6 +100,15 @@ public abstract class AbstractContainer extends AbstractService<Container> imple
     }
 
     @Override
+    public Container preStop() throws Exception {
+        if(!stopped) {
+            LoggerFactory.getLogger(this.getClass()).info("Preparing {} for shutting-down...", name());
+            node().preStop();
+        }
+        return this;
+    }
+
+    @Override
     protected void doStop() throws Exception {
         if (! stopped) {
             LoggerFactory.getLogger(this.getClass()).info("Shutting-down {}...", name());
@@ -126,6 +135,7 @@ public abstract class AbstractContainer extends AbstractService<Container> imple
         public void run() {
             if (node != null) {
                 try {
+                    AbstractContainer.this.preStop();
                     AbstractContainer.this.stop();
                 } catch (Exception ex) {
                     LoggerFactory.getLogger(this.getClass())
