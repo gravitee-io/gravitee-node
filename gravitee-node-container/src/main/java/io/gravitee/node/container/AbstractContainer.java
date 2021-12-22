@@ -118,6 +118,17 @@ public abstract class AbstractContainer
   }
 
   @Override
+  public Container preStop() throws Exception {
+    if (!stopped) {
+      LoggerFactory
+        .getLogger(this.getClass())
+        .info("Preparing {} for shutting-down...", name());
+      node().preStop();
+    }
+    return this;
+  }
+
+  @Override
   protected void doStop() throws Exception {
     if (!stopped) {
       LoggerFactory
@@ -146,6 +157,7 @@ public abstract class AbstractContainer
     public void run() {
       if (node != null) {
         try {
+          AbstractContainer.this.preStop();
           AbstractContainer.this.stop();
         } catch (Exception ex) {
           LoggerFactory
