@@ -18,6 +18,7 @@ package io.gravitee.node.vertx.spring;
 import io.gravitee.node.tracing.spring.TracingConfiguration;
 import io.gravitee.node.vertx.VertxFactory;
 import io.gravitee.node.vertx.verticle.factory.SpringVerticleFactory;
+import io.vertx.reactivex.core.Vertx;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -33,6 +34,11 @@ public class VertxConfiguration {
   @Bean
   public VertxFactory vertxFactory() {
     return new VertxFactory();
+  }
+
+  @Bean
+  public Vertx vertx(io.vertx.core.Vertx vertx) {
+    return Vertx.newInstance(vertx);
   }
 
   @Bean
