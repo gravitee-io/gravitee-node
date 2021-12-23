@@ -90,8 +90,8 @@ public class HazelcastClusterConfiguration {
       AnnotatedTypeMetadata annotatedTypeMetadata
     ) {
       return conditionContext
-            .getEnvironment()
-            .getProperty("gravitee.cluster.enabled", Boolean.class, false);
+        .getEnvironment()
+        .getProperty("gravitee.cluster.enabled", Boolean.class, false);
     }
 
     @Override
