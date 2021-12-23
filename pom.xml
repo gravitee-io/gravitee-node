@@ -29,7 +29,7 @@
 
     <groupId>io.gravitee.node</groupId>
     <artifactId>gravitee-node</artifactId>
-    <version>1.19.0-SNAPSHOT</version>
+    <version>1.19.0</version>
 
     <name>Gravitee.io - Node</name>
 
@@ -176,7 +176,7 @@
 
     <properties>
         <gravitee-bom.version>1.3</gravitee-bom.version>
-        <gravitee-common.version>1.24.0-SNAPSHOT</gravitee-common.version>
+        <gravitee-common.version>1.24.0</gravitee-common.version>
         <gravitee-plugin.version>1.17.1</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.17.1</gravitee-reporter-api.version>
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
