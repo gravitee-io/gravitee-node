@@ -100,14 +100,13 @@ public class StandaloneTopic<T> implements Topic<T> {
     consumerMap.put(uuid, vertxConsumer);
 
     vertxConsumer.handler(
-            event -> vertx.executeBlocking(
-                    (Handler<Promise<Void>>) promise -> {
-                        messageConsumer.onMessage(
-                                new Message<>(topicName, event.body())
-                        );
-                        promise.handle(null);
-                    }
-            )
+      event ->
+        vertx.executeBlocking(
+          (Handler<Promise<Void>>) promise -> {
+            messageConsumer.onMessage(new Message<>(topicName, event.body()));
+            promise.handle(null);
+          }
+        )
     );
 
     return uuid;
