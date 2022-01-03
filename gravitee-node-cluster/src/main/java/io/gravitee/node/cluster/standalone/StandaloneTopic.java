@@ -18,6 +18,8 @@ package io.gravitee.node.cluster.standalone;
 import io.gravitee.node.api.message.Message;
 import io.gravitee.node.api.message.Topic;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -98,7 +100,14 @@ public class StandaloneTopic<T> implements Topic<T> {
     consumerMap.put(uuid, vertxConsumer);
 
     vertxConsumer.handler(
-      event -> messageConsumer.onMessage(new Message<>(topicName, event.body()))
+            event -> vertx.executeBlocking(
+                    (Handler<Promise<Void>>) promise -> {
+                        messageConsumer.onMessage(
+                                new Message<>(topicName, event.body())
+                        );
+                        promise.handle(null);
+                    }
+            )
     );
 
     return uuid;
