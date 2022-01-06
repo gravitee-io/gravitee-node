@@ -29,6 +29,7 @@ public class VertxHttpServerFactory
   extends AbstractVertxHttpServerFactory<HttpServer> {
 
   private final Vertx vertx;
+  private final HttpServerOptions httpServerOptions;
 
   public VertxHttpServerFactory(
     Vertx vertx,
@@ -36,13 +37,12 @@ public class VertxHttpServerFactory
     KeyStoreLoaderManager keyStoreLoaderManager
   ) {
     super(httpServerConfiguration, keyStoreLoaderManager);
+    this.httpServerOptions = getHttpServerOptions();
     this.vertx = vertx;
   }
 
   @Override
   public HttpServer getObject() throws Exception {
-    final HttpServerOptions httpServerOptions = getHttpServerOptions();
-
     return VertxHttpServerProvider.create(vertx, httpServerOptions);
   }
 
