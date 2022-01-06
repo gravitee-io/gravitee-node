@@ -30,10 +30,7 @@ import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.tracing.TracingOptions;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
+import io.vertx.micrometer.*;
 import io.vertx.micrometer.backends.BackendRegistries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +49,8 @@ import java.util.stream.Collectors;
  * @author GraviteeSource Team
  */
 public class VertxFactory implements FactoryBean<Vertx> {
+
+    private static final String PROMETHEUS_LABEL_VERSION_3_10 = "3.10";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VertxFactory.class);
 
@@ -115,6 +114,12 @@ public class VertxFactory implements FactoryBean<Vertx> {
                         MetricsDomain.VERTICLES.name(),
                         MetricsDomain.EVENT_BUS.name())))
                 .setEnabled(true);
+
+        String namesVersion = environment.getProperty("services.metrics.prometheus.naming.version");
+        // Ensure compatibility with previous labels (Vertx 3.x)
+        if (PROMETHEUS_LABEL_VERSION_3_10.equals(namesVersion)) {
+            micrometerMetricsOptions.setMetricsNaming(MetricsNaming.v3Names());
+        }
 
         // Read labels
         Set<String> labels = loadLabels();
