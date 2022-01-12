@@ -154,17 +154,14 @@ public class KubernetesSecretKeyStoreLoader
           .stream()
           .filter(
             r ->
-              secret
-                .getMetadata()
-                .getSelfLink()
-                .endsWith(
-                  String.format(
-                    "/%s/%s/%s",
-                    r.getNamespace(),
-                    r.getType().value(),
-                    r.getName()
-                  )
-                )
+              r
+                .getNamespace()
+                .equalsIgnoreCase(secret.getMetadata().getNamespace()) &&
+              (
+                secret.getType().equalsIgnoreCase(KUBERNETES_OPAQUE_SECRET) ||
+                r.getType().value().equalsIgnoreCase(secret.getType())
+              ) &&
+              r.getName().equalsIgnoreCase(secret.getMetadata().getName())
           )
           .findFirst();
 
@@ -200,7 +197,7 @@ public class KubernetesSecretKeyStoreLoader
       );
     }
 
-    keyStoresByLocation.put(secret.getMetadata().getSelfLink(), keyStore);
+    keyStoresByLocation.put(secret.getMetadata().getUid(), keyStore);
     return Completable.complete();
   }
 }

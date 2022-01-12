@@ -129,17 +129,10 @@ public class KubernetesConfigMapKeyStoreLoader
       .stream()
       .filter(
         r ->
-          configMap
-            .getMetadata()
-            .getSelfLink()
-            .endsWith(
-              String.format(
-                "/namespaces/%s/%s/%s",
-                r.getNamespace(),
-                r.getType().value(),
-                r.getName()
-              )
-            )
+          r
+            .getNamespace()
+            .equalsIgnoreCase(configMap.getMetadata().getNamespace()) &&
+          r.getName().equalsIgnoreCase(configMap.getMetadata().getName())
       )
       .findFirst();
 
@@ -177,7 +170,7 @@ public class KubernetesConfigMapKeyStoreLoader
       options.getKeyStorePassword()
     );
 
-    keyStoresByLocation.put(configMap.getMetadata().getSelfLink(), keyStore);
+    keyStoresByLocation.put(configMap.getMetadata().getUid(), keyStore);
     return Completable.complete();
   }
 }
