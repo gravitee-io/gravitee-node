@@ -73,7 +73,8 @@ public class KubernetesConfigMapKeyStoreLoaderTest {
 
     final ObjectMeta metadata = new ObjectMeta();
     metadata.setName("my-configmap");
-    metadata.setSelfLink("/namespaces/gio/configmaps/my-configmap");
+    metadata.setUid("/namespaces/gio/configmaps/my-configmap");
+    metadata.setNamespace("gio");
     configMap.setMetadata(metadata);
 
     Mockito
@@ -115,7 +116,8 @@ public class KubernetesConfigMapKeyStoreLoaderTest {
 
     final ObjectMeta metadata = new ObjectMeta();
     metadata.setName("my-configmap");
-    metadata.setSelfLink("/namespaces/gio/configmaps/my-configmap");
+    metadata.setUid("/namespaces/gio/configmaps/my-configmap");
+    metadata.setNamespace("gio");
     configMap.setMetadata(metadata);
 
     Mockito

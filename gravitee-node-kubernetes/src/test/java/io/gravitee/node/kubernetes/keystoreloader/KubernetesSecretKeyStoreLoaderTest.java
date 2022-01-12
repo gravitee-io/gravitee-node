@@ -78,7 +78,7 @@ public class KubernetesSecretKeyStoreLoaderTest {
 
     final ObjectMeta metadata = new ObjectMeta();
     metadata.setName("my-tls-secret");
-    metadata.setSelfLink("/namespaces/gio/secrets/my-tls-secret");
+    metadata.setUid("/namespaces/gio/secrets/my-tls-secret");
     secret.setMetadata(metadata);
 
     Mockito
@@ -123,7 +123,8 @@ public class KubernetesSecretKeyStoreLoaderTest {
 
     final ObjectMeta metadata = new ObjectMeta();
     metadata.setName("my-tls-secret");
-    metadata.setSelfLink("/namespaces/gio/secrets/my-tls-secret");
+    metadata.setNamespace("gio");
+    metadata.setUid("/namespaces/gio/secrets/my-tls-secret");
     secret.setMetadata(metadata);
 
     Mockito
@@ -183,7 +184,7 @@ public class KubernetesSecretKeyStoreLoaderTest {
 
     final ObjectMeta metadata = new ObjectMeta();
     metadata.setName("my-tls-secret");
-    metadata.setSelfLink("/namespaces/gio/secrets/my-tls-secret");
+    metadata.setUid("/namespaces/gio/secrets/my-tls-secret");
     secret.setMetadata(metadata);
 
     Mockito
@@ -241,7 +242,7 @@ public class KubernetesSecretKeyStoreLoaderTest {
 
     final ObjectMeta metadata = new ObjectMeta();
     metadata.setName("my-tls-secret");
-    metadata.setSelfLink("/namespaces/gio/secrets/my-tls-secret");
+    metadata.setUid("/namespaces/gio/secrets/my-tls-secret");
     secret.setMetadata(metadata);
 
     final Secret modifiedSecret = new Secret();
@@ -254,7 +255,7 @@ public class KubernetesSecretKeyStoreLoaderTest {
 
     final ObjectMeta modifiedMetadata = new ObjectMeta();
     modifiedMetadata.setName("my-tls-secret");
-    modifiedMetadata.setSelfLink("/namespaces/gio/secrets/my-tls-secret");
+    modifiedMetadata.setUid("/namespaces/gio/secrets/my-tls-secret");
     modifiedSecret.setMetadata(modifiedMetadata);
 
     final SecretEvent modifiedSecretEvent = new SecretEvent();
