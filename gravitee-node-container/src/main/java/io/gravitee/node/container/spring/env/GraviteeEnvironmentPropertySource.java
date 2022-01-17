@@ -42,4 +42,14 @@ public class GraviteeEnvironmentPropertySource
   protected Object getValue(String key) {
     return relaxedPropertySource.getProperty(key);
   }
+
+  @Override
+  public boolean containsProperty(String name) {
+    return relaxedPropertySource.containsProperty(name);
+  }
+
+  @Override
+  public String[] getPropertyNames() {
+    return relaxedPropertySource.getPropertyNames();
+  }
 }
