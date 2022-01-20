@@ -24,9 +24,11 @@ import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.schedulers.Schedulers;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -96,12 +98,14 @@ public class KubernetesConfigMapKeyStoreLoader
         location ->
           kubernetesClient
             .get(location, ConfigMap.class)
+            .observeOn(Schedulers.computation())
             .flatMapCompletable(this::loadKeyStore)
       )
       .collect(Collectors.toList());
 
     return Completable
       .merge(locationObs)
+      .observeOn(Schedulers.computation())
       .andThen(Completable.fromRunnable(this::refreshKeyStoreBundle));
   }
 
@@ -112,7 +116,13 @@ public class KubernetesConfigMapKeyStoreLoader
       .stream()
       .map(
         location ->
-          kubernetesClient.watch(location, ConfigMapEvent.class).retry()
+          kubernetesClient
+            .watch(location, ConfigMapEvent.class)
+            .observeOn(Schedulers.computation())
+            .repeat()
+            .retryWhen(
+              errors -> errors.delay(RETRY_DELAY_MILLIS, TimeUnit.MILLISECONDS)
+            )
       )
       .collect(Collectors.toList());
 

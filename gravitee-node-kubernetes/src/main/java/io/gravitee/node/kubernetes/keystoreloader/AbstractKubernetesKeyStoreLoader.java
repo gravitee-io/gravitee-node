@@ -26,6 +26,7 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import java.security.KeyStore;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,6 +46,7 @@ public abstract class AbstractKubernetesKeyStoreLoader<T>
     AbstractKubernetesKeyStoreLoader.class
   );
   private static final int WATCH_RETRY_DELAY = 000;
+  protected static final int RETRY_DELAY_MILLIS = 10000;
 
   protected final KeyStoreLoaderOptions options;
   protected final KubernetesClient kubernetesClient;
@@ -88,6 +90,7 @@ public abstract class AbstractKubernetesKeyStoreLoader<T>
   protected void startWatch() {
     this.disposable =
       watch()
+        .observeOn(Schedulers.computation())
         .flatMapCompletable(
           t ->
             loadKeyStore(t)
