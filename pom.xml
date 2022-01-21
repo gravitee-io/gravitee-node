@@ -213,7 +213,7 @@
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
         <gravitee-kubernetes-client.version>0.2.2-SNAPSHOT</gravitee-kubernetes-client.version>
         <snakeyaml.version>1.26</snakeyaml.version>
-        <hazelcast.version>4.1.1</hazelcast.version>
+        <hazelcast.version>4.1.8</hazelcast.version>
         <gravitee-alert-api.version>1.8.0</gravitee-alert-api.version>
 
         <!-- WARNING: the next two dependencies versions must be kept in sync regarding vertx-micrometer-metrics -->
