@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.monitoring.healthcheck.micrometer;
 
+import io.gravitee.node.api.healthcheck.Probe;
 import io.gravitee.node.api.healthcheck.Result;
 import io.gravitee.node.monitoring.healthcheck.NodeHealthCheckThread;
 import io.micrometer.core.instrument.Gauge;
@@ -42,11 +43,11 @@ public class NodeHealthCheckMicrometerHandler implements MeterBinder {
 
     @Override
     public void bindTo(@NonNull MeterRegistry registry) {
-        for (Map.Entry<String, Result> status : statusRegistry.getHealthCheck().getResults().entrySet()) {
+        for (Map.Entry<Probe, Result> entry : statusRegistry.getResults().entrySet()) {
             Gauge
-                    .builder("node", status.getKey(), probe -> status.getValue().isHealthy() ? 1 : 0)
-                    .tag("probe", status.getKey())
-                    .description("The health-check of the " + status.getKey() + " probe")
+                    .builder("node", entry, e -> e.getValue().isHealthy() ? 1 : 0)
+                    .tag("probe", entry.getKey().id())
+                    .description("The health-check probes of the node")
                     .baseUnit("health")
                     .register(registry);
         }
