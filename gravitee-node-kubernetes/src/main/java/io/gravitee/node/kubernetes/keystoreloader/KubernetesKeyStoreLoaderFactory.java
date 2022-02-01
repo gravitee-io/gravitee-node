@@ -19,8 +19,6 @@ import io.gravitee.kubernetes.client.KubernetesClient;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderFactory;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)

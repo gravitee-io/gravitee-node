@@ -17,17 +17,20 @@ package io.gravitee.node.kubernetes.keystoreloader;
 
 import io.gravitee.common.util.KeyStoreUtils;
 import io.gravitee.kubernetes.client.KubernetesClient;
-import io.gravitee.kubernetes.client.KubernetesClientV1Impl.KubernetesResource;
+import io.gravitee.kubernetes.client.api.ResourceQuery;
+import io.gravitee.kubernetes.client.api.WatchQuery;
 import io.gravitee.kubernetes.client.model.v1.ConfigMap;
-import io.gravitee.kubernetes.client.model.v1.ConfigMapEvent;
+import io.gravitee.kubernetes.client.model.v1.Event;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,7 +59,7 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
             .forEach(location -> {
                 final Matcher matcher = CONFIGMAP_PATTERN.matcher(location);
                 if (matcher.matches()) {
-                    this.resources.put(matcher.group(1), new KubernetesResource(location));
+                    this.resources.put(matcher.group(1), ResourceQuery.<ConfigMap>from(location).build());
                 } else {
                     throw new IllegalArgumentException(
                         "You must specify a data when using configmap (ex: /my-namespace/configmaps/my-configmap/my-keystore)."
@@ -82,7 +85,10 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
             .keySet()
             .stream()
             .map(location ->
-                kubernetesClient.get(location, ConfigMap.class).observeOn(Schedulers.computation()).flatMapCompletable(this::loadKeyStore)
+                kubernetesClient
+                    .get(ResourceQuery.<ConfigMap>from(location).build())
+                    .observeOn(Schedulers.computation())
+                    .flatMapCompletable(this::loadKeyStore)
             )
             .collect(Collectors.toList());
 
@@ -94,34 +100,34 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
 
     @Override
     protected Flowable<ConfigMap> watch() {
-        final List<Flowable<ConfigMapEvent>> toWatch = resources
+        final List<Flowable<Event<ConfigMap>>> toWatch = resources
             .keySet()
             .stream()
             .map(location ->
                 kubernetesClient
-                    .watch(location, ConfigMapEvent.class)
+                    .watch(WatchQuery.<ConfigMap>from(location).build())
                     .observeOn(Schedulers.computation())
                     .repeat()
                     .retryWhen(errors -> errors.delay(RETRY_DELAY_MILLIS, TimeUnit.MILLISECONDS))
             )
             .collect(Collectors.toList());
 
-        return Flowable.merge(toWatch).filter(event -> event.getType().equalsIgnoreCase("MODIFIED")).map(ConfigMapEvent::getObject);
+        return Flowable.merge(toWatch).filter(event -> event.getType().equalsIgnoreCase("MODIFIED")).map(Event::getObject);
     }
 
     @Override
     protected Completable loadKeyStore(ConfigMap configMap) {
-        final Optional<KubernetesResource> optResource = resources
+        final Optional<ResourceQuery<ConfigMap>> optResource = resources
             .values()
             .stream()
             .filter(r ->
                 r.getNamespace().equalsIgnoreCase(configMap.getMetadata().getNamespace()) &&
-                r.getName().equalsIgnoreCase(configMap.getMetadata().getName())
+                r.getResource().equalsIgnoreCase(configMap.getMetadata().getName())
             )
             .findFirst();
 
         if (optResource.isEmpty()) {
-            return Completable.error(new IllegalArgumentException("Unable to load keystore: unknown secret."));
+            return Completable.error(new IllegalArgumentException("Unable to load keystore: unknown configmap."));
         }
 
         Map<String, String> data = configMap.getBinaryData() == null ? configMap.getData() : configMap.getBinaryData();
@@ -132,7 +138,7 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
             data = configMap.getData();
         }
 
-        final String dataKey = optResource.get().getKey();
+        final String dataKey = optResource.get().getResourceKey();
         if (data == null || data.get(dataKey) == null) {
             return Completable.error(
                 new IllegalArgumentException(String.format("No data has been found in the configmap for the specified key [%s].", dataKey))

@@ -17,9 +17,10 @@ package io.gravitee.node.kubernetes.keystoreloader;
 
 import io.gravitee.common.util.KeyStoreUtils;
 import io.gravitee.kubernetes.client.KubernetesClient;
-import io.gravitee.kubernetes.client.KubernetesClientV1Impl.KubernetesResource;
+import io.gravitee.kubernetes.client.api.ResourceQuery;
+import io.gravitee.kubernetes.client.api.WatchQuery;
+import io.gravitee.kubernetes.client.model.v1.Event;
 import io.gravitee.kubernetes.client.model.v1.Secret;
-import io.gravitee.kubernetes.client.model.v1.SecretEvent;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.reactivex.Completable;
@@ -31,8 +32,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
@@ -63,9 +62,9 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
             .forEach(location -> {
                 final Matcher matcher = SECRET_OPAQUE_PATTERN.matcher(location);
                 if (matcher.matches()) {
-                    this.resources.put(matcher.group(1), new KubernetesResource(location));
+                    this.resources.put(matcher.group(1), ResourceQuery.<Secret>from(location).build());
                 } else {
-                    this.resources.put(location, new KubernetesResource(location));
+                    this.resources.put(location, ResourceQuery.<Secret>from(location).build());
                 }
             });
     }
@@ -87,7 +86,10 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
             .keySet()
             .stream()
             .map(location ->
-                kubernetesClient.get(location, Secret.class).observeOn(Schedulers.computation()).flatMapCompletable(this::loadKeyStore)
+                kubernetesClient
+                    .get(ResourceQuery.<Secret>from(location).build())
+                    .observeOn(Schedulers.computation())
+                    .flatMapCompletable(this::loadKeyStore)
             )
             .collect(Collectors.toList());
 
@@ -99,19 +101,19 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
 
     @Override
     protected Flowable<Secret> watch() {
-        final List<Flowable<SecretEvent>> toWatch = resources
+        final List<Flowable<Event<Secret>>> toWatch = resources
             .keySet()
             .stream()
             .map(location ->
                 kubernetesClient
-                    .watch(location, SecretEvent.class)
+                    .watch(WatchQuery.<Secret>from(location).build())
                     .observeOn(Schedulers.computation())
                     .repeat()
                     .retryWhen(errors -> errors.delay(RETRY_DELAY_MILLIS, TimeUnit.MILLISECONDS))
             )
             .collect(Collectors.toList());
 
-        return Flowable.merge(toWatch).filter(event -> event.getType().equalsIgnoreCase("MODIFIED")).map(SecretEvent::getObject);
+        return Flowable.merge(toWatch).filter(event -> event.getType().equalsIgnoreCase("MODIFIED")).map(Event::getObject);
     }
 
     @Override
@@ -133,22 +135,22 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
                     new IllegalArgumentException("Pem format is not supported with opaque secret, use kubernetes tls secret instead.")
                 );
             } else {
-                final Optional<KubernetesResource> optResource = resources
+                final Optional<ResourceQuery<Secret>> optResource = resources
                     .values()
                     .stream()
                     .filter(r ->
                         r.getNamespace().equalsIgnoreCase(secret.getMetadata().getNamespace()) &&
                         (
                             secret.getType().equalsIgnoreCase(KUBERNETES_OPAQUE_SECRET) ||
-                            r.getType().value().equalsIgnoreCase(secret.getType())
+                            r.getType().getName().equalsIgnoreCase(secret.getType())
                         ) &&
-                        r.getName().equalsIgnoreCase(secret.getMetadata().getName())
+                        r.getResource().equalsIgnoreCase(secret.getMetadata().getName())
                     )
                     .findFirst();
 
                 if (optResource.isEmpty()) {
                     return Completable.error(new IllegalArgumentException("Unable to load keystore: unknown secret."));
-                } else if (optResource.get().getKey() == null || optResource.get().getKey().isEmpty()) {
+                } else if (optResource.get().getResourceKey() == null || optResource.get().getResourceKey().isEmpty()) {
                     return Completable.error(
                         new IllegalArgumentException(
                             "You must specify a data when using opaque secret (ex: /my-namespace/secrets/my-secret/my-keystore)."
@@ -159,7 +161,7 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
                 keyStore =
                     KeyStoreUtils.initFromContent(
                         options.getKeyStoreType(),
-                        data.get(optResource.get().getKey()),
+                        data.get(optResource.get().getResourceKey()),
                         options.getKeyStorePassword()
                     );
             }
