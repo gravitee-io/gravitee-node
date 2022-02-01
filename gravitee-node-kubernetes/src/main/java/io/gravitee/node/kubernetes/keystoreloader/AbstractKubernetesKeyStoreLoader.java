@@ -17,20 +17,20 @@ package io.gravitee.node.kubernetes.keystoreloader;
 
 import io.gravitee.common.util.KeyStoreUtils;
 import io.gravitee.kubernetes.client.KubernetesClient;
-import io.gravitee.kubernetes.client.KubernetesClientV1Impl;
-import io.gravitee.kubernetes.client.KubernetesClientV1Impl.KubernetesResource;
+import io.gravitee.kubernetes.client.api.ResourceQuery;
 import io.gravitee.node.api.certificate.KeyStoreBundle;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import java.security.KeyStore;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,14 +42,13 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractKubernetesKeyStoreLoader<T> implements KeyStoreLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractKubernetesKeyStoreLoader.class);
-    private static final int WATCH_RETRY_DELAY = 000;
     protected static final int RETRY_DELAY_MILLIS = 10000;
 
     protected final KeyStoreLoaderOptions options;
     protected final KubernetesClient kubernetesClient;
     protected final List<Consumer<KeyStoreBundle>> listeners;
     protected final Map<String, KeyStore> keyStoresByLocation;
-    protected final Map<String, KubernetesResource> resources = new HashMap<>();
+    protected final Map<String, ResourceQuery<T>> resources = new HashMap<>();
     protected KeyStoreBundle keyStoreBundle;
 
     private Disposable disposable;

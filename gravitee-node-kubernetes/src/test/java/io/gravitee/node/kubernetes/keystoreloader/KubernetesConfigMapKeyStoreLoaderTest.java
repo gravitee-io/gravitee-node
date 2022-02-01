@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import io.gravitee.kubernetes.client.KubernetesClient;
+import io.gravitee.kubernetes.client.api.ResourceQuery;
 import io.gravitee.kubernetes.client.model.v1.ConfigMap;
 import io.gravitee.kubernetes.client.model.v1.ObjectMeta;
 import io.gravitee.node.api.certificate.KeyStoreBundle;
@@ -75,7 +76,9 @@ public class KubernetesConfigMapKeyStoreLoaderTest {
         metadata.setNamespace("gio");
         configMap.setMetadata(metadata);
 
-        Mockito.when(kubernetesClient.get("/gio/configmaps/my-configmap", ConfigMap.class)).thenReturn(Maybe.just(configMap));
+        Mockito
+            .when(kubernetesClient.get(ResourceQuery.<ConfigMap>from("/gio/configmaps/my-configmap").build()))
+            .thenReturn(Maybe.just(configMap));
 
         AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(null);
         cut.addListener(bundleRef::set);
@@ -111,7 +114,9 @@ public class KubernetesConfigMapKeyStoreLoaderTest {
         metadata.setNamespace("gio");
         configMap.setMetadata(metadata);
 
-        Mockito.when(kubernetesClient.get("/gio/configmaps/my-configmap", ConfigMap.class)).thenReturn(Maybe.just(configMap));
+        Mockito
+            .when(kubernetesClient.get(ResourceQuery.<ConfigMap>from("/gio/configmaps/my-configmap").build()))
+            .thenReturn(Maybe.just(configMap));
 
         AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(null);
         cut.addListener(bundleRef::set);
