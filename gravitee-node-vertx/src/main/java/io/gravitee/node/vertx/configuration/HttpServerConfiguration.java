@@ -665,7 +665,7 @@ public class HttpServerConfiguration {
         environment.getProperty(prefix + "ssl.tlsProtocols", tlsProtocols);
       this.authorizedTlsCipherSuites =
         environment.getProperty(
-          prefix + "ssl.tlsProtocols",
+          prefix + "ssl.tlsCiphers",
           List.class,
           authorizedTlsCipherSuites
         );
