@@ -132,9 +132,9 @@ public abstract class AbstractVertxHttpServerFactory<T>
           );
         }
       } else if (
-        httpServerConfiguration
-          .getTrustStoreType()
-          .equalsIgnoreCase(CERTIFICATE_FORMAT_SELF_SIGNED)
+        CERTIFICATE_FORMAT_SELF_SIGNED.equalsIgnoreCase(
+          httpServerConfiguration.getTrustStoreType()
+        )
       ) {
         options.setPemTrustOptions(
           SelfSignedCertificate.create().trustOptions()
