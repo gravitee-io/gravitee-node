@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>1.21.0-SNAPSHOT</version>
+        <version>1.20.2</version>
     </parent>
 
     <artifactId>gravitee-node-container</artifactId>
@@ -71,12 +71,6 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-kubernetes</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-upgrader</artifactId>
             <version>${project.version}</version>
         </dependency>
 
