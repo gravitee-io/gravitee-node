@@ -29,7 +29,7 @@
 
     <groupId>io.gravitee.node</groupId>
     <artifactId>gravitee-node</artifactId>
-    <version>1.21.0-SNAPSHOT</version>
+    <version>1.20.3-SNAPSHOT</version>
 
     <name>Gravitee.io - Node</name>
 
@@ -49,8 +49,6 @@
         <module>gravitee-node-jetty</module>
         <module>gravitee-node-kubernetes</module>
         <module>gravitee-node-certificates</module>
-        <module>gravitee-node-notifier</module>
-        <module>gravitee-node-upgrader</module>
     </modules>
 
     <dependencyManagement>
@@ -155,20 +153,6 @@
                 <artifactId>gravitee-plugin-core</artifactId>
                 <version>${gravitee-plugin.version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>io.gravitee.plugin</groupId>
-                <artifactId>gravitee-plugin-notifier</artifactId>
-                <version>${gravitee-plugin.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.gravitee.el</groupId>
-                <artifactId>gravitee-expression-language</artifactId>
-                <version>${gravitee-expression-language.version}</version>
-                <scope>provided</scope>
-            </dependency>
-
             <dependency>
                 <groupId>io.gravitee.alert</groupId>
                 <artifactId>gravitee-alert-api</artifactId>
@@ -225,7 +209,6 @@
         <gravitee-bom.version>2.0</gravitee-bom.version>
         <gravitee-common.version>1.25.0</gravitee-common.version>
         <gravitee-plugin.version>1.17.1</gravitee-plugin.version>
-        <gravitee-expression-language.version>1.7.2</gravitee-expression-language.version>
         <gravitee-reporter-api.version>1.17.1</gravitee-reporter-api.version>
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
 	<gravitee-kubernetes-client.version>0.2.2</gravitee-kubernetes-client.version>
