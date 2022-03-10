@@ -75,6 +75,12 @@
         </dependency>
 
         <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-upgrader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>io.gravitee.common</groupId>
             <artifactId>gravitee-common</artifactId>
         </dependency>
