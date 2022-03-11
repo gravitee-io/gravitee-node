@@ -19,6 +19,7 @@ package io.gravitee.node.api.upgrader;
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
+// Initializer will run each upgrade
 public interface Initializer {
   boolean initialize();
 

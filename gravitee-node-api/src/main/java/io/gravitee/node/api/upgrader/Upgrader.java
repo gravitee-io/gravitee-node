@@ -19,6 +19,7 @@ package io.gravitee.node.api.upgrader;
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
+// An upgrader runs only once to populate or modify data in the database
 public interface Upgrader {
   boolean upgrade();
 
