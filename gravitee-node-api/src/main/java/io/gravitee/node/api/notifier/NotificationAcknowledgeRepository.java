@@ -28,6 +28,7 @@ public interface NotificationAcknowledgeRepository {
 
   Maybe<NotificationAcknowledge> findByResourceIdAndTypeAndAudienceId(
     String resourceId,
+    String resourceType,
     String type,
     String audienceId
   );
@@ -40,5 +41,5 @@ public interface NotificationAcknowledgeRepository {
     NotificationAcknowledge notificationAcknowledge
   );
 
-  Completable deleteByResourceId(String resourceId);
+  Completable deleteByResourceId(String resourceId, String resourceType);
 }

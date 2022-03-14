@@ -121,6 +121,7 @@ public class NotificationTrigger implements Handler<Long> {
       final Context triggerContext = vertx.getOrCreateContext();
       this.notificationAcknowledgeRepository.findByResourceIdAndTypeAndAudienceId(
           this.definition.getResourceId(),
+          this.definition.getResourceType(),
           definition.getType(),
           definition.getAudienceId()
         )
