@@ -16,6 +16,7 @@
 package io.gravitee.node.api.notifier;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Eric LELEU (eric.leleu at graviteesource.com)
@@ -106,5 +107,23 @@ public class NotificationDefinition {
 
   public void setData(Map<String, Object> data) {
     this.data = data;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof NotificationDefinition)) return false;
+    NotificationDefinition that = (NotificationDefinition) o;
+    return (
+      Objects.equals(resourceId, that.resourceId) &&
+      Objects.equals(resourceType, that.resourceType) &&
+      Objects.equals(audienceId, that.audienceId) &&
+      Objects.equals(type, that.type)
+    );
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(resourceId, resourceType, audienceId, type);
   }
 }
