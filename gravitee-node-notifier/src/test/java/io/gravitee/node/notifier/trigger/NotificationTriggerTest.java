@@ -79,7 +79,7 @@ public class NotificationTriggerTest {
     cut.handle(1l);
 
     verify(notificationAcknowledgeRepository, never())
-      .findByResourceIdAndTypeAndAudienceId(any(), any(), any());
+      .findByResourceIdAndTypeAndAudienceId(any(), any(), any(), any());
     verify(notificationAcknowledgeRepository, never()).create(any());
     verify(vertx).setTimer(anyLong(), any());
   }
@@ -106,6 +106,7 @@ public class NotificationTriggerTest {
       notificationAcknowledgeRepository.findByResourceIdAndTypeAndAudienceId(
         any(),
         any(),
+        any(),
         any()
       )
     )
@@ -120,7 +121,7 @@ public class NotificationTriggerTest {
     Thread.sleep(2000);
 
     verify(notificationAcknowledgeRepository, atLeast(1))
-      .findByResourceIdAndTypeAndAudienceId(any(), any(), any());
+      .findByResourceIdAndTypeAndAudienceId(any(), any(), any(), any());
     verify(notificationAcknowledgeRepository)
       .create(
         argThat(
@@ -153,6 +154,7 @@ public class NotificationTriggerTest {
       notificationAcknowledgeRepository.findByResourceIdAndTypeAndAudienceId(
         any(),
         any(),
+        any(),
         any()
       )
     )
@@ -163,7 +165,7 @@ public class NotificationTriggerTest {
     Thread.sleep(2000);
 
     verify(notificationAcknowledgeRepository, atLeast(1))
-      .findByResourceIdAndTypeAndAudienceId(any(), any(), any());
+      .findByResourceIdAndTypeAndAudienceId(any(), any(), any(), any());
     verify(notificationAcknowledgeRepository, never()).create(any());
     verify(notificationAcknowledgeRepository, never()).update(any());
   }
@@ -198,6 +200,7 @@ public class NotificationTriggerTest {
       notificationAcknowledgeRepository.findByResourceIdAndTypeAndAudienceId(
         any(),
         any(),
+        any(),
         any()
       )
     )
@@ -210,7 +213,7 @@ public class NotificationTriggerTest {
     Thread.sleep(2000);
 
     verify(notificationAcknowledgeRepository, atLeast(1))
-      .findByResourceIdAndTypeAndAudienceId(any(), any(), any());
+      .findByResourceIdAndTypeAndAudienceId(any(), any(), any(), any());
     verify(notificationAcknowledgeRepository, never()).create(any());
     verify(notificationAcknowledgeRepository)
       .update(

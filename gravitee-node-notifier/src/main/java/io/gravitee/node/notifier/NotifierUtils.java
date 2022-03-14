@@ -23,9 +23,14 @@ public class NotifierUtils {
 
   public static String buildNotificationId(
     String resource,
+    String resourceType,
     String type,
     String audience
   ) {
-    return resource + "-" + type + "-" + audience;
+    return resource + "-" + resourceType + "-" + type + "-" + audience;
+  }
+
+  public static String buildResourceKey(String resource, String resourceType) {
+    return resource + "-" + resourceType;
   }
 }
