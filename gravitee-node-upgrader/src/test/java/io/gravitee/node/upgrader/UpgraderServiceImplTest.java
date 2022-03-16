@@ -59,6 +59,7 @@ public class UpgraderServiceImplTest {
     cut.setApplicationContext(applicationContext);
 
     when(applicationContext.getBeansOfType(Upgrader.class)).thenReturn(beans);
+    when(mockUpgrader.upgrade()).thenReturn(true);
     when(repository.findById(mockUpgrader.getClass().getName()))
       .thenReturn(Maybe.empty());
 
