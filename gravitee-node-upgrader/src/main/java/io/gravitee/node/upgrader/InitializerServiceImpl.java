@@ -20,6 +20,8 @@ import io.gravitee.node.api.service.InitializerService;
 import io.gravitee.node.api.upgrader.Initializer;
 import java.util.Comparator;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
@@ -28,6 +30,10 @@ import java.util.Map;
 public class InitializerServiceImpl
   extends AbstractService<InitializerServiceImpl>
   implements InitializerService<InitializerServiceImpl> {
+
+  private static final Logger logger = LoggerFactory.getLogger(
+    InitializerServiceImpl.class
+  );
 
   @Override
   protected String name() {
@@ -45,6 +51,18 @@ public class InitializerServiceImpl
       .values()
       .stream()
       .sorted(Comparator.comparing(Initializer::getOrder))
-      .forEach(Initializer::initialize);
+      .forEach(
+        initializer -> {
+          try {
+            logger.info("Apply {} ...", initializer.getClass().getSimpleName());
+            initializer.initialize();
+          } catch (Exception e) {
+            logger.error(
+              "Unable to apply the initializer {}",
+              initializer.getClass().getSimpleName()
+            );
+          }
+        }
+      );
   }
 }

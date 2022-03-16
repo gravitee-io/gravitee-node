@@ -47,7 +47,7 @@ public class UpgraderServiceImpl
   @Value("${upgrade.mode:false}")
   private boolean upgradeMode;
 
-  private final Logger logger = LoggerFactory.getLogger(
+  private static final Logger logger = LoggerFactory.getLogger(
     UpgraderServiceImpl.class
   );
 
@@ -78,10 +78,11 @@ public class UpgraderServiceImpl
               logger.info("{} is already applied. it will be ignored.", name);
             } else {
               logger.info("Apply {} ...", name);
-              upgrader.upgrade();
-              upgraderRepository.create(
-                new UpgraderData(upgrader.getClass().getName(), new Date())
-              );
+              if (upgrader.upgrade()) {
+                upgraderRepository.create(
+                  new UpgraderData(upgrader.getClass().getName(), new Date())
+                );
+              }
             }
           } catch (Exception e) {
             e.printStackTrace();

@@ -15,10 +15,13 @@
  */
 package io.gravitee.node.upgrader.spring;
 
+import io.gravitee.common.component.LifecycleComponent;
 import io.gravitee.node.api.service.InitializerService;
 import io.gravitee.node.api.service.UpgraderService;
 import io.gravitee.node.upgrader.InitializerServiceImpl;
 import io.gravitee.node.upgrader.UpgraderServiceImpl;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -37,5 +40,21 @@ public class UpgraderConfiguration {
   @Bean
   public UpgraderService upgraderService() {
     return new UpgraderServiceImpl();
+  }
+
+  public static List<Class<? extends LifecycleComponent>> getComponents() {
+    List<Class<? extends LifecycleComponent>> components = new ArrayList<>();
+
+    String upgradeMode = System.getenv().get("upgrade.mode");
+
+    if (upgradeMode == null || "false".equals(upgradeMode)) {
+      components.add(InitializerService.class);
+    }
+
+    if (upgradeMode == null || "true".equals(upgradeMode)) {
+      components.add(UpgraderService.class);
+    }
+
+    return components;
   }
 }
