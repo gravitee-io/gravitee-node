@@ -47,12 +47,12 @@ public class UpgraderConfiguration {
 
     String upgradeMode = System.getenv().get("upgrade.mode");
 
-    if (upgradeMode == null || "false".equals(upgradeMode)) {
-      components.add(InitializerService.class);
-    }
-
     if (upgradeMode == null || "true".equals(upgradeMode)) {
       components.add(UpgraderService.class);
+    }
+
+    if (upgradeMode == null || "false".equals(upgradeMode)) {
+      components.add(InitializerService.class);
     }
 
     return components;
