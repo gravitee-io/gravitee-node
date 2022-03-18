@@ -91,6 +91,10 @@ public class NodeInfosService extends AbstractService<NodeInfosService> {
   }
 
   public NodeInfosService preStop() {
+    if (nodeInfos == null) {
+      return this;
+    }
+
     nodeInfos.setStatus(NodeStatus.STOPPED);
     messageProducer.write(nodeInfos);
 
