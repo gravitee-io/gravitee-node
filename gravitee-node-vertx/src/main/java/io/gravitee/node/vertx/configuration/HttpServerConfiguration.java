@@ -598,7 +598,10 @@ public class HttpServerConfiguration {
       return certificates;
     }
 
-    private List<String> getArrayValues(String prefix) {
+    private List<String> getArrayValues(
+      String prefix,
+      List<String> defaultValue
+    ) {
       final List<String> values = new ArrayList<>();
 
       boolean found = true;
@@ -619,6 +622,10 @@ public class HttpServerConfiguration {
         if (single != null && !single.isEmpty()) {
           values.add(single);
         }
+      }
+
+      if (values.isEmpty() && defaultValue != null) {
+        return defaultValue;
       }
 
       return values;
@@ -689,7 +696,10 @@ public class HttpServerConfiguration {
       this.keyStoreCertificates =
         getCertificateValues(prefix + "ssl.keystore.certificates");
       this.keyStoreKubernetes =
-        getArrayValues(prefix + "ssl.keystore.kubernetes");
+        getArrayValues(
+          prefix + "ssl.keystore.kubernetes",
+          this.keyStoreKubernetes
+        );
       this.keyStoreDefaultAlias =
         environment.getProperty(prefix + "ssl.keystore.defaultAlias");
       this.keyStorePassword =
@@ -702,7 +712,8 @@ public class HttpServerConfiguration {
         environment.getProperty(prefix + "ssl.truststore.type", trustStoreType);
       this.trustStorePath =
         environment.getProperty(prefix + "ssl.truststore.path", trustStorePath);
-      this.trustStorePaths = getArrayValues(prefix + "ssl.truststore.path");
+      this.trustStorePaths =
+        getArrayValues(prefix + "ssl.truststore.path", this.trustStorePaths);
       this.trustStorePassword =
         environment.getProperty(
           prefix + "ssl.truststore.password",
