@@ -45,7 +45,7 @@ public class UpgraderConfiguration {
   public static List<Class<? extends LifecycleComponent>> getComponents() {
     List<Class<? extends LifecycleComponent>> components = new ArrayList<>();
 
-    String upgradeMode = System.getenv().get("upgrade.mode");
+    String upgradeMode = System.getProperty("upgrade.mode");
 
     if (upgradeMode == null || "true".equals(upgradeMode)) {
       components.add(UpgraderService.class);
@@ -53,6 +53,11 @@ public class UpgraderConfiguration {
 
     if (upgradeMode == null || "false".equals(upgradeMode)) {
       components.add(InitializerService.class);
+    }
+
+    // This will avoid running Liquibase in upgrade mode
+    if ("true".equals(upgradeMode)) {
+      System.setProperty("management.jdbc.liquibase", "false");
     }
 
     return components;
