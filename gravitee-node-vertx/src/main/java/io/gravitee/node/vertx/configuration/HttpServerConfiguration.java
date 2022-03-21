@@ -301,7 +301,7 @@ public class HttpServerConfiguration {
     private boolean perFrameWebSocketCompressionSupported = true;
     private boolean proxyProtocol;
     private long proxyProtocolTimeout = 10000;
-    private ClientAuth clientAuth;
+    private ClientAuth clientAuth = ClientAuth.NONE;
     private List<String> authorizedTlsCipherSuites;
 
     private Environment environment;
@@ -672,7 +672,7 @@ public class HttpServerConfiguration {
 
       String sClientAuthMode = environment.getProperty(
         prefix + "ssl.clientAuth",
-        ClientAuth.NONE.name()
+        this.clientAuth.name()
       );
       if (sClientAuthMode.equalsIgnoreCase(Boolean.TRUE.toString())) {
         this.clientAuth = ClientAuth.REQUIRED;
