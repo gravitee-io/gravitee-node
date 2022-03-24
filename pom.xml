@@ -50,6 +50,7 @@
         <module>gravitee-node-kubernetes</module>
         <module>gravitee-node-certificates</module>
         <module>gravitee-node-notifier</module>
+        <module>gravitee-node-services</module>
     </modules>
 
     <dependencyManagement>

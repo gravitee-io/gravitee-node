@@ -27,8 +27,15 @@
         <version>1.21.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>gravitee-node-upgrader</artifactId>
-    <name>Gravitee.io - Node - Upgrader</name>
+    <groupId>io.gravitee.node.services</groupId>
+    <artifactId>gravitee-node-services</artifactId>
+    <name>Gravitee.io - Node - Services</name>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>gravitee-node-services-initializer</module>
+        <module>gravitee-node-services-upgrader</module>
+    </modules>
 
     <dependencies>
         <!-- Gravitee.io -->
@@ -36,31 +43,6 @@
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-api</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.gravitee.alert</groupId>
-            <artifactId>gravitee-alert-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.gravitee.plugin</groupId>
-            <artifactId>gravitee-plugin-alert</artifactId>
-            <version>${gravitee-plugin.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-management</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <!-- Hazelcast -->
-        <dependency>
-            <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast</artifactId>
-            <version>${hazelcast.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <!-- Test dependencies -->
