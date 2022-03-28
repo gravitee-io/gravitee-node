@@ -22,5 +22,5 @@ import java.security.KeyStore;
  * @author GraviteeSource Team
  */
 public interface CertificateManager {
-  void registerLoader(KeyStoreLoader loader);
+    void registerLoader(KeyStoreLoader loader);
 }

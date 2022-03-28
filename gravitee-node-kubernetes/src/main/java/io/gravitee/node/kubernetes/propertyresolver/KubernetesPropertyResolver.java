@@ -34,150 +34,123 @@ import org.springframework.util.Assert;
  */
 public class KubernetesPropertyResolver implements PropertyResolver {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-    KubernetesPropertyResolver.class
-  );
+    private static final Logger LOGGER = LoggerFactory.getLogger(KubernetesPropertyResolver.class);
 
-  @Autowired
-  private KubernetesClient kubernetesClient;
+    @Autowired
+    private KubernetesClient kubernetesClient;
 
-  @Override
-  public boolean supports(String currentValue) {
-    Assert.notNull(currentValue, "Current value can not be null");
+    @Override
+    public boolean supports(String currentValue) {
+        Assert.notNull(currentValue, "Current value can not be null");
 
-    return currentValue.startsWith(CloudScheme.KUBERNETES.value());
-  }
-
-  @Override
-  public Maybe<Object> resolve(String location) {
-    Assert.notNull(location, "Location can not be null");
-
-    String[] properties = parsePropertyName(location); // kubernetes://default/configmaps/gravitee-config/management.db.name
-    if (properties == null) {
-      return Maybe.empty();
+        return currentValue.startsWith(CloudScheme.KUBERNETES.value());
     }
 
-    LOGGER.debug("Resolve location [{}]", location);
+    @Override
+    public Maybe<Object> resolve(String location) {
+        Assert.notNull(location, "Location can not be null");
 
-    if ("secrets".equals(properties[1])) { // type
-      return resolvePropertyFromSecret(generateLocation(properties))
-        .map(encodeData -> new String(Base64.getDecoder().decode(encodeData)));
-    } else if ("configmaps".equals(properties[1])) {
-      return resolvePropertyFromConfigMap(generateLocation(properties))
-        .map(String::strip);
-    } else {
-      return Maybe.error(
-        new RuntimeException(
-          "Property type " + properties[1] + " is not supported"
-        )
-      );
-    }
-  }
-
-  @Override
-  public Flowable<Object> watch(String location) {
-    Assert.notNull(location, "Location can not be null");
-
-    String[] properties = parsePropertyName(location); // kubernetes://default/configmaps/gravitee-config/my_key
-    if (properties == null) {
-      return Flowable.empty();
-    }
-
-    LOGGER.debug("Start watching location [{}]", location);
-
-    if ("secrets".equals(properties[1])) { // type
-      return kubernetesClient
-        .watch(generateLocation(properties), SecretEvent.class)
-        .filter(
-          event ->
-            event.getType().equals(KubernetesEventType.MODIFIED.name()) ||
-            event.getType().equals(KubernetesEventType.ADDED.name())
-        )
-        .map(
-          secretEvent -> {
-            String encodedData = secretEvent
-              .getObject()
-              .getData()
-              .get(properties[3]);
-            return new String(Base64.getDecoder().decode(encodedData));
-          }
-        );
-    } else if ("configmaps".equals(properties[1])) {
-      return kubernetesClient
-        .watch(generateLocation(properties), ConfigMapEvent.class)
-        .filter(
-          event ->
-            event.getType().equals(KubernetesEventType.MODIFIED.name()) ||
-            event.getType().equals(KubernetesEventType.ADDED.name())
-        )
-        .map(
-          configMapEvent ->
-            configMapEvent.getObject().getData().get(properties[3])
-        );
-    } else {
-      return Flowable.error(
-        new RuntimeException(
-          "Property type " + properties[1] + " is not supported"
-        )
-      );
-    }
-  }
-
-  private String[] parsePropertyName(String currentValue) {
-    if (!supports(currentValue)) {
-      LOGGER.error("Does not support scheme {}", currentValue);
-      return null;
-    }
-
-    String[] properties = currentValue.substring(13).split("/"); // eliminate initial kubernetes://
-
-    if (properties.length != 4) {
-      LOGGER.error(
-        "Wrong property value. A correct format looks like this \"kubernetes://{namespace}/configmaps/{configmap-name}/key\""
-      );
-      return null;
-    }
-
-    return properties;
-  }
-
-  private String generateLocation(String[] properties) {
-    return String.format(
-      "/%s/%s/%s/%s",
-      properties[0], // namespace
-      properties[1], // resource type
-      properties[2], // name
-      properties[3] // key
-    );
-  }
-
-  private Maybe<String> resolvePropertyFromConfigMap(String location) {
-    return kubernetesClient
-      .get(location, String.class)
-      .flatMap(
-        data -> {
-          if (data != null) {
-            return Maybe.just(data);
-          } else {
-            LOGGER.warn("Key not found in this location [{}]", location);
+        String[] properties = parsePropertyName(location); // kubernetes://default/configmaps/gravitee-config/management.db.name
+        if (properties == null) {
             return Maybe.empty();
-          }
         }
-      );
-  }
 
-  private Maybe<String> resolvePropertyFromSecret(String location) {
-    return kubernetesClient
-      .get(location, String.class)
-      .flatMap(
-        data -> {
-          if (data != null) {
-            return Maybe.just(data);
-          } else {
-            LOGGER.debug("Key not found in this location [{}]", location);
-            return Maybe.empty();
-          }
+        LOGGER.debug("Resolve location [{}]", location);
+
+        if ("secrets".equals(properties[1])) { // type
+            return resolvePropertyFromSecret(generateLocation(properties))
+                .map(encodeData -> new String(Base64.getDecoder().decode(encodeData)));
+        } else if ("configmaps".equals(properties[1])) {
+            return resolvePropertyFromConfigMap(generateLocation(properties)).map(String::strip);
+        } else {
+            return Maybe.error(new RuntimeException("Property type " + properties[1] + " is not supported"));
         }
-      );
-  }
+    }
+
+    @Override
+    public Flowable<Object> watch(String location) {
+        Assert.notNull(location, "Location can not be null");
+
+        String[] properties = parsePropertyName(location); // kubernetes://default/configmaps/gravitee-config/my_key
+        if (properties == null) {
+            return Flowable.empty();
+        }
+
+        LOGGER.debug("Start watching location [{}]", location);
+
+        if ("secrets".equals(properties[1])) { // type
+            return kubernetesClient
+                .watch(generateLocation(properties), SecretEvent.class)
+                .filter(event ->
+                    event.getType().equals(KubernetesEventType.MODIFIED.name()) || event.getType().equals(KubernetesEventType.ADDED.name())
+                )
+                .map(secretEvent -> {
+                    String encodedData = secretEvent.getObject().getData().get(properties[3]);
+                    return new String(Base64.getDecoder().decode(encodedData));
+                });
+        } else if ("configmaps".equals(properties[1])) {
+            return kubernetesClient
+                .watch(generateLocation(properties), ConfigMapEvent.class)
+                .filter(event ->
+                    event.getType().equals(KubernetesEventType.MODIFIED.name()) || event.getType().equals(KubernetesEventType.ADDED.name())
+                )
+                .map(configMapEvent -> configMapEvent.getObject().getData().get(properties[3]));
+        } else {
+            return Flowable.error(new RuntimeException("Property type " + properties[1] + " is not supported"));
+        }
+    }
+
+    private String[] parsePropertyName(String currentValue) {
+        if (!supports(currentValue)) {
+            LOGGER.error("Does not support scheme {}", currentValue);
+            return null;
+        }
+
+        String[] properties = currentValue.substring(13).split("/"); // eliminate initial kubernetes://
+
+        if (properties.length != 4) {
+            LOGGER.error(
+                "Wrong property value. A correct format looks like this \"kubernetes://{namespace}/configmaps/{configmap-name}/key\""
+            );
+            return null;
+        }
+
+        return properties;
+    }
+
+    private String generateLocation(String[] properties) {
+        return String.format(
+            "/%s/%s/%s/%s",
+            properties[0], // namespace
+            properties[1], // resource type
+            properties[2], // name
+            properties[3] // key
+        );
+    }
+
+    private Maybe<String> resolvePropertyFromConfigMap(String location) {
+        return kubernetesClient
+            .get(location, String.class)
+            .flatMap(data -> {
+                if (data != null) {
+                    return Maybe.just(data);
+                } else {
+                    LOGGER.warn("Key not found in this location [{}]", location);
+                    return Maybe.empty();
+                }
+            });
+    }
+
+    private Maybe<String> resolvePropertyFromSecret(String location) {
+        return kubernetesClient
+            .get(location, String.class)
+            .flatMap(data -> {
+                if (data != null) {
+                    return Maybe.just(data);
+                } else {
+                    LOGGER.debug("Key not found in this location [{}]", location);
+                    return Maybe.empty();
+                }
+            });
+    }
 }

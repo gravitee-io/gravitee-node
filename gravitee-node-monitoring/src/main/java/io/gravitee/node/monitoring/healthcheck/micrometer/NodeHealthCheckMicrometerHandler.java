@@ -32,29 +32,23 @@ import org.slf4j.LoggerFactory;
  */
 public class NodeHealthCheckMicrometerHandler implements MeterBinder {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-    NodeHealthCheckMicrometerHandler.class
-  );
+    private static final Logger LOGGER = LoggerFactory.getLogger(NodeHealthCheckMicrometerHandler.class);
 
-  private final NodeHealthCheckThread statusRegistry;
+    private final NodeHealthCheckThread statusRegistry;
 
-  public NodeHealthCheckMicrometerHandler(
-    NodeHealthCheckThread statusRegistry
-  ) {
-    this.statusRegistry = statusRegistry;
-  }
-
-  @Override
-  public void bindTo(@NonNull MeterRegistry registry) {
-    for (Map.Entry<Probe, Result> entry : statusRegistry
-      .getResults()
-      .entrySet()) {
-      Gauge
-        .builder("node", entry, e -> e.getValue().isHealthy() ? 1 : 0)
-        .tag("probe", entry.getKey().id())
-        .description("The health-check probes of the node")
-        .baseUnit("health")
-        .register(registry);
+    public NodeHealthCheckMicrometerHandler(NodeHealthCheckThread statusRegistry) {
+        this.statusRegistry = statusRegistry;
     }
-  }
+
+    @Override
+    public void bindTo(@NonNull MeterRegistry registry) {
+        for (Map.Entry<Probe, Result> entry : statusRegistry.getResults().entrySet()) {
+            Gauge
+                .builder("node", entry, e -> e.getValue().isHealthy() ? 1 : 0)
+                .tag("probe", entry.getKey().id())
+                .description("The health-check probes of the node")
+                .baseUnit("health")
+                .register(registry);
+        }
+    }
 }

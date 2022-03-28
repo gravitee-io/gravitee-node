@@ -17,19 +17,19 @@ package io.gravitee.node.api.certificate;
 
 public class CertificateOptions {
 
-  private final String certificate;
-  private final String privateKey;
+    private final String certificate;
+    private final String privateKey;
 
-  public CertificateOptions(String certificate, String privateKey) {
-    this.certificate = certificate;
-    this.privateKey = privateKey;
-  }
+    public CertificateOptions(String certificate, String privateKey) {
+        this.certificate = certificate;
+        this.privateKey = privateKey;
+    }
 
-  public String getCertificate() {
-    return certificate;
-  }
+    public String getCertificate() {
+        return certificate;
+    }
 
-  public String getPrivateKey() {
-    return privateKey;
-  }
+    public String getPrivateKey() {
+        return privateKey;
+    }
 }

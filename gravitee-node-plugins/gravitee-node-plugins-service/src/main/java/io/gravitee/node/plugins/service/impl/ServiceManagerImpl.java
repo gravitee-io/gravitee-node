@@ -30,87 +30,80 @@ import org.slf4j.LoggerFactory;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ServiceManagerImpl
-  extends AbstractService
-  implements ServiceManager {
+public class ServiceManagerImpl extends AbstractService implements ServiceManager {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-    ServiceManagerImpl.class
-  );
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceManagerImpl.class);
 
-  private final List<AbstractService> services = new ArrayList<>();
+    private final List<AbstractService> services = new ArrayList<>();
 
-  @Override
-  public void register(AbstractService service) {
-    services.add(service);
-  }
-
-  @Override
-  protected void doStart() throws Exception {
-    super.doStart();
-
-    List<AbstractService> orderedServices = services
-      .stream()
-      .sorted(comparing(AbstractService::getOrder))
-      .collect(toList());
-
-    for (AbstractService service : orderedServices) {
-      try {
-        service.preStart();
-      } catch (Exception ex) {
-        LOGGER.error("Unexpected error while pre-starting service", ex);
-      }
+    @Override
+    public void register(AbstractService service) {
+        services.add(service);
     }
-    for (AbstractService service : orderedServices) {
-      try {
-        service.start();
-      } catch (Exception ex) {
-        LOGGER.error("Unexpected error while starting service", ex);
-      }
-    }
-    for (AbstractService service : orderedServices) {
-      try {
-        service.postStart();
-      } catch (Exception ex) {
-        LOGGER.error("Unexpected error while post-starting service", ex);
-      }
-    }
-  }
 
-  @Override
-  protected void doStop() throws Exception {
-    super.doStop();
+    @Override
+    protected void doStart() throws Exception {
+        super.doStart();
 
-    List<AbstractService> orderedServices = services
-      .stream()
-      .sorted(comparing(AbstractService::getOrder, reverseOrder()))
-      .collect(toList());
+        List<AbstractService> orderedServices = services.stream().sorted(comparing(AbstractService::getOrder)).collect(toList());
 
-    for (AbstractService service : orderedServices) {
-      try {
-        service.preStop();
-      } catch (Exception ex) {
-        LOGGER.error("Unexpected error while pre-stopping service", ex);
-      }
+        for (AbstractService service : orderedServices) {
+            try {
+                service.preStart();
+            } catch (Exception ex) {
+                LOGGER.error("Unexpected error while pre-starting service", ex);
+            }
+        }
+        for (AbstractService service : orderedServices) {
+            try {
+                service.start();
+            } catch (Exception ex) {
+                LOGGER.error("Unexpected error while starting service", ex);
+            }
+        }
+        for (AbstractService service : orderedServices) {
+            try {
+                service.postStart();
+            } catch (Exception ex) {
+                LOGGER.error("Unexpected error while post-starting service", ex);
+            }
+        }
     }
-    for (AbstractService service : orderedServices) {
-      try {
-        service.stop();
-      } catch (Exception ex) {
-        LOGGER.error("Unexpected error while stopping service", ex);
-      }
-    }
-    for (AbstractService service : orderedServices) {
-      try {
-        service.postStop();
-      } catch (Exception ex) {
-        LOGGER.error("Unexpected error while post-stopping service", ex);
-      }
-    }
-  }
 
-  @Override
-  protected String name() {
-    return "Plugins - Services Manager";
-  }
+    @Override
+    protected void doStop() throws Exception {
+        super.doStop();
+
+        List<AbstractService> orderedServices = services
+            .stream()
+            .sorted(comparing(AbstractService::getOrder, reverseOrder()))
+            .collect(toList());
+
+        for (AbstractService service : orderedServices) {
+            try {
+                service.preStop();
+            } catch (Exception ex) {
+                LOGGER.error("Unexpected error while pre-stopping service", ex);
+            }
+        }
+        for (AbstractService service : orderedServices) {
+            try {
+                service.stop();
+            } catch (Exception ex) {
+                LOGGER.error("Unexpected error while stopping service", ex);
+            }
+        }
+        for (AbstractService service : orderedServices) {
+            try {
+                service.postStop();
+            } catch (Exception ex) {
+                LOGGER.error("Unexpected error while post-stopping service", ex);
+            }
+        }
+    }
+
+    @Override
+    protected String name() {
+        return "Plugins - Services Manager";
+    }
 }

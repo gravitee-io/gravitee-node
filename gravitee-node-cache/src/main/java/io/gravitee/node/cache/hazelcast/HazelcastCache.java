@@ -34,108 +34,106 @@ import java.util.concurrent.TimeUnit;
  */
 public class HazelcastCache<K, V> implements Cache<K, V> {
 
-  private final IMap<K, V> cache;
-  private final Map<CacheListener<K, V>, UUID> listeners = new HashMap<>();
-  private final long timeToLiveMillis;
+    private final IMap<K, V> cache;
+    private final Map<CacheListener<K, V>, UUID> listeners = new HashMap<>();
+    private final long timeToLiveMillis;
 
-  public HazelcastCache(IMap<K, V> cache, CacheConfiguration configuration) {
-    this.cache = cache;
-    this.timeToLiveMillis = configuration.getTimeToLiveSeconds();
-  }
-
-  @Override
-  public String getName() {
-    return cache.getName();
-  }
-
-  @Override
-  public int size() {
-    return this.cache.size();
-  }
-
-  @Override
-  public boolean isEmpty() {
-    return this.cache.isEmpty();
-  }
-
-  @Override
-  public Collection<V> values() {
-    return this.cache.values();
-  }
-
-  @Override
-  public V get(K key) {
-    return this.cache.get(key);
-  }
-
-  @Override
-  public V put(K key, V value) {
-    return this.cache.put(key, value);
-  }
-
-  @Override
-  public V put(K key, V value, long ttl, TimeUnit ttlUnit) {
-    long ttlMillis = TimeUnit.MILLISECONDS.convert(ttl, ttlUnit);
-
-    if (timeToLiveMillis > 0 && ttlMillis > timeToLiveMillis) {
-      throw new RuntimeException(
-        "single ttl can't be bigger than ttl defined in the configuration"
-      );
+    public HazelcastCache(IMap<K, V> cache, CacheConfiguration configuration) {
+        this.cache = cache;
+        this.timeToLiveMillis = configuration.getTimeToLiveSeconds();
     }
 
-    return this.cache.put(key, value, ttlMillis, TimeUnit.MILLISECONDS);
-  }
-
-  @Override
-  public void putAll(Map<? extends K, ? extends V> m) {
-    this.cache.putAll(m);
-  }
-
-  @Override
-  public V evict(K key) {
-    V v = cache.get(key);
-    cache.remove(key);
-
-    return v;
-  }
-
-  @Override
-  public void clear() {
-    cache.clear();
-  }
-
-  @Override
-  public void addCacheListener(CacheListener<K, V> cacheListener) {
-    UUID id =
-      this.cache.addEntryListener(
-          new MapListenerAdapter<K, V>() {
-            @Override
-            public void onEntryEvent(EntryEvent<K, V> event) {
-              cacheListener.onEvent(
-                new io.gravitee.node.api.cache.EntryEvent<>(
-                  event.getSource(),
-                  EntryEventType.getByType(event.getEventType().getType()),
-                  event.getKey(),
-                  event.getOldValue(),
-                  event.getValue()
-                )
-              );
-            }
-          },
-          true
-        );
-
-    listeners.put(cacheListener, id);
-  }
-
-  @Override
-  public boolean removeCacheListener(CacheListener<K, V> cacheListener) {
-    UUID id = listeners.remove(cacheListener);
-
-    if (id != null) {
-      return this.cache.removeEntryListener(id);
+    @Override
+    public String getName() {
+        return cache.getName();
     }
 
-    return false;
-  }
+    @Override
+    public int size() {
+        return this.cache.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.cache.isEmpty();
+    }
+
+    @Override
+    public Collection<V> values() {
+        return this.cache.values();
+    }
+
+    @Override
+    public V get(K key) {
+        return this.cache.get(key);
+    }
+
+    @Override
+    public V put(K key, V value) {
+        return this.cache.put(key, value);
+    }
+
+    @Override
+    public V put(K key, V value, long ttl, TimeUnit ttlUnit) {
+        long ttlMillis = TimeUnit.MILLISECONDS.convert(ttl, ttlUnit);
+
+        if (timeToLiveMillis > 0 && ttlMillis > timeToLiveMillis) {
+            throw new RuntimeException("single ttl can't be bigger than ttl defined in the configuration");
+        }
+
+        return this.cache.put(key, value, ttlMillis, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void putAll(Map<? extends K, ? extends V> m) {
+        this.cache.putAll(m);
+    }
+
+    @Override
+    public V evict(K key) {
+        V v = cache.get(key);
+        cache.remove(key);
+
+        return v;
+    }
+
+    @Override
+    public void clear() {
+        cache.clear();
+    }
+
+    @Override
+    public void addCacheListener(CacheListener<K, V> cacheListener) {
+        UUID id =
+            this.cache.addEntryListener(
+                    new MapListenerAdapter<K, V>() {
+                        @Override
+                        public void onEntryEvent(EntryEvent<K, V> event) {
+                            cacheListener.onEvent(
+                                new io.gravitee.node.api.cache.EntryEvent<>(
+                                    event.getSource(),
+                                    EntryEventType.getByType(event.getEventType().getType()),
+                                    event.getKey(),
+                                    event.getOldValue(),
+                                    event.getValue()
+                                )
+                            );
+                        }
+                    },
+                    true
+                );
+
+        listeners.put(cacheListener, id);
+    }
+
+    @Override
+    public boolean removeCacheListener(CacheListener<K, V> cacheListener) {
+        UUID id = listeners.remove(cacheListener);
+
+        if (id != null) {
+            return this.cache.removeEntryListener(id);
+        }
+
+        return false;
+    }
 }

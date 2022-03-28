@@ -45,142 +45,131 @@ import org.springframework.core.env.Environment;
  */
 public class NodeInfosService extends AbstractService<NodeInfosService> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-    NodeInfosService.class
-  );
-  public static final String GIO_NODE_INFOS_BUS = "gio:node:infos";
+    private static final Logger LOGGER = LoggerFactory.getLogger(NodeInfosService.class);
+    public static final String GIO_NODE_INFOS_BUS = "gio:node:infos";
 
-  @Autowired
-  private PluginRegistry pluginRegistry;
+    @Autowired
+    private PluginRegistry pluginRegistry;
 
-  @Autowired
-  private Environment environment;
+    @Autowired
+    private Environment environment;
 
-  @Autowired
-  private Node node;
+    @Autowired
+    private Node node;
 
-  @Autowired
-  private Vertx vertx;
+    @Autowired
+    private Vertx vertx;
 
-  private MessageProducer<NodeInfos> messageProducer;
+    private MessageProducer<NodeInfos> messageProducer;
 
-  private NodeInfos nodeInfos;
+    private NodeInfos nodeInfos;
 
-  @Override
-  protected void doStart() throws Exception {
-    LOGGER.info("Starting node infos service");
+    @Override
+    protected void doStart() throws Exception {
+        LOGGER.info("Starting node infos service");
 
-    super.doStart();
+        super.doStart();
 
-    messageProducer =
-      vertx
-        .eventBus()
-        .registerCodec(new NodeInfosCodec())
-        .sender(
-          GIO_NODE_INFOS_BUS,
-          new DeliveryOptions()
-            .setCodecName(NodeInfosCodec.CODEC_NAME)
-            .setTracingPolicy(TracingPolicy.IGNORE)
-        );
+        messageProducer =
+            vertx
+                .eventBus()
+                .registerCodec(new NodeInfosCodec())
+                .sender(
+                    GIO_NODE_INFOS_BUS,
+                    new DeliveryOptions().setCodecName(NodeInfosCodec.CODEC_NAME).setTracingPolicy(TracingPolicy.IGNORE)
+                );
 
-    nodeInfos = buildNodeInfos();
-    nodeInfos.setStatus(NodeStatus.STARTED);
-    messageProducer.write(nodeInfos);
+        nodeInfos = buildNodeInfos();
+        nodeInfos.setStatus(NodeStatus.STARTED);
+        messageProducer.write(nodeInfos);
 
-    LOGGER.info("Start node infos service: DONE");
-  }
-
-  public NodeInfosService preStop() {
-    if (nodeInfos == null) {
-      return this;
+        LOGGER.info("Start node infos service: DONE");
     }
 
-    nodeInfos.setStatus(NodeStatus.STOPPED);
-    messageProducer.write(nodeInfos);
-
-    return this;
-  }
-
-  @Override
-  protected void doStop() throws Exception {
-    LOGGER.info("Stopping node infos service");
-
-    super.doStop();
-
-    LOGGER.info("Stop node infos service : DONE");
-  }
-
-  @Override
-  protected String name() {
-    return "Node Infos Service";
-  }
-
-  private NodeInfos buildNodeInfos() {
-    NodeInfos nodeInfos = new NodeInfos();
-
-    nodeInfos.setId(node.id());
-    nodeInfos.setName(node.name());
-    nodeInfos.setApplication(node.application());
-    nodeInfos.setVersion(Version.RUNTIME_VERSION.toString());
-    nodeInfos.setTags(getShardingTags());
-    nodeInfos.setTenant(getTenant());
-    nodeInfos.setPluginInfos(plugins());
-    nodeInfos.setJdkVersion(Constants.JVM_NAME + " " + Constants.JVM_VERSION);
-    nodeInfos.setEvaluatedAt(System.currentTimeMillis());
-
-    try {
-      nodeInfos.setPort(getPort());
-    } catch (NumberFormatException nfe) {
-      LOGGER.warn("Could not get http server port.", nfe);
-    }
-
-    try {
-      nodeInfos.setHostname(InetAddress.getLocalHost().getHostName());
-      nodeInfos.setIp(InetAddress.getLocalHost().getHostAddress());
-    } catch (UnknownHostException uhe) {
-      LOGGER.warn("Could not get hostname / IP", uhe);
-    }
-
-    return nodeInfos;
-  }
-
-  private Set<PluginInfos> plugins() {
-    return pluginRegistry
-      .plugins()
-      .stream()
-      .map(
-        regPlugin -> {
-          PluginInfos plugin = new PluginInfos();
-          plugin.setId(regPlugin.id());
-          plugin.setName(regPlugin.manifest().name());
-          plugin.setDescription(regPlugin.manifest().description());
-          plugin.setVersion(regPlugin.manifest().version());
-          plugin.setType(regPlugin.type().toLowerCase());
-          plugin.setPlugin(regPlugin.clazz());
-          return plugin;
+    public NodeInfosService preStop() {
+        if (nodeInfos == null) {
+            return this;
         }
-      )
-      .collect(Collectors.toSet());
-  }
 
-  private List<String> getShardingTags() {
-    return Arrays.asList(environment.getProperty("tags", "").split(","));
-  }
+        nodeInfos.setStatus(NodeStatus.STOPPED);
+        messageProducer.write(nodeInfos);
 
-  private String getTenant() {
-    return environment.getProperty("tenant");
-  }
+        return this;
+    }
 
-  private String getZone() {
-    return environment.getProperty("zone");
-  }
+    @Override
+    protected void doStop() throws Exception {
+        LOGGER.info("Stopping node infos service");
 
-  private int getPort() {
-    return Integer.parseInt(
-      environment.getProperty(
-        "http.port",
-        environment.getProperty("jetty.port", "-1")
-      )
-    );
-  }
+        super.doStop();
+
+        LOGGER.info("Stop node infos service : DONE");
+    }
+
+    @Override
+    protected String name() {
+        return "Node Infos Service";
+    }
+
+    private NodeInfos buildNodeInfos() {
+        NodeInfos nodeInfos = new NodeInfos();
+
+        nodeInfos.setId(node.id());
+        nodeInfos.setName(node.name());
+        nodeInfos.setApplication(node.application());
+        nodeInfos.setVersion(Version.RUNTIME_VERSION.toString());
+        nodeInfos.setTags(getShardingTags());
+        nodeInfos.setTenant(getTenant());
+        nodeInfos.setPluginInfos(plugins());
+        nodeInfos.setJdkVersion(Constants.JVM_NAME + " " + Constants.JVM_VERSION);
+        nodeInfos.setEvaluatedAt(System.currentTimeMillis());
+
+        try {
+            nodeInfos.setPort(getPort());
+        } catch (NumberFormatException nfe) {
+            LOGGER.warn("Could not get http server port.", nfe);
+        }
+
+        try {
+            nodeInfos.setHostname(InetAddress.getLocalHost().getHostName());
+            nodeInfos.setIp(InetAddress.getLocalHost().getHostAddress());
+        } catch (UnknownHostException uhe) {
+            LOGGER.warn("Could not get hostname / IP", uhe);
+        }
+
+        return nodeInfos;
+    }
+
+    private Set<PluginInfos> plugins() {
+        return pluginRegistry
+            .plugins()
+            .stream()
+            .map(regPlugin -> {
+                PluginInfos plugin = new PluginInfos();
+                plugin.setId(regPlugin.id());
+                plugin.setName(regPlugin.manifest().name());
+                plugin.setDescription(regPlugin.manifest().description());
+                plugin.setVersion(regPlugin.manifest().version());
+                plugin.setType(regPlugin.type().toLowerCase());
+                plugin.setPlugin(regPlugin.clazz());
+                return plugin;
+            })
+            .collect(Collectors.toSet());
+    }
+
+    private List<String> getShardingTags() {
+        return Arrays.asList(environment.getProperty("tags", "").split(","));
+    }
+
+    private String getTenant() {
+        return environment.getProperty("tenant");
+    }
+
+    private String getZone() {
+        return environment.getProperty("zone");
+    }
+
+    private int getPort() {
+        return Integer.parseInt(environment.getProperty("http.port", environment.getProperty("jetty.port", "-1")));
+    }
 }

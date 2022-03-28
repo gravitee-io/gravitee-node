@@ -33,44 +33,35 @@ import org.slf4j.LoggerFactory;
  */
 public class SelfSignedKeyStoreLoader implements KeyStoreLoader {
 
-  private static final Logger logger = LoggerFactory.getLogger(
-    SelfSignedKeyStoreLoader.class
-  );
+    private static final Logger logger = LoggerFactory.getLogger(SelfSignedKeyStoreLoader.class);
 
-  private final List<Consumer<KeyStoreBundle>> listeners;
-  private final KeyStoreLoaderOptions options;
+    private final List<Consumer<KeyStoreBundle>> listeners;
+    private final KeyStoreLoaderOptions options;
 
-  public SelfSignedKeyStoreLoader(KeyStoreLoaderOptions options) {
-    this.options = options;
-    this.listeners = new ArrayList<>();
-  }
+    public SelfSignedKeyStoreLoader(KeyStoreLoaderOptions options) {
+        this.options = options;
+        this.listeners = new ArrayList<>();
+    }
 
-  @Override
-  public void start() {
-    logger.debug("Initializing self-signed keystore certificate.");
-    final String password = UUID.randomUUID().toString();
-    final KeyStore keyStore = KeyStoreUtils.initSelfSigned(
-      "localhost",
-      password
-    );
-    final KeyStoreBundle keyStoreBundle = new KeyStoreBundle(
-      keyStore,
-      password,
-      options.getDefaultAlias()
-    );
+    @Override
+    public void start() {
+        logger.debug("Initializing self-signed keystore certificate.");
+        final String password = UUID.randomUUID().toString();
+        final KeyStore keyStore = KeyStoreUtils.initSelfSigned("localhost", password);
+        final KeyStoreBundle keyStoreBundle = new KeyStoreBundle(keyStore, password, options.getDefaultAlias());
 
-    notifyListeners(keyStoreBundle);
-  }
+        notifyListeners(keyStoreBundle);
+    }
 
-  @Override
-  public void stop() {}
+    @Override
+    public void stop() {}
 
-  @Override
-  public void addListener(Consumer<KeyStoreBundle> listener) {
-    listeners.add(listener);
-  }
+    @Override
+    public void addListener(Consumer<KeyStoreBundle> listener) {
+        listeners.add(listener);
+    }
 
-  private void notifyListeners(KeyStoreBundle keyStoreBundle) {
-    listeners.forEach(consumer -> consumer.accept(keyStoreBundle));
-  }
+    private void notifyListeners(KeyStoreBundle keyStoreBundle) {
+        listeners.forEach(consumer -> consumer.accept(keyStoreBundle));
+    }
 }

@@ -21,36 +21,36 @@ import org.springframework.lang.Nullable;
 
 public class SpringEnvironmentConfiguration implements Configuration {
 
-  private final Environment environment;
+    private final Environment environment;
 
-  public SpringEnvironmentConfiguration(Environment environment) {
-    this.environment = environment;
-  }
+    public SpringEnvironmentConfiguration(Environment environment) {
+        this.environment = environment;
+    }
 
-  @Override
-  public boolean containsProperty(String key) {
-    return environment.containsProperty(key);
-  }
+    @Override
+    public boolean containsProperty(String key) {
+        return environment.containsProperty(key);
+    }
 
-  @Override
-  @Nullable
-  public String getProperty(String key) {
-    return environment.getProperty(key);
-  }
+    @Override
+    @Nullable
+    public String getProperty(String key) {
+        return environment.getProperty(key);
+    }
 
-  @Override
-  public String getProperty(String key, String defaultValue) {
-    return environment.getProperty(key, defaultValue);
-  }
+    @Override
+    public String getProperty(String key, String defaultValue) {
+        return environment.getProperty(key, defaultValue);
+    }
 
-  @Override
-  @Nullable
-  public <T> T getProperty(String key, Class<T> targetType) {
-    return environment.getProperty(key, targetType);
-  }
+    @Override
+    @Nullable
+    public <T> T getProperty(String key, Class<T> targetType) {
+        return environment.getProperty(key, targetType);
+    }
 
-  @Override
-  public <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
-    return environment.getProperty(key, targetType, defaultValue);
-  }
+    @Override
+    public <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
+        return environment.getProperty(key, targetType, defaultValue);
+    }
 }

@@ -32,55 +32,43 @@ import org.junit.Test;
  */
 public class KeyStoreLoaderManagerTest {
 
-  private KeyStoreLoaderManager cut;
+    private KeyStoreLoaderManager cut;
 
-  @Before
-  public void before() {
-    cut = new KeyStoreLoaderManager();
-  }
+    @Before
+    public void before() {
+        cut = new KeyStoreLoaderManager();
+    }
 
-  @Test
-  public void shouldHaveDefaultLoaders() {
-    assertEquals(2, cut.getLoaderFactories().size());
-    assertTrue(
-      cut
-        .getLoaderFactories()
-        .stream()
-        .allMatch(
-          l ->
-            l instanceof FileKeyStoreLoaderFactory ||
-            l instanceof SelfSignedKeyStoreLoaderFactory
-        )
-    );
-  }
+    @Test
+    public void shouldHaveDefaultLoaders() {
+        assertEquals(2, cut.getLoaderFactories().size());
+        assertTrue(
+            cut
+                .getLoaderFactories()
+                .stream()
+                .allMatch(l -> l instanceof FileKeyStoreLoaderFactory || l instanceof SelfSignedKeyStoreLoaderFactory)
+        );
+    }
 
-  @Test
-  public void shouldRegisterFactory() {
-    final KeyStoreLoaderFactory loaderFactory = mock(
-      KeyStoreLoaderFactory.class
-    );
-    cut.registerFactory(loaderFactory);
+    @Test
+    public void shouldRegisterFactory() {
+        final KeyStoreLoaderFactory loaderFactory = mock(KeyStoreLoaderFactory.class);
+        cut.registerFactory(loaderFactory);
 
-    assertTrue(cut.getLoaderFactories().contains(loaderFactory));
-  }
+        assertTrue(cut.getLoaderFactories().contains(loaderFactory));
+    }
 
-  @Test
-  public void shouldCreateUsingAppropriateFactory() {
-    final KeyStoreLoaderFactory loaderFactory = mock(
-      KeyStoreLoaderFactory.class
-    );
-    final KeyStoreLoader keyStoreLoader = mock(KeyStoreLoader.class);
+    @Test
+    public void shouldCreateUsingAppropriateFactory() {
+        final KeyStoreLoaderFactory loaderFactory = mock(KeyStoreLoaderFactory.class);
+        final KeyStoreLoader keyStoreLoader = mock(KeyStoreLoader.class);
 
-    when(loaderFactory.canHandle(any(KeyStoreLoaderOptions.class)))
-      .thenReturn(true);
-    when(loaderFactory.create(any(KeyStoreLoaderOptions.class)))
-      .thenReturn(keyStoreLoader);
+        when(loaderFactory.canHandle(any(KeyStoreLoaderOptions.class))).thenReturn(true);
+        when(loaderFactory.create(any(KeyStoreLoaderOptions.class))).thenReturn(keyStoreLoader);
 
-    cut.registerFactory(loaderFactory);
-    final KeyStoreLoader createdLoader = cut.create(
-      KeyStoreLoaderOptions.builder().build()
-    );
+        cut.registerFactory(loaderFactory);
+        final KeyStoreLoader createdLoader = cut.create(KeyStoreLoaderOptions.builder().build());
 
-    assertEquals(keyStoreLoader, createdLoader);
-  }
+        assertEquals(keyStoreLoader, createdLoader);
+    }
 }

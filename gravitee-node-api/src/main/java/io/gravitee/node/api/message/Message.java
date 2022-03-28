@@ -23,24 +23,24 @@ import java.util.EventObject;
  */
 public class Message<T> extends EventObject {
 
-  private T messageObject;
+    private T messageObject;
 
-  /**
-   * Constructs a prototypical Event.
-   *
-   * @param topicName the object on which the Event initially occurred
-   * @throws IllegalArgumentException if source is null
-   */
-  public Message(String topicName, T messageObject) {
-    super(topicName);
-    this.messageObject = messageObject;
-  }
+    /**
+     * Constructs a prototypical Event.
+     *
+     * @param topicName the object on which the Event initially occurred
+     * @throws IllegalArgumentException if source is null
+     */
+    public Message(String topicName, T messageObject) {
+        super(topicName);
+        this.messageObject = messageObject;
+    }
 
-  public T getMessageObject() {
-    return messageObject;
-  }
+    public T getMessageObject() {
+        return messageObject;
+    }
 
-  public void setMessageObject(T messageObject) {
-    this.messageObject = messageObject;
-  }
+    public void setMessageObject(T messageObject) {
+        this.messageObject = messageObject;
+    }
 }

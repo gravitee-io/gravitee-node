@@ -23,33 +23,27 @@ import org.springframework.context.ApplicationContext;
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class GraviteeEnvironmentPropertySource
-  extends AbstractGraviteePropertySource {
+public class GraviteeEnvironmentPropertySource extends AbstractGraviteePropertySource {
 
-  private final RelaxedPropertySource relaxedPropertySource;
+    private final RelaxedPropertySource relaxedPropertySource;
 
-  public GraviteeEnvironmentPropertySource(
-    String name,
-    Map<String, Object> source,
-    ApplicationContext applicationContext
-  ) {
-    super(name, source, applicationContext);
-    this.relaxedPropertySource =
-      new RelaxedPropertySource("envVariables", source);
-  }
+    public GraviteeEnvironmentPropertySource(String name, Map<String, Object> source, ApplicationContext applicationContext) {
+        super(name, source, applicationContext);
+        this.relaxedPropertySource = new RelaxedPropertySource("envVariables", source);
+    }
 
-  @Override
-  protected Object getValue(String key) {
-    return relaxedPropertySource.getProperty(key);
-  }
+    @Override
+    protected Object getValue(String key) {
+        return relaxedPropertySource.getProperty(key);
+    }
 
-  @Override
-  public boolean containsProperty(String name) {
-    return relaxedPropertySource.containsProperty(name);
-  }
+    @Override
+    public boolean containsProperty(String name) {
+        return relaxedPropertySource.containsProperty(name);
+    }
 
-  @Override
-  public String[] getPropertyNames() {
-    return relaxedPropertySource.getPropertyNames();
-  }
+    @Override
+    public String[] getPropertyNames() {
+        return relaxedPropertySource.getPropertyNames();
+    }
 }

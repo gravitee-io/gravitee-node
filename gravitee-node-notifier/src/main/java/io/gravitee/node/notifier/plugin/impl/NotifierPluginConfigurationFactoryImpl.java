@@ -27,38 +27,25 @@ import org.slf4j.LoggerFactory;
  * @author Eric LELEU (eric.leleu at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class NotifierPluginConfigurationFactoryImpl
-  implements NotifierPluginConfigurationFactory {
+public class NotifierPluginConfigurationFactoryImpl implements NotifierPluginConfigurationFactory {
 
-  private final Logger LOGGER = LoggerFactory.getLogger(
-    NotifierPluginConfigurationFactoryImpl.class
-  );
+    private final Logger LOGGER = LoggerFactory.getLogger(NotifierPluginConfigurationFactoryImpl.class);
 
-  private final ObjectMapper mapper = new ObjectMapper()
-  .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private final ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-  @Override
-  public <T extends NotifierConfiguration> T create(
-    Class<T> notifierConfigurationClass,
-    String configuration
-  ) {
-    if (configuration == null || configuration.isEmpty()) {
-      LOGGER.debug(
-        "Unable to create a Notifier configuration from a null or empty configuration data"
-      );
-      return null;
+    @Override
+    public <T extends NotifierConfiguration> T create(Class<T> notifierConfigurationClass, String configuration) {
+        if (configuration == null || configuration.isEmpty()) {
+            LOGGER.debug("Unable to create a Notifier configuration from a null or empty configuration data");
+            return null;
+        }
+
+        try {
+            return mapper.readValue(configuration, notifierConfigurationClass);
+        } catch (IOException ex) {
+            LOGGER.error("Unable to instance Notifier configuration for {}", notifierConfigurationClass.getName(), ex);
+        }
+
+        return null;
     }
-
-    try {
-      return mapper.readValue(configuration, notifierConfigurationClass);
-    } catch (IOException ex) {
-      LOGGER.error(
-        "Unable to instance Notifier configuration for {}",
-        notifierConfigurationClass.getName(),
-        ex
-      );
-    }
-
-    return null;
-  }
 }

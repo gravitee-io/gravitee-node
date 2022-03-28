@@ -21,6 +21,4 @@ import java.util.function.BiFunction;
  * @author Eric LELEU (eric.leleu at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface ResendNotificationCondition
-  extends
-    BiFunction<NotificationDefinition, NotificationAcknowledge, Boolean> {}
+public interface ResendNotificationCondition extends BiFunction<NotificationDefinition, NotificationAcknowledge, Boolean> {}

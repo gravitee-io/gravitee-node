@@ -30,33 +30,26 @@ import org.slf4j.LoggerFactory;
  */
 public class BaseCertificateManager implements CertificateManager {
 
-  protected boolean enableSni;
-  protected final ReloadableKeyManager keyManager;
-  protected final List<KeyStoreLoader> keyStoreLoaders;
+    protected boolean enableSni;
+    protected final ReloadableKeyManager keyManager;
+    protected final List<KeyStoreLoader> keyStoreLoaders;
 
-  public BaseCertificateManager(boolean enableSni) {
-    this.enableSni = enableSni;
-    this.keyManager = new ReloadableKeyManager();
-    this.keyStoreLoaders = new ArrayList<>();
-  }
+    public BaseCertificateManager(boolean enableSni) {
+        this.enableSni = enableSni;
+        this.keyManager = new ReloadableKeyManager();
+        this.keyStoreLoaders = new ArrayList<>();
+    }
 
-  @Override
-  public void registerLoader(KeyStoreLoader keyStoreLoader) {
-    Objects.requireNonNull(keyStoreLoader, "KeyStoreLoader cannot be null");
-    this.keyStoreLoaders.add(keyStoreLoader);
-    keyStoreLoader.addListener(
-      keyStoreBundle -> {
-        try {
-          keyManager.load(
-            keyStoreBundle.getDefaultAlias(),
-            keyStoreBundle.getKeyStore(),
-            keyStoreBundle.getPassword(),
-            enableSni
-          );
-        } catch (Exception e) {
-          throw new IllegalArgumentException("Unable to load the keystore", e);
-        }
-      }
-    );
-  }
+    @Override
+    public void registerLoader(KeyStoreLoader keyStoreLoader) {
+        Objects.requireNonNull(keyStoreLoader, "KeyStoreLoader cannot be null");
+        this.keyStoreLoaders.add(keyStoreLoader);
+        keyStoreLoader.addListener(keyStoreBundle -> {
+            try {
+                keyManager.load(keyStoreBundle.getDefaultAlias(), keyStoreBundle.getKeyStore(), keyStoreBundle.getPassword(), enableSni);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Unable to load the keystore", e);
+            }
+        });
+    }
 }

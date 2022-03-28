@@ -32,65 +32,56 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class StandaloneCacheTest {
 
-  private static final String CACHE_NAME = "StandaloneCacheTest";
-  private static final Long TIME_TO_LIVE = 1L;
-  private static final String TEST_KEY = "foobar";
-  private static final String TEST_VALUE = "value";
+    private static final String CACHE_NAME = "StandaloneCacheTest";
+    private static final Long TIME_TO_LIVE = 1L;
+    private static final String TEST_KEY = "foobar";
+    private static final String TEST_VALUE = "value";
 
-  @InjectMocks
-  StandaloneCacheManager cacheManager;
+    @InjectMocks
+    StandaloneCacheManager cacheManager;
 
-  @Test
-  public void shouldPutToCache() throws InterruptedException {
-    CacheConfiguration configuration = new CacheConfiguration();
-    configuration.setTimeToLiveSeconds(2);
-    Cache<String, String> cache = cacheManager.getOrCreateCache(
-      CACHE_NAME,
-      configuration
-    );
-    cache.put(TEST_KEY, TEST_VALUE, 1, TimeUnit.MILLISECONDS);
-    cache.put(TEST_KEY + 2, TEST_VALUE, 2000, TimeUnit.MILLISECONDS);
+    @Test
+    public void shouldPutToCache() throws InterruptedException {
+        CacheConfiguration configuration = new CacheConfiguration();
+        configuration.setTimeToLiveSeconds(2);
+        Cache<String, String> cache = cacheManager.getOrCreateCache(CACHE_NAME, configuration);
+        cache.put(TEST_KEY, TEST_VALUE, 1, TimeUnit.MILLISECONDS);
+        cache.put(TEST_KEY + 2, TEST_VALUE, 2000, TimeUnit.MILLISECONDS);
 
-    assertNotNull(cache.get(TEST_KEY));
-    assertEquals(2, cache.size());
-    assertFalse(cache.isEmpty());
+        assertNotNull(cache.get(TEST_KEY));
+        assertEquals(2, cache.size());
+        assertFalse(cache.isEmpty());
 
-    Thread.sleep(1000L);
-    assertNotNull(cache.get(TEST_KEY + 2));
-    //    assertEquals(1, cache.size());
-    assertFalse(cache.isEmpty());
-  }
+        Thread.sleep(1000L);
+        assertNotNull(cache.get(TEST_KEY + 2));
+        //    assertEquals(1, cache.size());
+        assertFalse(cache.isEmpty());
+    }
 
-  @Test
-  public void shouldBeCleanedUpFromCache() throws InterruptedException {
-    CacheConfiguration configuration = new CacheConfiguration();
-    configuration.setTimeToLiveSeconds(100);
-    Cache<String, String> cache = cacheManager.getOrCreateCache(
-      CACHE_NAME,
-      configuration
-    );
+    @Test
+    public void shouldBeCleanedUpFromCache() throws InterruptedException {
+        CacheConfiguration configuration = new CacheConfiguration();
+        configuration.setTimeToLiveSeconds(100);
+        Cache<String, String> cache = cacheManager.getOrCreateCache(CACHE_NAME, configuration);
 
-    cache.put(TEST_KEY, TEST_VALUE, 10, TimeUnit.MILLISECONDS);
+        cache.put(TEST_KEY, TEST_VALUE, 10, TimeUnit.MILLISECONDS);
 
-    Thread.sleep(12L);
-    assertNull(cache.get(TEST_KEY));
-  }
+        Thread.sleep(12L);
+        assertNull(cache.get(TEST_KEY));
+    }
 
-  @Test
-  public void shouldBeRenewed() throws InterruptedException {
-    CacheConfiguration configuration = new CacheConfiguration();
-    configuration.setTimeToLiveSeconds(100);
-    Cache<String, String> cache = cacheManager.getOrCreateCache(
-      CACHE_NAME,
-      configuration
-    );
-    cache.put(TEST_KEY, TEST_VALUE, 40, TimeUnit.MILLISECONDS);
-    Thread.sleep(30L);
-    cache.get(TEST_KEY);
-    Thread.sleep(30L);
+    @Test
+    public void shouldBeRenewed() throws InterruptedException {
+        CacheConfiguration configuration = new CacheConfiguration();
+        configuration.setTimeToLiveSeconds(100);
+        Cache<String, String> cache = cacheManager.getOrCreateCache(CACHE_NAME, configuration);
+        cache.put(TEST_KEY, TEST_VALUE, 40, TimeUnit.MILLISECONDS);
+        Thread.sleep(30L);
+        cache.get(TEST_KEY);
+        Thread.sleep(30L);
 
-    assertNotNull(cache.get(TEST_KEY));
-    assertEquals(1, cache.size());
-    assertFalse(cache.isEmpty());
-  }
+        assertNotNull(cache.get(TEST_KEY));
+        assertEquals(1, cache.size());
+        assertFalse(cache.isEmpty());
+    }
 }

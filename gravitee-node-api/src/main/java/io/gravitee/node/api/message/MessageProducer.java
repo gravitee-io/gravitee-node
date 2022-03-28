@@ -20,5 +20,5 @@ package io.gravitee.node.api.message;
  * @author GraviteeSource Team
  */
 public interface MessageProducer {
-  <T> Topic<T> getTopic(String name);
+    <T> Topic<T> getTopic(String name);
 }

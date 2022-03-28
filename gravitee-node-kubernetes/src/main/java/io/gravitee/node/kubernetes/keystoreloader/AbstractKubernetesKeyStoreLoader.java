@@ -39,107 +39,78 @@ import org.slf4j.LoggerFactory;
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public abstract class AbstractKubernetesKeyStoreLoader<T>
-  implements KeyStoreLoader {
+public abstract class AbstractKubernetesKeyStoreLoader<T> implements KeyStoreLoader {
 
-  private static final Logger logger = LoggerFactory.getLogger(
-    AbstractKubernetesKeyStoreLoader.class
-  );
-  private static final int WATCH_RETRY_DELAY = 000;
-  protected static final int RETRY_DELAY_MILLIS = 10000;
+    private static final Logger logger = LoggerFactory.getLogger(AbstractKubernetesKeyStoreLoader.class);
+    private static final int WATCH_RETRY_DELAY = 000;
+    protected static final int RETRY_DELAY_MILLIS = 10000;
 
-  protected final KeyStoreLoaderOptions options;
-  protected final KubernetesClient kubernetesClient;
-  protected final List<Consumer<KeyStoreBundle>> listeners;
-  protected final Map<String, KeyStore> keyStoresByLocation;
-  protected final Map<String, KubernetesResource> resources = new HashMap<>();
-  protected KeyStoreBundle keyStoreBundle;
+    protected final KeyStoreLoaderOptions options;
+    protected final KubernetesClient kubernetesClient;
+    protected final List<Consumer<KeyStoreBundle>> listeners;
+    protected final Map<String, KeyStore> keyStoresByLocation;
+    protected final Map<String, KubernetesResource> resources = new HashMap<>();
+    protected KeyStoreBundle keyStoreBundle;
 
-  private Disposable disposable;
+    private Disposable disposable;
 
-  public AbstractKubernetesKeyStoreLoader(
-    KeyStoreLoaderOptions options,
-    KubernetesClient kubernetesClient
-  ) {
-    this.options = options;
-    this.kubernetesClient = kubernetesClient;
-    this.listeners = new ArrayList<>();
-    this.keyStoresByLocation = new ConcurrentHashMap<>();
-  }
+    public AbstractKubernetesKeyStoreLoader(KeyStoreLoaderOptions options, KubernetesClient kubernetesClient) {
+        this.options = options;
+        this.kubernetesClient = kubernetesClient;
+        this.listeners = new ArrayList<>();
+        this.keyStoresByLocation = new ConcurrentHashMap<>();
+    }
 
-  @Override
-  public void start() {
-    final Throwable throwable = init()
-      .doOnComplete(
-        () -> {
-          if (options.isWatch()) {
-            startWatch();
-          }
+    @Override
+    public void start() {
+        final Throwable throwable = init()
+            .doOnComplete(() -> {
+                if (options.isWatch()) {
+                    startWatch();
+                }
+            })
+            .blockingGet();
+
+        if (throwable != null) {
+            throw new IllegalArgumentException("An error occurred when trying to init certificates.", throwable);
         }
-      )
-      .blockingGet();
-
-    if (throwable != null) {
-      throw new IllegalArgumentException(
-        "An error occurred when trying to init certificates.",
-        throwable
-      );
     }
-  }
 
-  protected void startWatch() {
-    this.disposable =
-      watch()
-        .observeOn(Schedulers.computation())
-        .flatMapCompletable(
-          t ->
-            loadKeyStore(t)
-              .andThen(Completable.fromRunnable(this::refreshKeyStoreBundle))
-        )
-        .doOnError(
-          throwable ->
-            logger.error(
-              "An error occurred during keystore refresh. Restarting watch.",
-              throwable
-            )
-        )
-        .retry()
-        .subscribe();
-  }
-
-  @Override
-  public void stop() {
-    if (disposable != null && !disposable.isDisposed()) {
-      disposable.dispose();
+    protected void startWatch() {
+        this.disposable =
+            watch()
+                .observeOn(Schedulers.computation())
+                .flatMapCompletable(t -> loadKeyStore(t).andThen(Completable.fromRunnable(this::refreshKeyStoreBundle)))
+                .doOnError(throwable -> logger.error("An error occurred during keystore refresh. Restarting watch.", throwable))
+                .retry()
+                .subscribe();
     }
-  }
 
-  protected abstract Flowable<T> watch();
+    @Override
+    public void stop() {
+        if (disposable != null && !disposable.isDisposed()) {
+            disposable.dispose();
+        }
+    }
 
-  protected abstract Completable init();
+    protected abstract Flowable<T> watch();
 
-  protected abstract Completable loadKeyStore(T elt);
+    protected abstract Completable init();
 
-  @Override
-  public void addListener(Consumer<KeyStoreBundle> listener) {
-    listeners.add(listener);
-  }
+    protected abstract Completable loadKeyStore(T elt);
 
-  protected void refreshKeyStoreBundle() {
-    final KeyStore keyStore = KeyStoreUtils.merge(
-      new ArrayList<>(keyStoresByLocation.values()),
-      options.getKeyStorePassword()
-    );
-    this.keyStoreBundle =
-      new KeyStoreBundle(
-        keyStore,
-        options.getKeyStorePassword(),
-        options.getDefaultAlias()
-      );
-    this.notifyListeners();
-  }
+    @Override
+    public void addListener(Consumer<KeyStoreBundle> listener) {
+        listeners.add(listener);
+    }
 
-  protected void notifyListeners() {
-    listeners.forEach(consumer -> consumer.accept(keyStoreBundle));
-  }
+    protected void refreshKeyStoreBundle() {
+        final KeyStore keyStore = KeyStoreUtils.merge(new ArrayList<>(keyStoresByLocation.values()), options.getKeyStorePassword());
+        this.keyStoreBundle = new KeyStoreBundle(keyStore, options.getKeyStorePassword(), options.getDefaultAlias());
+        this.notifyListeners();
+    }
+
+    protected void notifyListeners() {
+        listeners.forEach(consumer -> consumer.accept(keyStoreBundle));
+    }
 }

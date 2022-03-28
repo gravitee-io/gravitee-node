@@ -24,15 +24,14 @@ import java.util.List;
  * @author GraviteeSource Team
  * @since 3.9.11
  */
-public class PropertyResolverFactoriesLoader
-  extends SpringFactoriesLoader<PropertyResolver> {
+public class PropertyResolverFactoriesLoader extends SpringFactoriesLoader<PropertyResolver> {
 
-  @Override
-  protected Class<PropertyResolver> getObjectType() {
-    return PropertyResolver.class;
-  }
+    @Override
+    protected Class<PropertyResolver> getObjectType() {
+        return PropertyResolver.class;
+    }
 
-  public List<PropertyResolver> getPropertyResolvers() {
-    return new ArrayList<>(getFactoriesInstances());
-  }
+    public List<PropertyResolver> getPropertyResolvers() {
+        return new ArrayList<>(getFactoriesInstances());
+    }
 }

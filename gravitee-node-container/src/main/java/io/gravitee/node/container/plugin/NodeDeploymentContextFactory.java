@@ -24,14 +24,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class NodeDeploymentContextFactory
-  implements DeploymentContextFactory<NodeDeploymentContext> {
+public class NodeDeploymentContextFactory implements DeploymentContextFactory<NodeDeploymentContext> {
 
-  @Autowired
-  private Node node;
+    @Autowired
+    private Node node;
 
-  @Override
-  public NodeDeploymentContext create() {
-    return () -> node;
-  }
+    @Override
+    public NodeDeploymentContext create() {
+        return () -> node;
+    }
 }

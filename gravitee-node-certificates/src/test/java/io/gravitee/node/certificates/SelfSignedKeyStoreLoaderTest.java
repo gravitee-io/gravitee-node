@@ -33,34 +33,29 @@ import org.junit.Test;
  */
 public class SelfSignedKeyStoreLoaderTest {
 
-  private SelfSignedKeyStoreLoader cut;
+    private SelfSignedKeyStoreLoader cut;
 
-  @Before
-  public void before() {
-    cut =
-      new SelfSignedKeyStoreLoader(
-        KeyStoreLoaderOptions
-          .builder()
-          .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED)
-          .build()
-      );
-  }
+    @Before
+    public void before() {
+        cut =
+            new SelfSignedKeyStoreLoader(
+                KeyStoreLoaderOptions.builder().withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED).build()
+            );
+    }
 
-  @Test
-  public void shouldGenerateSelfSignedCertificate() throws KeyStoreException {
-    final AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(
-      null
-    );
+    @Test
+    public void shouldGenerateSelfSignedCertificate() throws KeyStoreException {
+        final AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(null);
 
-    cut.addListener(bundleRef::set);
+        cut.addListener(bundleRef::set);
 
-    cut.start();
+        cut.start();
 
-    final KeyStoreBundle bundle = bundleRef.get();
+        final KeyStoreBundle bundle = bundleRef.get();
 
-    assertNotNull(bundle);
-    assertNotNull(bundle.getKeyStore());
-    assertEquals(1, bundle.getKeyStore().size());
-    assertNotNull(bundle.getKeyStore().getCertificate(DEFAULT_ALIAS));
-  }
+        assertNotNull(bundle);
+        assertNotNull(bundle.getKeyStore());
+        assertEquals(1, bundle.getKeyStore().size());
+        assertNotNull(bundle.getKeyStore().getCertificate(DEFAULT_ALIAS));
+    }
 }

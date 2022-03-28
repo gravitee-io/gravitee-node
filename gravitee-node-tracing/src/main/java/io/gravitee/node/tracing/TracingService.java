@@ -35,64 +35,54 @@ import org.springframework.core.env.Environment;
  */
 public class TracingService implements InitializingBean {
 
-  private final Logger logger = LoggerFactory.getLogger(TracingService.class);
+    private final Logger logger = LoggerFactory.getLogger(TracingService.class);
 
-  private final List<TracerListener> listeners = new ArrayList<>();
+    private final List<TracerListener> listeners = new ArrayList<>();
 
-  @Autowired
-  private PluginClassLoaderFactory pluginClassLoaderFactory;
+    @Autowired
+    private PluginClassLoaderFactory pluginClassLoaderFactory;
 
-  @Autowired
-  private Environment environment;
+    @Autowired
+    private Environment environment;
 
-  @Autowired
-  private PluginContextFactory pluginContextFactory;
+    @Autowired
+    private PluginContextFactory pluginContextFactory;
 
-  public void register(Plugin plugin) {
-    String tracerType = environment.getProperty("services.tracing.type");
+    public void register(Plugin plugin) {
+        String tracerType = environment.getProperty("services.tracing.type");
 
-    if (tracerType != null && plugin.id().contains(tracerType)) {
-      try {
-        PluginClassLoader classLoader = pluginClassLoaderFactory.getOrCreateClassLoader(
-          plugin
-        );
-        Class<?> clazz = classLoader.loadClass(plugin.clazz());
+        if (tracerType != null && plugin.id().contains(tracerType)) {
+            try {
+                PluginClassLoader classLoader = pluginClassLoaderFactory.getOrCreateClassLoader(plugin);
+                Class<?> clazz = classLoader.loadClass(plugin.clazz());
 
-        ApplicationContext context = this.pluginContextFactory.create(plugin);
-        Tracer tracer = (Tracer) context.getBean(clazz);
+                ApplicationContext context = this.pluginContextFactory.create(plugin);
+                Tracer tracer = (Tracer) context.getBean(clazz);
 
-        tracer.start();
+                tracer.start();
 
-        for (TracerListener listener : listeners) {
-          listener.onRegister(tracer);
+                for (TracerListener listener : listeners) {
+                    listener.onRegister(tracer);
+                }
+            } catch (Exception ex) {
+                logger.error("Unable to create an instance of Tracer: {}", plugin.id(), ex);
+            }
+        } else {
+            logger.warn("Tracing support is enabled for tracer name[{}]. Skipping the {} tracer installation", tracerType, plugin.id());
         }
-      } catch (Exception ex) {
-        logger.error(
-          "Unable to create an instance of Tracer: {}",
-          plugin.id(),
-          ex
-        );
-      }
-    } else {
-      logger.warn(
-        "Tracing support is enabled for tracer name[{}]. Skipping the {} tracer installation",
-        tracerType,
-        plugin.id()
-      );
     }
-  }
 
-  public void addTracerListener(TracerListener listener) {
-    listeners.add(listener);
-  }
+    public void addTracerListener(TracerListener listener) {
+        listeners.add(listener);
+    }
 
-  @Override
-  public void afterPropertiesSet() throws Exception {
-    String tracerType = environment.getProperty("services.tracing.type");
-    logger.info("Tracing support is enabled with tracer: name[{}]", tracerType);
-  }
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        String tracerType = environment.getProperty("services.tracing.type");
+        logger.info("Tracing support is enabled with tracer: name[{}]", tracerType);
+    }
 
-  public interface TracerListener {
-    void onRegister(Tracer tracer);
-  }
+    public interface TracerListener {
+        void onRegister(Tracer tracer);
+    }
 }

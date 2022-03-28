@@ -20,7 +20,7 @@ package io.gravitee.node.api.certificate;
  * @author GraviteeSource Team
  */
 public interface KeyStoreLoaderFactory {
-  boolean canHandle(KeyStoreLoaderOptions options);
+    boolean canHandle(KeyStoreLoaderOptions options);
 
-  KeyStoreLoader create(KeyStoreLoaderOptions options);
+    KeyStoreLoader create(KeyStoreLoaderOptions options);
 }

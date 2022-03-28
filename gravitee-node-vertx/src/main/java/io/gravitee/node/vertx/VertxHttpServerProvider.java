@@ -26,19 +26,13 @@ import io.vertx.core.http.HttpServerOptions;
  */
 public class VertxHttpServerProvider {
 
-  private VertxHttpServerProvider() {}
+    private VertxHttpServerProvider() {}
 
-  public static HttpServer create(
-    Vertx vertx,
-    HttpServerOptions httpServerOptions
-  ) {
-    return vertx.createHttpServer(httpServerOptions);
-  }
+    public static HttpServer create(Vertx vertx, HttpServerOptions httpServerOptions) {
+        return vertx.createHttpServer(httpServerOptions);
+    }
 
-  public static io.vertx.reactivex.core.http.HttpServer create(
-    io.vertx.reactivex.core.Vertx vertx,
-    HttpServerOptions httpServerOptions
-  ) {
-    return vertx.createHttpServer(httpServerOptions);
-  }
+    public static io.vertx.reactivex.core.http.HttpServer create(io.vertx.reactivex.core.Vertx vertx, HttpServerOptions httpServerOptions) {
+        return vertx.createHttpServer(httpServerOptions);
+    }
 }

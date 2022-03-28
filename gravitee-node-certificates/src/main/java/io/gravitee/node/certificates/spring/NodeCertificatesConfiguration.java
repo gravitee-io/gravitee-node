@@ -26,8 +26,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class NodeCertificatesConfiguration {
 
-  @Bean
-  public KeyStoreLoaderManager keyStoreLoaderFactoryManager() {
-    return new KeyStoreLoaderManager();
-  }
+    @Bean
+    public KeyStoreLoaderManager keyStoreLoaderFactoryManager() {
+        return new KeyStoreLoaderManager();
+    }
 }

@@ -25,16 +25,12 @@ import org.springframework.context.ApplicationContext;
  */
 public class GraviteeYamlPropertySource extends AbstractGraviteePropertySource {
 
-  public GraviteeYamlPropertySource(
-    String name,
-    Map<String, Object> source,
-    ApplicationContext applicationContext
-  ) {
-    super(name, source, applicationContext);
-  }
+    public GraviteeYamlPropertySource(String name, Map<String, Object> source, ApplicationContext applicationContext) {
+        super(name, source, applicationContext);
+    }
 
-  @Override
-  protected Object getValue(String key) {
-    return source.get(key);
-  }
+    @Override
+    protected Object getValue(String key) {
+        return source.get(key);
+    }
 }

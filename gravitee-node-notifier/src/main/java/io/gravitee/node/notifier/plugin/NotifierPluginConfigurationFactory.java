@@ -22,8 +22,5 @@ import io.gravitee.notifier.api.NotifierConfiguration;
  * @author GraviteeSource Team
  */
 public interface NotifierPluginConfigurationFactory {
-  <T extends NotifierConfiguration> T create(
-    Class<T> notifierConfigurationClass,
-    String configuration
-  );
+    <T extends NotifierConfiguration> T create(Class<T> notifierConfigurationClass, String configuration);
 }

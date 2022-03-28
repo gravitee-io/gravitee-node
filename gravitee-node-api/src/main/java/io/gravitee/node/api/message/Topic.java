@@ -22,7 +22,7 @@ import java.util.UUID;
  * @author GraviteeSource Team
  */
 public interface Topic<T> {
-  void publish(T event);
-  UUID addMessageConsumer(MessageConsumer<T> messageConsumer);
-  boolean removeMessageConsumer(UUID uuid);
+    void publish(T event);
+    UUID addMessageConsumer(MessageConsumer<T> messageConsumer);
+    boolean removeMessageConsumer(UUID uuid);
 }

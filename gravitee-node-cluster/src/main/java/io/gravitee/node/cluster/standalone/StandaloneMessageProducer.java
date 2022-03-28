@@ -26,11 +26,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class StandaloneMessageProducer implements MessageProducer {
 
-  @Autowired
-  private Vertx vertx;
+    @Autowired
+    private Vertx vertx;
 
-  @Override
-  public <T> Topic<T> getTopic(String name) {
-    return new StandaloneTopic<>(vertx, name);
-  }
+    @Override
+    public <T> Topic<T> getTopic(String name) {
+        return new StandaloneTopic<>(vertx, name);
+    }
 }

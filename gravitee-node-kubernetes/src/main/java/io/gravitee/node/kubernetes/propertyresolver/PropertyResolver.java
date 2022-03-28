@@ -24,23 +24,23 @@ import io.reactivex.Maybe;
  * @since 3.9.11
  */
 public interface PropertyResolver {
-  /**
-   * Check if this property can be resolved
-   * @param currentValue
-   * @return
-   */
-  boolean supports(String currentValue);
+    /**
+     * Check if this property can be resolved
+     * @param currentValue
+     * @return
+     */
+    boolean supports(String currentValue);
 
-  /**
-   * @param location
-   * @return The values of the given property if exist
-   */
-  Maybe<Object> resolve(String location);
+    /**
+     * @param location
+     * @return The values of the given property if exist
+     */
+    Maybe<Object> resolve(String location);
 
-  /**
-   * Watch for any changes in the property and emmit the new values
-   * @param location
-   * @return last value
-   */
-  Flowable<Object> watch(String location);
+    /**
+     * Watch for any changes in the property and emmit the new values
+     * @param location
+     * @return last value
+     */
+    Flowable<Object> watch(String location);
 }

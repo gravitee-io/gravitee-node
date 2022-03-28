@@ -22,14 +22,14 @@ import java.util.function.Consumer;
  * @author GraviteeSource Team
  */
 public interface KeyStoreLoader {
-  String CERTIFICATE_FORMAT_JKS = "JKS";
-  String CERTIFICATE_FORMAT_PEM = "PEM";
-  String CERTIFICATE_FORMAT_PKCS12 = "PKCS12";
-  String CERTIFICATE_FORMAT_SELF_SIGNED = "SELF-SIGNED";
+    String CERTIFICATE_FORMAT_JKS = "JKS";
+    String CERTIFICATE_FORMAT_PEM = "PEM";
+    String CERTIFICATE_FORMAT_PKCS12 = "PKCS12";
+    String CERTIFICATE_FORMAT_SELF_SIGNED = "SELF-SIGNED";
 
-  void start();
+    void start();
 
-  void stop();
+    void stop();
 
-  void addListener(Consumer<KeyStoreBundle> listener);
+    void addListener(Consumer<KeyStoreBundle> listener);
 }

@@ -24,27 +24,27 @@ import java.util.concurrent.TimeUnit;
  * @author GraviteeSource Team
  */
 public interface Cache<K, V> {
-  String getName();
+    String getName();
 
-  int size();
+    int size();
 
-  boolean isEmpty();
+    boolean isEmpty();
 
-  Collection<V> values();
+    Collection<V> values();
 
-  V get(K key);
+    V get(K key);
 
-  V put(K key, V value);
+    V put(K key, V value);
 
-  V put(K key, V value, long ttl, TimeUnit ttlUnit);
+    V put(K key, V value, long ttl, TimeUnit ttlUnit);
 
-  void putAll(Map<? extends K, ? extends V> m);
+    void putAll(Map<? extends K, ? extends V> m);
 
-  V evict(K key);
+    V evict(K key);
 
-  void clear();
+    void clear();
 
-  void addCacheListener(CacheListener<K, V> listener);
+    void addCacheListener(CacheListener<K, V> listener);
 
-  boolean removeCacheListener(CacheListener<K, V> listener);
+    boolean removeCacheListener(CacheListener<K, V> listener);
 }

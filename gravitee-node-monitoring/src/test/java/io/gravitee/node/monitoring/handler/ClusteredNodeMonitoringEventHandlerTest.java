@@ -48,103 +48,92 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ClusteredNodeMonitoringEventHandlerTest {
 
-  private static final String NODE_ID = "node#1";
+    private static final String NODE_ID = "node#1";
 
-  @Mock
-  protected Vertx vertx;
+    @Mock
+    protected Vertx vertx;
 
-  @Mock
-  protected Node node;
+    @Mock
+    protected Node node;
 
-  @Mock
-  protected NodeMonitoringService nodeMonitoringService;
+    @Mock
+    protected NodeMonitoringService nodeMonitoringService;
 
-  @Mock
-  protected ObjectMapper objectMapper;
+    @Mock
+    protected ObjectMapper objectMapper;
 
-  @Mock
-  private ClusterManager clusterManager;
+    @Mock
+    private ClusterManager clusterManager;
 
-  @Mock
-  private HazelcastInstance hazelcastInstance;
+    @Mock
+    private HazelcastInstance hazelcastInstance;
 
-  @Mock
-  private ITopic<HealthCheck> distributedHealthCheckTopic;
+    @Mock
+    private ITopic<HealthCheck> distributedHealthCheckTopic;
 
-  @Mock
-  private ITopic<Monitor> distributedMonitorTopic;
+    @Mock
+    private ITopic<Monitor> distributedMonitorTopic;
 
-  @Mock
-  private ITopic<NodeInfos> distributedNodeInfosTopic;
+    @Mock
+    private ITopic<NodeInfos> distributedNodeInfosTopic;
 
-  private ClusteredNodeMonitoringEventHandler cut;
+    private ClusteredNodeMonitoringEventHandler cut;
 
-  @Before
-  public void before() {
-    cut =
-      new ClusteredNodeMonitoringEventHandler(
-        vertx,
-        objectMapper,
-        node,
-        nodeMonitoringService,
-        clusterManager,
-        hazelcastInstance
-      );
-    cut.distributedHealthCheckTopic = distributedHealthCheckTopic;
-    cut.distributedMonitorTopic = distributedMonitorTopic;
-    cut.distributedNodeInfosTopic = distributedNodeInfosTopic;
-  }
+    @Before
+    public void before() {
+        cut = new ClusteredNodeMonitoringEventHandler(vertx, objectMapper, node, nodeMonitoringService, clusterManager, hazelcastInstance);
+        cut.distributedHealthCheckTopic = distributedHealthCheckTopic;
+        cut.distributedMonitorTopic = distributedMonitorTopic;
+        cut.distributedNodeInfosTopic = distributedNodeInfosTopic;
+    }
 
-  @Test
-  public void handleNodeInfosMessage() throws JsonProcessingException {
-    final Message<NodeInfos> message = mock(Message.class);
+    @Test
+    public void handleNodeInfosMessage() throws JsonProcessingException {
+        final Message<NodeInfos> message = mock(Message.class);
 
-    final NodeInfos nodeInfos = new NodeInfos();
-    nodeInfos.setEvaluatedAt(System.currentTimeMillis());
-    nodeInfos.setStatus(NodeStatus.STARTED);
-    nodeInfos.setId(NODE_ID);
+        final NodeInfos nodeInfos = new NodeInfos();
+        nodeInfos.setEvaluatedAt(System.currentTimeMillis());
+        nodeInfos.setStatus(NodeStatus.STARTED);
+        nodeInfos.setId(NODE_ID);
 
-    when(message.body()).thenReturn(nodeInfos);
+        when(message.body()).thenReturn(nodeInfos);
 
-    cut.handleNodeInfosMessage(message);
+        cut.handleNodeInfosMessage(message);
 
-    verify(distributedNodeInfosTopic).publish(nodeInfos);
-  }
+        verify(distributedNodeInfosTopic).publish(nodeInfos);
+    }
 
-  @Test
-  public void handleMonitorMessageNot() throws JsonProcessingException {
-    final Message<Monitor> message = mock(Message.class);
+    @Test
+    public void handleMonitorMessageNot() throws JsonProcessingException {
+        final Message<Monitor> message = mock(Message.class);
 
-    final Monitor monitor = Monitor
-      .on(NODE_ID)
-      .at(System.currentTimeMillis())
-      .os(OsProbe.getInstance().osInfo())
-      .jvm(JvmProbe.getInstance().jvmInfo())
-      .process(ProcessProbe.getInstance().processInfo())
-      .build();
+        final Monitor monitor = Monitor
+            .on(NODE_ID)
+            .at(System.currentTimeMillis())
+            .os(OsProbe.getInstance().osInfo())
+            .jvm(JvmProbe.getInstance().jvmInfo())
+            .process(ProcessProbe.getInstance().processInfo())
+            .build();
 
-    when(message.body()).thenReturn(monitor);
+        when(message.body()).thenReturn(monitor);
 
-    cut.handleMonitorMessage(message);
+        cut.handleMonitorMessage(message);
 
-    verify(distributedMonitorTopic).publish(monitor);
-  }
+        verify(distributedMonitorTopic).publish(monitor);
+    }
 
-  @Test
-  public void handleHealthCheckMessage() throws JsonProcessingException {
-    final Message<HealthCheck> message = mock(Message.class);
+    @Test
+    public void handleHealthCheckMessage() throws JsonProcessingException {
+        final Message<HealthCheck> message = mock(Message.class);
 
-    final HashMap<String, Result> results = new HashMap<>();
-    results.put("test", Result.healthy("ok"));
-    final HealthCheck healthCheck = new HealthCheck(
-      System.currentTimeMillis(),
-      results
-    );
+        final HashMap<String, Result> results = new HashMap<>();
+        results.put("test", Result.healthy("ok"));
+        final HealthCheck healthCheck = new HealthCheck(System.currentTimeMillis(), results);
 
-    when(message.body()).thenReturn(healthCheck);
+        when(message.body()).thenReturn(healthCheck);
 
-    cut.handleHealthCheckMessage(message);
+        cut.handleHealthCheckMessage(message);
 
-    verify(distributedHealthCheckTopic).publish(healthCheck);
-  }
+        verify(distributedHealthCheckTopic).publish(healthCheck);
+    }
 }

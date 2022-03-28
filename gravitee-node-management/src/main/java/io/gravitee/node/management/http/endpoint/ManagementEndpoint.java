@@ -23,13 +23,13 @@ import io.vertx.ext.web.RoutingContext;
  * @author GraviteeSource Team
  */
 public interface ManagementEndpoint {
-  HttpMethod method();
+    HttpMethod method();
 
-  String path();
+    String path();
 
-  void handle(RoutingContext context);
+    void handle(RoutingContext context);
 
-  default boolean isWebhook() {
-    return false;
-  }
+    default boolean isWebhook() {
+        return false;
+    }
 }

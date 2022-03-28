@@ -26,18 +26,16 @@ import org.springframework.context.annotation.Import;
  * @author GraviteeSource Team
  */
 @Configuration
-@Import(
-  { HazelcastClusterConfiguration.class, StandaloneClusterConfiguration.class }
-)
+@Import({ HazelcastClusterConfiguration.class, StandaloneClusterConfiguration.class })
 public class ClusterConfiguration {
 
-  @Bean
-  public ClusterService clusterService() {
-    return new ClusterService();
-  }
+    @Bean
+    public ClusterService clusterService() {
+        return new ClusterService();
+    }
 
-  @Bean
-  CacheManagerFactoriesLoader cacheManagerFactoriesLoader() {
-    return new CacheManagerFactoriesLoader();
-  }
+    @Bean
+    CacheManagerFactoriesLoader cacheManagerFactoriesLoader() {
+        return new CacheManagerFactoriesLoader();
+    }
 }

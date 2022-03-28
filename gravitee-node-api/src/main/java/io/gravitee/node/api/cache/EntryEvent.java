@@ -23,56 +23,50 @@ import java.util.EventObject;
  */
 public class EntryEvent<K, V> extends EventObject {
 
-  private K key;
-  private V oldValue;
-  private V value;
-  private final EntryEventType eventType;
+    private K key;
+    private V oldValue;
+    private V value;
+    private final EntryEventType eventType;
 
-  /**
-   * Constructs a prototypical Event.
-   *
-   * @param source the object on which the Event initially occurred
-   * @throws IllegalArgumentException if source is null
-   */
-  public EntryEvent(
-    Object source,
-    EntryEventType eventType,
-    K key,
-    V oldValue,
-    V value
-  ) {
-    super(source);
-    this.eventType = eventType;
-    this.key = key;
-    this.oldValue = oldValue;
-    this.value = value;
-  }
+    /**
+     * Constructs a prototypical Event.
+     *
+     * @param source the object on which the Event initially occurred
+     * @throws IllegalArgumentException if source is null
+     */
+    public EntryEvent(Object source, EntryEventType eventType, K key, V oldValue, V value) {
+        super(source);
+        this.eventType = eventType;
+        this.key = key;
+        this.oldValue = oldValue;
+        this.value = value;
+    }
 
-  public K getKey() {
-    return key;
-  }
+    public K getKey() {
+        return key;
+    }
 
-  public void setKey(K key) {
-    this.key = key;
-  }
+    public void setKey(K key) {
+        this.key = key;
+    }
 
-  public V getOldValue() {
-    return oldValue;
-  }
+    public V getOldValue() {
+        return oldValue;
+    }
 
-  public void setOldValue(V oldValue) {
-    this.oldValue = oldValue;
-  }
+    public void setOldValue(V oldValue) {
+        this.oldValue = oldValue;
+    }
 
-  public V getValue() {
-    return value;
-  }
+    public V getValue() {
+        return value;
+    }
 
-  public void setValue(V value) {
-    this.value = value;
-  }
+    public void setValue(V value) {
+        this.value = value;
+    }
 
-  public EntryEventType getEventType() {
-    return eventType;
-  }
+    public EntryEventType getEventType() {
+        return eventType;
+    }
 }

@@ -24,15 +24,14 @@ import java.util.List;
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class CacheManagerFactoriesLoader
-  extends SpringFactoriesLoader<CacheManager> {
+public class CacheManagerFactoriesLoader extends SpringFactoriesLoader<CacheManager> {
 
-  @Override
-  protected Class<CacheManager> getObjectType() {
-    return CacheManager.class;
-  }
+    @Override
+    protected Class<CacheManager> getObjectType() {
+        return CacheManager.class;
+    }
 
-  public List<CacheManager> getCacheManagers() {
-    return new ArrayList<>(getFactoriesInstances());
-  }
+    public List<CacheManager> getCacheManagers() {
+        return new ArrayList<>(getFactoriesInstances());
+    }
 }

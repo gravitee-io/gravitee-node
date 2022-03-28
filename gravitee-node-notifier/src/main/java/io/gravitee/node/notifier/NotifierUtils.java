@@ -21,16 +21,11 @@ package io.gravitee.node.notifier;
  */
 public class NotifierUtils {
 
-  public static String buildNotificationId(
-    String resource,
-    String resourceType,
-    String type,
-    String audience
-  ) {
-    return resource + "-" + resourceType + "-" + type + "-" + audience;
-  }
+    public static String buildNotificationId(String resource, String resourceType, String type, String audience) {
+        return resource + "-" + resourceType + "-" + type + "-" + audience;
+    }
 
-  public static String buildResourceKey(String resource, String resourceType) {
-    return resource + "-" + resourceType;
-  }
+    public static String buildResourceKey(String resource, String resourceType) {
+        return resource + "-" + resourceType;
+    }
 }

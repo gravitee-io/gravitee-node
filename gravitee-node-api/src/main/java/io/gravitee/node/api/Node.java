@@ -26,44 +26,44 @@ import java.util.Map;
  * @author GraviteeSource Team
  */
 public interface Node extends LifecycleComponent<Node> {
-  String META_INSTALLATION = "installation";
-  String META_ORGANIZATIONS = "organizations";
-  String META_ENVIRONMENTS = "environments";
+    String META_INSTALLATION = "installation";
+    String META_ORGANIZATIONS = "organizations";
+    String META_ENVIRONMENTS = "environments";
 
-  String ID = UUID.toString(UUID.random());
+    String ID = UUID.toString(UUID.random());
 
-  /**
-   * Returns the node name in a human format
-   *
-   * @return The node name in a human format
-   */
-  String name();
+    /**
+     * Returns the node name in a human format
+     *
+     * @return The node name in a human format
+     */
+    String name();
 
-  /**
-   * Returns the node name in a technical format
-   *
-   * @return The node name in a technical format
-   */
-  String application();
+    /**
+     * Returns the node name in a technical format
+     *
+     * @return The node name in a technical format
+     */
+    String application();
 
-  /**
-   * Returns the node id.
-   *
-   * @return The node id.
-   */
-  default String id() {
-    return ID;
-  }
+    /**
+     * Returns the node id.
+     *
+     * @return The node id.
+     */
+    default String id() {
+        return ID;
+    }
 
-  default List<Class<? extends LifecycleComponent>> components() {
-    return Collections.emptyList();
-  }
+    default List<Class<? extends LifecycleComponent>> components() {
+        return Collections.emptyList();
+    }
 
-  default String hostname() {
-    return "";
-  }
+    default String hostname() {
+        return "";
+    }
 
-  default Map<String, Object> metadata() {
-    return Collections.emptyMap();
-  }
+    default Map<String, Object> metadata() {
+        return Collections.emptyMap();
+    }
 }

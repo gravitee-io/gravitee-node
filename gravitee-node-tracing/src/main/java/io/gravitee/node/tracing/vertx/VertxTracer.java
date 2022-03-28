@@ -21,5 +21,4 @@ import io.gravitee.node.api.tracing.Tracer;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface VertxTracer<I, O>
-  extends Tracer, io.vertx.core.spi.tracing.VertxTracer<I, O> {}
+public interface VertxTracer<I, O> extends Tracer, io.vertx.core.spi.tracing.VertxTracer<I, O> {}

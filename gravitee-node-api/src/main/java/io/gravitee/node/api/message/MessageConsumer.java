@@ -20,5 +20,5 @@ package io.gravitee.node.api.message;
  * @author GraviteeSource Team
  */
 public interface MessageConsumer<T> {
-  void onMessage(Message<T> message);
+    void onMessage(Message<T> message);
 }

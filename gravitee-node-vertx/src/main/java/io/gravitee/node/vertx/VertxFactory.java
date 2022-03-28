@@ -49,204 +49,171 @@ import org.springframework.core.env.Environment;
  */
 public class VertxFactory implements FactoryBean<Vertx> {
 
-  private static final String PROMETHEUS_LABEL_VERSION_3_10 = "3.10";
+    private static final String PROMETHEUS_LABEL_VERSION_3_10 = "3.10";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-    VertxFactory.class
-  );
+    private static final Logger LOGGER = LoggerFactory.getLogger(VertxFactory.class);
 
-  @Autowired
-  private Node node;
+    @Autowired
+    private Node node;
 
-  @Autowired
-  private Environment environment;
+    @Autowired
+    private Environment environment;
 
-  @Autowired
-  private SpringVerticleFactory springVerticleFactory;
+    @Autowired
+    private SpringVerticleFactory springVerticleFactory;
 
-  @Autowired
-  private LazyVertxTracerFactory vertxTracerFactory;
-
-  @Override
-  public Vertx getObject() throws Exception {
-    LOGGER.debug("Creating a new instance of Vert.x");
-    VertxOptions options = getVertxOptions();
-
-    boolean metricsEnabled = environment.getProperty(
-      "services.metrics.enabled",
-      Boolean.class,
-      false
-    );
-    if (metricsEnabled) {
-      configureMetrics(options);
-    }
-
-    boolean tracingEnabled = environment.getProperty(
-      "services.tracing.enabled",
-      Boolean.class,
-      false
-    );
-    if (tracingEnabled) {
-      configureTracing(options);
-    }
-
-    Vertx instance = Vertx.vertx(options);
-    instance.registerVerticleFactory(springVerticleFactory);
-
-    if (metricsEnabled) {
-      MeterRegistry registry = BackendRegistries.getDefaultNow();
-
-      registry
-        .config()
-        .meterFilter(new RenameVertxFilter())
-        .commonTags("application", node.application())
-        .commonTags("instance", node.hostname());
-
-      new FileDescriptorMetrics().bindTo(registry);
-      new ClassLoaderMetrics().bindTo(registry);
-      new JvmMemoryMetrics().bindTo(registry);
-      new JvmGcMetrics().bindTo(registry);
-      new ProcessorMetrics().bindTo(registry);
-      new JvmThreadMetrics().bindTo(registry);
-    }
-
-    return instance;
-  }
-
-  private void configureMetrics(VertxOptions options) {
-    LOGGER.info("Metrics support is enabled");
-
-    MicrometerMetricsOptions micrometerMetricsOptions = new MicrometerMetricsOptions();
-    micrometerMetricsOptions
-      .setDisabledMetricsCategories(
-        new HashSet<>(
-          Arrays.asList(
-            MetricsDomain.DATAGRAM_SOCKET.toCategory(),
-            MetricsDomain.NAMED_POOLS.toCategory(),
-            MetricsDomain.VERTICLES.toCategory(),
-            MetricsDomain.EVENT_BUS.toCategory()
-          )
-        )
-      )
-      .setEnabled(true);
-
-    String namesVersion = environment.getProperty(
-      "services.metrics.prometheus.naming.version"
-    );
-
-    // Ensure compatibility with previous labels (Vertx 3.x)
-    if (PROMETHEUS_LABEL_VERSION_3_10.equals(namesVersion)) {
-      micrometerMetricsOptions.setMetricsNaming(MetricsNaming.v3Names());
-    }
-
-    // Read labels
-    Set<String> labels = loadLabels();
-    if (labels != null && !labels.isEmpty()) {
-      Set<Label> micrometerLabels = labels
-        .stream()
-        .map(label -> Label.valueOf(label.toUpperCase()))
-        .collect(Collectors.toSet());
-      micrometerMetricsOptions.setLabels(micrometerLabels);
-    } else {
-      // Defaults to
-      micrometerMetricsOptions.setLabels(
-        EnumSet.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE)
-      );
-    }
-
-    boolean prometheusEnabled = environment.getProperty(
-      "services.metrics.prometheus.enabled",
-      Boolean.class,
-      true
-    );
-    if (prometheusEnabled) {
-      LOGGER.info("Prometheus metrics support is enabled");
-      micrometerMetricsOptions.setPrometheusOptions(
-        new VertxPrometheusOptions().setEnabled(true)
-      );
-    }
-
-    options.setMetricsOptions(micrometerMetricsOptions);
-  }
-
-  private void configureTracing(VertxOptions options) {
-    options.setTracingOptions(
-      new TracingOptions().setFactory(vertxTracerFactory)
-    );
-  }
-
-  @Override
-  public Class<?> getObjectType() {
-    return Vertx.class;
-  }
-
-  @Override
-  public boolean isSingleton() {
-    return true;
-  }
-
-  private Set<String> loadLabels() {
-    LOGGER.debug("Looking for metrics labels...");
-    Set<String> labels = null;
-
-    boolean found = true;
-    int idx = 0;
-
-    while (found) {
-      String label = environment.getProperty(
-        "services.metrics.labels[" + idx + "]"
-      );
-      found = (label != null);
-      if (found) {
-        if (labels == null) {
-          labels = new HashSet<>();
-        }
-        labels.add(label);
-      }
-      idx++;
-    }
-
-    return labels;
-  }
-
-  private class RenameVertxFilter implements MeterFilter {
+    @Autowired
+    private LazyVertxTracerFactory vertxTracerFactory;
 
     @Override
-    public Meter.Id map(Meter.Id id) {
-      if (id.getName().startsWith("vertx.")) {
-        return id.withName(id.getName().substring(6));
-      }
+    public Vertx getObject() throws Exception {
+        LOGGER.debug("Creating a new instance of Vert.x");
+        VertxOptions options = getVertxOptions();
 
-      return id;
+        boolean metricsEnabled = environment.getProperty("services.metrics.enabled", Boolean.class, false);
+        if (metricsEnabled) {
+            configureMetrics(options);
+        }
+
+        boolean tracingEnabled = environment.getProperty("services.tracing.enabled", Boolean.class, false);
+        if (tracingEnabled) {
+            configureTracing(options);
+        }
+
+        Vertx instance = Vertx.vertx(options);
+        instance.registerVerticleFactory(springVerticleFactory);
+
+        if (metricsEnabled) {
+            MeterRegistry registry = BackendRegistries.getDefaultNow();
+
+            registry
+                .config()
+                .meterFilter(new RenameVertxFilter())
+                .commonTags("application", node.application())
+                .commonTags("instance", node.hostname());
+
+            new FileDescriptorMetrics().bindTo(registry);
+            new ClassLoaderMetrics().bindTo(registry);
+            new JvmMemoryMetrics().bindTo(registry);
+            new JvmGcMetrics().bindTo(registry);
+            new ProcessorMetrics().bindTo(registry);
+            new JvmThreadMetrics().bindTo(registry);
+        }
+
+        return instance;
     }
-  }
 
-  private VertxOptions getVertxOptions() {
-    VertxOptions options = new VertxOptions();
+    private void configureMetrics(VertxOptions options) {
+        LOGGER.info("Metrics support is enabled");
 
-    options.setPreferNativeTransport(true);
+        MicrometerMetricsOptions micrometerMetricsOptions = new MicrometerMetricsOptions();
+        micrometerMetricsOptions
+            .setDisabledMetricsCategories(
+                new HashSet<>(
+                    Arrays.asList(
+                        MetricsDomain.DATAGRAM_SOCKET.toCategory(),
+                        MetricsDomain.NAMED_POOLS.toCategory(),
+                        MetricsDomain.VERTICLES.toCategory(),
+                        MetricsDomain.EVENT_BUS.toCategory()
+                    )
+                )
+            )
+            .setEnabled(true);
 
-    Long blockedThreadCheckInterval = Long.getLong(
-      "vertx.options.blockedThreadCheckInterval"
-    );
-    if (blockedThreadCheckInterval != null) {
-      options.setBlockedThreadCheckInterval(blockedThreadCheckInterval);
+        String namesVersion = environment.getProperty("services.metrics.prometheus.naming.version");
+
+        // Ensure compatibility with previous labels (Vertx 3.x)
+        if (PROMETHEUS_LABEL_VERSION_3_10.equals(namesVersion)) {
+            micrometerMetricsOptions.setMetricsNaming(MetricsNaming.v3Names());
+        }
+
+        // Read labels
+        Set<String> labels = loadLabels();
+        if (labels != null && !labels.isEmpty()) {
+            Set<Label> micrometerLabels = labels.stream().map(label -> Label.valueOf(label.toUpperCase())).collect(Collectors.toSet());
+            micrometerMetricsOptions.setLabels(micrometerLabels);
+        } else {
+            // Defaults to
+            micrometerMetricsOptions.setLabels(EnumSet.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE));
+        }
+
+        boolean prometheusEnabled = environment.getProperty("services.metrics.prometheus.enabled", Boolean.class, true);
+        if (prometheusEnabled) {
+            LOGGER.info("Prometheus metrics support is enabled");
+            micrometerMetricsOptions.setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true));
+        }
+
+        options.setMetricsOptions(micrometerMetricsOptions);
     }
 
-    Long maxEventLoopExecuteTime = Long.getLong(
-      "vertx.options.maxEventLoopExecuteTime"
-    );
-    if (maxEventLoopExecuteTime != null) {
-      options.setMaxEventLoopExecuteTime(maxEventLoopExecuteTime);
+    private void configureTracing(VertxOptions options) {
+        options.setTracingOptions(new TracingOptions().setFactory(vertxTracerFactory));
     }
 
-    Long warningExceptionTime = Long.getLong(
-      "vertx.options.warningExceptionTime"
-    );
-    if (warningExceptionTime != null) {
-      options.setWarningExceptionTime(warningExceptionTime);
+    @Override
+    public Class<?> getObjectType() {
+        return Vertx.class;
     }
 
-    return options;
-  }
+    @Override
+    public boolean isSingleton() {
+        return true;
+    }
+
+    private Set<String> loadLabels() {
+        LOGGER.debug("Looking for metrics labels...");
+        Set<String> labels = null;
+
+        boolean found = true;
+        int idx = 0;
+
+        while (found) {
+            String label = environment.getProperty("services.metrics.labels[" + idx + "]");
+            found = (label != null);
+            if (found) {
+                if (labels == null) {
+                    labels = new HashSet<>();
+                }
+                labels.add(label);
+            }
+            idx++;
+        }
+
+        return labels;
+    }
+
+    private class RenameVertxFilter implements MeterFilter {
+
+        @Override
+        public Meter.Id map(Meter.Id id) {
+            if (id.getName().startsWith("vertx.")) {
+                return id.withName(id.getName().substring(6));
+            }
+
+            return id;
+        }
+    }
+
+    private VertxOptions getVertxOptions() {
+        VertxOptions options = new VertxOptions();
+
+        options.setPreferNativeTransport(true);
+
+        Long blockedThreadCheckInterval = Long.getLong("vertx.options.blockedThreadCheckInterval");
+        if (blockedThreadCheckInterval != null) {
+            options.setBlockedThreadCheckInterval(blockedThreadCheckInterval);
+        }
+
+        Long maxEventLoopExecuteTime = Long.getLong("vertx.options.maxEventLoopExecuteTime");
+        if (maxEventLoopExecuteTime != null) {
+            options.setMaxEventLoopExecuteTime(maxEventLoopExecuteTime);
+        }
+
+        Long warningExceptionTime = Long.getLong("vertx.options.warningExceptionTime");
+        if (warningExceptionTime != null) {
+            options.setWarningExceptionTime(warningExceptionTime);
+        }
+
+        return options;
+    }
 }

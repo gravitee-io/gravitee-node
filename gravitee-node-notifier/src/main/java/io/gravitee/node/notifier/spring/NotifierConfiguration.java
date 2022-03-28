@@ -29,13 +29,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class NotifierConfiguration {
 
-  @Bean
-  public NotifierPluginFactory getNotifierPluginFactory() {
-    return new NotifierPluginFactoryImpl();
-  }
+    @Bean
+    public NotifierPluginFactory getNotifierPluginFactory() {
+        return new NotifierPluginFactoryImpl();
+    }
 
-  @Bean
-  public NotifierPluginConfigurationFactory getNotifierPluginConfigurationFactory() {
-    return new NotifierPluginConfigurationFactoryImpl();
-  }
+    @Bean
+    public NotifierPluginConfigurationFactory getNotifierPluginConfigurationFactory() {
+        return new NotifierPluginConfigurationFactoryImpl();
+    }
 }

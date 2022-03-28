@@ -38,98 +38,93 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class NodeEndpoint implements ManagementEndpoint {
 
-  private final Logger LOGGER = LoggerFactory.getLogger(NodeEndpoint.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(NodeEndpoint.class);
 
-  @Autowired
-  private Node node;
+    @Autowired
+    private Node node;
 
-  @Override
-  public HttpMethod method() {
-    return HttpMethod.GET;
-  }
+    @Override
+    public HttpMethod method() {
+        return HttpMethod.GET;
+    }
 
-  @Override
-  public String path() {
-    return "/";
-  }
+    @Override
+    public String path() {
+        return "/";
+    }
 
-  @Override
-  public void handle(RoutingContext ctx) {
-    HttpServerResponse response = ctx.response();
-    response.setStatusCode(HttpStatusCode.OK_200);
-    response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-    response.setChunked(true);
+    @Override
+    public void handle(RoutingContext ctx) {
+        HttpServerResponse response = ctx.response();
+        response.setStatusCode(HttpStatusCode.OK_200);
+        response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        response.setChunked(true);
 
-    NodeInfos data = new NodeInfos();
+        NodeInfos data = new NodeInfos();
 
-    data.setId(node.id());
-    data.setName(node.name());
-    data.setVersion(Version.RUNTIME_VERSION);
-    data.setMetadata(node.metadata());
+        data.setId(node.id());
+        data.setName(node.name());
+        data.setVersion(Version.RUNTIME_VERSION);
+        data.setMetadata(node.metadata());
 
-    io.vertx.core.json.jackson.DatabindCodec codec = (io.vertx.core.json.jackson.DatabindCodec) io.vertx.core.json.Json.CODEC;
-    codec
-      .prettyMapper()
-      .setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    response.write(
-      codec.toString(data, true),
-      new Handler<AsyncResult<Void>>() {
-        @Override
-        public void handle(AsyncResult<Void> event) {
-          if (event.failed()) {
-            response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
-            LOGGER.error(
-              "Unable to transform data object to JSON",
-              event.cause()
-            );
-          }
+        io.vertx.core.json.jackson.DatabindCodec codec = (io.vertx.core.json.jackson.DatabindCodec) io.vertx.core.json.Json.CODEC;
+        codec.prettyMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        response.write(
+            codec.toString(data, true),
+            new Handler<AsyncResult<Void>>() {
+                @Override
+                public void handle(AsyncResult<Void> event) {
+                    if (event.failed()) {
+                        response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+                        LOGGER.error("Unable to transform data object to JSON", event.cause());
+                    }
 
-          response.end();
+                    response.end();
+                }
+            }
+        );
+    }
+
+    public static class NodeInfos {
+
+        private String id;
+
+        private String name;
+
+        private Map<String, Object> metadata;
+
+        private Version version;
+
+        public String getId() {
+            return id;
         }
-      }
-    );
-  }
 
-  public static class NodeInfos {
+        public void setId(String id) {
+            this.id = id;
+        }
 
-    private String id;
+        public String getName() {
+            return name;
+        }
 
-    private String name;
+        public void setName(String name) {
+            this.name = name;
+        }
 
-    private Map<String, Object> metadata;
+        public Map<String, Object> getMetadata() {
+            return metadata;
+        }
 
-    private Version version;
+        public void setMetadata(Map<String, Object> metadata) {
+            this.metadata = metadata;
+        }
 
-    public String getId() {
-      return id;
+        public Version getVersion() {
+            return version;
+        }
+
+        public void setVersion(Version version) {
+            this.version = version;
+        }
     }
-
-    public void setId(String id) {
-      this.id = id;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public Map<String, Object> getMetadata() {
-      return metadata;
-    }
-
-    public void setMetadata(Map<String, Object> metadata) {
-      this.metadata = metadata;
-    }
-
-    public Version getVersion() {
-      return version;
-    }
-
-    public void setVersion(Version version) {
-      this.version = version;
-    }
-  }
 }

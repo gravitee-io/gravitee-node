@@ -30,84 +30,70 @@ import org.springframework.util.Assert;
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
-public abstract class AbstractGraviteePropertySource
-  extends EnumerablePropertySource<Map<String, Object>> {
+public abstract class AbstractGraviteePropertySource extends EnumerablePropertySource<Map<String, Object>> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-    AbstractGraviteePropertySource.class
-  );
-  private final PropertyResolverFactoriesLoader propertyResolverLoader;
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGraviteePropertySource.class);
+    private final PropertyResolverFactoriesLoader propertyResolverLoader;
 
-  protected AbstractGraviteePropertySource(
-    String name,
-    Map<String, Object> source,
-    ApplicationContext applicationContext
-  ) {
-    super(name, source);
-    this.propertyResolverLoader =
-      applicationContext.getBean(PropertyResolverFactoriesLoader.class);
-  }
-
-  @Override
-  public String[] getPropertyNames() {
-    return source.keySet().toArray(new String[0]);
-  }
-
-  @Override
-  public Object getProperty(String name) {
-    Assert.notNull(name, "Property name can not be null.");
-    Object value = source.getOrDefault(name, getValue(name));
-
-    if (value == null) {
-      return null;
+    protected AbstractGraviteePropertySource(String name, Map<String, Object> source, ApplicationContext applicationContext) {
+        super(name, source);
+        this.propertyResolverLoader = applicationContext.getBean(PropertyResolverFactoriesLoader.class);
     }
 
-    if (isCloudBased(value)) {
-      for (PropertyResolver propertyResolver : propertyResolverLoader.getPropertyResolvers()) {
-        if (propertyResolver.supports(value.toString())) {
-          Object resolvedValue = propertyResolver
-            .resolve(value.toString())
-            .doOnError(
-              t -> {
-                LOGGER.error("Unable to resolve property {}", name, t);
-                source.put(name, null);
-              }
-            )
-            .blockingGet(); // property must be resolved before continuing with the rest of the code
-          source.put(name, resolvedValue); // to avoid resolving this property again
+    @Override
+    public String[] getPropertyNames() {
+        return source.keySet().toArray(new String[0]);
+    }
 
-          watchProperty(propertyResolver, name, value);
+    @Override
+    public Object getProperty(String name) {
+        Assert.notNull(name, "Property name can not be null.");
+        Object value = source.getOrDefault(name, getValue(name));
 
-          break;
+        if (value == null) {
+            return null;
         }
-      }
+
+        if (isCloudBased(value)) {
+            for (PropertyResolver propertyResolver : propertyResolverLoader.getPropertyResolvers()) {
+                if (propertyResolver.supports(value.toString())) {
+                    Object resolvedValue = propertyResolver
+                        .resolve(value.toString())
+                        .doOnError(t -> {
+                            LOGGER.error("Unable to resolve property {}", name, t);
+                            source.put(name, null);
+                        })
+                        .blockingGet(); // property must be resolved before continuing with the rest of the code
+                    source.put(name, resolvedValue); // to avoid resolving this property again
+
+                    watchProperty(propertyResolver, name, value);
+
+                    break;
+                }
+            }
+        }
+
+        return getValue(name);
     }
 
-    return getValue(name);
-  }
+    protected abstract Object getValue(String key);
 
-  protected abstract Object getValue(String key);
+    private boolean isCloudBased(Object value) {
+        for (CloudScheme cloudScheme : CloudScheme.values()) {
+            if (value.toString().startsWith(cloudScheme.value())) {
+                return true;
+            }
+        }
 
-  private boolean isCloudBased(Object value) {
-    for (CloudScheme cloudScheme : CloudScheme.values()) {
-      if (value.toString().startsWith(cloudScheme.value())) {
-        return true;
-      }
+        return false;
     }
 
-    return false;
-  }
-
-  private void watchProperty(
-    PropertyResolver propertyResolver,
-    String name,
-    Object value
-  ) {
-    propertyResolver
-      .watch(value.toString())
-      .doOnNext(newValue -> source.put(name, newValue))
-      .doOnError(t -> LOGGER.error("Unable to update property {}", name, t))
-      .doOnComplete(() -> watchProperty(propertyResolver, name, value))
-      .subscribe();
-  }
+    private void watchProperty(PropertyResolver propertyResolver, String name, Object value) {
+        propertyResolver
+            .watch(value.toString())
+            .doOnNext(newValue -> source.put(name, newValue))
+            .doOnError(t -> LOGGER.error("Unable to update property {}", name, t))
+            .doOnComplete(() -> watchProperty(propertyResolver, name, value))
+            .subscribe();
+    }
 }

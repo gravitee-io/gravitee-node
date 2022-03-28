@@ -23,104 +23,104 @@ import java.util.Date;
  */
 public class NotificationAcknowledge {
 
-  private String id;
+    private String id;
 
-  private Date createdAt;
+    private Date createdAt;
 
-  private Date updatedAt;
+    private Date updatedAt;
 
-  private String resourceId;
+    private String resourceId;
 
-  private String resourceType;
+    private String resourceType;
 
-  private String type;
+    private String type;
 
-  private String audienceId;
+    private String audienceId;
 
-  private int counter = 1;
+    private int counter = 1;
 
-  public NotificationAcknowledge() {
-    this.createdAt = new Date();
-    this.updatedAt = this.createdAt;
-  }
+    public NotificationAcknowledge() {
+        this.createdAt = new Date();
+        this.updatedAt = this.createdAt;
+    }
 
-  public NotificationAcknowledge(NotificationAcknowledge other) {
-    this.id = other.id;
-    this.type = other.type;
-    this.counter = other.counter;
-    this.createdAt = other.createdAt;
-    this.audienceId = other.audienceId;
-    this.resourceId = other.resourceId;
-    this.resourceType = other.resourceType;
+    public NotificationAcknowledge(NotificationAcknowledge other) {
+        this.id = other.id;
+        this.type = other.type;
+        this.counter = other.counter;
+        this.createdAt = other.createdAt;
+        this.audienceId = other.audienceId;
+        this.resourceId = other.resourceId;
+        this.resourceType = other.resourceType;
 
-    this.updatedAt = new Date();
-  }
+        this.updatedAt = new Date();
+    }
 
-  public String getId() {
-    return id;
-  }
+    public String getId() {
+        return id;
+    }
 
-  public void setId(String id) {
-    this.id = id;
-  }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-  public Date getCreatedAt() {
-    return createdAt;
-  }
+    public Date getCreatedAt() {
+        return createdAt;
+    }
 
-  public void setCreatedAt(Date createdAt) {
-    this.createdAt = createdAt;
-  }
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
 
-  public String getResourceId() {
-    return resourceId;
-  }
+    public String getResourceId() {
+        return resourceId;
+    }
 
-  public void setResourceId(String resourceId) {
-    this.resourceId = resourceId;
-  }
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
+    }
 
-  public String getResourceType() {
-    return resourceType;
-  }
+    public String getResourceType() {
+        return resourceType;
+    }
 
-  public void setResourceType(String resourceType) {
-    this.resourceType = resourceType;
-  }
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
+    }
 
-  public String getType() {
-    return type;
-  }
+    public String getType() {
+        return type;
+    }
 
-  public Date getUpdatedAt() {
-    return updatedAt;
-  }
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
 
-  public void setUpdatedAt(Date updatedAt) {
-    this.updatedAt = updatedAt;
-  }
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
-  public int getCounter() {
-    return counter;
-  }
+    public int getCounter() {
+        return counter;
+    }
 
-  public void setCounter(int counter) {
-    this.counter = counter;
-  }
+    public void setCounter(int counter) {
+        this.counter = counter;
+    }
 
-  public void incrementCounter() {
-    this.counter++;
-  }
+    public void incrementCounter() {
+        this.counter++;
+    }
 
-  public void setType(String type) {
-    this.type = type;
-  }
+    public void setType(String type) {
+        this.type = type;
+    }
 
-  public String getAudienceId() {
-    return audienceId;
-  }
+    public String getAudienceId() {
+        return audienceId;
+    }
 
-  public void setAudienceId(String audienceId) {
-    this.audienceId = audienceId;
-  }
+    public void setAudienceId(String audienceId) {
+        this.audienceId = audienceId;
+    }
 }

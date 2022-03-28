@@ -25,35 +25,34 @@ import io.vertx.core.http.HttpServerOptions;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class VertxHttpServerFactory
-  extends AbstractVertxHttpServerFactory<HttpServer> {
+public class VertxHttpServerFactory extends AbstractVertxHttpServerFactory<HttpServer> {
 
-  private final Vertx vertx;
-  private final HttpServerOptions httpServerOptions;
+    private final Vertx vertx;
+    private final HttpServerOptions httpServerOptions;
 
-  public VertxHttpServerFactory(
-    Vertx vertx,
-    HttpServerConfiguration httpServerConfiguration,
-    KeyStoreLoaderManager keyStoreLoaderManager
-  ) {
-    super(httpServerConfiguration, keyStoreLoaderManager);
-    this.httpServerOptions = getHttpServerOptions();
-    this.vertx = vertx;
-  }
+    public VertxHttpServerFactory(
+        Vertx vertx,
+        HttpServerConfiguration httpServerConfiguration,
+        KeyStoreLoaderManager keyStoreLoaderManager
+    ) {
+        super(httpServerConfiguration, keyStoreLoaderManager);
+        this.httpServerOptions = getHttpServerOptions();
+        this.vertx = vertx;
+    }
 
-  @Override
-  public HttpServer getObject() throws Exception {
-    return VertxHttpServerProvider.create(vertx, httpServerOptions);
-  }
+    @Override
+    public HttpServer getObject() throws Exception {
+        return VertxHttpServerProvider.create(vertx, httpServerOptions);
+    }
 
-  @Override
-  public Class<?> getObjectType() {
-    return HttpServer.class;
-  }
+    @Override
+    public Class<?> getObjectType() {
+        return HttpServer.class;
+    }
 
-  @Override
-  public boolean isSingleton() {
-    // Scope is managed indirectly by Vertx verticle.
-    return false;
-  }
+    @Override
+    public boolean isSingleton() {
+        // Scope is managed indirectly by Vertx verticle.
+        return false;
+    }
 }

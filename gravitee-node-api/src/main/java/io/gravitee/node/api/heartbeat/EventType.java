@@ -16,6 +16,6 @@
 package io.gravitee.node.api.heartbeat;
 
 public enum EventType {
-  NODE_STARTED,
-  NODE_STOPPED,
+    NODE_STARTED,
+    NODE_STOPPED,
 }
