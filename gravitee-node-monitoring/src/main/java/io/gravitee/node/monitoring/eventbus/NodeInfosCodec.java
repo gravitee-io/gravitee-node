@@ -23,9 +23,9 @@ import io.gravitee.node.api.infos.NodeInfos;
  */
 public class NodeInfosCodec extends AbstractCodec<NodeInfos> {
 
-  public static final String CODEC_NAME = "gio:bus:codec:node_infos";
+    public static final String CODEC_NAME = "gio:bus:codec:node_infos";
 
-  public NodeInfosCodec() {
-    super(CODEC_NAME);
-  }
+    public NodeInfosCodec() {
+        super(CODEC_NAME);
+    }
 }

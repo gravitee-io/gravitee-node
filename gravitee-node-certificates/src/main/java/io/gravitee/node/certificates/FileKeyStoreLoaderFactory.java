@@ -29,32 +29,26 @@ import org.slf4j.LoggerFactory;
  */
 public class FileKeyStoreLoaderFactory implements KeyStoreLoaderFactory {
 
-  private static final List<String> SUPPORTED_TYPES = Arrays.asList(
-    KeyStoreLoader.CERTIFICATE_FORMAT_JKS.toLowerCase(),
-    KeyStoreLoader.CERTIFICATE_FORMAT_PEM.toLowerCase(),
-    KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12.toLowerCase()
-  );
-
-  @Override
-  public boolean canHandle(KeyStoreLoaderOptions options) {
-    return (
-      options.getKeyStoreType() != null &&
-      SUPPORTED_TYPES.contains(options.getKeyStoreType().toLowerCase()) &&
-      (
-        (
-          options.getKeyStorePath() != null &&
-          !options.getKeyStorePath().isEmpty()
-        ) ||
-        (
-          options.getKeyStoreCertificates() != null &&
-          !options.getKeyStoreCertificates().isEmpty()
-        )
-      )
+    private static final List<String> SUPPORTED_TYPES = Arrays.asList(
+        KeyStoreLoader.CERTIFICATE_FORMAT_JKS.toLowerCase(),
+        KeyStoreLoader.CERTIFICATE_FORMAT_PEM.toLowerCase(),
+        KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12.toLowerCase()
     );
-  }
 
-  @Override
-  public KeyStoreLoader create(KeyStoreLoaderOptions options) {
-    return new FileKeyStoreLoader(options);
-  }
+    @Override
+    public boolean canHandle(KeyStoreLoaderOptions options) {
+        return (
+            options.getKeyStoreType() != null &&
+            SUPPORTED_TYPES.contains(options.getKeyStoreType().toLowerCase()) &&
+            (
+                (options.getKeyStorePath() != null && !options.getKeyStorePath().isEmpty()) ||
+                (options.getKeyStoreCertificates() != null && !options.getKeyStoreCertificates().isEmpty())
+            )
+        );
+    }
+
+    @Override
+    public KeyStoreLoader create(KeyStoreLoaderOptions options) {
+        return new FileKeyStoreLoader(options);
+    }
 }

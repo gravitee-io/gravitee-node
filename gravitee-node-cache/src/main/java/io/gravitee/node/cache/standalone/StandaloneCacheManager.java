@@ -27,29 +27,23 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class StandaloneCacheManager implements CacheManager {
 
-  private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<>();
 
-  @Override
-  public <K, V> Cache<K, V> getOrCreateCache(String name) {
-    return getOrCreateCache(name, new CacheConfiguration());
-  }
-
-  @Override
-  public <K, V> Cache<K, V> getOrCreateCache(
-    String name,
-    CacheConfiguration configuration
-  ) {
-    return caches.computeIfAbsent(
-      name,
-      s -> new StandaloneCache<>(name, configuration)
-    );
-  }
-
-  @Override
-  public void destroy(String name) {
-    Cache cache = caches.remove(name);
-    if (cache != null) {
-      cache.clear();
+    @Override
+    public <K, V> Cache<K, V> getOrCreateCache(String name) {
+        return getOrCreateCache(name, new CacheConfiguration());
     }
-  }
+
+    @Override
+    public <K, V> Cache<K, V> getOrCreateCache(String name, CacheConfiguration configuration) {
+        return caches.computeIfAbsent(name, s -> new StandaloneCache<>(name, configuration));
+    }
+
+    @Override
+    public void destroy(String name) {
+        Cache cache = caches.remove(name);
+        if (cache != null) {
+            cache.clear();
+        }
+    }
 }

@@ -28,80 +28,80 @@ import org.junit.Test;
  */
 public class FileKeyStoreLoaderFactoryTest {
 
-  private FileKeyStoreLoaderFactory cut;
+    private FileKeyStoreLoaderFactory cut;
 
-  @Before
-  public void before() {
-    cut = new FileKeyStoreLoaderFactory();
-  }
+    @Before
+    public void before() {
+        cut = new FileKeyStoreLoaderFactory();
+    }
 
-  @Test
-  public void shouldHandleOptionsWithPKCS12() {
-    final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-      .builder()
-      .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-      .withKeyStorePath(getPath("localhost.p12"))
-      .build();
+    @Test
+    public void shouldHandleOptionsWithPKCS12() {
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
+            .builder()
+            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .withKeyStorePath(getPath("localhost.p12"))
+            .build();
 
-    assertTrue(cut.canHandle(options));
-  }
+        assertTrue(cut.canHandle(options));
+    }
 
-  @Test
-  public void shouldNotHandleOptionsWithPKCS12WithoutPath() {
-    final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-      .builder()
-      .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-      .withKeyStorePath(null)
-      .build();
+    @Test
+    public void shouldNotHandleOptionsWithPKCS12WithoutPath() {
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
+            .builder()
+            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .withKeyStorePath(null)
+            .build();
 
-    assertFalse(cut.canHandle(options));
-  }
+        assertFalse(cut.canHandle(options));
+    }
 
-  @Test
-  public void shouldHandleOptionsWithJKS() {
-    final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-      .builder()
-      .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
-      .withKeyStorePath(getPath("localhost.jks"))
-      .build();
+    @Test
+    public void shouldHandleOptionsWithJKS() {
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
+            .builder()
+            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
+            .withKeyStorePath(getPath("localhost.jks"))
+            .build();
 
-    assertTrue(cut.canHandle(options));
-  }
+        assertTrue(cut.canHandle(options));
+    }
 
-  @Test
-  public void shouldNotHandleOptionsWithJKSWithoutPath() {
-    final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-      .builder()
-      .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
-      .withKeyStorePath(null)
-      .build();
+    @Test
+    public void shouldNotHandleOptionsWithJKSWithoutPath() {
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
+            .builder()
+            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
+            .withKeyStorePath(null)
+            .build();
 
-    assertFalse(cut.canHandle(options));
-  }
+        assertFalse(cut.canHandle(options));
+    }
 
-  @Test
-  public void shouldHandleOptionsWithPEM() {
-    final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-      .builder()
-      .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
-      .withKeyStorePath(getPath("localhost.jks"))
-      .build();
+    @Test
+    public void shouldHandleOptionsWithPEM() {
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
+            .builder()
+            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
+            .withKeyStorePath(getPath("localhost.jks"))
+            .build();
 
-    assertTrue(cut.canHandle(options));
-  }
+        assertTrue(cut.canHandle(options));
+    }
 
-  @Test
-  public void shouldNotHandleOptionsWithSelfSigned() {
-    final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-      .builder()
-      .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED)
-      .withKeyStorePath(null)
-      .build();
+    @Test
+    public void shouldNotHandleOptionsWithSelfSigned() {
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
+            .builder()
+            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED)
+            .withKeyStorePath(null)
+            .build();
 
-    assertFalse(cut.canHandle(options));
-  }
+        assertFalse(cut.canHandle(options));
+    }
 
-  private String getPath(String resource) {
-    return this.getClass().getResource("/keystores/" + resource).getPath();
-  }
+    private String getPath(String resource) {
+        return this.getClass().getResource("/keystores/" + resource).getPath();
+    }
 }

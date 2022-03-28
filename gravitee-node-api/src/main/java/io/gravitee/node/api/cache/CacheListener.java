@@ -20,5 +20,5 @@ package io.gravitee.node.api.cache;
  * @author GraviteeSource Team
  */
 public interface CacheListener<K, V> {
-  void onEvent(EntryEvent<K, V> event);
+    void onEvent(EntryEvent<K, V> event);
 }

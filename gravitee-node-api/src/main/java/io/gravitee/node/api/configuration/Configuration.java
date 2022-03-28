@@ -19,13 +19,13 @@ package io.gravitee.node.api.configuration;
  * The {@link Configuration} maintains the state of the node's configuration.
  */
 public interface Configuration {
-  boolean containsProperty(String key);
+    boolean containsProperty(String key);
 
-  String getProperty(String key);
+    String getProperty(String key);
 
-  String getProperty(String key, String defaultValue);
+    String getProperty(String key, String defaultValue);
 
-  <T> T getProperty(String key, Class<T> targetType);
+    <T> T getProperty(String key, Class<T> targetType);
 
-  <T> T getProperty(String key, Class<T> targetType, T defaultValue);
+    <T> T getProperty(String key, Class<T> targetType, T defaultValue);
 }

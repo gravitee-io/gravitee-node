@@ -45,159 +45,112 @@ import org.springframework.stereotype.Component;
 @Component
 public class NotifierServiceImpl implements NotifierService {
 
-  private final Logger logger = LoggerFactory.getLogger(
-    NotifierServiceImpl.class
-  );
+    private final Logger logger = LoggerFactory.getLogger(NotifierServiceImpl.class);
 
-  @Value("${services.notifier.enabled:false}")
-  private boolean enabled;
+    @Value("${services.notifier.enabled:false}")
+    private boolean enabled;
 
-  @Value("${services.notifier.tryAvoidDuplicateNotification:false}")
-  private boolean tryAvoidDuplicateNotification;
+    @Value("${services.notifier.tryAvoidDuplicateNotification:false}")
+    private boolean tryAvoidDuplicateNotification;
 
-  @Autowired
-  private Vertx vertx;
+    @Autowired
+    private Vertx vertx;
 
-  @Autowired
-  private NotifierPluginFactory notifierFactory;
+    @Autowired
+    private NotifierPluginFactory notifierFactory;
 
-  @Autowired
-  @Lazy
-  private NotificationAcknowledgeRepository notificationAcknowledgeRepository;
+    @Autowired
+    @Lazy
+    private NotificationAcknowledgeRepository notificationAcknowledgeRepository;
 
-  private Map<String, NotificationTrigger> triggers = Maps.newConcurrentMap();
-  private Map<String, List<NotificationDefinition>> definitions = Maps.newConcurrentMap();
+    private Map<String, NotificationTrigger> triggers = Maps.newConcurrentMap();
+    private Map<String, List<NotificationDefinition>> definitions = Maps.newConcurrentMap();
 
-  @Override
-  public void register(
-    NotificationDefinition definition,
-    NotificationCondition condition,
-    ResendNotificationCondition resendCondition
-  ) {
-    if (enabled) {
-      final var notificationTrigger = getTrigger(
-        definition,
-        condition,
-        resendCondition
-      );
-      final String id = buildNotificationId(
-        definition.getResourceId(),
-        definition.getResourceType(),
-        definition.getType(),
-        definition.getAudienceId()
-      );
-      triggers.put(id, notificationTrigger);
-      preserveNotificationDefinition(definition);
+    @Override
+    public void register(NotificationDefinition definition, NotificationCondition condition, ResendNotificationCondition resendCondition) {
+        if (enabled) {
+            final var notificationTrigger = getTrigger(definition, condition, resendCondition);
+            final String id = buildNotificationId(
+                definition.getResourceId(),
+                definition.getResourceType(),
+                definition.getType(),
+                definition.getAudienceId()
+            );
+            triggers.put(id, notificationTrigger);
+            preserveNotificationDefinition(definition);
 
-      notificationTrigger.start();
-    } else {
-      logger.debug("Node notifier service disabled");
-    }
-  }
-
-  private void preserveNotificationDefinition(
-    NotificationDefinition definition
-  ) {
-    final String resourceKey = buildResourceKey(
-      definition.getResourceId(),
-      definition.getResourceType()
-    );
-    definitions
-      .computeIfAbsent(
-        resourceKey,
-        key -> Collections.synchronizedList(new ArrayList<>())
-      )
-      .add(definition);
-  }
-
-  @Override
-  public void unregisterAll(String resourceId, String resourceType) {
-    final String resourceKey = buildResourceKey(resourceId, resourceType);
-    List<NotificationDefinition> defs = definitions.get(resourceKey);
-    if (defs != null) {
-      defs.forEach(
-        def -> {
-          final String id = buildNotificationId(
-            def.getResourceId(),
-            def.getResourceType(),
-            def.getType(),
-            def.getAudienceId()
-          );
-          stopAndRemoveTrigger(id);
+            notificationTrigger.start();
+        } else {
+            logger.debug("Node notifier service disabled");
         }
-      );
-      definitions.remove(resourceKey);
     }
-  }
 
-  @Override
-  public void unregister(
-    String resourceId,
-    String resourceType,
-    String type,
-    String audienceId
-  ) {
-    final String id = buildNotificationId(
-      resourceId,
-      resourceType,
-      type,
-      audienceId
-    );
-    stopAndRemoveTrigger(id);
+    private void preserveNotificationDefinition(NotificationDefinition definition) {
+        final String resourceKey = buildResourceKey(definition.getResourceId(), definition.getResourceType());
+        definitions.computeIfAbsent(resourceKey, key -> Collections.synchronizedList(new ArrayList<>())).add(definition);
+    }
 
-    removeDefinition(resourceId, resourceType, type, audienceId);
-  }
-
-  private void stopAndRemoveTrigger(String id) {
-    Optional
-      .ofNullable(triggers.get(id))
-      .ifPresent(
-        trigger -> {
-          trigger.stop();
-          triggers.remove(id);
+    @Override
+    public void unregisterAll(String resourceId, String resourceType) {
+        final String resourceKey = buildResourceKey(resourceId, resourceType);
+        List<NotificationDefinition> defs = definitions.get(resourceKey);
+        if (defs != null) {
+            defs.forEach(def -> {
+                final String id = buildNotificationId(def.getResourceId(), def.getResourceType(), def.getType(), def.getAudienceId());
+                stopAndRemoveTrigger(id);
+            });
+            definitions.remove(resourceKey);
         }
-      );
-  }
-
-  private void removeDefinition(
-    String resourceId,
-    String resourceType,
-    String type,
-    String audienceId
-  ) {
-    final NotificationDefinition definitionToDelete = new NotificationDefinition();
-    definitionToDelete.setResourceType(resourceType);
-    definitionToDelete.setResourceId(resourceId);
-    definitionToDelete.setAudienceId(audienceId);
-    definitionToDelete.setType(type);
-    final String resourceKey = buildResourceKey(resourceId, resourceType);
-    if (definitions.containsKey(resourceKey)) {
-      definitions.get(resourceKey).remove(definitionToDelete);
     }
-  }
 
-  @Override
-  public Completable deleteAcknowledge(String resourceId, String resourceType) {
-    return this.notificationAcknowledgeRepository.deleteByResourceId(
-        resourceId,
-        resourceType
-      );
-  }
+    @Override
+    public void unregister(String resourceId, String resourceType, String type, String audienceId) {
+        final String id = buildNotificationId(resourceId, resourceType, type, audienceId);
+        stopAndRemoveTrigger(id);
 
-  private NotificationTrigger getTrigger(
-    NotificationDefinition definition,
-    NotificationCondition condition,
-    ResendNotificationCondition resendCondition
-  ) {
-    NotificationTrigger trigger = new NotificationTrigger(
-      vertx,
-      notificationAcknowledgeRepository,
-      notifierFactory,
-      definition,
-      condition,
-      resendCondition,
-      this.tryAvoidDuplicateNotification
-    );
-    return trigger;
-  }
+        removeDefinition(resourceId, resourceType, type, audienceId);
+    }
+
+    private void stopAndRemoveTrigger(String id) {
+        Optional
+            .ofNullable(triggers.get(id))
+            .ifPresent(trigger -> {
+                trigger.stop();
+                triggers.remove(id);
+            });
+    }
+
+    private void removeDefinition(String resourceId, String resourceType, String type, String audienceId) {
+        final NotificationDefinition definitionToDelete = new NotificationDefinition();
+        definitionToDelete.setResourceType(resourceType);
+        definitionToDelete.setResourceId(resourceId);
+        definitionToDelete.setAudienceId(audienceId);
+        definitionToDelete.setType(type);
+        final String resourceKey = buildResourceKey(resourceId, resourceType);
+        if (definitions.containsKey(resourceKey)) {
+            definitions.get(resourceKey).remove(definitionToDelete);
+        }
+    }
+
+    @Override
+    public Completable deleteAcknowledge(String resourceId, String resourceType) {
+        return this.notificationAcknowledgeRepository.deleteByResourceId(resourceId, resourceType);
+    }
+
+    private NotificationTrigger getTrigger(
+        NotificationDefinition definition,
+        NotificationCondition condition,
+        ResendNotificationCondition resendCondition
+    ) {
+        NotificationTrigger trigger = new NotificationTrigger(
+            vertx,
+            notificationAcknowledgeRepository,
+            notifierFactory,
+            definition,
+            condition,
+            resendCondition,
+            this.tryAvoidDuplicateNotification
+        );
+        return trigger;
+    }
 }

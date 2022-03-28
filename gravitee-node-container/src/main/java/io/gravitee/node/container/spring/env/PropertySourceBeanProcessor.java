@@ -29,49 +29,31 @@ import org.springframework.core.env.Environment;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class PropertySourceBeanProcessor
-  implements BeanFactoryPostProcessor, Ordered {
+public class PropertySourceBeanProcessor implements BeanFactoryPostProcessor, Ordered {
 
-  private final ApplicationContext applicationContext;
-  private final Environment environment;
-  private final Properties properties;
+    private final ApplicationContext applicationContext;
+    private final Environment environment;
+    private final Properties properties;
 
-  PropertySourceBeanProcessor(
-    Properties properties,
-    Environment environment,
-    ApplicationContext applicationContext
-  ) {
-    this.properties = properties;
-    this.environment = environment;
-    this.applicationContext = applicationContext;
-  }
+    PropertySourceBeanProcessor(Properties properties, Environment environment, ApplicationContext applicationContext) {
+        this.properties = properties;
+        this.environment = environment;
+        this.applicationContext = applicationContext;
+    }
 
-  @Override
-  public int getOrder() {
-    return Ordered.HIGHEST_PRECEDENCE + 10;
-  }
+    @Override
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE + 10;
+    }
 
-  @Override
-  public void postProcessBeanFactory(
-    ConfigurableListableBeanFactory beanFactory
-  ) {
-    Map<String, Object> source = properties
-      .entrySet()
-      .stream()
-      .collect(
-        Collectors.toMap(
-          entry -> entry.getKey().toString(),
-          Map.Entry::getValue
-        )
-      );
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+        Map<String, Object> source = properties
+            .entrySet()
+            .stream()
+            .collect(Collectors.toMap(entry -> entry.getKey().toString(), Map.Entry::getValue));
 
-    ((ConfigurableEnvironment) environment).getPropertySources()
-      .addLast(
-        new GraviteeYamlPropertySource(
-          "graviteeYamlConfiguration",
-          source,
-          applicationContext
-        )
-      );
-  }
+        ((ConfigurableEnvironment) environment).getPropertySources()
+            .addLast(new GraviteeYamlPropertySource("graviteeYamlConfiguration", source, applicationContext));
+    }
 }

@@ -23,5 +23,5 @@ import io.gravitee.tracing.api.Span;
  * @author GraviteeSource Team
  */
 public interface Tracer extends LifecycleComponent<Tracer> {
-  Span trace(String spanName);
+    Span trace(String spanName);
 }

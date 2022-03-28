@@ -31,20 +31,20 @@ import org.springframework.context.annotation.Import;
 @Import(TracingConfiguration.class)
 public class VertxConfiguration {
 
-  @Bean
-  public VertxFactory vertxFactory() {
-    return new VertxFactory();
-  }
+    @Bean
+    public VertxFactory vertxFactory() {
+        return new VertxFactory();
+    }
 
-  // Destroy method is called from the Vertx delegate, no need to call it twice
-  // For information, Spring is looking for a "close()" method and call it automatically when destroying a bean
-  @Bean(destroyMethod = "")
-  public Vertx vertx(io.vertx.core.Vertx vertx) {
-    return Vertx.newInstance(vertx);
-  }
+    // Destroy method is called from the Vertx delegate, no need to call it twice
+    // For information, Spring is looking for a "close()" method and call it automatically when destroying a bean
+    @Bean(destroyMethod = "")
+    public Vertx vertx(io.vertx.core.Vertx vertx) {
+        return Vertx.newInstance(vertx);
+    }
 
-  @Bean
-  public SpringVerticleFactory springVerticleFactory() {
-    return new SpringVerticleFactory();
-  }
+    @Bean
+    public SpringVerticleFactory springVerticleFactory() {
+        return new SpringVerticleFactory();
+    }
 }

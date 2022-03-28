@@ -35,33 +35,33 @@ import org.springframework.context.annotation.Import;
 @Import(HttpServerSpringConfiguration.class)
 public class ManagementConfiguration {
 
-  @Bean
-  public ManagementService managementService() {
-    return new ManagementService();
-  }
+    @Bean
+    public ManagementService managementService() {
+        return new ManagementService();
+    }
 
-  @Bean
-  public ManagementVerticle managementVerticle() {
-    return new ManagementVerticle();
-  }
+    @Bean
+    public ManagementVerticle managementVerticle() {
+        return new ManagementVerticle();
+    }
 
-  @Bean
-  public ManagementEndpointManager managementEndpointManager() {
-    return new ManagementEndpointManagerImpl();
-  }
+    @Bean
+    public ManagementEndpointManager managementEndpointManager() {
+        return new ManagementEndpointManagerImpl();
+    }
 
-  @Bean
-  public NodeEndpoint nodeEndpoint() {
-    return new NodeEndpoint();
-  }
+    @Bean
+    public NodeEndpoint nodeEndpoint() {
+        return new NodeEndpoint();
+    }
 
-  @Bean
-  public PrometheusEndpoint prometheusEndpoint() {
-    return new PrometheusEndpoint();
-  }
+    @Bean
+    public PrometheusEndpoint prometheusEndpoint() {
+        return new PrometheusEndpoint();
+    }
 
-  @Bean
-  public ConfigurationEndpoint configurationEndpoint() {
-    return new ConfigurationEndpoint();
-  }
+    @Bean
+    public ConfigurationEndpoint configurationEndpoint() {
+        return new ConfigurationEndpoint();
+    }
 }

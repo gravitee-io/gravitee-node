@@ -22,5 +22,5 @@ import io.gravitee.plugin.core.api.Plugin;
  * @author GraviteeSource Team
  */
 public interface TracerPlugin extends Plugin {
-  String PLUGIN_TYPE = "tracer";
+    String PLUGIN_TYPE = "tracer";
 }

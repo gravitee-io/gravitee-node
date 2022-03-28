@@ -20,6 +20,6 @@ package io.gravitee.node.api.infos;
  * @author GraviteeSource Team
  */
 public enum NodeStatus {
-  STARTED,
-  STOPPED,
+    STARTED,
+    STOPPED,
 }

@@ -24,15 +24,14 @@ import java.util.List;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class NodeDeployerFactoriesLoader
-  extends SpringFactoriesLoader<NodeDeployer> {
+public class NodeDeployerFactoriesLoader extends SpringFactoriesLoader<NodeDeployer> {
 
-  @Override
-  protected Class<NodeDeployer> getObjectType() {
-    return NodeDeployer.class;
-  }
+    @Override
+    protected Class<NodeDeployer> getObjectType() {
+        return NodeDeployer.class;
+    }
 
-  List<NodeDeployer> getNodeDeployers() {
-    return new ArrayList<>(getFactoriesInstances());
-  }
+    List<NodeDeployer> getNodeDeployers() {
+        return new ArrayList<>(getFactoriesInstances());
+    }
 }

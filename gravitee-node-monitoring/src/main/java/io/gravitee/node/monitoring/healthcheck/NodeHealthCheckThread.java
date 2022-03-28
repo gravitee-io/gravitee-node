@@ -40,124 +40,96 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class NodeHealthCheckThread implements Handler<Long> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-    NodeHealthCheckThread.class
-  );
+    private static final Logger LOGGER = LoggerFactory.getLogger(NodeHealthCheckThread.class);
 
-  @Autowired
-  private AlertEventProducer eventProducer;
+    @Autowired
+    private AlertEventProducer eventProducer;
 
-  @Autowired
-  private Node node;
+    @Autowired
+    private Node node;
 
-  private long timestamp;
+    private long timestamp;
 
-  private final Map<Probe, Result> results;
+    private final Map<Probe, Result> results;
 
-  private final MessageProducer<HealthCheck> producer;
+    private final MessageProducer<HealthCheck> producer;
 
-  public NodeHealthCheckThread(
-    List<Probe> probes,
-    MessageProducer<HealthCheck> producer
-  ) {
-    this.results =
-      probes
-        .stream()
-        .collect(Collectors.toMap(probe -> probe, probe -> Result.notReady()));
-    this.producer = producer;
-  }
-
-  @Override
-  public void handle(Long tick) {
-    this.timestamp = System.currentTimeMillis();
-
-    for (Map.Entry<Probe, Result> probe : results.entrySet()) {
-      try {
-        probe.getKey().check().thenAccept(probe::setValue);
-      } catch (Exception ex) {
-        LOGGER.error(
-          "An error occurred when trying to evaluate health check probe {}. Switching probe to unhealthy.",
-          probe.getKey(),
-          ex
-        );
-        probe.setValue(Result.unhealthy(ex));
-      }
+    public NodeHealthCheckThread(List<Probe> probes, MessageProducer<HealthCheck> producer) {
+        this.results = probes.stream().collect(Collectors.toMap(probe -> probe, probe -> Result.notReady()));
+        this.producer = producer;
     }
 
-    // We want to propagate health-check with visible probes only.
-    final HealthCheck healthCheck = getHealthCheck(true);
-    producer.write(healthCheck);
-    sendAlertEngineEvent(healthCheck);
-  }
+    @Override
+    public void handle(Long tick) {
+        this.timestamp = System.currentTimeMillis();
 
-  private void sendAlertEngineEvent(HealthCheck healthCheck) {
-    DefaultEvent.Builder builder = Event.now().type(NODE_HEALTHCHECK);
-
-    builder.property(PROPERTY_NODE_ID, node.id());
-    builder.property(PROPERTY_NODE_HOSTNAME, node.hostname());
-    builder.property(PROPERTY_NODE_APPLICATION, node.application());
-    builder.property(
-      PROPERTY_NODE_HEALTHY,
-      String.valueOf(healthCheck.isHealthy())
-    );
-    builder.organizations(
-      (Set<String>) node.metadata().get(Node.META_ORGANIZATIONS)
-    );
-    builder.environments(
-      (Set<String>) node.metadata().get(Node.META_ENVIRONMENTS)
-    );
-
-    healthCheck
-      .getResults()
-      .forEach(
-        (probeId, result) -> {
-          builder.property(PROPERTY_PROBE_SUFFIX + probeId, result.isHealthy());
-          if (!result.isHealthy()) {
-            builder.property(
-              PROPERTY_PROBE_SUFFIX + probeId + ".message",
-              result.getMessage()
-            );
-          }
+        for (Map.Entry<Probe, Result> probe : results.entrySet()) {
+            try {
+                probe.getKey().check().thenAccept(probe::setValue);
+            } catch (Exception ex) {
+                LOGGER.error(
+                    "An error occurred when trying to evaluate health check probe {}. Switching probe to unhealthy.",
+                    probe.getKey(),
+                    ex
+                );
+                probe.setValue(Result.unhealthy(ex));
+            }
         }
-      );
 
-    eventProducer.send(builder.build());
-  }
+        // We want to propagate health-check with visible probes only.
+        final HealthCheck healthCheck = getHealthCheck(true);
+        producer.write(healthCheck);
+        sendAlertEngineEvent(healthCheck);
+    }
 
-  /**
-   * Returns the health-check with all probes which are visible by default.
-   *
-   * @return health-check with all probes which are visible by default.
-   */
-  public HealthCheck getHealthCheck() {
-    return getHealthCheck(false);
-  }
+    private void sendAlertEngineEvent(HealthCheck healthCheck) {
+        DefaultEvent.Builder builder = Event.now().type(NODE_HEALTHCHECK);
 
-  /**
-   * Returns the health-check with either all probes either only visible by default ones.
-   *
-   * @param filterVisibleByDefault flag indicating if probes must be filtered to visible by default or not.
-   * @return health-check with all probes which are visible by default.
-   */
-  public HealthCheck getHealthCheck(boolean filterVisibleByDefault) {
-    Map<String, Result> results =
-      this.results.entrySet()
-        .stream()
-        .filter(
-          entry ->
-            !filterVisibleByDefault || entry.getKey().isVisibleByDefault()
-        )
-        .collect(
-          Collectors.toMap(
-            probeResultEntry -> probeResultEntry.getKey().id(),
-            Map.Entry::getValue
-          )
-        );
+        builder.property(PROPERTY_NODE_ID, node.id());
+        builder.property(PROPERTY_NODE_HOSTNAME, node.hostname());
+        builder.property(PROPERTY_NODE_APPLICATION, node.application());
+        builder.property(PROPERTY_NODE_HEALTHY, String.valueOf(healthCheck.isHealthy()));
+        builder.organizations((Set<String>) node.metadata().get(Node.META_ORGANIZATIONS));
+        builder.environments((Set<String>) node.metadata().get(Node.META_ENVIRONMENTS));
 
-    return new HealthCheck(timestamp, results);
-  }
+        healthCheck
+            .getResults()
+            .forEach((probeId, result) -> {
+                builder.property(PROPERTY_PROBE_SUFFIX + probeId, result.isHealthy());
+                if (!result.isHealthy()) {
+                    builder.property(PROPERTY_PROBE_SUFFIX + probeId + ".message", result.getMessage());
+                }
+            });
 
-  public Map<Probe, Result> getResults() {
-    return results;
-  }
+        eventProducer.send(builder.build());
+    }
+
+    /**
+     * Returns the health-check with all probes which are visible by default.
+     *
+     * @return health-check with all probes which are visible by default.
+     */
+    public HealthCheck getHealthCheck() {
+        return getHealthCheck(false);
+    }
+
+    /**
+     * Returns the health-check with either all probes either only visible by default ones.
+     *
+     * @param filterVisibleByDefault flag indicating if probes must be filtered to visible by default or not.
+     * @return health-check with all probes which are visible by default.
+     */
+    public HealthCheck getHealthCheck(boolean filterVisibleByDefault) {
+        Map<String, Result> results =
+            this.results.entrySet()
+                .stream()
+                .filter(entry -> !filterVisibleByDefault || entry.getKey().isVisibleByDefault())
+                .collect(Collectors.toMap(probeResultEntry -> probeResultEntry.getKey().id(), Map.Entry::getValue));
+
+        return new HealthCheck(timestamp, results);
+    }
+
+    public Map<Probe, Result> getResults() {
+        return results;
+    }
 }

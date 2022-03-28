@@ -33,48 +33,35 @@ import org.springframework.core.env.Environment;
 @Import({ PropertiesConfiguration.class })
 public class EnvironmentConfiguration {
 
-  @Bean
-  public static PropertySourcesPlaceholderConfigurer properties(
-    @Qualifier("graviteeProperties") Properties graviteeProperties
-  ) {
-    PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
-    propertySourcesPlaceholderConfigurer.setProperties(graviteeProperties);
-    propertySourcesPlaceholderConfigurer.setIgnoreUnresolvablePlaceholders(
-      true
-    );
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer properties(@Qualifier("graviteeProperties") Properties graviteeProperties) {
+        PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
+        propertySourcesPlaceholderConfigurer.setProperties(graviteeProperties);
+        propertySourcesPlaceholderConfigurer.setIgnoreUnresolvablePlaceholders(true);
 
-    return propertySourcesPlaceholderConfigurer;
-  }
+        return propertySourcesPlaceholderConfigurer;
+    }
 
-  @Bean
-  public static PropertySourceBeanProcessor propertySourceBeanProcessor(
-    @Qualifier("graviteeProperties") Properties graviteeProperties,
-    Environment environment,
-    ApplicationContext applicationContext
-  ) {
-    // Using this we are now able to use {@link org.springframework.core.env.Environment} in Spring beans
-    return new PropertySourceBeanProcessor(
-      graviteeProperties,
-      environment,
-      applicationContext
-    );
-  }
+    @Bean
+    public static PropertySourceBeanProcessor propertySourceBeanProcessor(
+        @Qualifier("graviteeProperties") Properties graviteeProperties,
+        Environment environment,
+        ApplicationContext applicationContext
+    ) {
+        // Using this we are now able to use {@link org.springframework.core.env.Environment} in Spring beans
+        return new PropertySourceBeanProcessor(graviteeProperties, environment, applicationContext);
+    }
 
-  @Bean
-  public static EnvironmentPropertySourceBeanProcessor environmentBeanFactoryPostProcessor(
-    Environment environment,
-    ApplicationContext applicationContext
-  ) {
-    return new EnvironmentPropertySourceBeanProcessor(
-      environment,
-      applicationContext
-    );
-  }
+    @Bean
+    public static EnvironmentPropertySourceBeanProcessor environmentBeanFactoryPostProcessor(
+        Environment environment,
+        ApplicationContext applicationContext
+    ) {
+        return new EnvironmentPropertySourceBeanProcessor(environment, applicationContext);
+    }
 
-  @Bean
-  public static io.gravitee.node.api.configuration.Configuration graviteeEnvironment(
-    Environment environment
-  ) {
-    return new SpringEnvironmentConfiguration(environment);
-  }
+    @Bean
+    public static io.gravitee.node.api.configuration.Configuration graviteeEnvironment(Environment environment) {
+        return new SpringEnvironmentConfiguration(environment);
+    }
 }

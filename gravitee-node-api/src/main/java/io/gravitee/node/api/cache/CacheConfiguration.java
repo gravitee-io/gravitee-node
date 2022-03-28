@@ -21,33 +21,33 @@ package io.gravitee.node.api.cache;
  */
 public class CacheConfiguration {
 
-  private long maxSize = -1;
+    private long maxSize = -1;
 
-  private long timeToLiveSeconds = -1;
+    private long timeToLiveSeconds = -1;
 
-  private long timeToIdleSeconds = -1;
+    private long timeToIdleSeconds = -1;
 
-  public long getMaxSize() {
-    return maxSize;
-  }
+    public long getMaxSize() {
+        return maxSize;
+    }
 
-  public void setMaxSize(long maxSize) {
-    this.maxSize = maxSize;
-  }
+    public void setMaxSize(long maxSize) {
+        this.maxSize = maxSize;
+    }
 
-  public long getTimeToLiveSeconds() {
-    return timeToLiveSeconds;
-  }
+    public long getTimeToLiveSeconds() {
+        return timeToLiveSeconds;
+    }
 
-  public void setTimeToLiveSeconds(long timeToLiveSeconds) {
-    this.timeToLiveSeconds = timeToLiveSeconds;
-  }
+    public void setTimeToLiveSeconds(long timeToLiveSeconds) {
+        this.timeToLiveSeconds = timeToLiveSeconds;
+    }
 
-  public long getTimeToIdleSeconds() {
-    return timeToIdleSeconds;
-  }
+    public long getTimeToIdleSeconds() {
+        return timeToIdleSeconds;
+    }
 
-  public void setTimeToIdleSeconds(long timeToIdleSeconds) {
-    this.timeToIdleSeconds = timeToIdleSeconds;
-  }
+    public void setTimeToIdleSeconds(long timeToIdleSeconds) {
+        this.timeToIdleSeconds = timeToIdleSeconds;
+    }
 }

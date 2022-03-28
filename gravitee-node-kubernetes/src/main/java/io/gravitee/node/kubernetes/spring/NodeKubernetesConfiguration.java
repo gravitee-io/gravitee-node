@@ -28,15 +28,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class NodeKubernetesConfiguration {
 
-  @Bean
-  public KubernetesKeyStoreLoaderFactory kubernetesKeyStoreLoaderFactory(
-    KubernetesClient kubernetesClient,
-    KeyStoreLoaderManager keyStoreLoaderManager
-  ) {
-    final KubernetesKeyStoreLoaderFactory kubernetesKeyStoreLoaderFactory = new KubernetesKeyStoreLoaderFactory(
-      kubernetesClient
-    );
-    keyStoreLoaderManager.registerFactory(kubernetesKeyStoreLoaderFactory);
-    return kubernetesKeyStoreLoaderFactory;
-  }
+    @Bean
+    public KubernetesKeyStoreLoaderFactory kubernetesKeyStoreLoaderFactory(
+        KubernetesClient kubernetesClient,
+        KeyStoreLoaderManager keyStoreLoaderManager
+    ) {
+        final KubernetesKeyStoreLoaderFactory kubernetesKeyStoreLoaderFactory = new KubernetesKeyStoreLoaderFactory(kubernetesClient);
+        keyStoreLoaderManager.registerFactory(kubernetesKeyStoreLoaderFactory);
+        return kubernetesKeyStoreLoaderFactory;
+    }
 }

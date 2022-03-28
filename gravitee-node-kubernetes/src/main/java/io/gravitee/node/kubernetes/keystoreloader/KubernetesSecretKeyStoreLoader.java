@@ -38,177 +38,136 @@ import org.slf4j.LoggerFactory;
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class KubernetesSecretKeyStoreLoader
-  extends AbstractKubernetesKeyStoreLoader<Secret> {
+public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLoader<Secret> {
 
-  private static final List<String> SUPPORTED_TYPES = Arrays.asList(
-    KeyStoreLoader.CERTIFICATE_FORMAT_JKS.toLowerCase(),
-    KeyStoreLoader.CERTIFICATE_FORMAT_PEM.toLowerCase(),
-    KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12.toLowerCase()
-  );
-
-  private static final Pattern SECRET_PATTERN = Pattern.compile(
-    "^(.*)/secrets/(.*)$"
-  );
-  private static final Pattern SECRET_OPAQUE_PATTERN = Pattern.compile(
-    "^(.*/secrets/[^/]*)/.*$"
-  );
-  protected static final String KUBERNETES_TLS_SECRET = "kubernetes.io/tls";
-  protected static final String KUBERNETES_OPAQUE_SECRET = "Opaque";
-  protected static final String KUBERNETES_TLS_CRT = "tls.crt";
-  protected static final String KUBERNETES_TLS_KEY = "tls.key";
-
-  public KubernetesSecretKeyStoreLoader(
-    KeyStoreLoaderOptions options,
-    KubernetesClient kubernetesClient
-  ) {
-    super(options, kubernetesClient);
-    prepareLocations();
-  }
-
-  private void prepareLocations() {
-    this.options.getKubernetesLocations()
-      .forEach(
-        location -> {
-          final Matcher matcher = SECRET_OPAQUE_PATTERN.matcher(location);
-          if (matcher.matches()) {
-            this.resources.put(
-                matcher.group(1),
-                new KubernetesResource(location)
-              );
-          } else {
-            this.resources.put(location, new KubernetesResource(location));
-          }
-        }
-      );
-  }
-
-  public static boolean canHandle(KeyStoreLoaderOptions options) {
-    final List<String> kubernetesLocations = options.getKubernetesLocations();
-
-    return (
-      kubernetesLocations != null &&
-      !kubernetesLocations.isEmpty() &&
-      SUPPORTED_TYPES.contains(options.getKeyStoreType().toLowerCase()) &&
-      kubernetesLocations
-        .stream()
-        .allMatch(location -> SECRET_PATTERN.matcher(location).matches())
+    private static final List<String> SUPPORTED_TYPES = Arrays.asList(
+        KeyStoreLoader.CERTIFICATE_FORMAT_JKS.toLowerCase(),
+        KeyStoreLoader.CERTIFICATE_FORMAT_PEM.toLowerCase(),
+        KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12.toLowerCase()
     );
-  }
 
-  @Override
-  protected Completable init() {
-    final List<Completable> locationObs = resources
-      .keySet()
-      .stream()
-      .map(
-        location ->
-          kubernetesClient
-            .get(location, Secret.class)
-            .observeOn(Schedulers.computation())
-            .flatMapCompletable(this::loadKeyStore)
-      )
-      .collect(Collectors.toList());
+    private static final Pattern SECRET_PATTERN = Pattern.compile("^(.*)/secrets/(.*)$");
+    private static final Pattern SECRET_OPAQUE_PATTERN = Pattern.compile("^(.*/secrets/[^/]*)/.*$");
+    protected static final String KUBERNETES_TLS_SECRET = "kubernetes.io/tls";
+    protected static final String KUBERNETES_OPAQUE_SECRET = "Opaque";
+    protected static final String KUBERNETES_TLS_CRT = "tls.crt";
+    protected static final String KUBERNETES_TLS_KEY = "tls.key";
 
-    return Completable
-      .merge(locationObs)
-      .observeOn(Schedulers.computation())
-      .andThen(Completable.fromRunnable(this::refreshKeyStoreBundle));
-  }
-
-  @Override
-  protected Flowable<Secret> watch() {
-    final List<Flowable<SecretEvent>> toWatch = resources
-      .keySet()
-      .stream()
-      .map(
-        location ->
-          kubernetesClient
-            .watch(location, SecretEvent.class)
-            .observeOn(Schedulers.computation())
-            .repeat()
-            .retryWhen(
-              errors -> errors.delay(RETRY_DELAY_MILLIS, TimeUnit.MILLISECONDS)
-            )
-      )
-      .collect(Collectors.toList());
-
-    return Flowable
-      .merge(toWatch)
-      .filter(event -> event.getType().equalsIgnoreCase("MODIFIED"))
-      .map(SecretEvent::getObject);
-  }
-
-  @Override
-  protected Completable loadKeyStore(Secret secret) {
-    final Map<String, String> data = secret.getData();
-    final KeyStore keyStore;
-
-    if (secret.getType().equals(KUBERNETES_TLS_SECRET)) {
-      keyStore =
-        KeyStoreUtils.initFromPem(
-          new String(Base64.getDecoder().decode(data.get(KUBERNETES_TLS_CRT))),
-          new String(Base64.getDecoder().decode(data.get(KUBERNETES_TLS_KEY))),
-          options.getKeyStorePassword(),
-          secret.getMetadata().getName()
-        );
-    } else if (secret.getType().equals(KUBERNETES_OPAQUE_SECRET)) {
-      if (options.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)) {
-        return Completable.error(
-          new IllegalArgumentException(
-            "Pem format is not supported with opaque secret, use kubernetes tls secret instead."
-          )
-        );
-      } else {
-        final Optional<KubernetesResource> optResource = resources
-          .values()
-          .stream()
-          .filter(
-            r ->
-              r
-                .getNamespace()
-                .equalsIgnoreCase(secret.getMetadata().getNamespace()) &&
-              (
-                secret.getType().equalsIgnoreCase(KUBERNETES_OPAQUE_SECRET) ||
-                r.getType().value().equalsIgnoreCase(secret.getType())
-              ) &&
-              r.getName().equalsIgnoreCase(secret.getMetadata().getName())
-          )
-          .findFirst();
-
-        if (optResource.isEmpty()) {
-          return Completable.error(
-            new IllegalArgumentException(
-              "Unable to load keystore: unknown secret."
-            )
-          );
-        } else if (
-          optResource.get().getKey() == null ||
-          optResource.get().getKey().isEmpty()
-        ) {
-          return Completable.error(
-            new IllegalArgumentException(
-              "You must specify a data when using opaque secret (ex: /my-namespace/secrets/my-secret/my-keystore)."
-            )
-          );
-        }
-
-        keyStore =
-          KeyStoreUtils.initFromContent(
-            options.getKeyStoreType(),
-            data.get(optResource.get().getKey()),
-            options.getKeyStorePassword()
-          );
-      }
-    } else {
-      return Completable.error(
-        new IllegalArgumentException(
-          String.format("Invalid secret type [%s]", secret.getType())
-        )
-      );
+    public KubernetesSecretKeyStoreLoader(KeyStoreLoaderOptions options, KubernetesClient kubernetesClient) {
+        super(options, kubernetesClient);
+        prepareLocations();
     }
 
-    keyStoresByLocation.put(secret.getMetadata().getUid(), keyStore);
-    return Completable.complete();
-  }
+    private void prepareLocations() {
+        this.options.getKubernetesLocations()
+            .forEach(location -> {
+                final Matcher matcher = SECRET_OPAQUE_PATTERN.matcher(location);
+                if (matcher.matches()) {
+                    this.resources.put(matcher.group(1), new KubernetesResource(location));
+                } else {
+                    this.resources.put(location, new KubernetesResource(location));
+                }
+            });
+    }
+
+    public static boolean canHandle(KeyStoreLoaderOptions options) {
+        final List<String> kubernetesLocations = options.getKubernetesLocations();
+
+        return (
+            kubernetesLocations != null &&
+            !kubernetesLocations.isEmpty() &&
+            SUPPORTED_TYPES.contains(options.getKeyStoreType().toLowerCase()) &&
+            kubernetesLocations.stream().allMatch(location -> SECRET_PATTERN.matcher(location).matches())
+        );
+    }
+
+    @Override
+    protected Completable init() {
+        final List<Completable> locationObs = resources
+            .keySet()
+            .stream()
+            .map(location ->
+                kubernetesClient.get(location, Secret.class).observeOn(Schedulers.computation()).flatMapCompletable(this::loadKeyStore)
+            )
+            .collect(Collectors.toList());
+
+        return Completable
+            .merge(locationObs)
+            .observeOn(Schedulers.computation())
+            .andThen(Completable.fromRunnable(this::refreshKeyStoreBundle));
+    }
+
+    @Override
+    protected Flowable<Secret> watch() {
+        final List<Flowable<SecretEvent>> toWatch = resources
+            .keySet()
+            .stream()
+            .map(location ->
+                kubernetesClient
+                    .watch(location, SecretEvent.class)
+                    .observeOn(Schedulers.computation())
+                    .repeat()
+                    .retryWhen(errors -> errors.delay(RETRY_DELAY_MILLIS, TimeUnit.MILLISECONDS))
+            )
+            .collect(Collectors.toList());
+
+        return Flowable.merge(toWatch).filter(event -> event.getType().equalsIgnoreCase("MODIFIED")).map(SecretEvent::getObject);
+    }
+
+    @Override
+    protected Completable loadKeyStore(Secret secret) {
+        final Map<String, String> data = secret.getData();
+        final KeyStore keyStore;
+
+        if (secret.getType().equals(KUBERNETES_TLS_SECRET)) {
+            keyStore =
+                KeyStoreUtils.initFromPem(
+                    new String(Base64.getDecoder().decode(data.get(KUBERNETES_TLS_CRT))),
+                    new String(Base64.getDecoder().decode(data.get(KUBERNETES_TLS_KEY))),
+                    options.getKeyStorePassword(),
+                    secret.getMetadata().getName()
+                );
+        } else if (secret.getType().equals(KUBERNETES_OPAQUE_SECRET)) {
+            if (options.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)) {
+                return Completable.error(
+                    new IllegalArgumentException("Pem format is not supported with opaque secret, use kubernetes tls secret instead.")
+                );
+            } else {
+                final Optional<KubernetesResource> optResource = resources
+                    .values()
+                    .stream()
+                    .filter(r ->
+                        r.getNamespace().equalsIgnoreCase(secret.getMetadata().getNamespace()) &&
+                        (
+                            secret.getType().equalsIgnoreCase(KUBERNETES_OPAQUE_SECRET) ||
+                            r.getType().value().equalsIgnoreCase(secret.getType())
+                        ) &&
+                        r.getName().equalsIgnoreCase(secret.getMetadata().getName())
+                    )
+                    .findFirst();
+
+                if (optResource.isEmpty()) {
+                    return Completable.error(new IllegalArgumentException("Unable to load keystore: unknown secret."));
+                } else if (optResource.get().getKey() == null || optResource.get().getKey().isEmpty()) {
+                    return Completable.error(
+                        new IllegalArgumentException(
+                            "You must specify a data when using opaque secret (ex: /my-namespace/secrets/my-secret/my-keystore)."
+                        )
+                    );
+                }
+
+                keyStore =
+                    KeyStoreUtils.initFromContent(
+                        options.getKeyStoreType(),
+                        data.get(optResource.get().getKey()),
+                        options.getKeyStorePassword()
+                    );
+            }
+        } else {
+            return Completable.error(new IllegalArgumentException(String.format("Invalid secret type [%s]", secret.getType())));
+        }
+
+        keyStoresByLocation.put(secret.getMetadata().getUid(), keyStore);
+        return Completable.complete();
+    }
 }

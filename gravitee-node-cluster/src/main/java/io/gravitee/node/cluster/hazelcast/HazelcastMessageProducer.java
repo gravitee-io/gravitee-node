@@ -27,12 +27,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class HazelcastMessageProducer implements MessageProducer {
 
-  @Autowired
-  private HazelcastInstance hazelcastInstance;
+    @Autowired
+    private HazelcastInstance hazelcastInstance;
 
-  @Override
-  public <E> Topic<E> getTopic(String name) {
-    ITopic<E> iTopic = hazelcastInstance.getTopic(name);
-    return new HazelcastTopic<>(iTopic);
-  }
+    @Override
+    public <E> Topic<E> getTopic(String name) {
+        ITopic<E> iTopic = hazelcastInstance.getTopic(name);
+        return new HazelcastTopic<>(iTopic);
+    }
 }

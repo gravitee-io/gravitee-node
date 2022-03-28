@@ -24,106 +24,106 @@ import java.util.Objects;
  */
 public class NotificationDefinition {
 
-  /**
-   * Resource concerned by the definition
-   */
-  private String resourceId;
-  /**
-   * Resource Type concerned by the definition
-   */
-  private String resourceType;
-  /**
-   * UserId targeted by the notification
-   */
-  private String audienceId;
-  /**
-   * Plugin Notifier configuration
-   */
-  private String configuration;
-  /**
-   * Type of notifier (plugin id)
-   */
-  private String type;
-  /**
-   * Cron expression used to evaluate the rule
-   */
-  private String cron;
-  /**
-   * Context used to evaluate the rule
-   */
-  private Map<String, Object> data;
+    /**
+     * Resource concerned by the definition
+     */
+    private String resourceId;
+    /**
+     * Resource Type concerned by the definition
+     */
+    private String resourceType;
+    /**
+     * UserId targeted by the notification
+     */
+    private String audienceId;
+    /**
+     * Plugin Notifier configuration
+     */
+    private String configuration;
+    /**
+     * Type of notifier (plugin id)
+     */
+    private String type;
+    /**
+     * Cron expression used to evaluate the rule
+     */
+    private String cron;
+    /**
+     * Context used to evaluate the rule
+     */
+    private Map<String, Object> data;
 
-  public String getResourceId() {
-    return resourceId;
-  }
+    public String getResourceId() {
+        return resourceId;
+    }
 
-  public void setResourceId(String resourceId) {
-    this.resourceId = resourceId;
-  }
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
+    }
 
-  public String getResourceType() {
-    return resourceType;
-  }
+    public String getResourceType() {
+        return resourceType;
+    }
 
-  public void setResourceType(String resourceType) {
-    this.resourceType = resourceType;
-  }
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
+    }
 
-  public String getAudienceId() {
-    return audienceId;
-  }
+    public String getAudienceId() {
+        return audienceId;
+    }
 
-  public void setAudienceId(String audienceId) {
-    this.audienceId = audienceId;
-  }
+    public void setAudienceId(String audienceId) {
+        this.audienceId = audienceId;
+    }
 
-  public String getConfiguration() {
-    return configuration;
-  }
+    public String getConfiguration() {
+        return configuration;
+    }
 
-  public void setConfiguration(String configuration) {
-    this.configuration = configuration;
-  }
+    public void setConfiguration(String configuration) {
+        this.configuration = configuration;
+    }
 
-  public String getType() {
-    return type;
-  }
+    public String getType() {
+        return type;
+    }
 
-  public void setType(String type) {
-    this.type = type;
-  }
+    public void setType(String type) {
+        this.type = type;
+    }
 
-  public String getCron() {
-    return cron;
-  }
+    public String getCron() {
+        return cron;
+    }
 
-  public void setCron(String cron) {
-    this.cron = cron;
-  }
+    public void setCron(String cron) {
+        this.cron = cron;
+    }
 
-  public Map<String, Object> getData() {
-    return data;
-  }
+    public Map<String, Object> getData() {
+        return data;
+    }
 
-  public void setData(Map<String, Object> data) {
-    this.data = data;
-  }
+    public void setData(Map<String, Object> data) {
+        this.data = data;
+    }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof NotificationDefinition)) return false;
-    NotificationDefinition that = (NotificationDefinition) o;
-    return (
-      Objects.equals(resourceId, that.resourceId) &&
-      Objects.equals(resourceType, that.resourceType) &&
-      Objects.equals(audienceId, that.audienceId) &&
-      Objects.equals(type, that.type)
-    );
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof NotificationDefinition)) return false;
+        NotificationDefinition that = (NotificationDefinition) o;
+        return (
+            Objects.equals(resourceId, that.resourceId) &&
+            Objects.equals(resourceType, that.resourceType) &&
+            Objects.equals(audienceId, that.audienceId) &&
+            Objects.equals(type, that.type)
+        );
+    }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(resourceId, resourceType, audienceId, type);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(resourceId, resourceType, audienceId, type);
+    }
 }

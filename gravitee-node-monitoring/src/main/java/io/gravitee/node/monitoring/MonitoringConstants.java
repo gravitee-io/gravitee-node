@@ -20,15 +20,15 @@ package io.gravitee.node.monitoring;
  * @author GraviteeSource Team
  */
 public interface MonitoringConstants {
-  String PROPERTY_NODE_ID = "node.id";
-  String PROPERTY_NODE_HOSTNAME = "node.hostname";
-  String PROPERTY_NODE_APPLICATION = "node.application";
-  String PROPERTY_NODE_EVENT = "node.event";
-  String NODE_HEALTHCHECK = "NODE_HEALTHCHECK";
-  String NODE_HEARTBEAT = "NODE_HEARTBEAT";
-  String NODE_LIFECYCLE = "NODE_LIFECYCLE";
-  String NODE_EVENT_START = "NODE_START";
-  String NODE_EVENT_STOP = "NODE_STOP";
-  String PROPERTY_NODE_HEALTHY = "node.healthy";
-  String PROPERTY_PROBE_SUFFIX = "node.probe.";
+    String PROPERTY_NODE_ID = "node.id";
+    String PROPERTY_NODE_HOSTNAME = "node.hostname";
+    String PROPERTY_NODE_APPLICATION = "node.application";
+    String PROPERTY_NODE_EVENT = "node.event";
+    String NODE_HEALTHCHECK = "NODE_HEALTHCHECK";
+    String NODE_HEARTBEAT = "NODE_HEARTBEAT";
+    String NODE_LIFECYCLE = "NODE_LIFECYCLE";
+    String NODE_EVENT_START = "NODE_START";
+    String NODE_EVENT_STOP = "NODE_STOP";
+    String PROPERTY_NODE_HEALTHY = "node.healthy";
+    String PROPERTY_PROBE_SUFFIX = "node.probe.";
 }

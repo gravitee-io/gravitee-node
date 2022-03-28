@@ -28,28 +28,23 @@ import org.slf4j.LoggerFactory;
  */
 public class KubernetesKeyStoreLoaderFactory implements KeyStoreLoaderFactory {
 
-  private final KubernetesClient client;
+    private final KubernetesClient client;
 
-  public KubernetesKeyStoreLoaderFactory(KubernetesClient client) {
-    this.client = client;
-  }
-
-  public boolean canHandle(KeyStoreLoaderOptions options) {
-    return (
-      KubernetesConfigMapKeyStoreLoader.canHandle(options) ||
-      KubernetesSecretKeyStoreLoader.canHandle(options)
-    );
-  }
-
-  public KeyStoreLoader create(KeyStoreLoaderOptions options) {
-    if (KubernetesConfigMapKeyStoreLoader.canHandle(options)) {
-      return new KubernetesConfigMapKeyStoreLoader(options, client);
-    } else if (KubernetesSecretKeyStoreLoader.canHandle(options)) {
-      return new KubernetesSecretKeyStoreLoader(options, client);
+    public KubernetesKeyStoreLoaderFactory(KubernetesClient client) {
+        this.client = client;
     }
 
-    throw new IllegalArgumentException(
-      "Cannot found appropriate KubernetesKeyStoreLoaderFactory."
-    );
-  }
+    public boolean canHandle(KeyStoreLoaderOptions options) {
+        return (KubernetesConfigMapKeyStoreLoader.canHandle(options) || KubernetesSecretKeyStoreLoader.canHandle(options));
+    }
+
+    public KeyStoreLoader create(KeyStoreLoaderOptions options) {
+        if (KubernetesConfigMapKeyStoreLoader.canHandle(options)) {
+            return new KubernetesConfigMapKeyStoreLoader(options, client);
+        } else if (KubernetesSecretKeyStoreLoader.canHandle(options)) {
+            return new KubernetesSecretKeyStoreLoader(options, client);
+        }
+
+        throw new IllegalArgumentException("Cannot found appropriate KubernetesKeyStoreLoaderFactory.");
+    }
 }

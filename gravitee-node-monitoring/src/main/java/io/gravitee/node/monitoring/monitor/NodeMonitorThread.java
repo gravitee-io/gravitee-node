@@ -40,85 +40,71 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class NodeMonitorThread implements Runnable {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-    NodeMonitorThread.class
-  );
+    private static final Logger LOGGER = LoggerFactory.getLogger(NodeMonitorThread.class);
 
-  private final MessageProducer<Monitor> producer;
+    private final MessageProducer<Monitor> producer;
 
-  public NodeMonitorThread(final MessageProducer<Monitor> producer) {
-    this.producer = producer;
-  }
-
-  @Autowired
-  private Node node;
-
-  @Autowired
-  private AlertEventProducer eventProducer;
-
-  @Override
-  public void run() {
-    try {
-      Monitor monitor = Monitor
-        .on(node.id())
-        .at(System.currentTimeMillis())
-        .os(OsProbe.getInstance().osInfo())
-        .jvm(JvmProbe.getInstance().jvmInfo())
-        .process(ProcessProbe.getInstance().processInfo())
-        .build();
-
-      // And generate monitoring metrics
-      producer.write(monitor);
-
-      if (!eventProducer.isEmpty()) {
-        DefaultEvent.Builder event = Event
-          .at(monitor.getTimestamp())
-          .type(NODE_HEARTBEAT);
-
-        event.property(PROPERTY_NODE_ID, node.id());
-        event.property(PROPERTY_NODE_HOSTNAME, node.hostname());
-        event.property(PROPERTY_NODE_APPLICATION, node.application());
-        event.organizations(
-          (Set<String>) node.metadata().get(Node.META_ORGANIZATIONS)
-        );
-        event.environments(
-          (Set<String>) node.metadata().get(Node.META_ENVIRONMENTS)
-        );
-
-        // OS metrics
-        OsInfo osInfo = monitor.getOs();
-        event.property("os.cpu.percent", osInfo.cpu.getPercent());
-        for (int i = 0; i < osInfo.cpu.getLoadAverage().length; i++) {
-          event.property("os.cpu.average." + i, osInfo.cpu.getLoadAverage()[i]);
-        }
-
-        // Process metrics
-        ProcessInfo processInfo = monitor.getProcess();
-        event.property("process.fd.open", processInfo.openFileDescriptors);
-        event.property("process.fd.max", processInfo.maxFileDescriptors);
-        event.property("process.cpu.percent", processInfo.cpu.percent);
-        event.property("process.cpu.total", processInfo.cpu.total);
-        event.property(
-          "process.mem.virtual.total",
-          processInfo.mem.totalVirtual
-        );
-
-        // JVM metrics
-        JvmInfo jvmInfo = monitor.getJvm();
-        event.property("jvm.uptime", jvmInfo.uptime);
-        event.property("jvm.threads.count", jvmInfo.threads.count);
-        event.property("jvm.threads.peak", jvmInfo.threads.peakCount);
-        event.property("jvm.mem.heap.used", jvmInfo.mem.heapUsed);
-        event.property("jvm.mem.heap.max", jvmInfo.mem.heapMax);
-        event.property(
-          "jvm.mem.heap.percent",
-          jvmInfo.mem.getHeapUsedPercent()
-        );
-
-        eventProducer.send(event.build());
-      }
-    } catch (Exception ex) {
-      LOGGER.error("Unexpected error occurs while monitoring the node", ex);
+    public NodeMonitorThread(final MessageProducer<Monitor> producer) {
+        this.producer = producer;
     }
-  }
+
+    @Autowired
+    private Node node;
+
+    @Autowired
+    private AlertEventProducer eventProducer;
+
+    @Override
+    public void run() {
+        try {
+            Monitor monitor = Monitor
+                .on(node.id())
+                .at(System.currentTimeMillis())
+                .os(OsProbe.getInstance().osInfo())
+                .jvm(JvmProbe.getInstance().jvmInfo())
+                .process(ProcessProbe.getInstance().processInfo())
+                .build();
+
+            // And generate monitoring metrics
+            producer.write(monitor);
+
+            if (!eventProducer.isEmpty()) {
+                DefaultEvent.Builder event = Event.at(monitor.getTimestamp()).type(NODE_HEARTBEAT);
+
+                event.property(PROPERTY_NODE_ID, node.id());
+                event.property(PROPERTY_NODE_HOSTNAME, node.hostname());
+                event.property(PROPERTY_NODE_APPLICATION, node.application());
+                event.organizations((Set<String>) node.metadata().get(Node.META_ORGANIZATIONS));
+                event.environments((Set<String>) node.metadata().get(Node.META_ENVIRONMENTS));
+
+                // OS metrics
+                OsInfo osInfo = monitor.getOs();
+                event.property("os.cpu.percent", osInfo.cpu.getPercent());
+                for (int i = 0; i < osInfo.cpu.getLoadAverage().length; i++) {
+                    event.property("os.cpu.average." + i, osInfo.cpu.getLoadAverage()[i]);
+                }
+
+                // Process metrics
+                ProcessInfo processInfo = monitor.getProcess();
+                event.property("process.fd.open", processInfo.openFileDescriptors);
+                event.property("process.fd.max", processInfo.maxFileDescriptors);
+                event.property("process.cpu.percent", processInfo.cpu.percent);
+                event.property("process.cpu.total", processInfo.cpu.total);
+                event.property("process.mem.virtual.total", processInfo.mem.totalVirtual);
+
+                // JVM metrics
+                JvmInfo jvmInfo = monitor.getJvm();
+                event.property("jvm.uptime", jvmInfo.uptime);
+                event.property("jvm.threads.count", jvmInfo.threads.count);
+                event.property("jvm.threads.peak", jvmInfo.threads.peakCount);
+                event.property("jvm.mem.heap.used", jvmInfo.mem.heapUsed);
+                event.property("jvm.mem.heap.max", jvmInfo.mem.heapMax);
+                event.property("jvm.mem.heap.percent", jvmInfo.mem.getHeapUsedPercent());
+
+                eventProducer.send(event.build());
+            }
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error occurs while monitoring the node", ex);
+        }
+    }
 }

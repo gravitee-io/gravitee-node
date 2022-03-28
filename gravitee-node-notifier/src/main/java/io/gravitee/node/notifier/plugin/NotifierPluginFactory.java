@@ -24,5 +24,5 @@ import java.util.Optional;
  * @author GraviteeSource Team
  */
 public interface NotifierPluginFactory {
-  Optional<Notifier> create(NotificationDefinition notification);
+    Optional<Notifier> create(NotificationDefinition notification);
 }

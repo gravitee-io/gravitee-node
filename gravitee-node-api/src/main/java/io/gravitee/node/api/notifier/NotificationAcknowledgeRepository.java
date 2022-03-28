@@ -24,22 +24,18 @@ import io.reactivex.Single;
  * @author GraviteeSource Team
  */
 public interface NotificationAcknowledgeRepository {
-  Maybe<NotificationAcknowledge> findById(String id);
+    Maybe<NotificationAcknowledge> findById(String id);
 
-  Maybe<NotificationAcknowledge> findByResourceIdAndTypeAndAudienceId(
-    String resourceId,
-    String resourceType,
-    String type,
-    String audienceId
-  );
+    Maybe<NotificationAcknowledge> findByResourceIdAndTypeAndAudienceId(
+        String resourceId,
+        String resourceType,
+        String type,
+        String audienceId
+    );
 
-  Single<NotificationAcknowledge> create(
-    NotificationAcknowledge notificationAcknowledge
-  );
+    Single<NotificationAcknowledge> create(NotificationAcknowledge notificationAcknowledge);
 
-  Single<NotificationAcknowledge> update(
-    NotificationAcknowledge notificationAcknowledge
-  );
+    Single<NotificationAcknowledge> update(NotificationAcknowledge notificationAcknowledge);
 
-  Completable deleteByResourceId(String resourceId, String resourceType);
+    Completable deleteByResourceId(String resourceId, String resourceType);
 }

@@ -46,103 +46,88 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class KubernetesConfigMapKeyStoreLoaderTest {
 
-  @Mock
-  private KubernetesClient kubernetesClient;
+    @Mock
+    private KubernetesClient kubernetesClient;
 
-  private KubernetesConfigMapKeyStoreLoader cut;
+    private KubernetesConfigMapKeyStoreLoader cut;
 
-  @Test
-  public void shouldLoadConfigMap() throws IOException, KeyStoreException {
-    final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-      .builder()
-      .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-      .withKubernetesLocations(
-        Collections.singletonList("/gio/configmaps/my-configmap/keystore")
-      )
-      .withKeyStorePassword("secret")
-      .withWatch(false)
-      .build();
+    @Test
+    public void shouldLoadConfigMap() throws IOException, KeyStoreException {
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
+            .builder()
+            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .withKubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
+            .withKeyStorePassword("secret")
+            .withWatch(false)
+            .build();
 
-    cut = new KubernetesConfigMapKeyStoreLoader(options, kubernetesClient);
+        cut = new KubernetesConfigMapKeyStoreLoader(options, kubernetesClient);
 
-    final ConfigMap configMap = new ConfigMap();
+        final ConfigMap configMap = new ConfigMap();
 
-    final HashMap<String, String> data = new HashMap<>();
-    data.put("keystore", readContent("localhost.p12"));
-    configMap.setBinaryData(data);
+        final HashMap<String, String> data = new HashMap<>();
+        data.put("keystore", readContent("localhost.p12"));
+        configMap.setBinaryData(data);
 
-    final ObjectMeta metadata = new ObjectMeta();
-    metadata.setName("my-configmap");
-    metadata.setUid("/namespaces/gio/configmaps/my-configmap");
-    metadata.setNamespace("gio");
-    configMap.setMetadata(metadata);
+        final ObjectMeta metadata = new ObjectMeta();
+        metadata.setName("my-configmap");
+        metadata.setUid("/namespaces/gio/configmaps/my-configmap");
+        metadata.setNamespace("gio");
+        configMap.setMetadata(metadata);
 
-    Mockito
-      .when(
-        kubernetesClient.get("/gio/configmaps/my-configmap", ConfigMap.class)
-      )
-      .thenReturn(Maybe.just(configMap));
+        Mockito.when(kubernetesClient.get("/gio/configmaps/my-configmap", ConfigMap.class)).thenReturn(Maybe.just(configMap));
 
-    AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(null);
-    cut.addListener(bundleRef::set);
-    cut.start();
+        AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(null);
+        cut.addListener(bundleRef::set);
+        cut.start();
 
-    final KeyStoreBundle keyStoreBundle = bundleRef.get();
+        final KeyStoreBundle keyStoreBundle = bundleRef.get();
 
-    assertNotNull(keyStoreBundle);
-    assertEquals(1, keyStoreBundle.getKeyStore().size());
-  }
+        assertNotNull(keyStoreBundle);
+        assertEquals(1, keyStoreBundle.getKeyStore().size());
+    }
 
-  @Test
-  public void shouldLoadConfigMapFromData()
-    throws IOException, KeyStoreException {
-    final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-      .builder()
-      .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-      .withKubernetesLocations(
-        Collections.singletonList("/gio/configmaps/my-configmap/keystore")
-      )
-      .withKeyStorePassword("secret")
-      .withWatch(false)
-      .build();
+    @Test
+    public void shouldLoadConfigMapFromData() throws IOException, KeyStoreException {
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
+            .builder()
+            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .withKubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
+            .withKeyStorePassword("secret")
+            .withWatch(false)
+            .build();
 
-    cut = new KubernetesConfigMapKeyStoreLoader(options, kubernetesClient);
+        cut = new KubernetesConfigMapKeyStoreLoader(options, kubernetesClient);
 
-    final ConfigMap configMap = new ConfigMap();
+        final ConfigMap configMap = new ConfigMap();
 
-    final HashMap<String, String> data = new HashMap<>();
-    data.put("keystore", readContent("localhost.p12"));
-    configMap.setData(data);
+        final HashMap<String, String> data = new HashMap<>();
+        data.put("keystore", readContent("localhost.p12"));
+        configMap.setData(data);
 
-    final ObjectMeta metadata = new ObjectMeta();
-    metadata.setName("my-configmap");
-    metadata.setUid("/namespaces/gio/configmaps/my-configmap");
-    metadata.setNamespace("gio");
-    configMap.setMetadata(metadata);
+        final ObjectMeta metadata = new ObjectMeta();
+        metadata.setName("my-configmap");
+        metadata.setUid("/namespaces/gio/configmaps/my-configmap");
+        metadata.setNamespace("gio");
+        configMap.setMetadata(metadata);
 
-    Mockito
-      .when(
-        kubernetesClient.get("/gio/configmaps/my-configmap", ConfigMap.class)
-      )
-      .thenReturn(Maybe.just(configMap));
+        Mockito.when(kubernetesClient.get("/gio/configmaps/my-configmap", ConfigMap.class)).thenReturn(Maybe.just(configMap));
 
-    AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(null);
-    cut.addListener(bundleRef::set);
-    cut.start();
+        AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(null);
+        cut.addListener(bundleRef::set);
+        cut.start();
 
-    final KeyStoreBundle keyStoreBundle = bundleRef.get();
+        final KeyStoreBundle keyStoreBundle = bundleRef.get();
 
-    assertNotNull(keyStoreBundle);
-    assertEquals(1, keyStoreBundle.getKeyStore().size());
-  }
+        assertNotNull(keyStoreBundle);
+        assertEquals(1, keyStoreBundle.getKeyStore().size());
+    }
 
-  private String readContent(String resource) throws IOException {
-    return java.util.Base64
-      .getEncoder()
-      .encodeToString(Files.readAllBytes(new File(getPath(resource)).toPath()));
-  }
+    private String readContent(String resource) throws IOException {
+        return java.util.Base64.getEncoder().encodeToString(Files.readAllBytes(new File(getPath(resource)).toPath()));
+    }
 
-  private String getPath(String resource) {
-    return this.getClass().getResource("/keystores/" + resource).getPath();
-  }
+    private String getPath(String resource) {
+        return this.getClass().getResource("/keystores/" + resource).getPath();
+    }
 }

@@ -22,22 +22,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class ClusterService extends AbstractService<ClusterService> {
 
-  @Autowired
-  private ClusterManager clusterManager;
+    @Autowired
+    private ClusterManager clusterManager;
 
-  @Autowired
-  private Node node;
+    @Autowired
+    private Node node;
 
-  @Override
-  public ClusterService postStart() throws Exception {
-    node.metadata().put("node.id", node.id());
-    node.metadata().put("node.hostname", node.hostname());
+    @Override
+    public ClusterService postStart() throws Exception {
+        node.metadata().put("node.id", node.id());
+        node.metadata().put("node.hostname", node.hostname());
 
-    return this;
-  }
+        return this;
+    }
 
-  @Override
-  protected void doStop() throws Exception {
-    clusterManager.stop();
-  }
+    @Override
+    protected void doStop() throws Exception {
+        clusterManager.stop();
+    }
 }

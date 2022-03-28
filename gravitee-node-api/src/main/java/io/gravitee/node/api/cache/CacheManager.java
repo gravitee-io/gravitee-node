@@ -20,12 +20,9 @@ package io.gravitee.node.api.cache;
  * @author GraviteeSource Team
  */
 public interface CacheManager {
-  <K, V> Cache<K, V> getOrCreateCache(String name);
+    <K, V> Cache<K, V> getOrCreateCache(String name);
 
-  <K, V> Cache<K, V> getOrCreateCache(
-    String name,
-    CacheConfiguration configuration
-  );
+    <K, V> Cache<K, V> getOrCreateCache(String name, CacheConfiguration configuration);
 
-  void destroy(String name);
+    void destroy(String name);
 }

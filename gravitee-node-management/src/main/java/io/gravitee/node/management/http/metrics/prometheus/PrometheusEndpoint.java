@@ -27,20 +27,19 @@ import io.vertx.micrometer.backends.BackendRegistries;
  */
 public class PrometheusEndpoint implements ManagementEndpoint {
 
-  @Override
-  public HttpMethod method() {
-    return HttpMethod.GET;
-  }
+    @Override
+    public HttpMethod method() {
+        return HttpMethod.GET;
+    }
 
-  @Override
-  public String path() {
-    return "/metrics/prometheus";
-  }
+    @Override
+    public String path() {
+        return "/metrics/prometheus";
+    }
 
-  @Override
-  public void handle(RoutingContext routingContext) {
-    String response =
-      ((PrometheusMeterRegistry) BackendRegistries.getDefaultNow()).scrape();
-    routingContext.response().end(response);
-  }
+    @Override
+    public void handle(RoutingContext routingContext) {
+        String response = ((PrometheusMeterRegistry) BackendRegistries.getDefaultNow()).scrape();
+        routingContext.response().end(response);
+    }
 }

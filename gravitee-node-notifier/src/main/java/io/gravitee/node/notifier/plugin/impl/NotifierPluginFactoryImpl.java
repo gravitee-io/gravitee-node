@@ -47,221 +47,154 @@ import org.springframework.util.ClassUtils;
  */
 public class NotifierPluginFactoryImpl implements NotifierPluginFactory {
 
-  private final Logger logger = LoggerFactory.getLogger(
-    NotifierPluginFactoryImpl.class
-  );
+    private final Logger logger = LoggerFactory.getLogger(NotifierPluginFactoryImpl.class);
 
-  @Autowired
-  private ConfigurablePluginManager<NotifierPlugin> notifierManager;
+    @Autowired
+    private ConfigurablePluginManager<NotifierPlugin> notifierManager;
 
-  @Autowired
-  private NotifierPluginConfigurationFactory notifierConfigurationFactory;
+    @Autowired
+    private NotifierPluginConfigurationFactory notifierConfigurationFactory;
 
-  @Autowired
-  private NotifierClassLoaderFactory notifierClassLoaderFactory;
+    @Autowired
+    private NotifierClassLoaderFactory notifierClassLoaderFactory;
 
-  @Autowired
-  private ApplicationContext applicationContext;
+    @Autowired
+    private ApplicationContext applicationContext;
 
-  @Override
-  public Optional<Notifier> create(NotificationDefinition notification) {
-    logger.debug(
-      "Create a new notifier instance for {}",
-      notification.getType()
-    );
-    NotifierPlugin plugin = notifierManager.get(notification.getType());
+    @Override
+    public Optional<Notifier> create(NotificationDefinition notification) {
+        logger.debug("Create a new notifier instance for {}", notification.getType());
+        NotifierPlugin plugin = notifierManager.get(notification.getType());
 
-    if (plugin == null) {
-      logger.error(
-        "No notifier plugin is available to handle notification's type: {}",
-        notification.getType()
-      );
-      return Optional.empty();
+        if (plugin == null) {
+            logger.error("No notifier plugin is available to handle notification's type: {}", notification.getType());
+            return Optional.empty();
+        }
+
+        PluginClassLoader notifierClassLoader = notifierClassLoaderFactory.getOrCreateClassLoader(plugin);
+
+        try {
+            NotifierConfiguration configuration = notifierConfigurationFactory.create(
+                (Class<? extends NotifierConfiguration>) ClassUtils.forName(plugin.configuration().getName(), notifierClassLoader),
+                notification.getConfiguration()
+            );
+
+            return Optional.ofNullable(
+                create((Class<? extends Notifier>) ClassUtils.forName(plugin.clazz(), notifierClassLoader), configuration)
+            );
+        } catch (ClassNotFoundException e) {
+            logger.error("Unable to instantiate the class {}", plugin.clazz(), e);
+        }
+
+        return Optional.empty();
     }
 
-    PluginClassLoader notifierClassLoader = notifierClassLoaderFactory.getOrCreateClassLoader(
-      plugin
-    );
+    private <C extends NotifierConfiguration> Notifier create(Class<? extends Notifier> notifierClass, C notifierConfiguration) {
+        Notifier notifierInst = null;
 
-    try {
-      NotifierConfiguration configuration = notifierConfigurationFactory.create(
-        (Class<? extends NotifierConfiguration>) ClassUtils.forName(
-          plugin.configuration().getName(),
-          notifierClassLoader
-        ),
-        notification.getConfiguration()
-      );
+        Constructor<? extends Notifier> constr = lookingForConstructor(notifierClass);
 
-      return Optional.ofNullable(
-        create(
-          (Class<? extends Notifier>) ClassUtils.forName(
-            plugin.clazz(),
-            notifierClassLoader
-          ),
-          configuration
-        )
-      );
-    } catch (ClassNotFoundException e) {
-      logger.error("Unable to instantiate the class {}", plugin.clazz(), e);
+        if (constr != null) {
+            try {
+                notifierInst = constr.newInstance(notifierConfiguration);
+            } catch (IllegalAccessException | InstantiationException | InvocationTargetException ex) {
+                logger.error("Unable to instantiate notifier {}", notifierClass, ex);
+            }
+        }
+
+        if (notifierInst != null) {
+            applicationContext.getAutowireCapableBeanFactory().autowireBean(notifierInst);
+
+            if (notifierInst instanceof ApplicationContextAware) {
+                ((ApplicationContextAware) notifierInst).setApplicationContext(applicationContext);
+            }
+
+            Set<Field> fields = lookingForInjectableFields(notifierClass);
+            if (fields != null) {
+                for (Field field : fields) {
+                    boolean accessible = field.isAccessible();
+                    Map<Class<?>, Object> injectables = new HashMap<>();
+                    injectables.put(notifierConfiguration.getClass(), notifierConfiguration);
+
+                    Class<?> type = field.getType();
+                    Optional<?> value = injectables.values().stream().filter(o -> type.isAssignableFrom(o.getClass())).findFirst();
+
+                    if (value.isPresent()) {
+                        logger.debug("Inject value into field {} [{}] in {}", field.getName(), type.getName(), notifierClass);
+                        try {
+                            field.setAccessible(true);
+                            field.set(notifierInst, value.get());
+                        } catch (IllegalAccessException iae) {
+                            logger.error("Unable to set field value for {} in {}", field.getName(), notifierClass, iae);
+                        } finally {
+                            field.setAccessible(accessible);
+                        }
+                    }
+                }
+            }
+        }
+
+        return notifierInst;
     }
 
-    return Optional.empty();
-  }
+    private Constructor<? extends Notifier> lookingForConstructor(Class<? extends Notifier> notifierClass) {
+        logger.debug("Looking for a constructor to inject notifier configuration");
+        Constructor<? extends Notifier> constructor = null;
 
-  private <C extends NotifierConfiguration> Notifier create(
-    Class<? extends Notifier> notifierClass,
-    C notifierConfiguration
-  ) {
-    Notifier notifierInst = null;
+        Set<Constructor> resourceConstructors = ReflectionUtils.getConstructors(
+            notifierClass,
+            withModifier(Modifier.PUBLIC),
+            withParametersAssignableFrom(NotifierConfiguration.class),
+            withParametersCount(1)
+        );
 
-    Constructor<? extends Notifier> constr = lookingForConstructor(
-      notifierClass
-    );
-
-    if (constr != null) {
-      try {
-        notifierInst = constr.newInstance(notifierConfiguration);
-      } catch (
-        IllegalAccessException
-        | InstantiationException
-        | InvocationTargetException ex
-      ) {
-        logger.error("Unable to instantiate notifier {}", notifierClass, ex);
-      }
-    }
-
-    if (notifierInst != null) {
-      applicationContext
-        .getAutowireCapableBeanFactory()
-        .autowireBean(notifierInst);
-
-      if (notifierInst instanceof ApplicationContextAware) {
-        ((ApplicationContextAware) notifierInst).setApplicationContext(
-            applicationContext
-          );
-      }
-
-      Set<Field> fields = lookingForInjectableFields(notifierClass);
-      if (fields != null) {
-        for (Field field : fields) {
-          boolean accessible = field.isAccessible();
-          Map<Class<?>, Object> injectables = new HashMap<>();
-          injectables.put(
-            notifierConfiguration.getClass(),
-            notifierConfiguration
-          );
-
-          Class<?> type = field.getType();
-          Optional<?> value = injectables
-            .values()
-            .stream()
-            .filter(o -> type.isAssignableFrom(o.getClass()))
-            .findFirst();
-
-          if (value.isPresent()) {
+        if (resourceConstructors.isEmpty()) {
             logger.debug(
-              "Inject value into field {} [{}] in {}",
-              field.getName(),
-              type.getName(),
-              notifierClass
+                "No configuration can be injected for {} because there is no valid constructor. " + "Using default empty constructor.",
+                notifierClass.getName()
             );
             try {
-              field.setAccessible(true);
-              field.set(notifierInst, value.get());
-            } catch (IllegalAccessException iae) {
-              logger.error(
-                "Unable to set field value for {} in {}",
-                field.getName(),
-                notifierClass,
-                iae
-              );
-            } finally {
-              field.setAccessible(accessible);
+                constructor = notifierClass.getConstructor();
+            } catch (NoSuchMethodException nsme) {
+                logger.error("Unable to find default empty constructor for {}", notifierClass.getName(), nsme);
             }
-          }
+        } else if (resourceConstructors.size() == 1) {
+            constructor = resourceConstructors.iterator().next();
+        } else {
+            logger.info("Too much constructors to instantiate notifier {}", notifierClass.getName());
         }
-      }
+
+        return constructor;
     }
 
-    return notifierInst;
-  }
-
-  private Constructor<? extends Notifier> lookingForConstructor(
-    Class<? extends Notifier> notifierClass
-  ) {
-    logger.debug("Looking for a constructor to inject notifier configuration");
-    Constructor<? extends Notifier> constructor = null;
-
-    Set<Constructor> resourceConstructors = ReflectionUtils.getConstructors(
-      notifierClass,
-      withModifier(Modifier.PUBLIC),
-      withParametersAssignableFrom(NotifierConfiguration.class),
-      withParametersCount(1)
-    );
-
-    if (resourceConstructors.isEmpty()) {
-      logger.debug(
-        "No configuration can be injected for {} because there is no valid constructor. " +
-        "Using default empty constructor.",
-        notifierClass.getName()
-      );
-      try {
-        constructor = notifierClass.getConstructor();
-      } catch (NoSuchMethodException nsme) {
-        logger.error(
-          "Unable to find default empty constructor for {}",
-          notifierClass.getName(),
-          nsme
-        );
-      }
-    } else if (resourceConstructors.size() == 1) {
-      constructor = resourceConstructors.iterator().next();
-    } else {
-      logger.info(
-        "Too much constructors to instantiate notifier {}",
-        notifierClass.getName()
-      );
+    private Set<Field> lookingForInjectableFields(Class<?> resourceClass) {
+        return ReflectionUtils.getAllFields(resourceClass, withAnnotation(Inject.class));
     }
 
-    return constructor;
-  }
-
-  private Set<Field> lookingForInjectableFields(Class<?> resourceClass) {
-    return ReflectionUtils.getAllFields(
-      resourceClass,
-      withAnnotation(Inject.class)
-    );
-  }
-
-  public static Predicate<Member> withParametersAssignableFrom(
-    final Class... types
-  ) {
-    return input -> {
-      if (input != null) {
-        Class<?>[] parameterTypes = parameterTypes(input);
-        if (parameterTypes.length == types.length) {
-          for (int i = 0; i < parameterTypes.length; i++) {
-            if (
-              !types[i].isAssignableFrom(parameterTypes[i]) ||
-              (parameterTypes[i] == Object.class && types[i] != Object.class)
-            ) {
-              return false;
+    public static Predicate<Member> withParametersAssignableFrom(final Class... types) {
+        return input -> {
+            if (input != null) {
+                Class<?>[] parameterTypes = parameterTypes(input);
+                if (parameterTypes.length == types.length) {
+                    for (int i = 0; i < parameterTypes.length; i++) {
+                        if (
+                            !types[i].isAssignableFrom(parameterTypes[i]) || (parameterTypes[i] == Object.class && types[i] != Object.class)
+                        ) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
             }
-          }
-          return true;
-        }
-      }
-      return false;
-    };
-  }
+            return false;
+        };
+    }
 
-  private static Class[] parameterTypes(Member member) {
-    return member != null
-      ? member.getClass() == Method.class
-        ? ((Method) member).getParameterTypes()
-        : member.getClass() == Constructor.class
-          ? ((Constructor) member).getParameterTypes()
-          : null
-      : null;
-  }
+    private static Class[] parameterTypes(Member member) {
+        return member != null
+            ? member.getClass() == Method.class
+                ? ((Method) member).getParameterTypes()
+                : member.getClass() == Constructor.class ? ((Constructor) member).getParameterTypes() : null
+            : null;
+    }
 }

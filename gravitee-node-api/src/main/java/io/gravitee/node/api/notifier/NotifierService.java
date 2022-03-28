@@ -31,47 +31,38 @@ import io.reactivex.Completable;
  * @author GraviteeSource Team
  */
 public interface NotifierService {
-  /**
-   * Register a notification in memory.
-   *
-   * @param definition Bean that contains all the settings to instantiate the notifier
-   * @param condition Rule evaluate to determine if the notification has to be triggered for the first time
-   * @param resendCondition Rule evaluate to determine if the notification has to be triggered another time
-   */
-  void register(
-    NotificationDefinition definition,
-    NotificationCondition condition,
-    ResendNotificationCondition resendCondition
-  );
+    /**
+     * Register a notification in memory.
+     *
+     * @param definition Bean that contains all the settings to instantiate the notifier
+     * @param condition Rule evaluate to determine if the notification has to be triggered for the first time
+     * @param resendCondition Rule evaluate to determine if the notification has to be triggered another time
+     */
+    void register(NotificationDefinition definition, NotificationCondition condition, ResendNotificationCondition resendCondition);
 
-  /**
-   * Remove the notification trigger identified by the given parameters
-   *
-   * @param resourceId resourceId for which the notification has been created
-   * @param resourceType the type of resource
-   * @param type the type of notification (ex: email, mebhook...)
-   * @param audienceId the identifier of the notification audience.
-   */
-  void unregister(
-    String resourceId,
-    String resourceType,
-    String type,
-    String audienceId
-  );
+    /**
+     * Remove the notification trigger identified by the given parameters
+     *
+     * @param resourceId resourceId for which the notification has been created
+     * @param resourceType the type of resource
+     * @param type the type of notification (ex: email, mebhook...)
+     * @param audienceId the identifier of the notification audience.
+     */
+    void unregister(String resourceId, String resourceType, String type, String audienceId);
 
-  /**
-   * Remove all the triggers for a given resource
-   *
-   * @param resourceId resourceId for which the notification has been created
-   * @param resourceType the type of resource
-   */
-  void unregisterAll(String resourceId, String resourceType);
+    /**
+     * Remove all the triggers for a given resource
+     *
+     * @param resourceId resourceId for which the notification has been created
+     * @param resourceType the type of resource
+     */
+    void unregisterAll(String resourceId, String resourceType);
 
-  /**
-   * Remove all acknowledge entries for the given resource.
-   * @param resourceId
-   * @param resourceType
-   * @return
-   */
-  Completable deleteAcknowledge(String resourceId, String resourceType);
+    /**
+     * Remove all acknowledge entries for the given resource.
+     * @param resourceId
+     * @param resourceType
+     * @return
+     */
+    Completable deleteAcknowledge(String resourceId, String resourceType);
 }

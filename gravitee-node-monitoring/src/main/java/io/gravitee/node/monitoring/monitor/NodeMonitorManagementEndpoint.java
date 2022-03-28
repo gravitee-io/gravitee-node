@@ -39,48 +39,44 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class NodeMonitorManagementEndpoint implements ManagementEndpoint {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-    NodeMonitorManagementEndpoint.class
-  );
+    private static final Logger LOGGER = LoggerFactory.getLogger(NodeMonitorManagementEndpoint.class);
 
-  @Autowired
-  private ObjectMapper mapper;
+    @Autowired
+    private ObjectMapper mapper;
 
-  @Override
-  public HttpMethod method() {
-    return HttpMethod.GET;
-  }
-
-  @Override
-  public String path() {
-    return "/monitor";
-  }
-
-  @Override
-  public void handle(RoutingContext context) {
-    HttpServerResponse response = context.response();
-    try {
-      ObjectNode root = mapper.createObjectNode();
-
-      JsonNode os = mapper.valueToTree(OsProbe.getInstance().osInfo());
-      JsonNode jvm = mapper.valueToTree(JvmProbe.getInstance().jvmInfo());
-      JsonNode process = mapper.valueToTree(
-        ProcessProbe.getInstance().processInfo()
-      );
-
-      root.set("os", os);
-      root.set("jvm", jvm);
-      root.set("process", process);
-
-      response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-      response.setChunked(true);
-      response.write(mapper.writeValueAsString(root));
-      response.setStatusCode(HttpStatusCode.OK_200);
-    } catch (JsonProcessingException e) {
-      LOGGER.error("Unexpected error while generating monitoring", e);
-      response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+    @Override
+    public HttpMethod method() {
+        return HttpMethod.GET;
     }
 
-    response.end();
-  }
+    @Override
+    public String path() {
+        return "/monitor";
+    }
+
+    @Override
+    public void handle(RoutingContext context) {
+        HttpServerResponse response = context.response();
+        try {
+            ObjectNode root = mapper.createObjectNode();
+
+            JsonNode os = mapper.valueToTree(OsProbe.getInstance().osInfo());
+            JsonNode jvm = mapper.valueToTree(JvmProbe.getInstance().jvmInfo());
+            JsonNode process = mapper.valueToTree(ProcessProbe.getInstance().processInfo());
+
+            root.set("os", os);
+            root.set("jvm", jvm);
+            root.set("process", process);
+
+            response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+            response.setChunked(true);
+            response.write(mapper.writeValueAsString(root));
+            response.setStatusCode(HttpStatusCode.OK_200);
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Unexpected error while generating monitoring", e);
+            response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+        }
+
+        response.end();
+    }
 }

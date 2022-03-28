@@ -21,5 +21,4 @@ import java.util.function.Predicate;
  * @author Eric LELEU (eric.leleu at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface NotificationCondition
-  extends Predicate<NotificationDefinition> {}
+public interface NotificationCondition extends Predicate<NotificationDefinition> {}

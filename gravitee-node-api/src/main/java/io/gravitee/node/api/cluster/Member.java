@@ -22,13 +22,13 @@ import java.util.Map;
  * @author GraviteeSource Team
  */
 public interface Member {
-  String uuid();
+    String uuid();
 
-  boolean master();
+    boolean master();
 
-  String host();
+    String host();
 
-  Map<String, String> attributes();
+    Map<String, String> attributes();
 
-  Member attribute(String key, String value);
+    Member attribute(String key, String value);
 }

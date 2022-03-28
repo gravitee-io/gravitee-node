@@ -31,88 +31,69 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class HazelcastCacheManager implements CacheManager {
 
-  private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<>();
 
-  private final HazelcastInstance hazelcastInstance;
+    private final HazelcastInstance hazelcastInstance;
 
-  public HazelcastCacheManager(HazelcastInstance hazelcastInstance) {
-    this.hazelcastInstance = hazelcastInstance;
-  }
-
-  @Override
-  public <K, V> Cache<K, V> getOrCreateCache(String name) {
-    return getOrCreateCache(name, new CacheConfiguration());
-  }
-
-  @Override
-  public <K, V> Cache<K, V> getOrCreateCache(
-    String name,
-    CacheConfiguration configuration
-  ) {
-    return caches.computeIfAbsent(
-      name,
-      s -> {
-        // First, configure the cache using Hazelcast config
-        configureCache(s, configuration);
-
-        // Then create the cache entity
-        return new HazelcastCache<>(
-          hazelcastInstance.getMap(name),
-          configuration
-        );
-      }
-    );
-  }
-
-  @Override
-  public void destroy(String name) {
-    Cache cache = caches.remove(name);
-    if (cache != null) {
-      cache.clear();
+    public HazelcastCacheManager(HazelcastInstance hazelcastInstance) {
+        this.hazelcastInstance = hazelcastInstance;
     }
-  }
 
-  private void configureCache(String name, CacheConfiguration configuration) {
-    Config config = hazelcastInstance.getConfig();
-
-    if (config != null && !config.getMapConfigs().containsKey(name)) {
-      MapConfig resourceConfig = new MapConfig(name);
-
-      // Cache is standalone, no backup wanted.
-      resourceConfig.setAsyncBackupCount(0);
-      resourceConfig.setBackupCount(0);
-
-      if (configuration.getMaxSize() > 0) {
-        resourceConfig
-          .getEvictionConfig()
-          .setSize((int) configuration.getMaxSize());
-      }
-
-      if (
-        resourceConfig
-          .getEvictionConfig()
-          .getEvictionPolicy()
-          .equals(EvictionPolicy.NONE)
-      ) {
-        // Set "Least Recently Used" eviction policy if not have eviction configured
-        resourceConfig
-          .getEvictionConfig()
-          .setEvictionPolicy(EvictionPolicy.LRU);
-      }
-
-      if (configuration.getTimeToIdleSeconds() > 0) {
-        resourceConfig.setMaxIdleSeconds(
-          (int) configuration.getTimeToIdleSeconds()
-        );
-      }
-
-      if (configuration.getTimeToLiveSeconds() > 0) {
-        resourceConfig.setTimeToLiveSeconds(
-          (int) configuration.getTimeToLiveSeconds()
-        );
-      }
-
-      config.addMapConfig(resourceConfig);
+    @Override
+    public <K, V> Cache<K, V> getOrCreateCache(String name) {
+        return getOrCreateCache(name, new CacheConfiguration());
     }
-  }
+
+    @Override
+    public <K, V> Cache<K, V> getOrCreateCache(String name, CacheConfiguration configuration) {
+        return caches.computeIfAbsent(
+            name,
+            s -> {
+                // First, configure the cache using Hazelcast config
+                configureCache(s, configuration);
+
+                // Then create the cache entity
+                return new HazelcastCache<>(hazelcastInstance.getMap(name), configuration);
+            }
+        );
+    }
+
+    @Override
+    public void destroy(String name) {
+        Cache cache = caches.remove(name);
+        if (cache != null) {
+            cache.clear();
+        }
+    }
+
+    private void configureCache(String name, CacheConfiguration configuration) {
+        Config config = hazelcastInstance.getConfig();
+
+        if (config != null && !config.getMapConfigs().containsKey(name)) {
+            MapConfig resourceConfig = new MapConfig(name);
+
+            // Cache is standalone, no backup wanted.
+            resourceConfig.setAsyncBackupCount(0);
+            resourceConfig.setBackupCount(0);
+
+            if (configuration.getMaxSize() > 0) {
+                resourceConfig.getEvictionConfig().setSize((int) configuration.getMaxSize());
+            }
+
+            if (resourceConfig.getEvictionConfig().getEvictionPolicy().equals(EvictionPolicy.NONE)) {
+                // Set "Least Recently Used" eviction policy if not have eviction configured
+                resourceConfig.getEvictionConfig().setEvictionPolicy(EvictionPolicy.LRU);
+            }
+
+            if (configuration.getTimeToIdleSeconds() > 0) {
+                resourceConfig.setMaxIdleSeconds((int) configuration.getTimeToIdleSeconds());
+            }
+
+            if (configuration.getTimeToLiveSeconds() > 0) {
+                resourceConfig.setTimeToLiveSeconds((int) configuration.getTimeToLiveSeconds());
+            }
+
+            config.addMapConfig(resourceConfig);
+        }
+    }
 }

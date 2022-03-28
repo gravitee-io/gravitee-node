@@ -25,18 +25,15 @@ import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
  */
 public class SelfSignedKeyStoreLoaderFactory implements KeyStoreLoaderFactory {
 
-  @Override
-  public boolean canHandle(KeyStoreLoaderOptions options) {
-    return (
-      options.getKeyStoreType() != null &&
-      options
-        .getKeyStoreType()
-        .equalsIgnoreCase(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED)
-    );
-  }
+    @Override
+    public boolean canHandle(KeyStoreLoaderOptions options) {
+        return (
+            options.getKeyStoreType() != null && options.getKeyStoreType().equalsIgnoreCase(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED)
+        );
+    }
 
-  @Override
-  public KeyStoreLoader create(KeyStoreLoaderOptions options) {
-    return new SelfSignedKeyStoreLoader(options);
-  }
+    @Override
+    public KeyStoreLoader create(KeyStoreLoaderOptions options) {
+        return new SelfSignedKeyStoreLoader(options);
+    }
 }

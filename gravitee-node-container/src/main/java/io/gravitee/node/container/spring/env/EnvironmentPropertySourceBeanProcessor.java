@@ -29,54 +29,35 @@ import org.springframework.core.env.StandardEnvironment;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class EnvironmentPropertySourceBeanProcessor
-  implements BeanFactoryPostProcessor, Ordered {
+public class EnvironmentPropertySourceBeanProcessor implements BeanFactoryPostProcessor, Ordered {
 
-  private static final String[] PROPERTY_PREFIXES = new String[] {
-    "gravitee.",
-    "gravitee_",
-    "GRAVITEE.",
-    "GRAVITEE_",
-  };
-  private final Environment environment;
-  private final ApplicationContext applicationContext;
+    private static final String[] PROPERTY_PREFIXES = new String[] { "gravitee.", "gravitee_", "GRAVITEE.", "GRAVITEE_" };
+    private final Environment environment;
+    private final ApplicationContext applicationContext;
 
-  EnvironmentPropertySourceBeanProcessor(
-    Environment environment,
-    ApplicationContext applicationContext
-  ) {
-    this.environment = environment;
-    this.applicationContext = applicationContext;
-  }
+    EnvironmentPropertySourceBeanProcessor(Environment environment, ApplicationContext applicationContext) {
+        this.environment = environment;
+        this.applicationContext = applicationContext;
+    }
 
-  @Override
-  public int getOrder() {
-    return Ordered.HIGHEST_PRECEDENCE;
-  }
+    @Override
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE;
+    }
 
-  @Override
-  public void postProcessBeanFactory(
-    ConfigurableListableBeanFactory beanFactory
-  ) {
-    Map<String, Object> source = new ConcurrentHashMap<>();
-    ((StandardEnvironment) environment).getSystemEnvironment()
-      .forEach(
-        (key, value) -> {
-          for (String propertyPrefix : PROPERTY_PREFIXES) {
-            if (key.startsWith(propertyPrefix)) {
-              source.put(key.substring(propertyPrefix.length()), value);
-            }
-          }
-        }
-      );
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+        Map<String, Object> source = new ConcurrentHashMap<>();
+        ((StandardEnvironment) environment).getSystemEnvironment()
+            .forEach((key, value) -> {
+                for (String propertyPrefix : PROPERTY_PREFIXES) {
+                    if (key.startsWith(propertyPrefix)) {
+                        source.put(key.substring(propertyPrefix.length()), value);
+                    }
+                }
+            });
 
-    ((ConfigurableEnvironment) environment).getPropertySources()
-      .addFirst(
-        new GraviteeEnvironmentPropertySource(
-          "graviteeEnvironmentPropertySource",
-          source,
-          applicationContext
-        )
-      );
-  }
+        ((ConfigurableEnvironment) environment).getPropertySources()
+            .addFirst(new GraviteeEnvironmentPropertySource("graviteeEnvironmentPropertySource", source, applicationContext));
+    }
 }

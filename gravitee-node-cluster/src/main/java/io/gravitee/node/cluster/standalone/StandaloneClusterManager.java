@@ -29,51 +29,51 @@ import java.util.Map;
  */
 public class StandaloneClusterManager implements ClusterManager {
 
-  private static final Member localMember = new Member() {
+    private static final Member localMember = new Member() {
+        @Override
+        public String uuid() {
+            return UUID.random().toString();
+        }
+
+        @Override
+        public boolean master() {
+            return true;
+        }
+
+        @Override
+        public String host() {
+            return "localhost";
+        }
+
+        @Override
+        public Map<String, String> attributes() {
+            return Collections.emptyMap();
+        }
+
+        @Override
+        public Member attribute(String key, String value) {
+            return null;
+        }
+    };
+
     @Override
-    public String uuid() {
-      return UUID.random().toString();
+    public Collection<Member> getMembers() {
+        return Collections.singleton(localMember);
     }
 
     @Override
-    public boolean master() {
-      return true;
+    public Member getLocalMember() {
+        return localMember;
     }
 
     @Override
-    public String host() {
-      return "localhost";
+    public boolean isMasterNode() {
+        return true;
     }
 
     @Override
-    public Map<String, String> attributes() {
-      return Collections.emptyMap();
-    }
+    public void addMemberListener(MemberListener listener) {}
 
     @Override
-    public Member attribute(String key, String value) {
-      return null;
-    }
-  };
-
-  @Override
-  public Collection<Member> getMembers() {
-    return Collections.singleton(localMember);
-  }
-
-  @Override
-  public Member getLocalMember() {
-    return localMember;
-  }
-
-  @Override
-  public boolean isMasterNode() {
-    return true;
-  }
-
-  @Override
-  public void addMemberListener(MemberListener listener) {}
-
-  @Override
-  public void stop() {}
+    public void stop() {}
 }

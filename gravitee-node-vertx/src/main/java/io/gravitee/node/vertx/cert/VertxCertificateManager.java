@@ -24,19 +24,19 @@ import io.vertx.core.net.KeyCertOptions;
  */
 public class VertxCertificateManager extends BaseCertificateManager {
 
-  private final KeyCertOptions keyCertOptions;
+    private final KeyCertOptions keyCertOptions;
 
-  public VertxCertificateManager(boolean enableSni) {
-    super(enableSni);
-    this.keyCertOptions = KeyCertOptions.wrap(keyManager);
-  }
+    public VertxCertificateManager(boolean enableSni) {
+        super(enableSni);
+        this.keyCertOptions = KeyCertOptions.wrap(keyManager);
+    }
 
-  /**
-   * Get the corresponding {@link KeyCertOptions} that can be used to configure a vertx server.
-   *
-   * @return a {@link KeyCertOptions}.
-   */
-  public KeyCertOptions getKeyCertOptions() {
-    return keyCertOptions;
-  }
+    /**
+     * Get the corresponding {@link KeyCertOptions} that can be used to configure a vertx server.
+     *
+     * @return a {@link KeyCertOptions}.
+     */
+    public KeyCertOptions getKeyCertOptions() {
+        return keyCertOptions;
+    }
 }

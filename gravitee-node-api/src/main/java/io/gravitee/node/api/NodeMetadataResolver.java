@@ -22,5 +22,5 @@ import java.util.Map;
  * @author GraviteeSource Team
  */
 public interface NodeMetadataResolver {
-  public Map<String, Object> resolve();
+    public Map<String, Object> resolve();
 }

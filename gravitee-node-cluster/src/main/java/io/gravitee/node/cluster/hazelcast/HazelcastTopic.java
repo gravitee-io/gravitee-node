@@ -27,29 +27,24 @@ import java.util.UUID;
  */
 public class HazelcastTopic<T> implements Topic<T> {
 
-  private final ITopic<T> iTopic;
+    private final ITopic<T> iTopic;
 
-  public HazelcastTopic(ITopic<T> iTopic) {
-    this.iTopic = iTopic;
-  }
+    public HazelcastTopic(ITopic<T> iTopic) {
+        this.iTopic = iTopic;
+    }
 
-  @Override
-  public void publish(T event) {
-    iTopic.publish(event);
-  }
+    @Override
+    public void publish(T event) {
+        iTopic.publish(event);
+    }
 
-  @Override
-  public UUID addMessageConsumer(MessageConsumer<T> messageConsumer) {
-    return iTopic.addMessageListener(
-      message ->
-        messageConsumer.onMessage(
-          new Message<>(iTopic.getName(), message.getMessageObject())
-        )
-    );
-  }
+    @Override
+    public UUID addMessageConsumer(MessageConsumer<T> messageConsumer) {
+        return iTopic.addMessageListener(message -> messageConsumer.onMessage(new Message<>(iTopic.getName(), message.getMessageObject())));
+    }
 
-  @Override
-  public boolean removeMessageConsumer(UUID uuid) {
-    return iTopic.removeMessageListener(uuid);
-  }
+    @Override
+    public boolean removeMessageConsumer(UUID uuid) {
+        return iTopic.removeMessageListener(uuid);
+    }
 }

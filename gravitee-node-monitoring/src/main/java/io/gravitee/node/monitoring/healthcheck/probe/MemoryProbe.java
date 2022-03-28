@@ -27,35 +27,29 @@ import org.springframework.beans.factory.annotation.Value;
  */
 public class MemoryProbe implements Probe {
 
-  @Value("${services.health.threshold.memory:80}")
-  private int threshold;
+    @Value("${services.health.threshold.memory:80}")
+    private int threshold;
 
-  @Override
-  public String id() {
-    return "memory";
-  }
-
-  @Override
-  public boolean isVisibleByDefault() {
-    return false;
-  }
-
-  @Override
-  public CompletableFuture<Result> check() {
-    try {
-      return CompletableFuture.supplyAsync(
-        () ->
-          JvmProbe.getInstance().jvmInfo().mem.getHeapUsedPercent() < threshold
-            ? Result.healthy()
-            : Result.unhealthy(
-              String.format(
-                "Memory percent is over the threshold of %d %%",
-                threshold
-              )
-            )
-      );
-    } catch (Exception ex) {
-      return CompletableFuture.completedFuture(Result.unhealthy(ex));
+    @Override
+    public String id() {
+        return "memory";
     }
-  }
+
+    @Override
+    public boolean isVisibleByDefault() {
+        return false;
+    }
+
+    @Override
+    public CompletableFuture<Result> check() {
+        try {
+            return CompletableFuture.supplyAsync(() ->
+                JvmProbe.getInstance().jvmInfo().mem.getHeapUsedPercent() < threshold
+                    ? Result.healthy()
+                    : Result.unhealthy(String.format("Memory percent is over the threshold of %d %%", threshold))
+            );
+        } catch (Exception ex) {
+            return CompletableFuture.completedFuture(Result.unhealthy(ex));
+        }
+    }
 }

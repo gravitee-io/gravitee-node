@@ -28,51 +28,51 @@ import org.junit.Test;
  */
 public class SelfSignedKeyStoreLoaderFactoryTest {
 
-  private SelfSignedKeyStoreLoaderFactory cut;
+    private SelfSignedKeyStoreLoaderFactory cut;
 
-  @Before
-  public void before() {
-    cut = new SelfSignedKeyStoreLoaderFactory();
-  }
+    @Before
+    public void before() {
+        cut = new SelfSignedKeyStoreLoaderFactory();
+    }
 
-  @Test
-  public void shouldHandleOptionsWithSelfSigned() {
-    final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-      .builder()
-      .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED)
-      .withKeyStorePath(null)
-      .build();
+    @Test
+    public void shouldHandleOptionsWithSelfSigned() {
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
+            .builder()
+            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED)
+            .withKeyStorePath(null)
+            .build();
 
-    assertTrue(cut.canHandle(options));
-  }
+        assertTrue(cut.canHandle(options));
+    }
 
-  @Test
-  public void shouldNotHandleOptionsWithPKCS12() {
-    final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-      .builder()
-      .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-      .build();
+    @Test
+    public void shouldNotHandleOptionsWithPKCS12() {
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
+            .builder()
+            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .build();
 
-    assertFalse(cut.canHandle(options));
-  }
+        assertFalse(cut.canHandle(options));
+    }
 
-  @Test
-  public void shouldNotHandleOptionsWithJKS() {
-    final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-      .builder()
-      .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
-      .build();
+    @Test
+    public void shouldNotHandleOptionsWithJKS() {
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
+            .builder()
+            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
+            .build();
 
-    assertFalse(cut.canHandle(options));
-  }
+        assertFalse(cut.canHandle(options));
+    }
 
-  @Test
-  public void shouldNotHandleOptionsWithPEM() {
-    final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-      .builder()
-      .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
-      .build();
+    @Test
+    public void shouldNotHandleOptionsWithPEM() {
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
+            .builder()
+            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
+            .build();
 
-    assertFalse(cut.canHandle(options));
-  }
+        assertFalse(cut.canHandle(options));
+    }
 }

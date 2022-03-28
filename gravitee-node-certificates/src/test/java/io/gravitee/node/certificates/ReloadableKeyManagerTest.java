@@ -41,147 +41,101 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ReloadableKeyManagerTest {
 
-  @Mock
-  private SSLEngine sslEngine;
+    @Mock
+    private SSLEngine sslEngine;
 
-  @Mock
-  private ExtendedSSLSession sslSession;
+    @Mock
+    private ExtendedSSLSession sslSession;
 
-  private ReloadableKeyManager cut;
+    private ReloadableKeyManager cut;
 
-  @Before
-  public void before() {
-    cut = new ReloadableKeyManager();
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldNotLoadIfAliasUnknown() {
-    final KeyStore keyStore = KeyStoreUtils.initFromPath(
-      CERTIFICATE_FORMAT_PKCS12,
-      getPath("all-in-one.p12"),
-      "secret"
-    );
-
-    cut.load("unknown", keyStore, "secret", false);
-  }
-
-  @Test
-  public void shouldChooseDefaultAliasWhenNoSNI() {
-    final KeyStore keyStore = KeyStoreUtils.initFromPath(
-      CERTIFICATE_FORMAT_PKCS12,
-      getPath("all-in-one.p12"),
-      "secret"
-    );
-
-    cut.load("localhost", keyStore, "secret", false);
-
-    // No SNI, default alias is returned.
-    assertEquals(
-      "localhost",
-      cut.chooseEngineServerAlias("void", null, sslEngine)
-    );
-  }
-
-  @Test
-  public void shouldChooseWildcard() {
-    final KeyStore keyStore = KeyStoreUtils.initFromPath(
-      CERTIFICATE_FORMAT_PKCS12,
-      getPath("all-in-one.p12"),
-      "secret"
-    );
-
-    cut.load("localhost", keyStore, "secret", true);
-
-    when(sslEngine.getHandshakeSession()).thenReturn(sslSession);
-    when(sslSession.getRequestedServerNames())
-      .thenReturn(
-        Collections.singletonList(new SNIHostName("test.localhost.com"))
-      );
-
-    assertEquals(
-      "wildcard",
-      cut.chooseEngineServerAlias("void", null, sslEngine)
-    );
-
-    assertTrue(cut.getSniDomainAliases().containsKey("test.localhost.com"));
-  }
-
-  @Test
-  public void shouldFallbackToDefaultAliasIfUnknown() {
-    final KeyStore keyStore = KeyStoreUtils.initFromPath(
-      CERTIFICATE_FORMAT_PKCS12,
-      getPath("all-in-one.p12"),
-      "secret"
-    );
-
-    cut.load("localhost", keyStore, "secret", true);
-
-    when(sslEngine.getHandshakeSession()).thenReturn(sslSession);
-    when(sslSession.getRequestedServerNames())
-      .thenReturn(Collections.singletonList(new SNIHostName("unknown.com")));
-
-    assertEquals(
-      "localhost",
-      cut.chooseEngineServerAlias("void", null, sslEngine)
-    );
-  }
-
-  @Test
-  public void shouldFallbackToDefaultAliasIfNoServerName() {
-    final KeyStore keyStore = KeyStoreUtils.initFromPath(
-      CERTIFICATE_FORMAT_PKCS12,
-      getPath("all-in-one.p12"),
-      "secret"
-    );
-
-    cut.load("localhost", keyStore, "secret", true);
-
-    when(sslEngine.getHandshakeSession()).thenReturn(sslSession);
-    when(sslSession.getRequestedServerNames())
-      .thenReturn(Collections.emptyList());
-
-    assertEquals(
-      "localhost",
-      cut.chooseEngineServerAlias("void", null, sslEngine)
-    );
-  }
-
-  @Test
-  public void shouldStopCacheWhenCacheIsFull() {
-    final KeyStore keyStore = KeyStoreUtils.initFromPath(
-      CERTIFICATE_FORMAT_PKCS12,
-      getPath("all-in-one.p12"),
-      "secret"
-    );
-
-    cut.load("localhost", keyStore, "secret", true);
-
-    AtomicInteger counter = new AtomicInteger(0);
-
-    when(sslEngine.getHandshakeSession()).thenReturn(sslSession);
-    when(sslSession.getRequestedServerNames())
-      .thenAnswer(
-        i ->
-          Collections.singletonList(
-            new SNIHostName("unknown" + counter.getAndIncrement() + ".com")
-          )
-      );
-
-    // Populate the cache up to max size.
-    int numToFake = MAX_SNI_DOMAINS - cut.getSniDomainAliases().size();
-    for (int i = 0; i < numToFake; i++) {
-      cut.getSniDomainAliases().put("fake" + i, "fake");
+    @Before
+    public void before() {
+        cut = new ReloadableKeyManager();
     }
 
-    assertEquals(MAX_SNI_DOMAINS, cut.getSniDomainAliases().size());
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotLoadIfAliasUnknown() {
+        final KeyStore keyStore = KeyStoreUtils.initFromPath(CERTIFICATE_FORMAT_PKCS12, getPath("all-in-one.p12"), "secret");
 
-    // Try a new call
-    cut.chooseEngineServerAlias("void", null, sslEngine);
+        cut.load("unknown", keyStore, "secret", false);
+    }
 
-    assertEquals(MAX_SNI_DOMAINS, cut.getSniDomainAliases().size());
-  }
+    @Test
+    public void shouldChooseDefaultAliasWhenNoSNI() {
+        final KeyStore keyStore = KeyStoreUtils.initFromPath(CERTIFICATE_FORMAT_PKCS12, getPath("all-in-one.p12"), "secret");
 
-  private String getPath(String resource) {
-    return this.getClass().getResource("/keystores/" + resource).getPath();
-  }
+        cut.load("localhost", keyStore, "secret", false);
+
+        // No SNI, default alias is returned.
+        assertEquals("localhost", cut.chooseEngineServerAlias("void", null, sslEngine));
+    }
+
+    @Test
+    public void shouldChooseWildcard() {
+        final KeyStore keyStore = KeyStoreUtils.initFromPath(CERTIFICATE_FORMAT_PKCS12, getPath("all-in-one.p12"), "secret");
+
+        cut.load("localhost", keyStore, "secret", true);
+
+        when(sslEngine.getHandshakeSession()).thenReturn(sslSession);
+        when(sslSession.getRequestedServerNames()).thenReturn(Collections.singletonList(new SNIHostName("test.localhost.com")));
+
+        assertEquals("wildcard", cut.chooseEngineServerAlias("void", null, sslEngine));
+
+        assertTrue(cut.getSniDomainAliases().containsKey("test.localhost.com"));
+    }
+
+    @Test
+    public void shouldFallbackToDefaultAliasIfUnknown() {
+        final KeyStore keyStore = KeyStoreUtils.initFromPath(CERTIFICATE_FORMAT_PKCS12, getPath("all-in-one.p12"), "secret");
+
+        cut.load("localhost", keyStore, "secret", true);
+
+        when(sslEngine.getHandshakeSession()).thenReturn(sslSession);
+        when(sslSession.getRequestedServerNames()).thenReturn(Collections.singletonList(new SNIHostName("unknown.com")));
+
+        assertEquals("localhost", cut.chooseEngineServerAlias("void", null, sslEngine));
+    }
+
+    @Test
+    public void shouldFallbackToDefaultAliasIfNoServerName() {
+        final KeyStore keyStore = KeyStoreUtils.initFromPath(CERTIFICATE_FORMAT_PKCS12, getPath("all-in-one.p12"), "secret");
+
+        cut.load("localhost", keyStore, "secret", true);
+
+        when(sslEngine.getHandshakeSession()).thenReturn(sslSession);
+        when(sslSession.getRequestedServerNames()).thenReturn(Collections.emptyList());
+
+        assertEquals("localhost", cut.chooseEngineServerAlias("void", null, sslEngine));
+    }
+
+    @Test
+    public void shouldStopCacheWhenCacheIsFull() {
+        final KeyStore keyStore = KeyStoreUtils.initFromPath(CERTIFICATE_FORMAT_PKCS12, getPath("all-in-one.p12"), "secret");
+
+        cut.load("localhost", keyStore, "secret", true);
+
+        AtomicInteger counter = new AtomicInteger(0);
+
+        when(sslEngine.getHandshakeSession()).thenReturn(sslSession);
+        when(sslSession.getRequestedServerNames())
+            .thenAnswer(i -> Collections.singletonList(new SNIHostName("unknown" + counter.getAndIncrement() + ".com")));
+
+        // Populate the cache up to max size.
+        int numToFake = MAX_SNI_DOMAINS - cut.getSniDomainAliases().size();
+        for (int i = 0; i < numToFake; i++) {
+            cut.getSniDomainAliases().put("fake" + i, "fake");
+        }
+
+        assertEquals(MAX_SNI_DOMAINS, cut.getSniDomainAliases().size());
+
+        // Try a new call
+        cut.chooseEngineServerAlias("void", null, sslEngine);
+
+        assertEquals(MAX_SNI_DOMAINS, cut.getSniDomainAliases().size());
+    }
+
+    private String getPath(String resource) {
+        return this.getClass().getResource("/keystores/" + resource).getPath();
+    }
 }

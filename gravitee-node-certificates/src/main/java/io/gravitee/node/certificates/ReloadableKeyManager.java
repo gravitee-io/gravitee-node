@@ -36,176 +36,134 @@ import org.slf4j.LoggerFactory;
  */
 public class ReloadableKeyManager extends X509ExtendedKeyManager {
 
-  private static final Logger logger = LoggerFactory.getLogger(
-    ReloadableKeyManager.class
-  );
+    private static final Logger logger = LoggerFactory.getLogger(ReloadableKeyManager.class);
 
-  static final int MAX_SNI_DOMAINS = 10000;
+    static final int MAX_SNI_DOMAINS = 10000;
 
-  private String defaultAlias;
+    private String defaultAlias;
 
-  private Map<String, String> sniDomainAliases;
-  private volatile X509ExtendedKeyManager delegate;
-  private boolean enableSni;
+    private Map<String, String> sniDomainAliases;
+    private volatile X509ExtendedKeyManager delegate;
+    private boolean enableSni;
 
-  public void load(
-    String defaultAlias,
-    KeyStore keyStore,
-    String password,
-    boolean enableSni
-  ) {
-    try {
-      this.enableSni = enableSni;
+    public void load(String defaultAlias, KeyStore keyStore, String password, boolean enableSni) {
+        try {
+            this.enableSni = enableSni;
 
-      // If no alias is defined, get it from keystore.
-      if (defaultAlias == null) {
-        defaultAlias = KeyStoreUtils.getDefaultAlias(keyStore);
-      } else if (!keyStore.containsAlias(defaultAlias)) {
-        throw new IllegalArgumentException(
-          String.format(
-            "Unable to load keystore, default alias [%s] not present in the keystore.",
-            defaultAlias
-          )
-        );
-      }
+            // If no alias is defined, get it from keystore.
+            if (defaultAlias == null) {
+                defaultAlias = KeyStoreUtils.getDefaultAlias(keyStore);
+            } else if (!keyStore.containsAlias(defaultAlias)) {
+                throw new IllegalArgumentException(
+                    String.format("Unable to load keystore, default alias [%s] not present in the keystore.", defaultAlias)
+                );
+            }
 
-      KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(
-        KeyManagerFactory.getDefaultAlgorithm()
-      );
-      keyManagerFactory.init(
-        keyStore,
-        KeyStoreUtils.passwordToCharArray(password)
-      );
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            keyManagerFactory.init(keyStore, KeyStoreUtils.passwordToCharArray(password));
 
-      this.defaultAlias = defaultAlias;
+            this.defaultAlias = defaultAlias;
 
-      if (enableSni) {
-        // Try to pre-construct a list of domain -> alias to use for SNI.
-        this.sniDomainAliases =
-          new ConcurrentHashMap<>(
-            KeyStoreUtils.getCommonNamesByAlias(keyStore)
-          );
-      }
-      this.delegate =
-        (X509ExtendedKeyManager) keyManagerFactory.getKeyManagers()[0];
+            if (enableSni) {
+                // Try to pre-construct a list of domain -> alias to use for SNI.
+                this.sniDomainAliases = new ConcurrentHashMap<>(KeyStoreUtils.getCommonNamesByAlias(keyStore));
+            }
+            this.delegate = (X509ExtendedKeyManager) keyManagerFactory.getKeyManagers()[0];
 
-      logger.info(
-        "Key store has been (re)loaded with {} entries.",
-        keyStore.size()
-      );
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Unable to load keystore", e);
-    }
-  }
-
-  @Override
-  public String chooseEngineServerAlias(
-    String keyType,
-    Principal[] issuers,
-    SSLEngine engine
-  ) {
-    if (!enableSni) {
-      return defaultAlias;
+            logger.info("Key store has been (re)loaded with {} entries.", keyStore.size());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Unable to load keystore", e);
+        }
     }
 
-    final ExtendedSSLSession session = (ExtendedSSLSession) engine.getHandshakeSession();
-    final Optional<String> optionalSNIServerName = session
-      .getRequestedServerNames()
-      .stream()
-      .filter(name -> name.getType() == SNI_HOST_NAME)
-      .map(name -> ((SNIHostName) name).getAsciiName())
-      .findFirst();
+    @Override
+    public String chooseEngineServerAlias(String keyType, Principal[] issuers, SSLEngine engine) {
+        if (!enableSni) {
+            return defaultAlias;
+        }
 
-    if (optionalSNIServerName.isPresent()) {
-      final String hostname = optionalSNIServerName.get();
+        final ExtendedSSLSession session = (ExtendedSSLSession) engine.getHandshakeSession();
+        final Optional<String> optionalSNIServerName = session
+            .getRequestedServerNames()
+            .stream()
+            .filter(name -> name.getType() == SNI_HOST_NAME)
+            .map(name -> ((SNIHostName) name).getAsciiName())
+            .findFirst();
 
-      if (this.sniDomainAliases.containsKey(hostname)) {
-        return this.sniDomainAliases.get(hostname);
-      }
+        if (optionalSNIServerName.isPresent()) {
+            final String hostname = optionalSNIServerName.get();
 
-      // Try to find by wildcard.
-      final Optional<Map.Entry<String, String>> optCN = sniDomainAliases
-        .entrySet()
-        .stream()
-        .filter(e -> e.getKey().startsWith("*."))
-        .filter(e -> hostname.endsWith(e.getKey().substring(2)))
-        .findFirst();
+            if (this.sniDomainAliases.containsKey(hostname)) {
+                return this.sniDomainAliases.get(hostname);
+            }
 
-      if (optCN.isPresent()) {
-        final String alias = optCN.get().getValue();
-        cacheSniDomainAlias(hostname, alias);
-        return alias;
-      } else {
-        // Add the hostname to avoid future resolutions.
-        cacheSniDomainAlias(hostname, defaultAlias);
+            // Try to find by wildcard.
+            final Optional<Map.Entry<String, String>> optCN = sniDomainAliases
+                .entrySet()
+                .stream()
+                .filter(e -> e.getKey().startsWith("*."))
+                .filter(e -> hostname.endsWith(e.getKey().substring(2)))
+                .findFirst();
+
+            if (optCN.isPresent()) {
+                final String alias = optCN.get().getValue();
+                cacheSniDomainAlias(hostname, alias);
+                return alias;
+            } else {
+                // Add the hostname to avoid future resolutions.
+                cacheSniDomainAlias(hostname, defaultAlias);
+                return defaultAlias;
+            }
+        }
+
         return defaultAlias;
-      }
     }
 
-    return defaultAlias;
-  }
-
-  /**
-   * Cache the mapping between domain name and certificate alias.
-   * If the map is full, the cache put is ignored. This avoid to full the memory in case of dos attack on a lot of non unknown domain names.
-   */
-  private void cacheSniDomainAlias(String hostname, String alias) {
-    if (sniDomainAliases.size() < MAX_SNI_DOMAINS) {
-      this.sniDomainAliases.put(hostname, alias);
+    /**
+     * Cache the mapping between domain name and certificate alias.
+     * If the map is full, the cache put is ignored. This avoid to full the memory in case of dos attack on a lot of non unknown domain names.
+     */
+    private void cacheSniDomainAlias(String hostname, String alias) {
+        if (sniDomainAliases.size() < MAX_SNI_DOMAINS) {
+            this.sniDomainAliases.put(hostname, alias);
+        }
     }
-  }
 
-  @Override
-  public String[] getServerAliases(String keyType, Principal[] issuers) {
-    return delegate != null
-      ? delegate.getServerAliases(keyType, issuers)
-      : null;
-  }
+    @Override
+    public String[] getServerAliases(String keyType, Principal[] issuers) {
+        return delegate != null ? delegate.getServerAliases(keyType, issuers) : null;
+    }
 
-  @Override
-  public X509Certificate[] getCertificateChain(String alias) {
-    return delegate != null ? delegate.getCertificateChain(alias) : null;
-  }
+    @Override
+    public X509Certificate[] getCertificateChain(String alias) {
+        return delegate != null ? delegate.getCertificateChain(alias) : null;
+    }
 
-  @Override
-  public PrivateKey getPrivateKey(String alias) {
-    return delegate != null ? delegate.getPrivateKey(alias) : null;
-  }
+    @Override
+    public PrivateKey getPrivateKey(String alias) {
+        return delegate != null ? delegate.getPrivateKey(alias) : null;
+    }
 
-  @Override
-  public String[] getClientAliases(String keyType, Principal[] issuers) {
-    return delegate != null
-      ? delegate.getClientAliases(keyType, issuers)
-      : null;
-  }
+    @Override
+    public String[] getClientAliases(String keyType, Principal[] issuers) {
+        return delegate != null ? delegate.getClientAliases(keyType, issuers) : null;
+    }
 
-  @Override
-  public String chooseClientAlias(
-    String[] aliases,
-    Principal[] issuers,
-    Socket socket
-  ) {
-    return delegate != null
-      ? delegate.chooseClientAlias(aliases, issuers, socket)
-      : null;
-  }
+    @Override
+    public String chooseClientAlias(String[] aliases, Principal[] issuers, Socket socket) {
+        return delegate != null ? delegate.chooseClientAlias(aliases, issuers, socket) : null;
+    }
 
-  @Override
-  public String chooseServerAlias(
-    String alias,
-    Principal[] issuers,
-    Socket socket
-  ) {
-    return delegate != null
-      ? delegate.chooseServerAlias(alias, issuers, socket)
-      : null;
-  }
+    @Override
+    public String chooseServerAlias(String alias, Principal[] issuers, Socket socket) {
+        return delegate != null ? delegate.chooseServerAlias(alias, issuers, socket) : null;
+    }
 
-  Map<String, String> getSniDomainAliases() {
-    return sniDomainAliases;
-  }
+    Map<String, String> getSniDomainAliases() {
+        return sniDomainAliases;
+    }
 
-  void setSniDomainAliases(Map<String, String> sniDomainAliases) {
-    this.sniDomainAliases = sniDomainAliases;
-  }
+    void setSniDomainAliases(Map<String, String> sniDomainAliases) {
+        this.sniDomainAliases = sniDomainAliases;
+    }
 }

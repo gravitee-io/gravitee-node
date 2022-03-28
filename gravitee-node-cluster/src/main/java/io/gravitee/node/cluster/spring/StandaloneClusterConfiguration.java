@@ -32,36 +32,31 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 @Conditional(StandaloneClusterConfiguration.StandaloneModeEnabled.class)
 public class StandaloneClusterConfiguration {
 
-  @Bean("standaloneClusterManager")
-  public ClusterManager standaloneClusterManager() {
-    return new StandaloneClusterManager();
-  }
-
-  @Bean("standaloneCacheManager")
-  public CacheManager standaloneCacheManager() {
-    return new StandaloneCacheManager();
-  }
-
-  @Bean("standaloneMessageProducer")
-  public MessageProducer standaloneMessageProducer() {
-    return new StandaloneMessageProducer();
-  }
-
-  public static class StandaloneModeEnabled implements ConfigurationCondition {
-
-    @Override
-    public boolean matches(
-      ConditionContext conditionContext,
-      AnnotatedTypeMetadata annotatedTypeMetadata
-    ) {
-      return !conditionContext
-        .getEnvironment()
-        .getProperty("gravitee.cluster.enabled", Boolean.class, false);
+    @Bean("standaloneClusterManager")
+    public ClusterManager standaloneClusterManager() {
+        return new StandaloneClusterManager();
     }
 
-    @Override
-    public ConfigurationPhase getConfigurationPhase() {
-      return ConfigurationPhase.REGISTER_BEAN;
+    @Bean("standaloneCacheManager")
+    public CacheManager standaloneCacheManager() {
+        return new StandaloneCacheManager();
     }
-  }
+
+    @Bean("standaloneMessageProducer")
+    public MessageProducer standaloneMessageProducer() {
+        return new StandaloneMessageProducer();
+    }
+
+    public static class StandaloneModeEnabled implements ConfigurationCondition {
+
+        @Override
+        public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
+            return !conditionContext.getEnvironment().getProperty("gravitee.cluster.enabled", Boolean.class, false);
+        }
+
+        @Override
+        public ConfigurationPhase getConfigurationPhase() {
+            return ConfigurationPhase.REGISTER_BEAN;
+        }
+    }
 }

@@ -40,211 +40,196 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class NodeHealthCheckManagementEndpointTest {
 
-  @Mock
-  private NodeHealthCheckThread probeStatusRegistry;
+    @Mock
+    private NodeHealthCheckThread probeStatusRegistry;
 
-  @Mock
-  private RoutingContext routingContext;
+    @Mock
+    private RoutingContext routingContext;
 
-  @Mock
-  private MultiMap queryParams;
+    @Mock
+    private MultiMap queryParams;
 
-  private NodeHealthCheckManagementEndpoint nodeHealthCheckManagementEndpoint;
+    private NodeHealthCheckManagementEndpoint nodeHealthCheckManagementEndpoint;
 
-  @Mock
-  private HttpServerResponse httpServerResponse;
+    @Mock
+    private HttpServerResponse httpServerResponse;
 
-  @Before
-  public void setUp() {
-    nodeHealthCheckManagementEndpoint = new NodeHealthCheckManagementEndpoint();
-    nodeHealthCheckManagementEndpoint.setRegistry(probeStatusRegistry);
+    @Before
+    public void setUp() {
+        nodeHealthCheckManagementEndpoint = new NodeHealthCheckManagementEndpoint();
+        nodeHealthCheckManagementEndpoint.setRegistry(probeStatusRegistry);
 
-    when(routingContext.response()).thenReturn(httpServerResponse);
-  }
-
-  @Test
-  public void shouldNotFilterAllHealthy() throws Exception {
-    Map<Probe, Result> probeResultMap = fakeProbeResults(true);
-    when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
-    when(routingContext.queryParams()).thenReturn(queryParams);
-    when(queryParams.contains(any())).thenReturn(false);
-
-    ArgumentCaptor<Integer> statusCaptor = ArgumentCaptor.forClass(
-      Integer.class
-    );
-    ArgumentCaptor<String> writeCaptor = ArgumentCaptor.forClass(String.class);
-
-    nodeHealthCheckManagementEndpoint.handle(routingContext);
-
-    verify(httpServerResponse).setStatusCode(statusCaptor.capture());
-    assertThat((int) statusCaptor.getValue()).isEqualTo(HttpStatusCode.OK_200);
-    verify(httpServerResponse).write(writeCaptor.capture());
-
-    String expected =
-      "{\n" +
-      "  \"ratelimit-repository\" : {\n" +
-      "    \"healthy\" : true\n" +
-      "  },\n" +
-      "  \"management-repository\" : {\n" +
-      "    \"healthy\" : true\n" +
-      "  },\n" +
-      "  \"http-server\" : {\n" +
-      "    \"healthy\" : true\n" +
-      "  }\n" +
-      "}";
-
-    assertThat(writeCaptor.getValue()).isEqualTo(expected);
-  }
-
-  @Test
-  public void shouldNotFilterOneUnhealthyHealthy() throws Exception {
-    Map<Probe, Result> probeResultMap = fakeProbeResults(false);
-    when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
-    when(routingContext.queryParams()).thenReturn(queryParams);
-    when(queryParams.contains(any())).thenReturn(false);
-
-    ArgumentCaptor<Integer> statusCaptor = ArgumentCaptor.forClass(
-      Integer.class
-    );
-    ArgumentCaptor<String> writeCaptor = ArgumentCaptor.forClass(String.class);
-
-    nodeHealthCheckManagementEndpoint.handle(routingContext);
-
-    verify(httpServerResponse).setStatusCode(statusCaptor.capture());
-    assertThat((int) statusCaptor.getValue())
-      .isEqualTo(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
-    verify(httpServerResponse).write(writeCaptor.capture());
-
-    String expected =
-      "{\n" +
-      "  \"ratelimit-repository\" : {\n" +
-      "    \"healthy\" : false\n" +
-      "  },\n" +
-      "  \"management-repository\" : {\n" +
-      "    \"healthy\" : true\n" +
-      "  },\n" +
-      "  \"http-server\" : {\n" +
-      "    \"healthy\" : true\n" +
-      "  }\n" +
-      "}";
-
-    assertThat(writeCaptor.getValue()).isEqualTo(expected);
-  }
-
-  @Test
-  public void shouldFilterAllHealthy() throws Exception {
-    Map<Probe, Result> probeResultMap = fakeProbeResults(true);
-    when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
-    when(routingContext.queryParams()).thenReturn(queryParams);
-    when(queryParams.contains(any())).thenReturn(true);
-    when(queryParams.get(any()))
-      .thenReturn("ratelimit-repository,management-repository");
-
-    ArgumentCaptor<Integer> statusCaptor = ArgumentCaptor.forClass(
-      Integer.class
-    );
-    ArgumentCaptor<String> writeCaptor = ArgumentCaptor.forClass(String.class);
-
-    nodeHealthCheckManagementEndpoint.handle(routingContext);
-
-    verify(httpServerResponse).setStatusCode(statusCaptor.capture());
-    assertThat((int) statusCaptor.getValue()).isEqualTo(HttpStatusCode.OK_200);
-    verify(httpServerResponse).write(writeCaptor.capture());
-
-    String expected =
-      "{\n" +
-      "  \"ratelimit-repository\" : {\n" +
-      "    \"healthy\" : true\n" +
-      "  },\n" +
-      "  \"management-repository\" : {\n" +
-      "    \"healthy\" : true\n" +
-      "  }\n" +
-      "}";
-
-    assertThat(writeCaptor.getValue()).isEqualTo(expected);
-  }
-
-  @Test
-  public void shouldFilterByProbeId() throws Exception {
-    Map<Probe, Result> probeResultMap = fakeProbeResults(false);
-    when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
-    when(routingContext.queryParams()).thenReturn(queryParams);
-    when(queryParams.contains(any())).thenReturn(true);
-    when(queryParams.get(any()))
-      .thenReturn("ratelimit-repository,management-repository,cpu");
-
-    ArgumentCaptor<Integer> statusCaptor = ArgumentCaptor.forClass(
-      Integer.class
-    );
-    ArgumentCaptor<String> writeCaptor = ArgumentCaptor.forClass(String.class);
-
-    nodeHealthCheckManagementEndpoint.handle(routingContext);
-
-    verify(httpServerResponse).setStatusCode(statusCaptor.capture());
-    assertThat((int) statusCaptor.getValue())
-      .isEqualTo(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
-    verify(httpServerResponse).write(writeCaptor.capture());
-
-    String expected =
-      "{\n" +
-      "  \"ratelimit-repository\" : {\n" +
-      "    \"healthy\" : false\n" +
-      "  },\n" +
-      "  \"management-repository\" : {\n" +
-      "    \"healthy\" : true\n" +
-      "  },\n" +
-      "  \"cpu\" : {\n" +
-      "    \"healthy\" : true\n" +
-      "  }\n" +
-      "}";
-
-    assertThat(writeCaptor.getValue()).isEqualTo(expected);
-  }
-
-  private Map<Probe, Result> fakeProbeResults(boolean allHealthy) {
-    Map<Probe, Result> probesMap = new HashMap<>();
-    probesMap.put(new TestingProbe("http-server"), mockResult(true));
-    probesMap.put(new TestingProbe("management-repository"), mockResult(true));
-    probesMap.put(
-      new TestingProbe("ratelimit-repository"),
-      mockResult(allHealthy)
-    );
-    probesMap.put(new TestingProbe("cpu", false), mockResult(true));
-
-    return probesMap;
-  }
-
-  private Result mockResult(boolean isHealthy) {
-    return isHealthy ? Result.healthy() : Result.unhealthy((String) null);
-  }
-
-  private static class TestingProbe implements Probe {
-
-    private final String id;
-    private boolean isVisibleByDefault = true;
-
-    public TestingProbe(String id) {
-      this.id = id;
+        when(routingContext.response()).thenReturn(httpServerResponse);
     }
 
-    public TestingProbe(String id, boolean isVisibleByDefault) {
-      this.id = id;
-      this.isVisibleByDefault = isVisibleByDefault;
+    @Test
+    public void shouldNotFilterAllHealthy() throws Exception {
+        Map<Probe, Result> probeResultMap = fakeProbeResults(true);
+        when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
+        when(routingContext.queryParams()).thenReturn(queryParams);
+        when(queryParams.contains(any())).thenReturn(false);
+
+        ArgumentCaptor<Integer> statusCaptor = ArgumentCaptor.forClass(Integer.class);
+        ArgumentCaptor<String> writeCaptor = ArgumentCaptor.forClass(String.class);
+
+        nodeHealthCheckManagementEndpoint.handle(routingContext);
+
+        verify(httpServerResponse).setStatusCode(statusCaptor.capture());
+        assertThat((int) statusCaptor.getValue()).isEqualTo(HttpStatusCode.OK_200);
+        verify(httpServerResponse).write(writeCaptor.capture());
+
+        String expected =
+            "{\n" +
+            "  \"ratelimit-repository\" : {\n" +
+            "    \"healthy\" : true\n" +
+            "  },\n" +
+            "  \"management-repository\" : {\n" +
+            "    \"healthy\" : true\n" +
+            "  },\n" +
+            "  \"http-server\" : {\n" +
+            "    \"healthy\" : true\n" +
+            "  }\n" +
+            "}";
+
+        assertThat(writeCaptor.getValue()).isEqualTo(expected);
     }
 
-    @Override
-    public String id() {
-      return id;
+    @Test
+    public void shouldNotFilterOneUnhealthyHealthy() throws Exception {
+        Map<Probe, Result> probeResultMap = fakeProbeResults(false);
+        when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
+        when(routingContext.queryParams()).thenReturn(queryParams);
+        when(queryParams.contains(any())).thenReturn(false);
+
+        ArgumentCaptor<Integer> statusCaptor = ArgumentCaptor.forClass(Integer.class);
+        ArgumentCaptor<String> writeCaptor = ArgumentCaptor.forClass(String.class);
+
+        nodeHealthCheckManagementEndpoint.handle(routingContext);
+
+        verify(httpServerResponse).setStatusCode(statusCaptor.capture());
+        assertThat((int) statusCaptor.getValue()).isEqualTo(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+        verify(httpServerResponse).write(writeCaptor.capture());
+
+        String expected =
+            "{\n" +
+            "  \"ratelimit-repository\" : {\n" +
+            "    \"healthy\" : false\n" +
+            "  },\n" +
+            "  \"management-repository\" : {\n" +
+            "    \"healthy\" : true\n" +
+            "  },\n" +
+            "  \"http-server\" : {\n" +
+            "    \"healthy\" : true\n" +
+            "  }\n" +
+            "}";
+
+        assertThat(writeCaptor.getValue()).isEqualTo(expected);
     }
 
-    @Override
-    public boolean isVisibleByDefault() {
-      return this.isVisibleByDefault;
+    @Test
+    public void shouldFilterAllHealthy() throws Exception {
+        Map<Probe, Result> probeResultMap = fakeProbeResults(true);
+        when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
+        when(routingContext.queryParams()).thenReturn(queryParams);
+        when(queryParams.contains(any())).thenReturn(true);
+        when(queryParams.get(any())).thenReturn("ratelimit-repository,management-repository");
+
+        ArgumentCaptor<Integer> statusCaptor = ArgumentCaptor.forClass(Integer.class);
+        ArgumentCaptor<String> writeCaptor = ArgumentCaptor.forClass(String.class);
+
+        nodeHealthCheckManagementEndpoint.handle(routingContext);
+
+        verify(httpServerResponse).setStatusCode(statusCaptor.capture());
+        assertThat((int) statusCaptor.getValue()).isEqualTo(HttpStatusCode.OK_200);
+        verify(httpServerResponse).write(writeCaptor.capture());
+
+        String expected =
+            "{\n" +
+            "  \"ratelimit-repository\" : {\n" +
+            "    \"healthy\" : true\n" +
+            "  },\n" +
+            "  \"management-repository\" : {\n" +
+            "    \"healthy\" : true\n" +
+            "  }\n" +
+            "}";
+
+        assertThat(writeCaptor.getValue()).isEqualTo(expected);
     }
 
-    @Override
-    public CompletableFuture<Result> check() {
-      return null;
+    @Test
+    public void shouldFilterByProbeId() throws Exception {
+        Map<Probe, Result> probeResultMap = fakeProbeResults(false);
+        when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
+        when(routingContext.queryParams()).thenReturn(queryParams);
+        when(queryParams.contains(any())).thenReturn(true);
+        when(queryParams.get(any())).thenReturn("ratelimit-repository,management-repository,cpu");
+
+        ArgumentCaptor<Integer> statusCaptor = ArgumentCaptor.forClass(Integer.class);
+        ArgumentCaptor<String> writeCaptor = ArgumentCaptor.forClass(String.class);
+
+        nodeHealthCheckManagementEndpoint.handle(routingContext);
+
+        verify(httpServerResponse).setStatusCode(statusCaptor.capture());
+        assertThat((int) statusCaptor.getValue()).isEqualTo(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+        verify(httpServerResponse).write(writeCaptor.capture());
+
+        String expected =
+            "{\n" +
+            "  \"ratelimit-repository\" : {\n" +
+            "    \"healthy\" : false\n" +
+            "  },\n" +
+            "  \"management-repository\" : {\n" +
+            "    \"healthy\" : true\n" +
+            "  },\n" +
+            "  \"cpu\" : {\n" +
+            "    \"healthy\" : true\n" +
+            "  }\n" +
+            "}";
+
+        assertThat(writeCaptor.getValue()).isEqualTo(expected);
     }
-  }
+
+    private Map<Probe, Result> fakeProbeResults(boolean allHealthy) {
+        Map<Probe, Result> probesMap = new HashMap<>();
+        probesMap.put(new TestingProbe("http-server"), mockResult(true));
+        probesMap.put(new TestingProbe("management-repository"), mockResult(true));
+        probesMap.put(new TestingProbe("ratelimit-repository"), mockResult(allHealthy));
+        probesMap.put(new TestingProbe("cpu", false), mockResult(true));
+
+        return probesMap;
+    }
+
+    private Result mockResult(boolean isHealthy) {
+        return isHealthy ? Result.healthy() : Result.unhealthy((String) null);
+    }
+
+    private static class TestingProbe implements Probe {
+
+        private final String id;
+        private boolean isVisibleByDefault = true;
+
+        public TestingProbe(String id) {
+            this.id = id;
+        }
+
+        public TestingProbe(String id, boolean isVisibleByDefault) {
+            this.id = id;
+            this.isVisibleByDefault = isVisibleByDefault;
+        }
+
+        @Override
+        public String id() {
+            return id;
+        }
+
+        @Override
+        public boolean isVisibleByDefault() {
+            return this.isVisibleByDefault;
+        }
+
+        @Override
+        public CompletableFuture<Result> check() {
+            return null;
+        }
+    }
 }

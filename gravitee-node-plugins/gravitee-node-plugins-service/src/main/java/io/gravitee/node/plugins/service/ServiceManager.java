@@ -23,5 +23,5 @@ import io.gravitee.common.service.Service;
  * @author GraviteeSource Team
  */
 public interface ServiceManager extends Service {
-  void register(AbstractService service);
+    void register(AbstractService service);
 }

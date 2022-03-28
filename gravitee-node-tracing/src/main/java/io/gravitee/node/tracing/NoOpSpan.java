@@ -23,31 +23,31 @@ import io.gravitee.tracing.api.Span;
  */
 public class NoOpSpan implements Span {
 
-  @Override
-  public Span withAttribute(String name, String value) {
-    return this;
-  }
+    @Override
+    public Span withAttribute(String name, String value) {
+        return this;
+    }
 
-  @Override
-  public Span withAttribute(String name, boolean value) {
-    return this;
-  }
+    @Override
+    public Span withAttribute(String name, boolean value) {
+        return this;
+    }
 
-  @Override
-  public Span withAttribute(String name, long value) {
-    return this;
-  }
+    @Override
+    public Span withAttribute(String name, long value) {
+        return this;
+    }
 
-  @Override
-  public Span reportError(Throwable throwable) {
-    return this;
-  }
+    @Override
+    public Span reportError(Throwable throwable) {
+        return this;
+    }
 
-  @Override
-  public Span reportError(String message) {
-    return this;
-  }
+    @Override
+    public Span reportError(String message) {
+        return this;
+    }
 
-  @Override
-  public void end() {}
+    @Override
+    public void end() {}
 }

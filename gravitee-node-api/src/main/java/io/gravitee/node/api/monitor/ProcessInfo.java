@@ -23,34 +23,34 @@ import java.io.Serializable;
  */
 public class ProcessInfo implements Serializable {
 
-  public long timestamp = -1;
+    public long timestamp = -1;
 
-  public long openFileDescriptors = -1;
-  public long maxFileDescriptors = -1;
+    public long openFileDescriptors = -1;
+    public long maxFileDescriptors = -1;
 
-  public Cpu cpu = null;
-  public Mem mem = null;
+    public Cpu cpu = null;
+    public Mem mem = null;
 
-  public static class Cpu implements Serializable {
+    public static class Cpu implements Serializable {
 
-    public short percent = -1;
-    public long total = -1;
+        public short percent = -1;
+        public long total = -1;
 
-    public short getPercent() {
-      return percent;
+        public short getPercent() {
+            return percent;
+        }
+
+        public long getTotal() {
+            return total;
+        }
     }
 
-    public long getTotal() {
-      return total;
+    public static class Mem implements Serializable {
+
+        public long totalVirtual = -1;
+
+        public long getTotalVirtual() {
+            return totalVirtual;
+        }
     }
-  }
-
-  public static class Mem implements Serializable {
-
-    public long totalVirtual = -1;
-
-    public long getTotalVirtual() {
-      return totalVirtual;
-    }
-  }
 }

@@ -37,94 +37,91 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class StandaloneTopic<T> implements Topic<T> {
 
-  private final Vertx vertx;
-  private final String topicName;
-  Map<UUID, MessageConsumer<T>> consumerMap = new ConcurrentHashMap<>();
-  private static final List<String> messageCodecs = new ArrayList<>();
+    private final Vertx vertx;
+    private final String topicName;
+    Map<UUID, MessageConsumer<T>> consumerMap = new ConcurrentHashMap<>();
+    private static final List<String> messageCodecs = new ArrayList<>();
 
-  public StandaloneTopic(Vertx vertx, String topicName) {
-    this.vertx = vertx;
-    this.topicName = topicName;
+    public StandaloneTopic(Vertx vertx, String topicName) {
+        this.vertx = vertx;
+        this.topicName = topicName;
 
-    if (!messageCodecs.contains(topicName)) {
-      messageCodecs.add(topicName);
+        if (!messageCodecs.contains(topicName)) {
+            messageCodecs.add(topicName);
 
-      vertx
-        .eventBus()
-        .registerCodec(
-          new MessageCodec<T, T>() {
-            // Will not be used for local transformations
-            @Override
-            public void encodeToWire(Buffer buffer, T o) {}
+            vertx
+                .eventBus()
+                .registerCodec(
+                    new MessageCodec<T, T>() {
+                        // Will not be used for local transformations
+                        @Override
+                        public void encodeToWire(Buffer buffer, T o) {}
 
-            // Will not be used for local transformations
-            @Override
-            public T decodeFromWire(int pos, Buffer buffer) {
-              return null;
-            }
+                        // Will not be used for local transformations
+                        @Override
+                        public T decodeFromWire(int pos, Buffer buffer) {
+                            return null;
+                        }
 
-            @Override
-            public T transform(T o) {
-              return o;
-            }
+                        @Override
+                        public T transform(T o) {
+                            return o;
+                        }
 
-            @Override
-            public String name() {
-              return topicName;
-            }
+                        @Override
+                        public String name() {
+                            return topicName;
+                        }
 
-            @Override
-            public byte systemCodecID() {
-              return -1;
-            }
-          }
+                        @Override
+                        public byte systemCodecID() {
+                            return -1;
+                        }
+                    }
+                );
+        }
+    }
+
+    @Override
+    public void publish(T event) {
+        DeliveryOptions deliveryOptions = new DeliveryOptions();
+        deliveryOptions.setCodecName(topicName);
+
+        vertx.eventBus().publish(topicName, event, deliveryOptions);
+    }
+
+    @Override
+    public UUID addMessageConsumer(io.gravitee.node.api.message.MessageConsumer<T> messageConsumer) {
+        UUID uuid = io.gravitee.common.utils.UUID.random();
+
+        MessageConsumer<T> vertxConsumer = vertx.eventBus().consumer(topicName);
+        consumerMap.put(uuid, vertxConsumer);
+
+        vertxConsumer.handler(event ->
+            vertx.executeBlocking(
+                (Handler<Promise<Void>>) promise -> {
+                    messageConsumer.onMessage(new Message<>(topicName, event.body()));
+                    promise.handle(null);
+                }
+            )
         );
+
+        return uuid;
     }
-  }
 
-  @Override
-  public void publish(T event) {
-    DeliveryOptions deliveryOptions = new DeliveryOptions();
-    deliveryOptions.setCodecName(topicName);
+    @Override
+    public boolean removeMessageConsumer(UUID uuid) {
+        if (!consumerMap.containsKey(uuid)) {
+            return false;
+        } else {
+            Future<Void> unregister = consumerMap.get(uuid).unregister();
 
-    vertx.eventBus().publish(topicName, event, deliveryOptions);
-  }
-
-  @Override
-  public UUID addMessageConsumer(
-    io.gravitee.node.api.message.MessageConsumer<T> messageConsumer
-  ) {
-    UUID uuid = io.gravitee.common.utils.UUID.random();
-
-    MessageConsumer<T> vertxConsumer = vertx.eventBus().consumer(topicName);
-    consumerMap.put(uuid, vertxConsumer);
-
-    vertxConsumer.handler(
-      event ->
-        vertx.executeBlocking(
-          (Handler<Promise<Void>>) promise -> {
-            messageConsumer.onMessage(new Message<>(topicName, event.body()));
-            promise.handle(null);
-          }
-        )
-    );
-
-    return uuid;
-  }
-
-  @Override
-  public boolean removeMessageConsumer(UUID uuid) {
-    if (!consumerMap.containsKey(uuid)) {
-      return false;
-    } else {
-      Future<Void> unregister = consumerMap.get(uuid).unregister();
-
-      if (unregister.succeeded()) {
-        consumerMap.remove(uuid);
-        return true;
-      } else {
-        return false;
-      }
+            if (unregister.succeeded()) {
+                consumerMap.remove(uuid);
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
-  }
 }

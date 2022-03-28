@@ -37,66 +37,50 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 @Conditional(HazelcastClusterConfiguration.ClusterModeEnabled.class)
 public class HazelcastClusterConfiguration {
 
-  @Value(
-    "${cluster.hazelcast.config.path:${gravitee.home}/config/hazelcast.xml}"
-  )
-  private String hazelcastConfigFilePath;
+    @Value("${cluster.hazelcast.config.path:${gravitee.home}/config/hazelcast.xml}")
+    private String hazelcastConfigFilePath;
 
-  @Bean
-  public HazelcastInstance distributedHazelcastInstance() throws Exception {
-    // Force Hazelcast to use SLF4J before loading any HZ classes
-    System.setProperty(ClusterProperty.LOGGING_TYPE.getName(), "slf4j");
-    System.setProperty(ClusterProperty.SHUTDOWNHOOK_ENABLED.getName(), "false");
+    @Bean
+    public HazelcastInstance distributedHazelcastInstance() throws Exception {
+        // Force Hazelcast to use SLF4J before loading any HZ classes
+        System.setProperty(ClusterProperty.LOGGING_TYPE.getName(), "slf4j");
+        System.setProperty(ClusterProperty.SHUTDOWNHOOK_ENABLED.getName(), "false");
 
-    FileSystemXmlConfig config = new FileSystemXmlConfig(
-      hazelcastConfigFilePath
-    );
+        FileSystemXmlConfig config = new FileSystemXmlConfig(hazelcastConfigFilePath);
 
-    // Force the classloader used by Hazelcast to the container's classloader.
-    config.setClassLoader(ClusterConfiguration.class.getClassLoader());
+        // Force the classloader used by Hazelcast to the container's classloader.
+        config.setClassLoader(ClusterConfiguration.class.getClassLoader());
 
-    config.setProperty(
-      ClusterProperty.HEALTH_MONITORING_LEVEL.getName(),
-      "OFF"
-    );
+        config.setProperty(ClusterProperty.HEALTH_MONITORING_LEVEL.getName(), "OFF");
 
-    return Hazelcast.newHazelcastInstance(
-      new FileSystemXmlConfig(hazelcastConfigFilePath)
-    );
-  }
-
-  @Bean("hazelcastClusterManager")
-  public ClusterManager hazelcastClusterManager() {
-    return new HazelcastClusterManager();
-  }
-
-  @Bean("hazelcastCacheManager")
-  public CacheManager hazelcastCacheManager(
-    HazelcastInstance hazelcastInstance
-  ) {
-    return new HazelcastCacheManager(hazelcastInstance);
-  }
-
-  @Bean("hazelcastMessageProducer")
-  public MessageProducer hazelcastMessageProducer() {
-    return new HazelcastMessageProducer();
-  }
-
-  public static class ClusterModeEnabled implements ConfigurationCondition {
-
-    @Override
-    public boolean matches(
-      ConditionContext conditionContext,
-      AnnotatedTypeMetadata annotatedTypeMetadata
-    ) {
-      return conditionContext
-        .getEnvironment()
-        .getProperty("gravitee.cluster.enabled", Boolean.class, false);
+        return Hazelcast.newHazelcastInstance(new FileSystemXmlConfig(hazelcastConfigFilePath));
     }
 
-    @Override
-    public ConfigurationPhase getConfigurationPhase() {
-      return ConfigurationPhase.REGISTER_BEAN;
+    @Bean("hazelcastClusterManager")
+    public ClusterManager hazelcastClusterManager() {
+        return new HazelcastClusterManager();
     }
-  }
+
+    @Bean("hazelcastCacheManager")
+    public CacheManager hazelcastCacheManager(HazelcastInstance hazelcastInstance) {
+        return new HazelcastCacheManager(hazelcastInstance);
+    }
+
+    @Bean("hazelcastMessageProducer")
+    public MessageProducer hazelcastMessageProducer() {
+        return new HazelcastMessageProducer();
+    }
+
+    public static class ClusterModeEnabled implements ConfigurationCondition {
+
+        @Override
+        public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
+            return conditionContext.getEnvironment().getProperty("gravitee.cluster.enabled", Boolean.class, false);
+        }
+
+        @Override
+        public ConfigurationPhase getConfigurationPhase() {
+            return ConfigurationPhase.REGISTER_BEAN;
+        }
+    }
 }

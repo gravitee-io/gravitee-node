@@ -23,41 +23,37 @@ import java.security.KeyStore;
  */
 public class KeyStoreBundle {
 
-  private KeyStore keyStore;
-  private String password;
-  private String defaultAlias;
+    private KeyStore keyStore;
+    private String password;
+    private String defaultAlias;
 
-  public KeyStoreBundle(
-    KeyStore keyStore,
-    String password,
-    String defaultAlias
-  ) {
-    this.keyStore = keyStore;
-    this.password = password;
-    this.defaultAlias = defaultAlias;
-  }
+    public KeyStoreBundle(KeyStore keyStore, String password, String defaultAlias) {
+        this.keyStore = keyStore;
+        this.password = password;
+        this.defaultAlias = defaultAlias;
+    }
 
-  public KeyStore getKeyStore() {
-    return keyStore;
-  }
+    public KeyStore getKeyStore() {
+        return keyStore;
+    }
 
-  public void setKeyStore(KeyStore keyStore) {
-    this.keyStore = keyStore;
-  }
+    public void setKeyStore(KeyStore keyStore) {
+        this.keyStore = keyStore;
+    }
 
-  public String getPassword() {
-    return password;
-  }
+    public String getPassword() {
+        return password;
+    }
 
-  public void setPassword(String password) {
-    this.password = password;
-  }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-  public String getDefaultAlias() {
-    return defaultAlias;
-  }
+    public String getDefaultAlias() {
+        return defaultAlias;
+    }
 
-  public void setDefaultAlias(String defaultAlias) {
-    this.defaultAlias = defaultAlias;
-  }
+    public void setDefaultAlias(String defaultAlias) {
+        this.defaultAlias = defaultAlias;
+    }
 }
