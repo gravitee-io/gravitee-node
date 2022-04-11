@@ -85,6 +85,15 @@ public class JettyHttpConfiguration {
     @Value("${jetty.ssl.truststore.type:#{null}}")
     private String trustStoreType;
 
+    @Value("${jetty.outputBufferSize:32768}")
+    private int outputBufferSize;
+
+    @Value("${jetty.requestHeaderSize:8192}")
+    private int requestHeaderSize;
+
+    @Value("${jetty.responseHeaderSize:8192}")
+    private int responseHeaderSize;
+
     public int getHttpPort() {
         return httpPort;
     }
@@ -243,5 +252,29 @@ public class JettyHttpConfiguration {
 
     public void setTrustStoreType(String trustStoreType) {
         this.trustStoreType = trustStoreType;
+    }
+
+    public int getOutputBufferSize() {
+        return outputBufferSize;
+    }
+
+    public int getRequestHeaderSize() {
+        return requestHeaderSize;
+    }
+
+    public int getResponseHeaderSize() {
+        return responseHeaderSize;
+    }
+
+    public void setOutputBufferSize(int outputBufferSize) {
+        this.outputBufferSize = outputBufferSize;
+    }
+
+    public void setRequestHeaderSize(int requestHeaderSize) {
+        this.requestHeaderSize = requestHeaderSize;
+    }
+
+    public void setResponseHeaderSize(int responseHeaderSize) {
+        this.responseHeaderSize = responseHeaderSize;
     }
 }
