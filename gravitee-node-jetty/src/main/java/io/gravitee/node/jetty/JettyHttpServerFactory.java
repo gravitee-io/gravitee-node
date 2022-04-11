@@ -65,9 +65,9 @@ public class JettyHttpServerFactory implements FactoryBean<Server> {
 
         // HTTP Configuration
         HttpConfiguration httpConfig = new HttpConfiguration();
-        httpConfig.setOutputBufferSize(32768);
-        httpConfig.setRequestHeaderSize(8192);
-        httpConfig.setResponseHeaderSize(8192);
+        httpConfig.setOutputBufferSize(jettyHttpConfiguration.getOutputBufferSize());
+        httpConfig.setRequestHeaderSize(jettyHttpConfiguration.getRequestHeaderSize());
+        httpConfig.setResponseHeaderSize(jettyHttpConfiguration.getResponseHeaderSize());
         httpConfig.setSendServerVersion(false);
         httpConfig.setSendDateHeader(false);
         httpConfig.setRequestCookieCompliance(CookieCompliance.RFC2965);
