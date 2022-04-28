@@ -148,6 +148,11 @@ public abstract class AbstractVertxHttpServerFactory<T> implements FactoryBean<T
             options.setPerFrameWebSocketCompressionSupported(httpServerConfiguration.isPerFrameWebSocketCompressionSupported());
         }
 
+        if (httpServerConfiguration.isWebsocketEnabled()) {
+            options.setMaxWebSocketFrameSize(httpServerConfiguration.getMaxWebSocketFrameSize());
+            options.setMaxWebSocketMessageSize(httpServerConfiguration.getMaxWebSocketMessageSize());
+        }
+
         return options;
     }
 }

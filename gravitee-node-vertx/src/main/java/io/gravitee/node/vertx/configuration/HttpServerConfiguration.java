@@ -75,6 +75,8 @@ public class HttpServerConfiguration {
     private final long proxyProtocolTimeout;
     private final ClientAuth clientAuth;
     private final List<String> authorizedTlsCipherSuites;
+    private final int maxWebSocketFrameSize;
+    private final int maxWebSocketMessageSize;
 
     private HttpServerConfiguration(HttpServerConfigurationBuilder builder) {
         this.tracingPolicy = builder.tracingPolicy;
@@ -112,6 +114,8 @@ public class HttpServerConfiguration {
         this.proxyProtocolTimeout = builder.proxyProtocolTimeout;
         this.clientAuth = builder.clientAuth;
         this.authorizedTlsCipherSuites = builder.authorizedTlsCipherSuites;
+        this.maxWebSocketFrameSize = builder.maxWebSocketFrameSize;
+        this.maxWebSocketMessageSize = builder.maxWebSocketMessageSize;
     }
 
     public static HttpServerConfiguration.HttpServerConfigurationBuilder builder() {
@@ -259,6 +263,14 @@ public class HttpServerConfiguration {
         return authorizedTlsCipherSuites;
     }
 
+    public int getMaxWebSocketMessageSize() {
+        return maxWebSocketMessageSize;
+    }
+
+    public int getMaxWebSocketFrameSize() {
+        return maxWebSocketFrameSize;
+    }
+
     public static class HttpServerConfigurationBuilder {
 
         private TracingPolicy tracingPolicy;
@@ -303,6 +315,9 @@ public class HttpServerConfiguration {
 
         private String prefix = "http.";
 
+        private int maxWebSocketFrameSize = HttpServerOptions.DEFAULT_MAX_WEBSOCKET_FRAME_SIZE;
+        private int maxWebSocketMessageSize = HttpServerOptions.DEFAULT_MAX_WEBSOCKET_MESSAGE_SIZE;
+
         private HttpServerConfigurationBuilder() {}
 
         public HttpServerConfigurationBuilder withDefaultPort(int port) {
@@ -312,7 +327,9 @@ public class HttpServerConfiguration {
         }
 
         /**
-         * Once port is set using this method, the builder will not lookup anywhere else for the port number
+         * Once port is set using this method, the builder will not lookup anywhere else
+         * for the port number
+         *
          * @param port number
          * @return
          */
@@ -329,7 +346,9 @@ public class HttpServerConfiguration {
         }
 
         /**
-         * Once host is set using this method, the builder will not lookup anywhere else for the host name
+         * Once host is set using this method, the builder will not lookup anywhere else
+         * for the host name
+         *
          * @param host
          * @return
          */
@@ -512,6 +531,16 @@ public class HttpServerConfiguration {
             return this;
         }
 
+        public HttpServerConfigurationBuilder withDefaultMaxWebSocketFrameSize(int maxWebSocketFrameSize) {
+            this.maxWebSocketFrameSize = maxWebSocketFrameSize;
+            return this;
+        }
+
+        public HttpServerConfigurationBuilder withDefaultMaxWebSocketMessageSize(int maxWebSocketMessageSize) {
+            this.maxWebSocketMessageSize = maxWebSocketMessageSize;
+            return this;
+        }
+
         private List<CertificateOptions> getCertificateValues(String prefix) {
             final List<CertificateOptions> certificates = new ArrayList<>();
 
@@ -629,6 +658,14 @@ public class HttpServerConfiguration {
             this.proxyProtocolTimeout =
                 Long.parseLong(environment.getProperty(prefix + "haproxy.proxyProtocolTimeout", String.valueOf(proxyProtocolTimeout)));
 
+            this.maxWebSocketFrameSize =
+                Integer.parseInt(
+                    environment.getProperty(prefix + "websocket.maxWebSocketFrameSize", String.valueOf(maxWebSocketFrameSize))
+                );
+            this.maxWebSocketMessageSize =
+                Integer.parseInt(
+                    environment.getProperty(prefix + "websocket.maxWebSocketMessageSize", String.valueOf(maxWebSocketMessageSize))
+                );
             return new HttpServerConfiguration(this);
         }
     }
