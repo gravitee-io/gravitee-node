@@ -236,7 +236,7 @@
         <micrometer-registry-prometheus.version>1.6.2</micrometer-registry-prometheus.version>
         <LatencyUtils.version>2.0.3</LatencyUtils.version>
         <bouncycastle.version>1.70</bouncycastle.version>
-        <guava.version>31.0.1-jre</guava.version>
+        <guava.version>31.1-jre</guava.version>
     </properties>
     <build>
         <plugins>
