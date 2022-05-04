@@ -27,8 +27,8 @@
         <version>1.23.0</version>
     </parent>
 
-    <artifactId>gravitee-node-container</artifactId>
-    <name>Gravitee.io - Node - Container</name>
+    <artifactId>gravitee-node-license</artifactId>
+    <name>Gravitee.io - Node - License</name>
 
     <dependencies>
         <!-- Gravitee.io -->
@@ -37,52 +37,20 @@
             <artifactId>gravitee-node-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-plugins-service</artifactId>
-            <version>${project.version}</version>
+            <groupId>io.gravitee.common</groupId>
+            <artifactId>gravitee-common</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-monitoring</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-cluster</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-management</artifactId>
             <version>${project.version}</version>
         </dependency>
 
+        <!-- Licensing -->
         <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-reporter</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-kubernetes</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-license</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.gravitee.common</groupId>
-            <artifactId>gravitee-common</artifactId>
+            <groupId>com.javax0.license3j</groupId>
+            <artifactId>license3j</artifactId>
         </dependency>
 
         <!-- Logging -->
@@ -97,21 +65,6 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback.contrib</groupId>
-            <artifactId>logback-jackson</artifactId>
-            <version>0.1.5</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback.contrib</groupId>
-            <artifactId>logback-json-classic</artifactId>
-            <version>0.1.5</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback.contrib</groupId>
-            <artifactId>logback-json-core</artifactId>
-            <version>0.1.5</version>
         </dependency>
 
         <!-- Spring dependencies -->
@@ -138,14 +91,6 @@
             <artifactId>spring-beans</artifactId>
         </dependency>
 
-        <!-- Used to load configuration file -->
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>${snakeyaml.version}</version>
-        </dependency>
-
-        <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -154,6 +99,18 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Bouncy Castle -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

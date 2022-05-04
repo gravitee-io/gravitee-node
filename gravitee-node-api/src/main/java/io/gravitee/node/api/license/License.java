@@ -13,15 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.api.plugin;
+package io.gravitee.node.api.license;
 
-import io.gravitee.node.api.Node;
-import io.gravitee.plugin.api.PluginDeploymentContext;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface NodeDeploymentContext extends PluginDeploymentContext {
-    Node node();
+public interface License {
+    Optional<Feature> feature(String name);
+
+    boolean isFeatureIncluded(String featureName);
+
+    Map<String, Object> features();
 }
