@@ -16,16 +16,15 @@
 package io.gravitee.node.management.http.node;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.gravitee.common.http.HttpHeaders;
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.common.http.HttpStatusCode;
 import io.gravitee.common.http.MediaType;
 import io.gravitee.common.util.Version;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.RoutingContext;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -68,19 +67,16 @@ public class NodeEndpoint implements ManagementEndpoint {
         data.setMetadata(node.metadata());
 
         io.vertx.core.json.jackson.DatabindCodec codec = (io.vertx.core.json.jackson.DatabindCodec) io.vertx.core.json.Json.CODEC;
-        codec.prettyMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        DatabindCodec.prettyMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
         response.write(
             codec.toString(data, true),
-            new Handler<AsyncResult<Void>>() {
-                @Override
-                public void handle(AsyncResult<Void> event) {
-                    if (event.failed()) {
-                        response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
-                        LOGGER.error("Unable to transform data object to JSON", event.cause());
-                    }
-
-                    response.end();
+            event -> {
+                if (event.failed()) {
+                    response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+                    LOGGER.error("Unable to transform data object to JSON", event.cause());
                 }
+
+                response.end();
             }
         );
     }
@@ -94,6 +90,8 @@ public class NodeEndpoint implements ManagementEndpoint {
         private Map<String, Object> metadata;
 
         private Version version;
+
+        private Map<String, Object> license;
 
         public String getId() {
             return id;
@@ -125,6 +123,14 @@ public class NodeEndpoint implements ManagementEndpoint {
 
         public void setVersion(Version version) {
             this.version = version;
+        }
+
+        public Map<String, Object> getLicense() {
+            return license;
+        }
+
+        public void setLicense(Map<String, Object> license) {
+            this.license = license;
         }
     }
 }

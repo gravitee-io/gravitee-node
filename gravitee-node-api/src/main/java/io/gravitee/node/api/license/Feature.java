@@ -13,25 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.container;
+package io.gravitee.node.api.license;
 
-import io.gravitee.common.spring.factory.SpringFactoriesLoader;
-import io.gravitee.node.api.NodeDeployer;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class NodeDeployerFactoriesLoader extends SpringFactoriesLoader<NodeDeployer> {
+public interface Feature {
+    String getString();
 
-    @Override
-    protected Class<NodeDeployer> getObjectType() {
-        return NodeDeployer.class;
-    }
+    int getInt();
 
-    List<NodeDeployer> getNodeDeployers() {
-        return new ArrayList<>(getFactoriesInstances());
-    }
+    Instant getDate();
 }

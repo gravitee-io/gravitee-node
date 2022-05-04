@@ -30,9 +30,6 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class NodeFactory extends AbstractFactoryBean<Node> implements ApplicationContextAware {
 
-    @Autowired
-    private NodeDeployerFactoriesLoader nodeDeployerFactoriesLoader;
-
     private ApplicationContext applicationContext;
 
     private final Class<? extends Node> nodeClass;
@@ -48,15 +45,8 @@ public class NodeFactory extends AbstractFactoryBean<Node> implements Applicatio
 
     @Override
     protected Node createInstance() throws Exception {
-        Node node = nodeClass.newInstance();
+        Node node = nodeClass.getDeclaredConstructor().newInstance();
         autowire(node);
-
-        List<NodeDeployer> deployers = nodeDeployerFactoriesLoader.getNodeDeployers();
-
-        for (NodeDeployer deployer : deployers) {
-            node = deployer.deploy(node);
-            autowire(node);
-        }
 
         return node;
     }

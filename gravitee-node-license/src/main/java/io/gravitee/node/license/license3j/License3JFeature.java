@@ -13,15 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.api.plugin;
+package io.gravitee.node.license.license3j;
 
-import io.gravitee.node.api.Node;
-import io.gravitee.plugin.api.PluginDeploymentContext;
+import io.gravitee.node.api.license.Feature;
+import java.time.Instant;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface NodeDeploymentContext extends PluginDeploymentContext {
-    Node node();
+public class License3JFeature implements Feature {
+
+    private final javax0.license3j.Feature feature;
+
+    public License3JFeature(javax0.license3j.Feature feature) {
+        this.feature = feature;
+    }
+
+    @Override
+    public String getString() {
+        return feature.getString();
+    }
+
+    @Override
+    public int getInt() {
+        return feature.getInt();
+    }
+
+    @Override
+    public Instant getDate() {
+        return feature.getDate().toInstant();
+    }
 }

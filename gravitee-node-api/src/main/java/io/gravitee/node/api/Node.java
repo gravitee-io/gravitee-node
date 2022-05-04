@@ -17,6 +17,7 @@ package io.gravitee.node.api;
 
 import io.gravitee.common.component.LifecycleComponent;
 import io.gravitee.common.utils.UUID;
+import io.gravitee.node.api.license.License;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -65,5 +66,9 @@ public interface Node extends LifecycleComponent<Node> {
 
     default Map<String, Object> metadata() {
         return Collections.emptyMap();
+    }
+
+    default License license() {
+        return null;
     }
 }
