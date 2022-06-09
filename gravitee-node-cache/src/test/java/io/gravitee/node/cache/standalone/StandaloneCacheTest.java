@@ -15,30 +15,33 @@
  */
 package io.gravitee.node.cache.standalone;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import io.gravitee.node.api.cache.Cache;
 import io.gravitee.node.api.cache.CacheConfiguration;
 import java.util.concurrent.TimeUnit;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
-@RunWith(MockitoJUnitRunner.class)
 public class StandaloneCacheTest {
 
   private static final String CACHE_NAME = "StandaloneCacheTest";
-  private static final Long TIME_TO_LIVE = 1L;
   private static final String TEST_KEY = "foobar";
   private static final String TEST_VALUE = "value";
 
-  @InjectMocks
   StandaloneCacheManager cacheManager;
+
+  @Before
+  public void setUp() {
+    cacheManager = new StandaloneCacheManager();
+  }
 
   @Test
   public void shouldPutToCache() throws InterruptedException {
@@ -77,20 +80,25 @@ public class StandaloneCacheTest {
   }
 
   @Test
-  public void shouldBeRenewed() throws InterruptedException {
+  public void shouldRespectTimeToLive() throws InterruptedException {
     CacheConfiguration configuration = new CacheConfiguration();
-    configuration.setTimeToLiveSeconds(100);
+    // Global time to live is 10 second
+    configuration.setTimeToLiveSeconds(10);
     Cache<String, String> cache = cacheManager.getOrCreateCache(
       CACHE_NAME,
       configuration
     );
-    cache.put(TEST_KEY, TEST_VALUE, 40, TimeUnit.MILLISECONDS);
-    Thread.sleep(30L);
-    cache.get(TEST_KEY);
-    Thread.sleep(30L);
 
-    assertNotNull(cache.get(TEST_KEY));
-    assertEquals(1, cache.size());
-    assertFalse(cache.isEmpty());
+    // Specific time to live is 100 millisecond
+    cache.put(TEST_KEY, TEST_VALUE, 100, TimeUnit.MILLISECONDS);
+
+    assertEquals(TEST_VALUE, cache.get(TEST_KEY));
+
+    Thread.sleep(20);
+    assertEquals(TEST_VALUE, cache.get(TEST_KEY));
+
+    // Wait a bit more to be sure that time to live of 100ms is reached, and then check that value was removed from cache
+    Thread.sleep(100);
+    assertNull(cache.get(TEST_KEY));
   }
 }

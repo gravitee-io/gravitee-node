@@ -104,11 +104,10 @@ public class StandaloneCache<K, V> implements Cache<K, V> {
   public V get(K key) {
     ValueWrapper<V> vw = internalCache.getIfPresent(key);
     if (vw != null) {
-      if (vw.expirationTimeMillis == 0) {
-        return vw.value;
-      } else if (System.currentTimeMillis() <= vw.expirationTimeMillis) {
-        vw.expirationTimeMillis =
-          System.currentTimeMillis() + vw.timeToLiveMillis;
+      if (
+        vw.expirationTimeMillis == 0 ||
+        System.currentTimeMillis() <= vw.expirationTimeMillis
+      ) {
         return vw.value;
       } else {
         this.internalCache.invalidate(key);
