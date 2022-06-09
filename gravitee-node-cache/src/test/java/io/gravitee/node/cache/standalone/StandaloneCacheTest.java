@@ -19,26 +19,30 @@ import static org.junit.Assert.*;
 
 import io.gravitee.node.api.cache.Cache;
 import io.gravitee.node.api.cache.CacheConfiguration;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
-@RunWith(MockitoJUnitRunner.class)
 public class StandaloneCacheTest {
 
     private static final String CACHE_NAME = "StandaloneCacheTest";
-    private static final Long TIME_TO_LIVE = 1L;
-    private static final String TEST_KEY = "foobar";
-    private static final String TEST_VALUE = "value";
+    private static final String TEST_KEY = "key1";
+    private static final String ANOTHER_TEST_KEY = "key2";
+    private static final String TEST_VALUE = "value1";
+    private static final String ANOTHER_TEST_VALUE = "value2";
 
-    @InjectMocks
     StandaloneCacheManager cacheManager;
+
+    @Before
+    public void setUp() {
+        cacheManager = new StandaloneCacheManager();
+    }
 
     @Test
     public void shouldPutToCache() throws InterruptedException {
@@ -46,15 +50,14 @@ public class StandaloneCacheTest {
         configuration.setTimeToLiveSeconds(2);
         Cache<String, String> cache = cacheManager.getOrCreateCache(CACHE_NAME, configuration);
         cache.put(TEST_KEY, TEST_VALUE, 1, TimeUnit.MILLISECONDS);
-        cache.put(TEST_KEY + 2, TEST_VALUE, 2000, TimeUnit.MILLISECONDS);
+        cache.put(ANOTHER_TEST_KEY, ANOTHER_TEST_VALUE, 2000, TimeUnit.MILLISECONDS);
 
         assertNotNull(cache.get(TEST_KEY));
         assertEquals(2, cache.size());
         assertFalse(cache.isEmpty());
 
-        Thread.sleep(1000L);
-        assertNotNull(cache.get(TEST_KEY + 2));
-        //    assertEquals(1, cache.size());
+        Thread.sleep(100);
+        assertEquals(ANOTHER_TEST_VALUE, cache.get(ANOTHER_TEST_KEY));
         assertFalse(cache.isEmpty());
     }
 
@@ -71,17 +74,127 @@ public class StandaloneCacheTest {
     }
 
     @Test
-    public void shouldBeRenewed() throws InterruptedException {
-        CacheConfiguration configuration = new CacheConfiguration();
-        configuration.setTimeToLiveSeconds(100);
+    public void shouldRespectTimeToLive() throws InterruptedException {
+        CacheConfiguration configuration = new CacheConfiguration(); // Global time to live is 10 second
+        configuration.setTimeToLiveSeconds(10);
         Cache<String, String> cache = cacheManager.getOrCreateCache(CACHE_NAME, configuration);
-        cache.put(TEST_KEY, TEST_VALUE, 40, TimeUnit.MILLISECONDS);
-        Thread.sleep(30L);
-        cache.get(TEST_KEY);
-        Thread.sleep(30L);
 
-        assertNotNull(cache.get(TEST_KEY));
-        assertEquals(1, cache.size());
-        assertFalse(cache.isEmpty());
+        // Specific time to live is 100 millisecond
+        cache.put(TEST_KEY, TEST_VALUE, 100, TimeUnit.MILLISECONDS);
+
+        assertEquals(TEST_VALUE, cache.get(TEST_KEY));
+
+        Thread.sleep(20);
+        assertEquals(TEST_VALUE, cache.get(TEST_KEY));
+
+        // Wait a bit more to be sure that time to live of 100ms is reached, and then check that value was removed from cache
+        Thread.sleep(100);
+        assertNull(cache.get(TEST_KEY));
+    }
+
+    @Test
+    public void shouldUseGlobalTimeToLiveWhenSpecificTTLIs0() throws InterruptedException {
+        CacheConfiguration configuration = new CacheConfiguration();
+        // Global time to live is 1 second
+        configuration.setTimeToLiveSeconds(1);
+        Cache<String, String> cache = cacheManager.getOrCreateCache(CACHE_NAME, configuration); // Specific time to live is 0 == infinite keeping
+        cache.put(TEST_KEY, TEST_VALUE, 0, TimeUnit.MILLISECONDS);
+        assertEquals(TEST_VALUE, cache.get(TEST_KEY));
+
+        Thread.sleep(20);
+        assertEquals(TEST_VALUE, cache.get(TEST_KEY));
+        // Wait a bit more to be sure that global time to live of 1s is reached, and then check that value was removed from cache
+        Thread.sleep(1000);
+        assertNull(cache.get(TEST_KEY));
+    }
+
+    @Test
+    public void shouldReturnItsName() {
+        Cache<String, String> cache = cacheManager.getOrCreateCache(CACHE_NAME, new CacheConfiguration());
+
+        assertEquals(CACHE_NAME, cache.getName());
+    }
+
+    @Test
+    public void shouldRemoveEverythingWhenClearingCache() {
+        CacheConfiguration configuration = new CacheConfiguration();
+        Cache<String, String> cache = cacheManager.getOrCreateCache(CACHE_NAME, configuration);
+
+        cache.put(TEST_KEY, TEST_VALUE);
+        cache.put(ANOTHER_TEST_KEY, ANOTHER_TEST_VALUE);
+        assertEquals(TEST_VALUE, cache.get(TEST_KEY));
+        cache.clear();
+
+        assertNull(cache.get(TEST_KEY));
+        assertTrue(cache.isEmpty());
+    }
+
+    @Test
+    public void shouldEvictACacheEntry() {
+        CacheConfiguration configuration = new CacheConfiguration();
+        Cache<String, String> cache = cacheManager.getOrCreateCache(CACHE_NAME, configuration);
+
+        cache.put(TEST_KEY, TEST_VALUE);
+        assertEquals(TEST_VALUE, cache.get(TEST_KEY));
+
+        cache.evict(TEST_KEY);
+
+        assertNull(cache.get(TEST_KEY));
+    }
+
+    @Test
+    public void shouldPutMultipleValues() {
+        CacheConfiguration configuration = new CacheConfiguration();
+        Cache<String, String> cache = cacheManager.getOrCreateCache(CACHE_NAME, configuration);
+
+        cache.putAll(Map.of(TEST_KEY, TEST_VALUE, ANOTHER_TEST_KEY, ANOTHER_TEST_VALUE));
+        assertEquals(TEST_VALUE, cache.get(TEST_KEY));
+        assertEquals(ANOTHER_TEST_VALUE, cache.get(ANOTHER_TEST_KEY));
+    }
+
+    @Test
+    public void shouldGetAllValuesRespectingTTL() throws InterruptedException {
+        CacheConfiguration configuration = new CacheConfiguration();
+        Cache<String, String> cache = cacheManager.getOrCreateCache(CACHE_NAME, configuration);
+
+        // Specific time to live is 100 millisecond
+        cache.put(TEST_KEY, TEST_VALUE, 100, TimeUnit.MILLISECONDS);
+        cache.put(ANOTHER_TEST_KEY, ANOTHER_TEST_VALUE, 0, TimeUnit.MILLISECONDS);
+
+        assertEquals(List.of(TEST_VALUE, ANOTHER_TEST_VALUE), cache.values());
+        Thread.sleep(100);
+
+        assertEquals(List.of(ANOTHER_TEST_VALUE), cache.values());
+    }
+
+    @Test
+    public void shouldRespectGlobalMaxSize() {
+        CacheConfiguration configuration = new CacheConfiguration();
+        configuration.setMaxSize(2);
+        Cache<String, String> cache = cacheManager.getOrCreateCache(CACHE_NAME, configuration);
+
+        cache.put(TEST_KEY, TEST_VALUE);
+        cache.put(ANOTHER_TEST_KEY, ANOTHER_TEST_VALUE);
+
+        assertEquals(2, cache.size());
+        assertEquals(List.of(TEST_VALUE, ANOTHER_TEST_VALUE), cache.values());
+
+        cache.put("key3", "value3");
+        assertEquals(2, cache.size());
+        assertEquals(List.of("value3", ANOTHER_TEST_VALUE), cache.values());
+    }
+
+    @Test
+    public void shouldRespectTimeToIdle() throws InterruptedException {
+        CacheConfiguration configuration = new CacheConfiguration();
+        configuration.setTimeToIdleSeconds(1);
+        Cache<String, String> cache = cacheManager.getOrCreateCache(CACHE_NAME, configuration);
+
+        cache.put(TEST_KEY, TEST_VALUE);
+
+        assertEquals(TEST_VALUE, cache.get(TEST_KEY));
+        // Wait a bit more to be sure that time to idle of 1s is reached, and then check that value was removed from cache
+        Thread.sleep(1100);
+        assertNull(cache.get(TEST_KEY));
     }
 }
