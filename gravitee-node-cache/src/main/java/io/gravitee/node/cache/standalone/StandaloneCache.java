@@ -103,20 +103,19 @@ public class StandaloneCache<K, V> implements Cache<K, V> {
   @Override
   public V get(K key) {
     ValueWrapper<V> vw = internalCache.getIfPresent(key);
-    if (vw != null) {
-      if (vw.expirationTimeMillis == 0) {
-        return vw.value;
-      } else if (System.currentTimeMillis() <= vw.expirationTimeMillis) {
-        vw.expirationTimeMillis =
-          System.currentTimeMillis() + vw.timeToLiveMillis;
-        return vw.value;
-      } else {
-        this.internalCache.invalidate(key);
-        return null;
-      }
-    } else {
-      return null;
+    // If value is present and ttl not expired then return it otherwise invalidates cache and return null
+    if (
+      vw != null &&
+      (
+        vw.expirationTimeMillis == 0 ||
+        System.currentTimeMillis() <= vw.expirationTimeMillis
+      )
+    ) {
+      return vw.value;
     }
+
+    this.internalCache.invalidate(key);
+    return null;
   }
 
   @Override
@@ -145,7 +144,7 @@ public class StandaloneCache<K, V> implements Cache<K, V> {
     counter.incrementAndGet();
     this.internalCache.put(
         key,
-        new ValueWrapper<>(value, ttlMillis, expirationTimeMillis)
+        new ValueWrapper<>(value, expirationTimeMillis)
       );
 
     executorService.execute(
@@ -181,7 +180,7 @@ public class StandaloneCache<K, V> implements Cache<K, V> {
       .collect(
         Collectors.toMap(
           Map.Entry::getKey,
-          e -> new ValueWrapper<>(e.getValue(), 0, 0)
+          e -> new ValueWrapper<>(e.getValue(), 0)
         )
       );
 
@@ -208,26 +207,6 @@ public class StandaloneCache<K, V> implements Cache<K, V> {
   @Override
   public void clear() {
     this.internalCache.invalidateAll();
-    //TODO: do we want to notify listeners on a clear ?
-    /*
-    getNativeCache()
-      .forEach(
-        (key, value) ->
-          executorService.execute(
-            () ->
-              cacheListeners.forEach(
-                cacheListener ->
-                  new EntryEvent<>(
-                    name,
-                    EntryEventType.REMOVED,
-                    key,
-                    value,
-                    null
-                  )
-              )
-          )
-      );
-     */
   }
 
   @Override
@@ -243,16 +222,10 @@ public class StandaloneCache<K, V> implements Cache<K, V> {
   private static class ValueWrapper<T> {
 
     private final T value;
-    private final long timeToLiveMillis;
-    private long expirationTimeMillis;
+    private final long expirationTimeMillis;
 
-    public ValueWrapper(
-      T value,
-      long timeToLiveMillis,
-      long expirationTimeMillis
-    ) {
+    public ValueWrapper(T value, long expirationTimeMillis) {
       this.value = value;
-      this.timeToLiveMillis = timeToLiveMillis;
       this.expirationTimeMillis = expirationTimeMillis;
     }
   }
