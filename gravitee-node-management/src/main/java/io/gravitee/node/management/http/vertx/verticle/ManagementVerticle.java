@@ -20,6 +20,8 @@ import io.gravitee.node.management.http.configuration.ConfigurationEndpoint;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.management.http.metrics.prometheus.PrometheusEndpoint;
 import io.gravitee.node.management.http.node.NodeEndpoint;
+import io.gravitee.node.management.http.node.heap.HeapDumpEndpoint;
+import io.gravitee.node.management.http.node.thread.ThreadDumpEndpoint;
 import io.gravitee.node.management.http.vertx.configuration.HttpServerConfiguration;
 import io.vertx.core.*;
 import io.vertx.core.http.HttpServer;
@@ -74,6 +76,12 @@ public class ManagementVerticle extends AbstractVerticle {
 
   @Autowired
   private NodeEndpoint nodeEndpoint;
+
+  @Autowired
+  private HeapDumpEndpoint heapDumpEndpoint;
+
+  @Autowired
+  private ThreadDumpEndpoint threadDumpEndpoint;
 
   @Autowired
   private ConfigurationEndpoint configurationEndpoint;
@@ -168,6 +176,32 @@ public class ManagementVerticle extends AbstractVerticle {
           } else {
             managementEndpointManager.register(nodeEndpoint);
             managementEndpointManager.register(configurationEndpoint);
+
+            // Heapdump endpoint is disabled by default for security reasons. It is up to the platform administrator
+            // to configure correctly authentication (ie. not using default credentials, or disabling authentication)
+            // before exposing such endpoint.
+            if (
+              environment.getProperty(
+                "services.core.endpoints.heapdump.enabled",
+                Boolean.class,
+                false
+              )
+            ) {
+              managementEndpointManager.register(heapDumpEndpoint);
+            }
+
+            // Threaddump endpoint is disabled by default for security reasons. It is up to the platform administrator
+            // to configure correctly authentication (ie. not using default credentials, or disabling authentication)
+            // before exposing such endpoint.
+            if (
+              environment.getProperty(
+                "services.core.endpoints.threaddump.enabled",
+                Boolean.class,
+                false
+              )
+            ) {
+              managementEndpointManager.register(threadDumpEndpoint);
+            }
 
             // Metrics
             boolean metricsEnabled = environment.getProperty(
