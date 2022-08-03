@@ -15,10 +15,15 @@
  */
 package io.gravitee.node.vertx;
 
+import static java.util.stream.Collectors.*;
+import static java.util.stream.StreamSupport.stream;
+
+import io.gravitee.common.util.EnvironmentUtils;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.tracing.vertx.LazyVertxTracerFactory;
+import io.gravitee.node.vertx.metrics.ExcludeTagsFilter;
+import io.gravitee.node.vertx.metrics.RenameVertxFilter;
 import io.gravitee.node.vertx.verticle.factory.SpringVerticleFactory;
-import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
@@ -26,21 +31,18 @@ import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
-import io.micrometer.core.instrument.config.MeterFilter;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.tracing.TracingOptions;
 import io.vertx.micrometer.*;
 import io.vertx.micrometer.backends.BackendRegistries;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 
 /**
@@ -64,6 +66,10 @@ public class VertxFactory implements FactoryBean<Vertx> {
 
     @Autowired
     private LazyVertxTracerFactory vertxTracerFactory;
+
+    private Set<Label> metricsLabels;
+
+    private Map<String, Set<Label>> metricsExcludedLabelsByCategory;
 
     @Override
     public Vertx getObject() throws Exception {
@@ -91,6 +97,10 @@ public class VertxFactory implements FactoryBean<Vertx> {
                 .meterFilter(new RenameVertxFilter())
                 .commonTags("application", node.application())
                 .commonTags("instance", node.hostname());
+
+            metricsExcludedLabelsByCategory.forEach((category, labels) ->
+                registry.config().meterFilter(new ExcludeTagsFilter(category, labels.stream().map(String::valueOf).collect(toList())))
+            );
 
             new FileDescriptorMetrics().bindTo(registry);
             new ClassLoaderMetrics().bindTo(registry);
@@ -128,14 +138,8 @@ public class VertxFactory implements FactoryBean<Vertx> {
         }
 
         // Read labels
-        Set<String> labels = loadLabels();
-        if (labels != null && !labels.isEmpty()) {
-            Set<Label> micrometerLabels = labels.stream().map(label -> Label.valueOf(label.toUpperCase())).collect(Collectors.toSet());
-            micrometerMetricsOptions.setLabels(micrometerLabels);
-        } else {
-            // Defaults to
-            micrometerMetricsOptions.setLabels(EnumSet.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE));
-        }
+        this.loadMetricLabels();
+        micrometerMetricsOptions.setLabels(metricsLabels);
 
         boolean prometheusEnabled = environment.getProperty("services.metrics.prometheus.enabled", Boolean.class, true);
         if (prometheusEnabled) {
@@ -160,7 +164,74 @@ public class VertxFactory implements FactoryBean<Vertx> {
         return true;
     }
 
-    private Set<String> loadLabels() {
+    private void loadMetricLabels() {
+        final Map<String, Set<Label>> includedLabelsByCategory = readConfiguredLabelsByCategory("include");
+
+        // Include labels takes precedence over defined labels.
+        Set<String> labels = readConfiguredLabels();
+        if (labels != null && !labels.isEmpty()) {
+            metricsLabels = labels.stream().map(this::toLabel).collect(Collectors.toSet());
+        } else {
+            metricsLabels = EnumSet.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE);
+        }
+
+        // If a label is activated for a specific category, it must be added globally and then manually excluded for all other categories :-(
+        includedLabelsByCategory.forEach((category, includedLabels) -> metricsLabels.addAll(includedLabels));
+
+        metricsExcludedLabelsByCategory = readConfiguredLabelsByCategory("exclude");
+
+        // Identify the labels to exclude for each category.
+        for (Map.Entry<String, Set<Label>> labelsByCategory : includedLabelsByCategory.entrySet()) {
+            final String includedCategory = labelsByCategory.getKey();
+            final Set<Label> includedCategoryLabels = labelsByCategory.getValue();
+
+            // Get the domains where these labels are not included (ie: domain on which to explicitly exclude this label).
+            Arrays
+                .stream(MetricsDomain.values())
+                .map(MetricsDomain::toCategory)
+                .filter(otherCategory -> !otherCategory.equalsIgnoreCase(includedCategory))
+                .forEach(otherCategory -> {
+                    if (includedLabelsByCategory.containsKey(otherCategory)) {
+                        final Set<Label> otherCategoryLabels = includedLabelsByCategory.get(otherCategory);
+                        includedCategoryLabels.forEach(label -> {
+                            if (!otherCategoryLabels.contains(label)) {
+                                // Label not explicitly included for this category, add it to the exclusion list.
+                                metricsExcludedLabelsByCategory.computeIfAbsent(otherCategory, key -> new HashSet<>()).add(label);
+                            }
+                        });
+                    } else {
+                        // Directly exclude all the labels on the current category.
+                        includedCategoryLabels.forEach(label ->
+                            metricsExcludedLabelsByCategory.computeIfAbsent(otherCategory, key -> new HashSet<>()).add(label)
+                        );
+                    }
+                });
+        }
+    }
+
+    private Map<String, Set<Label>> readConfiguredLabelsByCategory(final String type) {
+        return Arrays
+            .stream(MetricsDomain.values())
+            .map(MetricsDomain::toCategory)
+            .flatMap(category ->
+                EnvironmentUtils
+                    .getPropertiesStartingWith((ConfigurableEnvironment) environment, "services.metrics." + type + "." + category)
+                    .entrySet()
+                    .stream()
+            )
+            .collect(
+                Collectors.groupingBy(
+                    e -> e.getKey().replaceAll("^services\\.metrics\\." + type + "\\." + "(.*)\\[\\d+]$", "$1"),
+                    Collectors.mapping(e -> toLabel((String) e.getValue()), Collectors.<Label, Set<Label>>toCollection(HashSet::new))
+                )
+            );
+    }
+
+    private Label toLabel(String label) {
+        return Label.valueOf(label.toUpperCase());
+    }
+
+    private Set<String> readConfiguredLabels() {
         LOGGER.debug("Looking for metrics labels...");
         Set<String> labels = null;
 
@@ -180,18 +251,6 @@ public class VertxFactory implements FactoryBean<Vertx> {
         }
 
         return labels;
-    }
-
-    private class RenameVertxFilter implements MeterFilter {
-
-        @Override
-        public Meter.Id map(Meter.Id id) {
-            if (id.getName().startsWith("vertx.")) {
-                return id.withName(id.getName().substring(6));
-            }
-
-            return id;
-        }
     }
 
     private VertxOptions getVertxOptions() {

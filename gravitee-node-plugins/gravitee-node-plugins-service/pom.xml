@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node-plugins</artifactId>
-        <version>1.24.3</version>
+        <version>1.25.0-8218-prometheus-labels-SNAPSHOT</version>
     </parent>
 
     <artifactId>gravitee-node-plugins-service</artifactId>
