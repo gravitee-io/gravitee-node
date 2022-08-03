@@ -29,7 +29,7 @@
 
     <groupId>io.gravitee.node</groupId>
     <artifactId>gravitee-node</artifactId>
-    <version>1.25.0-8218-prometheus-labels-SNAPSHOT</version>
+    <version>1.25.0</version>
 
     <name>Gravitee.io - Node</name>
 
