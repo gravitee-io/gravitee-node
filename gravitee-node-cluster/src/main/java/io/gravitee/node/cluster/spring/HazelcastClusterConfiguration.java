@@ -15,7 +15,9 @@
  */
 package io.gravitee.node.cluster.spring;
 
+import com.hazelcast.config.Config;
 import com.hazelcast.config.FileSystemXmlConfig;
+import com.hazelcast.config.FileSystemYamlConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.spi.properties.ClusterProperty;
@@ -25,6 +27,7 @@ import io.gravitee.node.api.message.MessageProducer;
 import io.gravitee.node.cache.hazelcast.HazelcastCacheManager;
 import io.gravitee.node.cluster.hazelcast.HazelcastClusterManager;
 import io.gravitee.node.cluster.hazelcast.HazelcastMessageProducer;
+import java.io.FileNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 import org.springframework.core.type.AnnotatedTypeMetadata;
@@ -46,14 +49,14 @@ public class HazelcastClusterConfiguration {
         System.setProperty(ClusterProperty.LOGGING_TYPE.getName(), "slf4j");
         System.setProperty(ClusterProperty.SHUTDOWNHOOK_ENABLED.getName(), "false");
 
-        FileSystemXmlConfig config = new FileSystemXmlConfig(hazelcastConfigFilePath);
+        Config config = fromFilePath(hazelcastConfigFilePath);
 
         // Force the classloader used by Hazelcast to the container's classloader.
         config.setClassLoader(ClusterConfiguration.class.getClassLoader());
 
         config.setProperty(ClusterProperty.HEALTH_MONITORING_LEVEL.getName(), "OFF");
 
-        return Hazelcast.newHazelcastInstance(new FileSystemXmlConfig(hazelcastConfigFilePath));
+        return Hazelcast.newHazelcastInstance(config);
     }
 
     @Bean("hazelcastClusterManager")
@@ -82,5 +85,15 @@ public class HazelcastClusterConfiguration {
         public ConfigurationPhase getConfigurationPhase() {
             return ConfigurationPhase.REGISTER_BEAN;
         }
+    }
+
+    private Config fromFilePath(String filePath) throws FileNotFoundException {
+        if (filePath.endsWith("xml")) {
+            return new FileSystemXmlConfig(hazelcastConfigFilePath);
+        } else if (filePath.endsWith("yaml") || filePath.endsWith("yml")) {
+            return new FileSystemYamlConfig(hazelcastConfigFilePath);
+        }
+
+        throw new IllegalArgumentException("Only xml or yaml file supported for Hazelcast configuration");
     }
 }
