@@ -51,6 +51,7 @@
         <module>gravitee-node-certificates</module>
         <module>gravitee-node-notifier</module>
         <module>gravitee-node-license</module>
+        <module>gravitee-node-services</module>
     </modules>
 
     <dependencyManagement>
