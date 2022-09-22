@@ -21,7 +21,7 @@ import io.gravitee.node.api.Node;
 import io.gravitee.node.api.upgrader.UpgradeRecord;
 import io.gravitee.node.api.upgrader.Upgrader;
 import io.gravitee.node.api.upgrader.UpgraderRepository;
-import io.reactivex.Maybe;
+import io.reactivex.rxjava3.core.Maybe;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
