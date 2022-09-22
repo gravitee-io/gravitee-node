@@ -15,7 +15,7 @@
  */
 package io.gravitee.node.monitoring.handler;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -32,7 +32,7 @@ import io.gravitee.node.monitoring.NodeMonitoringService;
 import io.gravitee.node.monitoring.monitor.probe.JvmProbe;
 import io.gravitee.node.monitoring.monitor.probe.OsProbe;
 import io.gravitee.node.monitoring.monitor.probe.ProcessProbe;
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import java.util.HashMap;

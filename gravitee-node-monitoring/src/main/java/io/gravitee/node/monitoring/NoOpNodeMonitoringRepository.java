@@ -17,9 +17,9 @@ package io.gravitee.node.monitoring;
 
 import io.gravitee.node.api.Monitoring;
 import io.gravitee.node.api.NodeMonitoringRepository;
-import io.reactivex.Flowable;
-import io.reactivex.Maybe;
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Single;
 
 /**
  * Implementation of {@link NodeMonitoringRepository} which does nothing an can be useful when we don't want to persist monitoring node data.

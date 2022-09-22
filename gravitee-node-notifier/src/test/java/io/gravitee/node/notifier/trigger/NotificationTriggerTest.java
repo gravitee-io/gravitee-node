@@ -17,11 +17,15 @@ package io.gravitee.node.notifier.trigger;
 
 import static org.mockito.Mockito.*;
 
-import io.gravitee.node.api.notifier.*;
+import io.gravitee.node.api.notifier.NotificationAcknowledge;
+import io.gravitee.node.api.notifier.NotificationAcknowledgeRepository;
+import io.gravitee.node.api.notifier.NotificationCondition;
+import io.gravitee.node.api.notifier.NotificationDefinition;
+import io.gravitee.node.api.notifier.ResendNotificationCondition;
 import io.gravitee.node.notifier.plugin.NotifierPluginFactory;
 import io.gravitee.notifier.api.Notifier;
-import io.reactivex.Maybe;
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Single;
 import io.vertx.core.Vertx;
 import java.util.Date;
 import java.util.Optional;
