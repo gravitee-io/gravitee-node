@@ -37,7 +37,7 @@ public class InitializerConfiguration {
     public static List<Class<? extends LifecycleComponent>> getComponents() {
         List<Class<? extends LifecycleComponent>> components = new ArrayList<>();
 
-        String upgradeMode = System.getProperty("upgrade.mode");
+        String upgradeMode = System.getenv().getOrDefault("upgrade.mode", System.getProperty("upgrade.mode"));
 
         if (upgradeMode == null || "false".equalsIgnoreCase(upgradeMode)) {
             components.add(InitializerServiceImpl.class);

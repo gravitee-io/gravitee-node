@@ -74,7 +74,7 @@ public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> im
                     } else {
                         logger.info("Apply {} ...", name);
                         if (upgrader.upgrade()) {
-                            upgraderRepository.create(new UpgradeRecord(upgrader.getClass().getName(), new Date()));
+                            upgraderRepository.create(new UpgradeRecord(upgrader.getClass().getName(), new Date())).blockingGet();
                         } else {
                             stopUpgrade.set(true);
                         }
