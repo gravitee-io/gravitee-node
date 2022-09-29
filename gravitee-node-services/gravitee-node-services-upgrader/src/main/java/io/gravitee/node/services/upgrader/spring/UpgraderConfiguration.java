@@ -37,7 +37,7 @@ public class UpgraderConfiguration {
     public static List<Class<? extends LifecycleComponent>> getComponents() {
         List<Class<? extends LifecycleComponent>> components = new ArrayList<>();
 
-        String upgradeMode = System.getProperty("upgrade.mode");
+        String upgradeMode = System.getenv().getOrDefault("upgrade.mode", System.getProperty("upgrade.mode"));
 
         // upgrade.mode is null if you run the app without passing any argument (e.x: --upgrade.mode=true)
         // This is to keep the backward compatibility.
