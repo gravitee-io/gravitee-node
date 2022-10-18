@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>2.0.0-alpha.1</version>
+        <version>${revision}${sha1}${changelist}</version>
     </parent>
 
     <artifactId>gravitee-node-cluster</artifactId>
@@ -35,31 +35,31 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-api</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}${sha1}${changelist}</version>
         </dependency>
 
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-plugins-service</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}${sha1}${changelist}</version>
         </dependency>
 
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-management</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}${sha1}${changelist}</version>
         </dependency>
 
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-reporter</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}${sha1}${changelist}</version>
         </dependency>
 
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-cache</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}${sha1}${changelist}</version>
         </dependency>
 
         <dependency>

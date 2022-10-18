@@ -22,7 +22,7 @@
     <parent>
         <artifactId>gravitee-node</artifactId>
         <groupId>io.gravitee.node</groupId>
-        <version>2.0.0-alpha.1</version>
+        <version>${revision}${sha1}${changelist}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -38,7 +38,7 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-api</artifactId>
-            <version>${project.version}</version>
+            <version>${revision}${sha1}${changelist}</version>
         </dependency>
 
         <dependency>
