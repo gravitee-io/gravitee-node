@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>${revision}${sha1}${changelist}</version>
+        <version>2.0.0-alpha.1</version>
     </parent>
 
     <artifactId>gravitee-node-management</artifactId>
@@ -35,13 +35,13 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-api</artifactId>
-            <version>2.0.0-alpha.1</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-vertx</artifactId>
-            <version>2.0.0-alpha.1</version>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- Vert.x -->

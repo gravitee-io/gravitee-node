@@ -29,7 +29,7 @@
 
     <groupId>io.gravitee.node</groupId>
     <artifactId>gravitee-node</artifactId>
-    <version>${revision}${sha1}${changelist}</version>
+    <version>2.0.0-alpha.1</version>
 
     <name>Gravitee.io - Node</name>
 
@@ -69,67 +69,67 @@
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-api</artifactId>
-                <version>2.0.0-alpha.1</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-container</artifactId>
-                <version>2.0.0-alpha.1</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-vertx</artifactId>
-                <version>2.0.0-alpha.1</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-cluster</artifactId>
-                <version>2.0.0-alpha.1</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-monitoring</artifactId>
-                <version>2.0.0-alpha.1</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-management</artifactId>
-                <version>2.0.0-alpha.1</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-reporter</artifactId>
-                <version>2.0.0-alpha.1</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-plugins</artifactId>
-                <version>2.0.0-alpha.1</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-services</artifactId>
-                <version>${revision}${sha1}${changelist}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-jetty</artifactId>
-                <version>2.0.0-alpha.1</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-certificates</artifactId>
-                <version>2.0.0-alpha.1</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-kubernetes</artifactId>
-                <version>2.0.0-alpha.1</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-cache</artifactId>
-                <version>2.0.0-alpha.1</version>
+                <version>${project.version}</version>
             </dependency>
 
             <!-- Gravitee.io -->
@@ -247,11 +247,6 @@
     </dependencies>
 
     <properties>
-        <!-- Version properties -->
-        <revision>2.0.0</revision>
-        <sha1/>
-        <changelist>-alpha.1</changelist>
-
         <gravitee-bom.version>2.7</gravitee-bom.version>
         <gravitee-common.version>1.25.0</gravitee-common.version>
         <gravitee-plugin.version>1.23.1</gravitee-plugin.version>
