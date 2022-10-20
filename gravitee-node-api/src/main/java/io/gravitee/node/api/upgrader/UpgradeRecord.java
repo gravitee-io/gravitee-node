@@ -16,6 +16,7 @@
 package io.gravitee.node.api.upgrader;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
@@ -54,5 +55,18 @@ public class UpgradeRecord {
 
     public void setAppliedAt(Date appliedAt) {
         this.appliedAt = appliedAt;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UpgradeRecord that = (UpgradeRecord) o;
+        return id.equals(that.id) && appliedAt.equals(that.appliedAt);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, appliedAt);
     }
 }
