@@ -25,7 +25,7 @@ import io.gravitee.kubernetes.client.model.v1.ObjectMeta;
 import io.gravitee.node.api.certificate.KeyStoreBundle;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
-import io.reactivex.Maybe;
+import io.reactivex.rxjava3.core.Maybe;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

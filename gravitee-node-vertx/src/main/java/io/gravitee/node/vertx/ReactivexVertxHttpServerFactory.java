@@ -17,9 +17,8 @@ package io.gravitee.node.vertx;
 
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
 import io.gravitee.node.vertx.configuration.HttpServerConfiguration;
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.http.HttpServer;
-import org.springframework.beans.factory.FactoryBean;
+import io.vertx.rxjava3.core.Vertx;
+import io.vertx.rxjava3.core.http.HttpServer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

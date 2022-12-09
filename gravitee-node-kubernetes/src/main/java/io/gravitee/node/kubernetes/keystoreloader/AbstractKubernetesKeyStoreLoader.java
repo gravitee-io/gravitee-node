@@ -21,10 +21,10 @@ import io.gravitee.kubernetes.client.api.ResourceQuery;
 import io.gravitee.node.api.certificate.KeyStoreBundle;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,15 +62,15 @@ public abstract class AbstractKubernetesKeyStoreLoader<T> implements KeyStoreLoa
 
     @Override
     public void start() {
-        final Throwable throwable = init()
-            .doOnComplete(() -> {
-                if (options.isWatch()) {
-                    startWatch();
-                }
-            })
-            .blockingGet();
-
-        if (throwable != null) {
+        try {
+            init()
+                .doOnComplete(() -> {
+                    if (options.isWatch()) {
+                        startWatch();
+                    }
+                })
+                .blockingAwait();
+        } catch (Throwable throwable) {
             throw new IllegalArgumentException("An error occurred when trying to init certificates.", throwable);
         }
     }
