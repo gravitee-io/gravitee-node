@@ -32,7 +32,7 @@ public class VertxHttpServerProvider {
         return vertx.createHttpServer(httpServerOptions);
     }
 
-    public static io.vertx.reactivex.core.http.HttpServer create(io.vertx.reactivex.core.Vertx vertx, HttpServerOptions httpServerOptions) {
+    public static io.vertx.rxjava3.core.http.HttpServer create(io.vertx.rxjava3.core.Vertx vertx, HttpServerOptions httpServerOptions) {
         return vertx.createHttpServer(httpServerOptions);
     }
 }

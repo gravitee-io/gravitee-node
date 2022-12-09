@@ -15,7 +15,7 @@
  */
 package io.gravitee.node.api.notifier;
 
-import io.reactivex.Completable;
+import io.reactivex.rxjava3.core.Completable;
 
 /**
  * This service manages notifications at platform level.

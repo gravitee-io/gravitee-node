@@ -15,9 +15,8 @@
  */
 package io.gravitee.node.api.upgrader;
 
-import io.gravitee.node.api.upgrader.UpgradeRecord;
-import io.reactivex.Maybe;
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Single;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)

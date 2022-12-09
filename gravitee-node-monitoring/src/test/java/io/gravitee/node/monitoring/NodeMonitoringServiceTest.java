@@ -20,11 +20,11 @@ import static org.mockito.Mockito.when;
 
 import io.gravitee.node.api.Monitoring;
 import io.gravitee.node.api.NodeMonitoringRepository;
-import io.reactivex.Flowable;
-import io.reactivex.Maybe;
-import io.reactivex.Single;
-import io.reactivex.observers.TestObserver;
-import io.reactivex.subscribers.TestSubscriber;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.observers.TestObserver;
+import io.reactivex.rxjava3.subscribers.TestSubscriber;
 import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +50,7 @@ public class NodeMonitoringServiceTest {
     }
 
     @Test
-    public void shouldCreate() {
+    public void shouldCreate() throws InterruptedException {
         final Monitoring monitoring = new Monitoring();
         monitoring.setNodeId("node#1");
         monitoring.setCreatedAt(new Date());
@@ -63,12 +63,12 @@ public class NodeMonitoringServiceTest {
 
         final TestObserver<Monitoring> obs = cut.createOrUpdate(monitoring).test();
 
-        obs.awaitTerminalEvent();
+        obs.await();
         obs.assertValue(monitoring);
     }
 
     @Test
-    public void shouldUpdate() {
+    public void shouldUpdate() throws InterruptedException {
         Monitoring monitoring = new Monitoring();
         monitoring.setNodeId("node#1");
         monitoring.setCreatedAt(new Date());
@@ -85,25 +85,25 @@ public class NodeMonitoringServiceTest {
 
         final TestObserver<Monitoring> obs = cut.createOrUpdate(monitoring).test();
 
-        obs.awaitTerminalEvent();
+        obs.await();
         obs.assertValue(monitoring);
     }
 
     @Test
-    public void shouldNotCreateOrUpdateIfNotRepository() {
+    public void shouldNotCreateOrUpdateIfNotRepository() throws InterruptedException {
         final Monitoring monitoring = new Monitoring();
         cut = new NodeMonitoringService(null);
 
         final TestObserver<Monitoring> obs = cut.createOrUpdate(monitoring).test();
 
-        obs.awaitTerminalEvent();
+        obs.await();
         obs.assertValue(monitoring);
 
         verifyZeroInteractions(repository);
     }
 
     @Test
-    public void shouldFindByTypeAndTimeframe() {
+    public void shouldFindByTypeAndTimeframe() throws InterruptedException {
         long from = System.currentTimeMillis();
         long to = System.currentTimeMillis() + 1000;
 
@@ -112,20 +112,20 @@ public class NodeMonitoringServiceTest {
 
         final TestSubscriber<Monitoring> obs = cut.findByTypeAndTimeframe(Monitoring.HEALTH_CHECK, from, to).test();
 
-        obs.awaitTerminalEvent();
+        obs.await();
         obs.assertValue(monitoring);
         obs.assertComplete();
     }
 
     @Test
-    public void shouldNotFindByTypeAndTimeframeIfNoRepository() {
+    public void shouldNotFindByTypeAndTimeframeIfNoRepository() throws InterruptedException {
         long from = System.currentTimeMillis();
         long to = System.currentTimeMillis() + 1000;
 
         cut = new NodeMonitoringService(null);
         final TestSubscriber<Monitoring> obs = cut.findByTypeAndTimeframe(Monitoring.HEALTH_CHECK, from, to).test();
 
-        obs.awaitTerminalEvent();
+        obs.await();
         obs.assertNoValues();
         obs.assertComplete();
     }
