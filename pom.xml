@@ -248,7 +248,7 @@
 
     <properties>
         <gravitee-bom.version>2.7</gravitee-bom.version>
-        <gravitee-common.version>1.25.0</gravitee-common.version>
+        <gravitee-common.version>1.28.0</gravitee-common.version>
         <gravitee-plugin.version>1.23.1</gravitee-plugin.version>
         <gravitee-expression-language.version>1.9.2</gravitee-expression-language.version>
         <gravitee-reporter-api.version>1.24.1</gravitee-reporter-api.version>
