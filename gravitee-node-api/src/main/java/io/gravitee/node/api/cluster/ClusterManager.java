@@ -33,6 +33,13 @@ public interface ClusterManager {
      */
     boolean isMasterNode();
 
+    /**
+     * Indicates if the node is part of a cluster or not.
+     *
+     * @return <code>true</code> if the node is not part of a cluster (running in standalone mode)
+     */
+    boolean isStandalone();
+
     void addMemberListener(MemberListener listener);
 
     void stop();

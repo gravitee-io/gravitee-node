@@ -15,18 +15,21 @@
  */
 package io.gravitee.node.cluster.spring;
 
-import io.gravitee.node.cache.CacheManagerFactoriesLoader;
+import io.gravitee.node.api.cache.CacheManager;
+import io.gravitee.node.api.cluster.ClusterManager;
+import io.gravitee.node.api.message.MessageProducer;
+import io.gravitee.node.cluster.ClusterManagerDelegate;
 import io.gravitee.node.cluster.ClusterService;
+import io.gravitee.node.cluster.MessageProducerDelegate;
+import io.gravitee.node.cluster.cache.CacheManagerDelegate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
 @Configuration
-@Import({ HazelcastClusterConfiguration.class, StandaloneClusterConfiguration.class })
 public class ClusterConfiguration {
 
     @Bean
@@ -35,7 +38,17 @@ public class ClusterConfiguration {
     }
 
     @Bean
-    CacheManagerFactoriesLoader cacheManagerFactoriesLoader() {
-        return new CacheManagerFactoriesLoader();
+    public ClusterManager clusterManager() {
+        return new ClusterManagerDelegate();
+    }
+
+    @Bean
+    public CacheManager cacheManager() {
+        return new CacheManagerDelegate();
+    }
+
+    @Bean
+    public MessageProducer messageProducer() {
+        return new MessageProducerDelegate();
     }
 }

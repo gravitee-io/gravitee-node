@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>1.27.1</version>
+        <version>1.28.0-cluster-plugin-SNAPSHOT</version>
     </parent>
 
     <artifactId>gravitee-node-cluster</artifactId>
@@ -40,25 +40,7 @@
 
         <dependency>
             <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-plugins-service</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-management</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-reporter</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-cache</artifactId>
             <version>${project.version}</version>
         </dependency>
 
