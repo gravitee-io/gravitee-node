@@ -259,7 +259,7 @@
         <gravitee-alert-api.version>1.8.0</gravitee-alert-api.version>
 
         <!-- WARNING: the next two dependencies versions must be kept in sync regarding vertx-micrometer-metrics -->
-        <micrometer-registry-prometheus.version>1.6.2</micrometer-registry-prometheus.version>
+        <micrometer-registry-prometheus.version>1.10.3</micrometer-registry-prometheus.version>
         <LatencyUtils.version>2.0.3</LatencyUtils.version>
         <bouncycastle.version>1.70</bouncycastle.version>
         <guava.version>31.1-jre</guava.version>
