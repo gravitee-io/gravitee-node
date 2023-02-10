@@ -1,3 +1,10 @@
+## [1.27.4](https://github.com/gravitee-io/gravitee-node/compare/1.27.3...1.27.4) (2023-02-10)
+
+
+### Bug Fixes
+
+* **api:** send head before writing response for /monitor ([66abc90](https://github.com/gravitee-io/gravitee-node/commit/66abc903384881e8bedd4b1f4b6141ba061d9c7d))
+
 ## [1.27.3](https://github.com/gravitee-io/gravitee-node/compare/1.27.2...1.27.3) (2022-11-02)
 
 
