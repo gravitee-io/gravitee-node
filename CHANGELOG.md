@@ -1,3 +1,10 @@
+# [2.1.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/2.0.2...2.1.0-alpha.1) (2023-02-10)
+
+
+### Features
+
+* bump reporter api version ([c2493b7](https://github.com/gravitee-io/gravitee-node/commit/c2493b75a04b5e38671bf68425e7a6a3915c61f8))
+
 ## [2.0.2](https://github.com/gravitee-io/gravitee-node/compare/2.0.1...2.0.2) (2023-02-10)
 
 
