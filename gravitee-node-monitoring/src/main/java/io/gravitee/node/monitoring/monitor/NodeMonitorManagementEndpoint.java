@@ -70,8 +70,8 @@ public class NodeMonitorManagementEndpoint implements ManagementEndpoint {
 
             response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
             response.setChunked(true);
-            response.write(mapper.writeValueAsString(root));
             response.setStatusCode(HttpStatusCode.OK_200);
+            response.write(mapper.writeValueAsString(root));
         } catch (JsonProcessingException e) {
             LOGGER.error("Unexpected error while generating monitoring", e);
             response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
