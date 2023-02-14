@@ -256,7 +256,7 @@
         <gravitee-kubernetes.version>2.0.0</gravitee-kubernetes.version>
         <snakeyaml.version>1.30</snakeyaml.version>
         <hazelcast.version>4.1.9</hazelcast.version>
-        <gravitee-alert-api.version>1.8.0</gravitee-alert-api.version>
+        <gravitee-alert-api.version>1.9.1</gravitee-alert-api.version>
 
         <!-- WARNING: the next two dependencies versions must be kept in sync regarding vertx-micrometer-metrics -->
         <micrometer-registry-prometheus.version>1.6.2</micrometer-registry-prometheus.version>
