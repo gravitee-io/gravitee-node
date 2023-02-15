@@ -17,6 +17,7 @@ package io.gravitee.node.certificates;
 
 import static io.gravitee.node.api.certificate.KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12;
 import static io.gravitee.node.certificates.ReloadableKeyManager.MAX_SNI_DOMAINS;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
@@ -107,6 +108,38 @@ public class ReloadableKeyManagerTest {
         when(sslSession.getRequestedServerNames()).thenReturn(Collections.emptyList());
 
         assertEquals("localhost", cut.chooseEngineServerAlias("void", null, sslEngine));
+    }
+
+    @Test
+    public void shouldGetPrivateKey() {
+        final KeyStore keyStore = KeyStoreUtils.initFromPath(CERTIFICATE_FORMAT_PKCS12, getPath("all-in-one.p12"), "secret");
+        cut.load("localhost", keyStore, "secret", true);
+
+        assertThat(cut.getPrivateKey("localhost")).isNotNull();
+    }
+
+    @Test
+    public void shouldGetNullPrivateKeyWhenAliasIsUnknown() {
+        final KeyStore keyStore = KeyStoreUtils.initFromPath(CERTIFICATE_FORMAT_PKCS12, getPath("all-in-one.p12"), "secret");
+        cut.load("localhost", keyStore, "secret", true);
+
+        assertThat(cut.getPrivateKey("unknown")).isNull();
+    }
+
+    @Test
+    public void shouldGetCertificateChain() {
+        final KeyStore keyStore = KeyStoreUtils.initFromPath(CERTIFICATE_FORMAT_PKCS12, getPath("all-in-one.p12"), "secret");
+        cut.load("localhost", keyStore, "secret", true);
+
+        assertThat(cut.getCertificateChain("localhost")).isNotNull();
+    }
+
+    @Test
+    public void shouldGetNullCertificateChainWhenAliasIsUnknown() {
+        final KeyStore keyStore = KeyStoreUtils.initFromPath(CERTIFICATE_FORMAT_PKCS12, getPath("all-in-one.p12"), "secret");
+        cut.load("localhost", keyStore, "secret", true);
+
+        assertThat(cut.getCertificateChain(null)).isNull();
     }
 
     @Test
