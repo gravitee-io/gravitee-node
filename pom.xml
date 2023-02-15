@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee</groupId>
         <artifactId>gravitee-parent</artifactId>
-        <version>20.3</version>
+        <version>21.0.0</version>
     </parent>
 
     <groupId>io.gravitee.node</groupId>
@@ -247,7 +247,7 @@
     </dependencies>
 
     <properties>
-        <gravitee-bom.version>2.7</gravitee-bom.version>
+        <gravitee-bom.version>4.0.0-alpha.1</gravitee-bom.version>
         <gravitee-common.version>1.25.0</gravitee-common.version>
         <gravitee-plugin.version>1.23.1</gravitee-plugin.version>
         <gravitee-expression-language.version>1.9.2</gravitee-expression-language.version>
