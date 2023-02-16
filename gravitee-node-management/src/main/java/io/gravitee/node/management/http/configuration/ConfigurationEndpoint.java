@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.AbstractEnvironment;
-import org.springframework.core.env.PropertiesPropertySource;
+import org.springframework.core.env.EnumerablePropertySource;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -48,7 +48,7 @@ public class ConfigurationEndpoint implements ManagementEndpoint {
 
     private static final String ENDPOINT_PATH = "/configuration";
 
-    private static final String PROPERTY_SOURCE_CONFIGURATION = "graviteeConfiguration";
+    private static final String PROPERTY_SOURCE_CONFIGURATION = "graviteeYamlConfiguration";
 
     @Autowired
     private AbstractEnvironment environment;
@@ -71,7 +71,7 @@ public class ConfigurationEndpoint implements ManagementEndpoint {
         response.setChunked(true);
 
         // Configuration is coming from gravitee.yml
-        PropertiesPropertySource nodeConfiguration = (PropertiesPropertySource) environment
+        EnumerablePropertySource nodeConfiguration = (EnumerablePropertySource) environment
             .getPropertySources()
             .get(PROPERTY_SOURCE_CONFIGURATION);
 
