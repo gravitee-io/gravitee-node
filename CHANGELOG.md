@@ -1,3 +1,10 @@
+## [1.27.5](https://github.com/gravitee-io/gravitee-node/compare/1.27.4...1.27.5) (2023-02-16)
+
+
+### Bug Fixes
+
+* **api:** load the right property source for /configuration ([935a394](https://github.com/gravitee-io/gravitee-node/commit/935a39473f78e4a0ab90b8a360694730bd4f31bf))
+
 ## [1.27.4](https://github.com/gravitee-io/gravitee-node/compare/1.27.3...1.27.4) (2023-02-10)
 
 
