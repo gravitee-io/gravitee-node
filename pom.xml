@@ -249,7 +249,7 @@
     <properties>
         <gravitee-bom.version>4.0.0-alpha.1</gravitee-bom.version>
         <gravitee-common.version>1.25.0</gravitee-common.version>
-        <gravitee-plugin.version>1.23.1</gravitee-plugin.version>
+        <gravitee-plugin.version>1.25.0</gravitee-plugin.version>
         <gravitee-expression-language.version>1.9.2</gravitee-expression-language.version>
         <gravitee-reporter-api.version>1.25.0-alpha.4</gravitee-reporter-api.version>
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
