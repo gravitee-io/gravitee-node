@@ -1,3 +1,16 @@
+# [3.0.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/2.1.0-alpha.2...3.0.0-alpha.1) (2023-02-16)
+
+
+### Features
+
+* bump gravitee-plugin version to 1.25.0 ([88b4ac0](https://github.com/gravitee-io/gravitee-node/commit/88b4ac0c097e4bd72a37893b832dde9634094206))
+* move to bom v4 and vertx 4.3.8 ([29f3796](https://github.com/gravitee-io/gravitee-node/commit/29f3796259f4f0e8f248c7997fbd2bd30a6c2642))
+
+
+### BREAKING CHANGES
+
+* requires vertx 4.3.8
+
 # [2.1.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/2.1.0-alpha.1...2.1.0-alpha.2) (2023-02-16)
 
 
