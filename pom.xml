@@ -253,7 +253,7 @@
         <gravitee-expression-language.version>1.9.2</gravitee-expression-language.version>
         <gravitee-reporter-api.version>1.24.1</gravitee-reporter-api.version>
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
-        <gravitee-kubernetes.version>2.0.0</gravitee-kubernetes.version>
+        <gravitee-kubernetes.version>2.0.1</gravitee-kubernetes.version>
         <snakeyaml.version>1.30</snakeyaml.version>
         <hazelcast.version>4.1.9</hazelcast.version>
         <gravitee-alert-api.version>1.8.0</gravitee-alert-api.version>
