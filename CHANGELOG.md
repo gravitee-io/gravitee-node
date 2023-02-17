@@ -1,3 +1,10 @@
+## [2.0.4](https://github.com/gravitee-io/gravitee-node/compare/2.0.3...2.0.4) (2023-02-17)
+
+
+### Bug Fixes
+
+* update kubernetes client dependency ([2b87da9](https://github.com/gravitee-io/gravitee-node/commit/2b87da9d3ac6c987a62e407f90223918add607a6))
+
 ## [2.0.3](https://github.com/gravitee-io/gravitee-node/compare/2.0.2...2.0.3) (2023-02-16)
 
 
