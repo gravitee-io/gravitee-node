@@ -1,3 +1,10 @@
+# [3.0.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/3.0.0-alpha.1...3.0.0-alpha.2) (2023-02-22)
+
+
+### Bug Fixes
+
+* update kubernetes client dependency ([bc5d835](https://github.com/gravitee-io/gravitee-node/commit/bc5d835c3c7060d5091c70453d89c4886c7249ec))
+
 # [3.0.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/2.1.0-alpha.2...3.0.0-alpha.1) (2023-02-16)
 
 
