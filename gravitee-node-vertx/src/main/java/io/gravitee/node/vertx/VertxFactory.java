@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 
@@ -211,21 +212,22 @@ public class VertxFactory implements FactoryBean<Vertx> {
     }
 
     private Map<String, Set<Label>> readConfiguredLabelsByCategory(final String type) {
-        return Arrays
-            .stream(MetricsDomain.values())
-            .map(MetricsDomain::toCategory)
-            .flatMap(category ->
-                EnvironmentUtils
-                    .getPropertiesStartingWith((ConfigurableEnvironment) environment, "services.metrics." + type + "." + category)
-                    .entrySet()
-                    .stream()
-            )
-            .collect(
-                Collectors.groupingBy(
-                    e -> e.getKey().replaceAll("^services\\.metrics\\." + type + "\\." + "(.*)\\[\\d+]$", "$1"),
-                    Collectors.mapping(e -> toLabel((String) e.getValue()), Collectors.<Label, Set<Label>>toCollection(HashSet::new))
-                )
-            );
+        final Map<String, Set<Label>> labelsByCategory = new HashMap<>();
+
+        for (MetricsDomain metricsDomain : MetricsDomain.values()) {
+            final String category = metricsDomain.toCategory();
+            final Set<Label> labels = new HashSet<>();
+
+            String value;
+            int counter = 0;
+            labelsByCategory.put(category, labels);
+
+            while ((value = environment.getProperty("services.metrics." + type + "." + category + "[" + (counter++) + "]")) != null) {
+                labels.add(toLabel(value));
+            }
+        }
+
+        return labelsByCategory;
     }
 
     private Label toLabel(String label) {
