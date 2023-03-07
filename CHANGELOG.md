@@ -1,3 +1,10 @@
+## [1.25.3](https://github.com/gravitee-io/gravitee-node/compare/1.25.2...1.25.3) (2023-03-07)
+
+
+### Bug Fixes
+
+* avoid spring loading issue with vertx and k8s client ([fe829f9](https://github.com/gravitee-io/gravitee-node/commit/fe829f9fcf9b80f2525925316553aa1db54737b7))
+
 ## [1.25.2](https://github.com/gravitee-io/gravitee-node/compare/1.25.1...1.25.2) (2023-02-16)
 
 
