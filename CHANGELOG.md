@@ -1,3 +1,10 @@
+## [1.27.6](https://github.com/gravitee-io/gravitee-node/compare/1.27.5...1.27.6) (2023-03-09)
+
+
+### Bug Fixes
+
+* remove enforced INFO level for license ([0515ec5](https://github.com/gravitee-io/gravitee-node/commit/0515ec5a8acbe660cc3e9fa042edf21b535b0568))
+
 ## [1.27.5](https://github.com/gravitee-io/gravitee-node/compare/1.27.4...1.27.5) (2023-02-16)
 
 
