@@ -1,3 +1,11 @@
+# [3.0.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/3.0.0-alpha.3...3.0.0-alpha.4) (2023-03-16)
+
+
+### Bug Fixes
+
+* bump hazelcast and snake yml dependencies ([b297a0e](https://github.com/gravitee-io/gravitee-node/commit/b297a0ef2cf02d54a37eb4a1093e834d0fcadbf7))
+* remove enforced INFO level for license ([8681528](https://github.com/gravitee-io/gravitee-node/commit/8681528c2dcf376f03197339b4bfc9967b89e565))
+
 # [3.0.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/3.0.0-alpha.3...3.0.0-alpha.4) (2023-03-09)
 
 
