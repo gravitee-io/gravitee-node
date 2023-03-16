@@ -16,7 +16,8 @@
 package io.gravitee.node.vertx;
 
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
-import io.gravitee.node.vertx.configuration.HttpServerConfiguration;
+import io.gravitee.node.vertx.configuration.ListenerConfiguration;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.http.HttpServer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,23 +26,30 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ReactivexVertxHttpServerFactory extends AbstractVertxHttpServerFactory<HttpServer> {
+public class ReactivexVertxHttpServerFactory extends AbstractVertxHttpServerFactory<HttpServer[]> {
 
     private final Vertx vertx;
 
     @Autowired
     public ReactivexVertxHttpServerFactory(
         Vertx vertx,
-        HttpServerConfiguration httpServerConfiguration,
+        ListenerConfiguration listenerConfiguration,
         KeyStoreLoaderManager keyStoreLoaderManager
     ) {
-        super(httpServerConfiguration, keyStoreLoaderManager);
+        super(listenerConfiguration, keyStoreLoaderManager);
         this.vertx = vertx;
     }
 
     @Override
-    public HttpServer getObject() throws Exception {
-        return VertxHttpServerProvider.create(vertx, getHttpServerOptions());
+    public HttpServer[] getObject() throws Exception {
+        HttpServerOptions[] httpServerOptions = getHttpServerOptions();
+        HttpServer[] httpServers = new HttpServer[httpServerOptions.length];
+
+        for (int i = 0; i < httpServerOptions.length; i++) {
+            httpServers[i] = VertxHttpServerProvider.create(vertx, httpServerOptions[i]);
+        }
+
+        return httpServers;
     }
 
     @Override

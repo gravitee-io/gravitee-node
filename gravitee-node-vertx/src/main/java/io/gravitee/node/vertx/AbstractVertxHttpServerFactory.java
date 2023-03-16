@@ -22,8 +22,7 @@ import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
 import io.gravitee.node.vertx.cert.VertxCertificateManager;
 import io.gravitee.node.vertx.configuration.HttpServerConfiguration;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServer;
+import io.gravitee.node.vertx.configuration.ListenerConfiguration;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.*;
 import java.util.ArrayList;
@@ -37,15 +36,27 @@ import org.springframework.beans.factory.FactoryBean;
  */
 public abstract class AbstractVertxHttpServerFactory<T> implements FactoryBean<T> {
 
-    private final HttpServerConfiguration httpServerConfiguration;
+    private final ListenerConfiguration listenerConfiguration;
     private final KeyStoreLoaderManager keyStoreLoaderManager;
 
-    public AbstractVertxHttpServerFactory(HttpServerConfiguration httpServerConfiguration, KeyStoreLoaderManager keyStoreLoaderManager) {
-        this.httpServerConfiguration = httpServerConfiguration;
+    public AbstractVertxHttpServerFactory(ListenerConfiguration listenerConfiguration, KeyStoreLoaderManager keyStoreLoaderManager) {
+        this.listenerConfiguration = listenerConfiguration;
         this.keyStoreLoaderManager = keyStoreLoaderManager;
     }
 
-    protected HttpServerOptions getHttpServerOptions() {
+    protected HttpServerOptions[] getHttpServerOptions() {
+        HttpServerConfiguration[] httpServerConfigurations = listenerConfiguration.getHttpServerConfiguration();
+        HttpServerOptions[] serverOptions = new HttpServerOptions[httpServerConfigurations.length];
+        for (int i = 0; i < httpServerConfigurations.length; i++) {
+            HttpServerConfiguration httpServerConfiguration = httpServerConfigurations[i];
+
+            serverOptions[i] = configureHttpServerOptions(httpServerConfiguration);
+        }
+
+        return serverOptions;
+    }
+
+    private HttpServerOptions configureHttpServerOptions(HttpServerConfiguration httpServerConfiguration) {
         HttpServerOptions options = new HttpServerOptions();
         options.setTracingPolicy(httpServerConfiguration.getTracingPolicy());
 
@@ -152,7 +163,6 @@ public abstract class AbstractVertxHttpServerFactory<T> implements FactoryBean<T
             options.setMaxWebSocketFrameSize(httpServerConfiguration.getMaxWebSocketFrameSize());
             options.setMaxWebSocketMessageSize(httpServerConfiguration.getMaxWebSocketMessageSize());
         }
-
         return options;
     }
 }

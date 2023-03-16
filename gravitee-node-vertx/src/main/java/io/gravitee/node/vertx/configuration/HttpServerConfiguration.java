@@ -313,7 +313,8 @@ public class HttpServerConfiguration {
 
         private Environment environment;
 
-        private String prefix = "http.";
+        private static final String INITIAL_PREFIX = "listeners.";
+        private String prefix = INITIAL_PREFIX;
 
         private int maxWebSocketFrameSize = HttpServerOptions.DEFAULT_MAX_WEBSOCKET_FRAME_SIZE;
         private int maxWebSocketMessageSize = HttpServerOptions.DEFAULT_MAX_WEBSOCKET_MESSAGE_SIZE;
@@ -592,7 +593,11 @@ public class HttpServerConfiguration {
         }
 
         public HttpServerConfiguration build() {
-            Assert.notNull(environment, "Environment can not be null. Call withEnvironment method first to configured it");
+            Assert.notNull(environment, "Environment can not be null. Call withEnvironment() method first to configured it");
+            if (INITIAL_PREFIX.equals(this.prefix)) {
+                logger.warn("no prefix is added. listeners.http settings will be loaded by default");
+                this.prefix = this.prefix + "http.";
+            }
 
             this.port =
                 predefinedPort > 0 ? predefinedPort : Integer.parseInt(environment.getProperty(prefix + "port", String.valueOf(port)));

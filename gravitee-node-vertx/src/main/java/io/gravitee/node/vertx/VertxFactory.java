@@ -15,17 +15,14 @@
  */
 package io.gravitee.node.vertx;
 
-import static java.util.stream.Collectors.*;
-import static java.util.stream.StreamSupport.stream;
+import static java.util.stream.Collectors.toList;
 
-import io.gravitee.common.util.EnvironmentUtils;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.tracing.vertx.LazyVertxTracerFactory;
 import io.gravitee.node.vertx.metrics.ExcludeTagsFilter;
 import io.gravitee.node.vertx.metrics.RenameVertxFilter;
 import io.gravitee.node.vertx.verticle.factory.SpringVerticleFactory;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
@@ -43,8 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 
 /**
