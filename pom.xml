@@ -164,13 +164,6 @@
             </dependency>
 
             <dependency>
-                <groupId>io.gravitee.el</groupId>
-                <artifactId>gravitee-expression-language</artifactId>
-                <version>${gravitee-expression-language.version}</version>
-                <scope>provided</scope>
-            </dependency>
-
-            <dependency>
                 <groupId>io.gravitee.alert</groupId>
                 <artifactId>gravitee-alert-api</artifactId>
                 <version>${gravitee-alert-api.version}</version>
