@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/gravitee-io/gravitee-node/compare/3.0.0...3.0.1) (2023-03-17)
+
+
+### Bug Fixes
+
+* **deps:** remove unused gravitee-el dependency ([40344fd](https://github.com/gravitee-io/gravitee-node/commit/40344fd23522a6e25c8cb3454ab0c29d9eb965fe))
+
 # [3.0.0](https://github.com/gravitee-io/gravitee-node/compare/2.0.5...3.0.0) (2023-03-17)
 
 
