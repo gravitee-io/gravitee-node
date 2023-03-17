@@ -55,26 +55,20 @@ public class EventBusReporterWrapper implements Reporter, Handler<Message<Report
     }
 
     @Override
-    public Object start() throws Exception {
+    public Reporter start() {
         vertx.executeBlocking(
-            new Handler<Promise<Object>>() {
-                @Override
-                public void handle(Promise<Object> event) {
-                    try {
-                        reporter.start();
-                        event.complete(reporter);
-                    } catch (Exception ex) {
-                        logger.error("Error while starting reporter", ex);
-                        event.fail(ex);
-                    }
+            event -> {
+                try {
+                    reporter.start();
+                    event.complete(reporter);
+                } catch (Exception ex) {
+                    logger.error("Error while starting reporter", ex);
+                    event.fail(ex);
                 }
             },
-            new Handler<AsyncResult<Object>>() {
-                @Override
-                public void handle(AsyncResult<Object> event) {
-                    if (event.succeeded()) {
-                        vertx.eventBus().consumer(EVENT_BUS_ADDRESS, EventBusReporterWrapper.this);
-                    }
+            event -> {
+                if (event.succeeded()) {
+                    vertx.eventBus().consumer(EVENT_BUS_ADDRESS, EventBusReporterWrapper.this);
                 }
             }
         );
@@ -83,7 +77,7 @@ public class EventBusReporterWrapper implements Reporter, Handler<Message<Report
     }
 
     @Override
-    public Object stop() throws Exception {
+    public Reporter stop() throws Exception {
         return reporter.stop();
     }
 

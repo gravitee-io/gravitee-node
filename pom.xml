@@ -24,12 +24,12 @@
     <parent>
         <groupId>io.gravitee</groupId>
         <artifactId>gravitee-parent</artifactId>
-        <version>20.3</version>
+        <version>21.0.0</version>
     </parent>
 
     <groupId>io.gravitee.node</groupId>
     <artifactId>gravitee-node</artifactId>
-    <version>2.0.5</version>
+    <version>3.0.0-alpha.4</version>
 
     <name>Gravitee.io - Node</name>
 
@@ -247,15 +247,14 @@
     </dependencies>
 
     <properties>
-        <gravitee-bom.version>2.7</gravitee-bom.version>
-        <gravitee-common.version>1.25.0</gravitee-common.version>
-        <gravitee-plugin.version>1.23.1</gravitee-plugin.version>
-        <gravitee-expression-language.version>1.9.2</gravitee-expression-language.version>
-        <gravitee-reporter-api.version>1.24.1</gravitee-reporter-api.version>
+        <gravitee-bom.version>4.0.0</gravitee-bom.version>
+        <gravitee-common.version>2.1.0</gravitee-common.version>
+        <gravitee-plugin.version>1.25.0</gravitee-plugin.version>
+        <gravitee-reporter-api.version>1.25.0</gravitee-reporter-api.version>
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
         <gravitee-kubernetes.version>2.0.1</gravitee-kubernetes.version>
-        <snakeyaml.version>1.30</snakeyaml.version>
-        <hazelcast.version>4.1.9</hazelcast.version>
+        <snakeyaml.version>1.31</snakeyaml.version>
+        <hazelcast.version>4.1.10</hazelcast.version>
         <gravitee-alert-api.version>1.8.0</gravitee-alert-api.version>
 
         <!-- WARNING: the next two dependencies versions must be kept in sync regarding vertx-micrometer-metrics -->
