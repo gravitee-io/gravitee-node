@@ -15,7 +15,7 @@
  */
 package io.gravitee.node.monitoring;
 
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.gravitee.node.api.Monitoring;
@@ -99,7 +99,7 @@ public class NodeMonitoringServiceTest {
         obs.await();
         obs.assertValue(monitoring);
 
-        verifyZeroInteractions(repository);
+        verifyNoInteractions(repository);
     }
 
     @Test
