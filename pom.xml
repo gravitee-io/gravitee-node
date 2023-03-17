@@ -29,7 +29,7 @@
 
     <groupId>io.gravitee.node</groupId>
     <artifactId>gravitee-node</artifactId>
-    <version>3.0.0-alpha.4</version>
+    <version>3.0.0</version>
 
     <name>Gravitee.io - Node</name>
 
