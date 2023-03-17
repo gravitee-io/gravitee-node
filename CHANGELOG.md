@@ -1,3 +1,59 @@
+# [3.0.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/3.0.0-alpha.3...3.0.0-alpha.4) (2023-03-16)
+
+
+### Bug Fixes
+
+* bump hazelcast and snake yml dependencies ([b297a0e](https://github.com/gravitee-io/gravitee-node/commit/b297a0ef2cf02d54a37eb4a1093e834d0fcadbf7))
+* remove enforced INFO level for license ([8681528](https://github.com/gravitee-io/gravitee-node/commit/8681528c2dcf376f03197339b4bfc9967b89e565))
+
+# [3.0.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/3.0.0-alpha.3...3.0.0-alpha.4) (2023-03-09)
+
+
+### Bug Fixes
+
+* remove enforced INFO level for license ([8681528](https://github.com/gravitee-io/gravitee-node/commit/8681528c2dcf376f03197339b4bfc9967b89e565))
+
+# [3.0.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/3.0.0-alpha.2...3.0.0-alpha.3) (2023-03-07)
+
+
+### Bug Fixes
+
+* avoid spring loading issue with vertx and k8s client ([a46a05d](https://github.com/gravitee-io/gravitee-node/commit/a46a05d8c9a306071fdcca1f8aad2925cb8dd959))
+
+# [3.0.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/3.0.0-alpha.1...3.0.0-alpha.2) (2023-02-22)
+
+
+### Bug Fixes
+
+* update kubernetes client dependency ([bc5d835](https://github.com/gravitee-io/gravitee-node/commit/bc5d835c3c7060d5091c70453d89c4886c7249ec))
+
+# [3.0.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/2.1.0-alpha.2...3.0.0-alpha.1) (2023-02-16)
+
+
+### Features
+
+* bump gravitee-plugin version to 1.25.0 ([88b4ac0](https://github.com/gravitee-io/gravitee-node/commit/88b4ac0c097e4bd72a37893b832dde9634094206))
+* move to bom v4 and vertx 4.3.8 ([29f3796](https://github.com/gravitee-io/gravitee-node/commit/29f3796259f4f0e8f248c7997fbd2bd30a6c2642))
+
+
+### BREAKING CHANGES
+
+* requires vertx 4.3.8
+
+# [2.1.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/2.1.0-alpha.1...2.1.0-alpha.2) (2023-02-16)
+
+
+### Bug Fixes
+
+* **api:** load the right property source for /configuration ([a896204](https://github.com/gravitee-io/gravitee-node/commit/a896204ed1ccc8ea6b77378b10f2f6f4fb27b46b))
+
+# [2.1.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/2.0.2...2.1.0-alpha.1) (2023-02-10)
+
+
+### Features
+
+* bump reporter api version ([c2493b7](https://github.com/gravitee-io/gravitee-node/commit/c2493b75a04b5e38671bf68425e7a6a3915c61f8))
+
 ## [2.0.5](https://github.com/gravitee-io/gravitee-node/compare/2.0.4...2.0.5) (2023-03-13)
 
 

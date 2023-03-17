@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>2.0.5</version>
+        <version>3.0.0-alpha.4</version>
     </parent>
 
     <artifactId>gravitee-node-license</artifactId>
@@ -51,20 +51,6 @@
         <dependency>
             <groupId>com.javax0.license3j</groupId>
             <artifactId>license3j</artifactId>
-        </dependency>
-
-        <!-- Logging -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
         </dependency>
 
         <!-- Spring dependencies -->

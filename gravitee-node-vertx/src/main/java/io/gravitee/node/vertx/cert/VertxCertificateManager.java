@@ -28,7 +28,7 @@ public class VertxCertificateManager extends BaseCertificateManager {
 
     public VertxCertificateManager(boolean enableSni) {
         super(enableSni);
-        this.keyCertOptions = KeyCertOptions.wrap(keyManager);
+        this.keyCertOptions = new VertxKeyCertOptions(keyManager);
     }
 
     /**
