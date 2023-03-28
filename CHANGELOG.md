@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/gravitee-io/gravitee-node/compare/3.0.1...3.0.2) (2023-03-28)
+
+
+### Bug Fixes
+
+* handle dry runs in upgraders ([187a585](https://github.com/gravitee-io/gravitee-node/commit/187a585e0b5503d1fe45b1cb6e8f5e64a582c5a7))
+
 ## [3.0.1](https://github.com/gravitee-io/gravitee-node/compare/3.0.0...3.0.1) (2023-03-17)
 
 
