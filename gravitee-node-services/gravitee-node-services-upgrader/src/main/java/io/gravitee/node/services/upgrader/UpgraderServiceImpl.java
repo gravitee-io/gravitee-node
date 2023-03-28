@@ -73,7 +73,7 @@ public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> im
                         logger.info("{} is already applied. it will be ignored.", name);
                     } else {
                         logger.info("Apply {} ...", name);
-                        if (upgrader.upgrade()) {
+                        if (upgrader.upgrade() && !upgrader.isDryRun()) {
                             upgraderRepository.create(new UpgradeRecord(upgrader.getClass().getName(), new Date())).blockingGet();
                         } else {
                             stopUpgrade.set(true);

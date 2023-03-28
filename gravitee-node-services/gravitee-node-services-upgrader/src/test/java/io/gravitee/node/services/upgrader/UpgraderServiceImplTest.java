@@ -71,6 +71,29 @@ public class UpgraderServiceImplTest {
     }
 
     @Test
+    public void shouldNotStoreDryRuns() throws Exception {
+        Upgrader mockUpgrader = mock(Upgrader.class);
+        when(mockUpgrader.isDryRun()).thenReturn(true);
+        when(mockUpgrader.upgrade()).thenReturn(true);
+
+        Map<String, Upgrader> beans = new HashMap<>();
+        beans.put(mockUpgrader.getClass().getName(), mockUpgrader);
+
+        cut.setApplicationContext(applicationContext);
+
+        when(applicationContext.getBeansOfType(Upgrader.class)).thenReturn(beans);
+
+        when(repository.findById(mockUpgrader.getClass().getName())).thenReturn(Maybe.empty());
+
+        cut.start();
+
+        verify(repository, times(1)).findById(anyString());
+        verify(mockUpgrader, times(1)).upgrade();
+        verify(repository, never()).create(any(UpgradeRecord.class));
+        verify(node, times(0)).stop();
+    }
+
+    @Test
     public void failedUpgrader_ShouldNotUpgrade() throws Exception {
         Map<String, Upgrader> beans = new HashMap<>();
         Upgrader mockUpgrader1 = mock(Upgrader.class);
