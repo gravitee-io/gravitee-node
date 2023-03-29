@@ -29,15 +29,14 @@ import io.vertx.ext.web.RoutingContext;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class NodeHealthCheckManagementEndpointTest {
 
     @Mock
@@ -54,8 +53,8 @@ public class NodeHealthCheckManagementEndpointTest {
     @Mock
     private HttpServerResponse httpServerResponse;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    public void beforeEach() {
         nodeHealthCheckManagementEndpoint = new NodeHealthCheckManagementEndpoint();
         nodeHealthCheckManagementEndpoint.setRegistry(probeStatusRegistry);
 
@@ -63,7 +62,7 @@ public class NodeHealthCheckManagementEndpointTest {
     }
 
     @Test
-    public void shouldNotFilterAllHealthy() throws Exception {
+    void should_not_filter_all_healthy() {
         Map<Probe, Result> probeResultMap = fakeProbeResults(true);
         when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
         when(routingContext.queryParams()).thenReturn(queryParams);
@@ -95,7 +94,7 @@ public class NodeHealthCheckManagementEndpointTest {
     }
 
     @Test
-    public void shouldNotFilterOneUnhealthyHealthy() throws Exception {
+    void should_not_filter_one_unhealthy_healthy() {
         Map<Probe, Result> probeResultMap = fakeProbeResults(false);
         when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
         when(routingContext.queryParams()).thenReturn(queryParams);
@@ -127,7 +126,7 @@ public class NodeHealthCheckManagementEndpointTest {
     }
 
     @Test
-    public void shouldFilterAllHealthy() throws Exception {
+    void should_filter_all_healthy() {
         Map<Probe, Result> probeResultMap = fakeProbeResults(true);
         when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
         when(routingContext.queryParams()).thenReturn(queryParams);
@@ -157,7 +156,7 @@ public class NodeHealthCheckManagementEndpointTest {
     }
 
     @Test
-    public void shouldFilterByProbeId() throws Exception {
+    void should_filter_by_probe_id() {
         Map<Probe, Result> probeResultMap = fakeProbeResults(false);
         when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
         when(routingContext.queryParams()).thenReturn(queryParams);

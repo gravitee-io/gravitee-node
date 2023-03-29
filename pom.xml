@@ -29,7 +29,7 @@
 
     <groupId>io.gravitee.node</groupId>
     <artifactId>gravitee-node</artifactId>
-    <version>3.1.0-alpha.1</version>
+    <version>3.1.0-archi-230-cluster-plugin-SNAPSHOT</version>
 
     <name>Gravitee.io - Node</name>
 
@@ -129,11 +129,6 @@
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-cache</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gravitee.node</groupId>
-                <artifactId>gravitee-node-tracing</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -246,6 +241,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
@@ -259,9 +259,12 @@
     </dependencies>
 
     <properties>
+        <!-- Version properties -->
+        <revision>3.1.0-archi-230-cluster-plugin-SNAPSHOT</revision>
+
         <gravitee-bom.version>4.0.0</gravitee-bom.version>
         <gravitee-common.version>2.1.0</gravitee-common.version>
-        <gravitee-plugin.version>1.25.0</gravitee-plugin.version>
+        <gravitee-plugin.version>1.27.0-archi-230-cluster-plugin-SNAPSHOT</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.25.0</gravitee-reporter-api.version>
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
         <gravitee-kubernetes.version>2.0.1</gravitee-kubernetes.version>
@@ -276,8 +279,34 @@
         <bouncycastle.version>1.70</bouncycastle.version>
         <guava.version>31.1-jre</guava.version>
         <license3j.version>3.2.0</license3j.version>
+        <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
     </properties>
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>${maven-assembly-plugin.version}</version>
+                    <inherited>true</inherited>
+                    <executions>
+                        <execution>
+                            <id>make-plugin-assembly</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                            <configuration>
+                                <appendAssemblyId>false</appendAssemblyId>
+                                <descriptors>
+                                    <descriptor>src/main/assembly/plugin-assembly.xml</descriptor>
+                                </descriptors>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -293,7 +322,7 @@
                 <artifactId>prettier-maven-plugin</artifactId>
                 <version>0.18</version>
                 <configuration>
-                    <nodeVersion>12.13.0</nodeVersion>
+                    <nodeVersion>16.16.0</nodeVersion>
                     <prettierJavaVersion>1.6.1</prettierJavaVersion>
                 </configuration>
                 <executions>
