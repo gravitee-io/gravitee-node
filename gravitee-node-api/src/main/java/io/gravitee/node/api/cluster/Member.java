@@ -22,9 +22,11 @@ import java.util.Map;
  * @author GraviteeSource Team
  */
 public interface Member {
-    String uuid();
+    String id();
 
-    boolean master();
+    boolean primary();
+
+    boolean self();
 
     String host();
 

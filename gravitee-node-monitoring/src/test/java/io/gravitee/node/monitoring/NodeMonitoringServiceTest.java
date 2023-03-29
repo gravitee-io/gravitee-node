@@ -26,17 +26,20 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.observers.TestObserver;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
 import java.util.Date;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class NodeMonitoringServiceTest {
 
     @Mock
@@ -44,13 +47,13 @@ public class NodeMonitoringServiceTest {
 
     private NodeMonitoringService cut;
 
-    @Before
-    public void before() {
-        cut = new NodeMonitoringService(repository);
+    @BeforeEach
+    public void beforeEach() {
+        cut = new DefaultNodeMonitoringService(repository);
     }
 
     @Test
-    public void shouldCreate() throws InterruptedException {
+    void should_create() throws InterruptedException {
         final Monitoring monitoring = new Monitoring();
         monitoring.setNodeId("node#1");
         monitoring.setCreatedAt(new Date());
@@ -68,7 +71,7 @@ public class NodeMonitoringServiceTest {
     }
 
     @Test
-    public void shouldUpdate() throws InterruptedException {
+    void should_update() throws InterruptedException {
         Monitoring monitoring = new Monitoring();
         monitoring.setNodeId("node#1");
         monitoring.setCreatedAt(new Date());
@@ -90,9 +93,9 @@ public class NodeMonitoringServiceTest {
     }
 
     @Test
-    public void shouldNotCreateOrUpdateIfNotRepository() throws InterruptedException {
+    void should_not_create_or_update_if_not_repository() throws InterruptedException {
         final Monitoring monitoring = new Monitoring();
-        cut = new NodeMonitoringService(null);
+        cut = new DefaultNodeMonitoringService(null);
 
         final TestObserver<Monitoring> obs = cut.createOrUpdate(monitoring).test();
 
@@ -103,7 +106,7 @@ public class NodeMonitoringServiceTest {
     }
 
     @Test
-    public void shouldFindByTypeAndTimeframe() throws InterruptedException {
+    void should_find_by_type_and_timeframe() throws InterruptedException {
         long from = System.currentTimeMillis();
         long to = System.currentTimeMillis() + 1000;
 
@@ -118,11 +121,11 @@ public class NodeMonitoringServiceTest {
     }
 
     @Test
-    public void shouldNotFindByTypeAndTimeframeIfNoRepository() throws InterruptedException {
+    void should_not_find_by_type_and_timeframe_if_no_Repository() throws InterruptedException {
         long from = System.currentTimeMillis();
         long to = System.currentTimeMillis() + 1000;
 
-        cut = new NodeMonitoringService(null);
+        cut = new DefaultNodeMonitoringService(null);
         final TestSubscriber<Monitoring> obs = cut.findByTypeAndTimeframe(Monitoring.HEALTH_CHECK, from, to).test();
 
         obs.await();
