@@ -21,6 +21,9 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.tracing.TracingPolicy;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.With;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
@@ -31,6 +34,8 @@ import org.springframework.util.StringUtils;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@With
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class HttpServerConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpServerConfiguration.class);
