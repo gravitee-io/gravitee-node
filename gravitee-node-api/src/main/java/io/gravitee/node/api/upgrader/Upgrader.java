@@ -21,17 +21,6 @@ package io.gravitee.node.api.upgrader;
  * @author GraviteeSource Team
  */
 public interface Upgrader {
-    /**
-     * Implementations can override this method to state that they ran without
-     * committing any change. If the return is true, the upgrade will not be stored
-     * and will run again on subsequent executions until the implementation returns false.
-     *
-     * @return true if the upgrader actually committed its changes, false otherwise.
-     */
-    default boolean isDryRun() {
-        return false;
-    }
-
     boolean upgrade();
 
     int getOrder();

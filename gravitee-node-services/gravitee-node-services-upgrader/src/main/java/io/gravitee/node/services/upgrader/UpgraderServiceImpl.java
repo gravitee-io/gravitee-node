@@ -46,7 +46,7 @@ public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> im
     @Value("${upgrade.mode:false}")
     private boolean upgradeMode;
 
-    private static final Logger logger = LoggerFactory.getLogger(UpgraderServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UpgraderServiceImpl.class);
 
     @Override
     protected String name() {
@@ -70,29 +70,34 @@ public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> im
                 try {
                     UpgradeRecord upgradeRecord = upgraderRepository.findById(upgrader.getClass().getName()).blockingGet();
                     if (upgradeRecord != null) {
-                        logger.info("{} is already applied. it will be ignored.", name);
+                        LOGGER.info("{} is already applied. it will be ignored.", name);
                     } else {
-                        logger.info("Apply {} ...", name);
-                        if (upgrader.upgrade() && !upgrader.isDryRun()) {
+                        LOGGER.info("Apply {} ...", name);
+                        if (upgrader.upgrade()) {
                             upgraderRepository.create(new UpgradeRecord(upgrader.getClass().getName(), new Date())).blockingGet();
                         } else {
                             stopUpgrade.set(true);
                         }
                     }
                 } catch (Exception e) {
-                    logger.error("Unable to apply {}. Error: ", name, e);
+                    LOGGER.error("Unable to apply {}. Error: ", name, e);
                 }
             });
 
         // The UpgraderService is registered to be executed if upgrader.mode property is either null or true
         //    but we only stop the node if upgrade.mode is set explicitly to "true".
         //    This is to keep the backward compatibility. Please look at UpgraderConfiguration for more details
-        if (upgradeMode) {
+        if (upgradeMode || stopUpgrade.get()) {
             Node node = applicationContext.getBean(Node.class);
             node.preStop();
             node.stop();
             node.postStop();
-            System.exit(0);
+            if (stopUpgrade.get()) {
+                LOGGER.error("Stopping because one of the upgrades could not be performed");
+                System.exit(1);
+            } else {
+                System.exit(0);
+            }
         }
     }
 }
