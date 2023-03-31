@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>1.25.3</version>
+        <version>1.25.4</version>
     </parent>
 
     <artifactId>gravitee-node-monitoring</artifactId>
