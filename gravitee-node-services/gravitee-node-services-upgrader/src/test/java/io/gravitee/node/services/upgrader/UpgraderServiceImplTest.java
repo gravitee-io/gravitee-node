@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.services.upgrader;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import io.gravitee.node.api.Node;
@@ -25,6 +26,7 @@ import io.reactivex.rxjava3.core.Maybe;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import mockit.MockUp;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -71,30 +73,14 @@ public class UpgraderServiceImplTest {
     }
 
     @Test
-    public void shouldNotStoreDryRuns() throws Exception {
-        Upgrader mockUpgrader = mock(Upgrader.class);
-        when(mockUpgrader.isDryRun()).thenReturn(true);
-        when(mockUpgrader.upgrade()).thenReturn(true);
-
-        Map<String, Upgrader> beans = new HashMap<>();
-        beans.put(mockUpgrader.getClass().getName(), mockUpgrader);
-
-        cut.setApplicationContext(applicationContext);
-
-        when(applicationContext.getBeansOfType(Upgrader.class)).thenReturn(beans);
-
-        when(repository.findById(mockUpgrader.getClass().getName())).thenReturn(Maybe.empty());
-
-        cut.start();
-
-        verify(repository, times(1)).findById(anyString());
-        verify(mockUpgrader, times(1)).upgrade();
-        verify(repository, never()).create(any(UpgradeRecord.class));
-        verify(node, times(0)).stop();
-    }
-
-    @Test
     public void failedUpgrader_ShouldNotUpgrade() throws Exception {
+        new MockUp<System>() {
+            @mockit.Mock
+            public void exit(int value) {
+                throw new RuntimeException(String.valueOf(value));
+            }
+        };
+
         Map<String, Upgrader> beans = new HashMap<>();
         Upgrader mockUpgrader1 = mock(Upgrader.class);
         beans.put("mockUpgrader1", mockUpgrader1);
@@ -113,22 +99,29 @@ public class UpgraderServiceImplTest {
 
         cut.setApplicationContext(applicationContext);
 
+        when(applicationContext.getBean(Node.class)).thenReturn(node);
         when(applicationContext.getBeansOfType(Upgrader.class)).thenReturn(beans);
         when(mockUpgrader1.upgrade()).thenReturn(true);
         when(repository.findById(mockUpgrader1.getClass().getName())).thenReturn(Maybe.empty());
         when(mockUpgrader2.upgrade()).thenReturn(true);
         when(mockUpgrader3.upgrade()).thenReturn(false);
 
-        cut.start();
+        try {
+            cut.start();
+        } catch (RuntimeException e) {
+            assertThat(e.getMessage()).isEqualTo("1");
+        }
 
         verify(repository, times(3)).findById(mockUpgrader1.getClass().getName());
         verify(repository, times(2)).create(any(UpgradeRecord.class));
         verify(mockUpgrader1, times(1)).upgrade();
         verify(mockUpgrader2, times(1)).upgrade();
         verify(mockUpgrader3, times(1)).upgrade();
-        verify(mockUpgrader4, times(0)).upgrade();
-        verify(mockUpgrader5, times(0)).upgrade();
-        verify(node, times(0)).stop();
+        verify(mockUpgrader4, never()).upgrade();
+        verify(mockUpgrader5, never()).upgrade();
+        verify(node, times(1)).preStop();
+        verify(node, times(1)).stop();
+        verify(node, times(1)).postStop();
     }
 
     @Test

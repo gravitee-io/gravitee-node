@@ -211,6 +211,14 @@
                 <artifactId>license3j</artifactId>
                 <version>${license3j.version}</version>
             </dependency>
+
+            <!-- Test -->
+            <dependency>
+                <groupId>org.jmockit</groupId>
+                <artifactId>jmockit</artifactId>
+                <version>${jmockit.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -255,6 +263,7 @@
         <snakeyaml.version>1.31</snakeyaml.version>
         <hazelcast.version>4.1.10</hazelcast.version>
         <gravitee-alert-api.version>1.8.0</gravitee-alert-api.version>
+        <jmockit.version>1.49</jmockit.version>
 
         <!-- WARNING: the next two dependencies versions must be kept in sync regarding vertx-micrometer-metrics -->
         <micrometer-registry-prometheus.version>1.6.2</micrometer-registry-prometheus.version>
