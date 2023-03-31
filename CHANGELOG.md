@@ -1,3 +1,10 @@
+## [2.0.6](https://github.com/gravitee-io/gravitee-node/compare/2.0.5...2.0.6) (2023-03-31)
+
+
+### Bug Fixes
+
+* add 'With' methods to HttpServerConfiguration ([c7210bb](https://github.com/gravitee-io/gravitee-node/commit/c7210bb7d102de5cfcde93fe29ddbd9af6b0a7a7))
+
 ## [2.0.5](https://github.com/gravitee-io/gravitee-node/compare/2.0.4...2.0.5) (2023-03-13)
 
 
