@@ -45,23 +45,25 @@ public class NotificationTrigger implements Handler<Long> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationTrigger.class);
 
-    private Vertx vertx;
+    private final Vertx vertx;
 
-    private NotificationAcknowledgeRepository notificationAcknowledgeRepository;
+    private final NotificationAcknowledgeRepository notificationAcknowledgeRepository;
 
-    private NotifierPluginFactory notifierFactory;
+    private final NotifierPluginFactory notifierFactory;
 
-    private NotificationDefinition definition;
+    private final NotificationDefinition definition;
 
-    private NotificationCondition condition;
+    private final NotificationCondition condition;
 
-    private ResendNotificationCondition resendCondition;
+    private final ResendNotificationCondition resendCondition;
+
+    private final CronExpression cronExpression;
+
+    private final int randomDelayInMs;
 
     private Long scheduledTaskId;
 
-    private CronExpression cronExpression;
-
-    private final int randomDelayInMs;
+    private boolean started = false;
 
     public NotificationTrigger(
         Vertx vertx,
@@ -87,16 +89,22 @@ public class NotificationTrigger implements Handler<Long> {
     }
 
     public void start() {
+        started = true;
         scheduleNextAttempt();
     }
 
     private void scheduleNextAttempt() {
-        this.scheduledTaskId = this.vertx.setTimer(computeNextAttempt(), this);
+        if (started) {
+            this.scheduledTaskId = this.vertx.setTimer(computeNextAttempt(), this);
+        }
     }
 
     public void stop() {
-        if (this.scheduledTaskId != null && this.vertx.cancelTimer(this.scheduledTaskId)) {
+        if (started && this.scheduledTaskId != null) {
             LOGGER.debug("Notification Trigger cancelled !");
+            this.vertx.cancelTimer(this.scheduledTaskId);
+            started = false;
+            this.scheduledTaskId = null;
         } else {
             LOGGER.debug("Notification Trigger can't be cancelled or doesn't exist");
         }
@@ -177,6 +185,7 @@ public class NotificationTrigger implements Handler<Long> {
                                                     ? notificationAcknowledgeRepository.create(notificationAcknowledge)
                                                     : notificationAcknowledgeRepository.update(notificationAcknowledge);
 
+                                                //trigger a new attempt
                                                 saveAcknowledge
                                                     .doOnError(error ->
                                                         LOGGER.warn(
@@ -186,10 +195,7 @@ public class NotificationTrigger implements Handler<Long> {
                                                             error
                                                         )
                                                     )
-                                                    .doFinally(() ->
-                                                        //trigger a new attempt
-                                                        this.scheduleNextAttempt()
-                                                    )
+                                                    .doFinally(this::scheduleNextAttempt)
                                                     .subscribe();
                                             }
                                         })
