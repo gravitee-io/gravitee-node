@@ -33,6 +33,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.support.CronExpression;
@@ -63,7 +64,7 @@ public class NotificationTrigger implements Handler<Long> {
 
     private Long scheduledTaskId;
 
-    private boolean started = false;
+    private final AtomicBoolean started;
 
     public NotificationTrigger(
         Vertx vertx,
@@ -81,6 +82,7 @@ public class NotificationTrigger implements Handler<Long> {
         this.condition = condition;
         this.resendCondition = resendCondition;
         this.cronExpression = CronExpression.parse(definition.getCron());
+        started = new AtomicBoolean();
         if (tryToAvoidMultipleNotif) {
             this.randomDelayInMs = Math.max(1, new Random().nextInt(10)) * 1000;
         } else {
@@ -89,21 +91,21 @@ public class NotificationTrigger implements Handler<Long> {
     }
 
     public void start() {
-        started = true;
+        started.set(true);
         scheduleNextAttempt();
     }
 
     private void scheduleNextAttempt() {
-        if (started) {
+        if (started.get()) {
             this.scheduledTaskId = this.vertx.setTimer(computeNextAttempt(), this);
         }
     }
 
     public void stop() {
-        if (started && this.scheduledTaskId != null) {
+        if (started.get() && this.scheduledTaskId != null) {
             LOGGER.debug("Notification Trigger cancelled !");
             this.vertx.cancelTimer(this.scheduledTaskId);
-            started = false;
+            started.set(false);
             this.scheduledTaskId = null;
         } else {
             LOGGER.debug("Notification Trigger can't be cancelled or doesn't exist");
