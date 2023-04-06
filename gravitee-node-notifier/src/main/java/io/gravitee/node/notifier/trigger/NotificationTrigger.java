@@ -189,14 +189,15 @@ public class NotificationTrigger implements Handler<Long> {
 
                                                 //trigger a new attempt
                                                 saveAcknowledge
-                                                    .doOnError(error ->
+                                                    .onErrorResumeNext(error -> {
                                                         LOGGER.warn(
                                                             "Unable to store acknowledge for notification with audience {} and resource {}",
                                                             definition.getAudienceId(),
                                                             definition.getResourceId(),
                                                             error
-                                                        )
-                                                    )
+                                                        );
+                                                        return Single.just(notificationAcknowledge);
+                                                    })
                                                     .doFinally(this::scheduleNextAttempt)
                                                     .subscribe();
                                             }
