@@ -1,3 +1,10 @@
+## [3.0.5](https://github.com/gravitee-io/gravitee-node/compare/3.0.4...3.0.5) (2023-04-06)
+
+
+### Bug Fixes
+
+* prevent scheduleNextAttempt to happen if trigger is stopped ([d9c2a44](https://github.com/gravitee-io/gravitee-node/commit/d9c2a44784ff7b1d861b82c02ea15a7fdf269da2))
+
 ## [3.0.4](https://github.com/gravitee-io/gravitee-node/compare/3.0.3...3.0.4) (2023-04-03)
 
 
