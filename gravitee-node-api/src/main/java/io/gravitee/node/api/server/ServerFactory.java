@@ -13,28 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.api.certificate;
+package io.gravitee.node.api.server;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-
-@Builder
-@EqualsAndHashCode
-public class CertificateOptions {
-
-    private final String certificate;
-    private final String privateKey;
-
-    public CertificateOptions(String certificate, String privateKey) {
-        this.certificate = certificate;
-        this.privateKey = privateKey;
-    }
-
-    public String getCertificate() {
-        return certificate;
-    }
-
-    public String getPrivateKey() {
-        return privateKey;
-    }
+/**
+ * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
+ * @author GraviteeSource Team
+ */
+public interface ServerFactory<T extends Server<O>, O extends ServerOptions> {
+    T create(O options);
 }

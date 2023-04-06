@@ -13,26 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.vertx;
-
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerOptions;
+package io.gravitee.node.api.certificate;
 
 /**
- * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
+ * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
- * @since 3.9.11
  */
-public class VertxHttpServerProvider {
-
-    private VertxHttpServerProvider() {}
-
-    public static HttpServer create(Vertx vertx, HttpServerOptions httpServerOptions) {
-        return vertx.createHttpServer(httpServerOptions);
-    }
-
-    public static io.vertx.rxjava3.core.http.HttpServer create(io.vertx.rxjava3.core.Vertx vertx, HttpServerOptions httpServerOptions) {
-        return vertx.createHttpServer(httpServerOptions);
-    }
+public interface KeyStoreManager {
+    void registerLoader(KeyStoreLoader loader);
 }

@@ -37,6 +37,7 @@ public class SelfSignedKeyStoreLoader implements KeyStoreLoader {
 
     private final List<Consumer<KeyStoreBundle>> listeners;
     private final KeyStoreLoaderOptions options;
+    private KeyStoreBundle keyStoreBundle;
 
     public SelfSignedKeyStoreLoader(KeyStoreLoaderOptions options) {
         this.options = options;
@@ -48,9 +49,9 @@ public class SelfSignedKeyStoreLoader implements KeyStoreLoader {
         logger.debug("Initializing self-signed keystore certificate.");
         final String password = UUID.randomUUID().toString();
         final KeyStore keyStore = KeyStoreUtils.initSelfSigned("localhost", password);
-        final KeyStoreBundle keyStoreBundle = new KeyStoreBundle(keyStore, password, options.getDefaultAlias());
+        this.keyStoreBundle = new KeyStoreBundle(keyStore, password, options.getDefaultAlias());
 
-        notifyListeners(keyStoreBundle);
+        notifyListeners();
     }
 
     @Override
@@ -61,7 +62,7 @@ public class SelfSignedKeyStoreLoader implements KeyStoreLoader {
         listeners.add(listener);
     }
 
-    private void notifyListeners(KeyStoreBundle keyStoreBundle) {
+    private void notifyListeners() {
         listeners.forEach(consumer -> consumer.accept(keyStoreBundle));
     }
 }

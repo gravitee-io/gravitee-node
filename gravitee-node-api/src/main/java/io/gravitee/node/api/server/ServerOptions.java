@@ -13,30 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.vertx.cert;
-
-import io.gravitee.node.certificates.BaseCertificateManager;
-import io.vertx.core.net.KeyCertOptions;
+package io.gravitee.node.api.server;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class VertxCertificateManager extends BaseCertificateManager {
-
-    private final KeyCertOptions keyCertOptions;
-
-    public VertxCertificateManager(boolean enableSni) {
-        super(enableSni);
-        this.keyCertOptions = new VertxKeyCertOptions(keyManager);
-    }
-
-    /**
-     * Get the corresponding {@link KeyCertOptions} that can be used to configure a vertx server.
-     *
-     * @return a {@link KeyCertOptions}.
-     */
-    public KeyCertOptions getKeyCertOptions() {
-        return keyCertOptions;
-    }
-}
+public interface ServerOptions {}
