@@ -1,3 +1,10 @@
+## [1.25.5](https://github.com/gravitee-io/gravitee-node/compare/1.25.4...1.25.5) (2023-04-06)
+
+
+### Bug Fixes
+
+* bump kubernetes client ([137eaf0](https://github.com/gravitee-io/gravitee-node/commit/137eaf0e48c306882cb37438a16968ece6684b24))
+
 ## [1.25.4](https://github.com/gravitee-io/gravitee-node/compare/1.25.3...1.25.4) (2023-03-31)
 
 
