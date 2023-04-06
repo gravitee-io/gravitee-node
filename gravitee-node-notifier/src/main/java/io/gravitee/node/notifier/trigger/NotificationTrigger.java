@@ -33,6 +33,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.support.CronExpression;
@@ -45,23 +46,25 @@ public class NotificationTrigger implements Handler<Long> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationTrigger.class);
 
-    private Vertx vertx;
+    private final Vertx vertx;
 
-    private NotificationAcknowledgeRepository notificationAcknowledgeRepository;
+    private final NotificationAcknowledgeRepository notificationAcknowledgeRepository;
 
-    private NotifierPluginFactory notifierFactory;
+    private final NotifierPluginFactory notifierFactory;
 
-    private NotificationDefinition definition;
+    private final NotificationDefinition definition;
 
-    private NotificationCondition condition;
+    private final NotificationCondition condition;
 
-    private ResendNotificationCondition resendCondition;
+    private final ResendNotificationCondition resendCondition;
+
+    private final CronExpression cronExpression;
+
+    private final int randomDelayInMs;
 
     private Long scheduledTaskId;
 
-    private CronExpression cronExpression;
-
-    private final int randomDelayInMs;
+    private final AtomicBoolean started;
 
     public NotificationTrigger(
         Vertx vertx,
@@ -79,6 +82,7 @@ public class NotificationTrigger implements Handler<Long> {
         this.condition = condition;
         this.resendCondition = resendCondition;
         this.cronExpression = CronExpression.parse(definition.getCron());
+        started = new AtomicBoolean();
         if (tryToAvoidMultipleNotif) {
             this.randomDelayInMs = Math.max(1, new Random().nextInt(10)) * 1000;
         } else {
@@ -87,19 +91,23 @@ public class NotificationTrigger implements Handler<Long> {
     }
 
     public void start() {
+        started.set(true);
         scheduleNextAttempt();
     }
 
     private void scheduleNextAttempt() {
-        this.scheduledTaskId = this.vertx.setTimer(computeNextAttempt(), this);
+        if (started.get()) {
+            this.scheduledTaskId = this.vertx.setTimer(computeNextAttempt(), this);
+        }
     }
 
     public void stop() {
-        if (this.scheduledTaskId != null && this.vertx.cancelTimer(this.scheduledTaskId)) {
-            LOGGER.debug("Notification Trigger cancelled !");
-        } else {
-            LOGGER.debug("Notification Trigger can't be cancelled or doesn't exist");
+        started.set(false);
+        if (this.scheduledTaskId != null) {
+            this.vertx.cancelTimer(this.scheduledTaskId);
         }
+        this.scheduledTaskId = null;
+        LOGGER.debug("Notification Trigger cancelled !");
     }
 
     private long computeNextAttempt() {
@@ -177,19 +185,18 @@ public class NotificationTrigger implements Handler<Long> {
                                                     ? notificationAcknowledgeRepository.create(notificationAcknowledge)
                                                     : notificationAcknowledgeRepository.update(notificationAcknowledge);
 
+                                                //trigger a new attempt
                                                 saveAcknowledge
-                                                    .doOnError(error ->
+                                                    .onErrorResumeNext(error -> {
                                                         LOGGER.warn(
                                                             "Unable to store acknowledge for notification with audience {} and resource {}",
                                                             definition.getAudienceId(),
                                                             definition.getResourceId(),
                                                             error
-                                                        )
-                                                    )
-                                                    .doFinally(() ->
-                                                        //trigger a new attempt
-                                                        this.scheduleNextAttempt()
-                                                    )
+                                                        );
+                                                        return Single.just(notificationAcknowledge);
+                                                    })
+                                                    .doFinally(this::scheduleNextAttempt)
                                                     .subscribe();
                                             }
                                         })
