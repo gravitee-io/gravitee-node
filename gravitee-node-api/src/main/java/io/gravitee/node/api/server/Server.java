@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.api.certificate;
-
-import java.security.KeyStore;
+package io.gravitee.node.api.server;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface CertificateManager {
-    void registerLoader(KeyStoreLoader loader);
+public interface Server<C extends ServerOptions> {
+    String id();
+
+    String type();
+
+    C options();
 }

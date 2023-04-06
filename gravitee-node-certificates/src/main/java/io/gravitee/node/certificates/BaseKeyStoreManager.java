@@ -15,26 +15,23 @@
  */
 package io.gravitee.node.certificates;
 
-import io.gravitee.node.api.certificate.CertificateManager;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
-import java.security.KeyStore;
+import io.gravitee.node.api.certificate.KeyStoreManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class BaseCertificateManager implements CertificateManager {
+public class BaseKeyStoreManager implements KeyStoreManager {
 
     protected boolean enableSni;
     protected final ReloadableKeyManager keyManager;
     protected final List<KeyStoreLoader> keyStoreLoaders;
 
-    public BaseCertificateManager(boolean enableSni) {
+    public BaseKeyStoreManager(boolean enableSni) {
         this.enableSni = enableSni;
         this.keyManager = new ReloadableKeyManager();
         this.keyStoreLoaders = new ArrayList<>();
@@ -51,5 +48,7 @@ public class BaseCertificateManager implements CertificateManager {
                 throw new IllegalArgumentException("Unable to load the keystore", e);
             }
         });
+
+        keyStoreLoader.start();
     }
 }

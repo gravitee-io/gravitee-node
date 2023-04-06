@@ -13,28 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.api.certificate;
+package io.gravitee.node.vertx.server.http;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
+import io.gravitee.node.api.server.ServerFactory;
+import io.vertx.rxjava3.core.Vertx;
 
-@Builder
-@EqualsAndHashCode
-public class CertificateOptions {
+/**
+ * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
+ * @author GraviteeSource Team
+ */
+public class VertxHttpServerFactory implements ServerFactory<VertxHttpServer, VertxHttpServerOptions> {
 
-    private final String certificate;
-    private final String privateKey;
+    private final Vertx vertx;
 
-    public CertificateOptions(String certificate, String privateKey) {
-        this.certificate = certificate;
-        this.privateKey = privateKey;
+    public VertxHttpServerFactory(Vertx vertx) {
+        this.vertx = vertx;
     }
 
-    public String getCertificate() {
-        return certificate;
-    }
-
-    public String getPrivateKey() {
-        return privateKey;
+    @Override
+    public VertxHttpServer create(VertxHttpServerOptions options) {
+        return new VertxHttpServer(options.getId(), vertx, options);
     }
 }

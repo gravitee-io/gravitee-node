@@ -29,7 +29,7 @@
 
     <groupId>io.gravitee.node</groupId>
     <artifactId>gravitee-node</artifactId>
-    <version>3.0.5</version>
+    <version>3.1.0-archi-227-multi-servers-SNAPSHOT</version>
 
     <name>Gravitee.io - Node</name>
 
@@ -129,6 +129,11 @@
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-cache</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-tracing</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
