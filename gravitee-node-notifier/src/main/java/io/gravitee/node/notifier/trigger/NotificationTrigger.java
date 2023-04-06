@@ -102,14 +102,12 @@ public class NotificationTrigger implements Handler<Long> {
     }
 
     public void stop() {
-        if (started.get() && this.scheduledTaskId != null) {
-            LOGGER.debug("Notification Trigger cancelled !");
+        started.set(false);
+        if (this.scheduledTaskId != null) {
             this.vertx.cancelTimer(this.scheduledTaskId);
-            started.set(false);
-            this.scheduledTaskId = null;
-        } else {
-            LOGGER.debug("Notification Trigger can't be cancelled or doesn't exist");
         }
+        this.scheduledTaskId = null;
+        LOGGER.debug("Notification Trigger cancelled !");
     }
 
     private long computeNextAttempt() {
