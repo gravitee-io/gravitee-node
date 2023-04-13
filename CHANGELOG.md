@@ -1,3 +1,10 @@
+# [3.1.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/3.0.5...3.1.0-alpha.1) (2023-04-13)
+
+
+### Features
+
+* add support for multi-servers ([44af8ff](https://github.com/gravitee-io/gravitee-node/commit/44af8ffd125168fb4b6c4643e17d642d8ed433db))
+
 ## [3.0.5](https://github.com/gravitee-io/gravitee-node/compare/3.0.4...3.0.5) (2023-04-06)
 
 
