@@ -29,7 +29,7 @@
 
     <groupId>io.gravitee.node</groupId>
     <artifactId>gravitee-node</artifactId>
-    <version>3.1.0-alpha.4</version>
+    <version>3.1.0-archi-231-cache-manager-SNAPSHOT</version>
 
     <name>Gravitee.io - Node</name>
 
@@ -261,12 +261,12 @@
     <properties>
         <gravitee-bom.version>4.0.0</gravitee-bom.version>
         <gravitee-common.version>2.1.0</gravitee-common.version>
-        <gravitee-plugin.version>1.27.0-alpha.1</gravitee-plugin.version>
+        <gravitee-plugin.version>1.27.0-alpha.2</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.25.0</gravitee-reporter-api.version>
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
         <gravitee-kubernetes.version>2.0.1</gravitee-kubernetes.version>
         <snakeyaml.version>1.31</snakeyaml.version>
-        <hazelcast.version>4.1.10</hazelcast.version>
+        <hazelcast.version>5.2.3</hazelcast.version>
         <gravitee-alert-api.version>1.8.0</gravitee-alert-api.version>
         <jmockit.version>1.49</jmockit.version>
 

@@ -17,7 +17,7 @@ package io.gravitee.node.container.spring;
 
 import io.gravitee.kubernetes.client.spring.KubernetesClientConfiguration;
 import io.gravitee.node.api.Node;
-import io.gravitee.node.cache.standalone.StandaloneCacheConfiguration;
+import io.gravitee.node.cache.spring.NodeCacheConfiguration;
 import io.gravitee.node.cluster.spring.NodeClusterConfiguration;
 import io.gravitee.node.container.AbstractContainer;
 import io.gravitee.node.container.spring.env.EnvironmentConfiguration;
@@ -77,7 +77,7 @@ public abstract class SpringBasedContainer extends AbstractContainer {
 
         classes.add(NodeContainerConfiguration.class);
         classes.add(NodeClusterConfiguration.class);
-        classes.add(StandaloneCacheConfiguration.class);
+        classes.add(NodeCacheConfiguration.class);
         classes.add(NodeMonitoringConfiguration.class);
         classes.add(KubernetesClientConfiguration.class);
 

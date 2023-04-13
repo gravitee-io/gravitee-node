@@ -15,39 +15,30 @@
  */
 package io.gravitee.node.api.cache;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Builder
 public class CacheConfiguration {
 
+    @Builder.Default
+    private boolean distributed = false;
+
+    @Builder.Default
     private long maxSize = -1;
 
-    private long timeToLiveSeconds = -1;
+    @Builder.Default
+    private long timeToLiveInMs = -1;
 
-    private long timeToIdleSeconds = -1;
-
-    public long getMaxSize() {
-        return maxSize;
-    }
-
-    public void setMaxSize(long maxSize) {
-        this.maxSize = maxSize;
-    }
-
-    public long getTimeToLiveSeconds() {
-        return timeToLiveSeconds;
-    }
-
-    public void setTimeToLiveSeconds(long timeToLiveSeconds) {
-        this.timeToLiveSeconds = timeToLiveSeconds;
-    }
-
-    public long getTimeToIdleSeconds() {
-        return timeToIdleSeconds;
-    }
-
-    public void setTimeToIdleSeconds(long timeToIdleSeconds) {
-        this.timeToIdleSeconds = timeToIdleSeconds;
-    }
+    @Builder.Default
+    private long timeToIdleInMs = -1;
 }

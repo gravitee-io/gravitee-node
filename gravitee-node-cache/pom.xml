@@ -24,70 +24,27 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>3.1.0-alpha.4</version>
+        <version>3.1.0-archi-231-cache-manager-SNAPSHOT</version>
     </parent>
 
     <artifactId>gravitee-node-cache</artifactId>
-    <name>Gravitee.io - Node - Cache Manager</name>
+    <name>Gravitee.io - Node - Cache</name>
+    <packaging>pom</packaging>
 
+    <properties>
+        <awaitility.version>4.2.0</awaitility.version>
+    </properties>
+    <modules>
+        <module>gravitee-node-cache-common</module>
+        <module>gravitee-node-cache-plugin-handler</module>
+        <module>gravitee-node-cache-plugin-standalone</module>
+        <module>gravitee-node-cache-plugin-hazelcast</module>
+    </modules>
     <dependencies>
-        <!-- Gravitee.io -->
         <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <!-- hazelcast dependency -->
-        <dependency>
-            <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast</artifactId>
-            <version>${hazelcast.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- Google Guava -->
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
-
-        <!-- Vert.x-->
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-rx-java3</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- Logging -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- Unit testing -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>${awaitility.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

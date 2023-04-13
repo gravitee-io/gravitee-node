@@ -15,11 +15,13 @@
  */
 package io.gravitee.node.api.cache;
 
+import io.gravitee.common.service.Service;
+
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface CacheManager {
+public interface CacheManager extends Service<CacheManager> {
     <K, V> Cache<K, V> getOrCreateCache(String name);
 
     <K, V> Cache<K, V> getOrCreateCache(String name, CacheConfiguration configuration);
