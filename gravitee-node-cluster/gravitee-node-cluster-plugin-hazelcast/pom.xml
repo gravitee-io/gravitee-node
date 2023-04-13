@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node-cluster</artifactId>
-        <version>3.1.0-alpha.4</version>
+        <version>3.1.0-archi-231-cache-manager-SNAPSHOT</version>
     </parent>
 
     <artifactId>gravitee-node-cluster-plugin-hazelcast</artifactId>

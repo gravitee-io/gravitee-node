@@ -72,6 +72,9 @@ public class ClusterPluginHandler extends AbstractPluginHandler {
                     (ConfigurableApplicationContext) applicationContext
                 ).getBeanFactory();
                 beanFactory.registerSingleton(ClusterManager.class.getName(), clusterManager);
+                log.info("Cluster manager plugin '{}' installed.", plugin.id());
+            } else {
+                log.warn("Cluster manager plugin '{}' is not the type configured and won't be installed.", plugin.id());
             }
         } catch (Exception e) {
             logger.error("Unexpected error while registering cluster manager {}", plugin.id(), e);

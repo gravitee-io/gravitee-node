@@ -33,8 +33,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class HazelcastClusterConfiguration {
 
-    @Value("${cluster.hazelcast.config.path:${gravitee.home}/config/hazelcast-cluster.xml}")
+    @Value("${cluster.hazelcast.config-path:${gravitee.home}/config/hazelcast-cluster.xml}")
     private String hazelcastConfigFilePath;
+
+    @Value("${cluster.hazelcast.instance-name:gio-apim-cluster-hz-instance}")
+    private String hazelcastInstanceName;
 
     @Bean
     public HazelcastInstance clusterHazelcastInstance() throws FileNotFoundException {
@@ -44,6 +47,7 @@ public class HazelcastClusterConfiguration {
 
         Config config = fromFilePath(hazelcastConfigFilePath);
         config.setProperty(ClusterProperty.HEALTH_MONITORING_LEVEL.getName(), "OFF");
+        config.setInstanceName(hazelcastInstanceName);
 
         return Hazelcast.newHazelcastInstance(config);
     }
