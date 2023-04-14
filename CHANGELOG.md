@@ -1,3 +1,10 @@
+# [3.1.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.2...3.1.0-alpha.3) (2023-04-14)
+
+
+### Bug Fixes
+
+* use simple hazelcast topic ([d45cac8](https://github.com/gravitee-io/gravitee-node/commit/d45cac845f992f83c1db54c5155b7d79f691886a))
+
 # [3.1.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.1...3.1.0-alpha.2) (2023-04-14)
 
 
