@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>3.1.0-archi-230-cluster-plugin-SNAPSHOT</version>
+        <version>3.1.0-alpha.2</version>
     </parent>
 
     <artifactId>gravitee-node-jetty</artifactId>

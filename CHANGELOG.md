@@ -1,3 +1,10 @@
+# [3.1.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.1...3.1.0-alpha.2) (2023-04-14)
+
+
+### Features
+
+* update cluster manager to be compatible with plugin management ([f69ad89](https://github.com/gravitee-io/gravitee-node/commit/f69ad895f8b80a091a196a5e167210a73c154e5a))
+
 # [3.1.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/3.0.5...3.1.0-alpha.1) (2023-04-13)
 
 
