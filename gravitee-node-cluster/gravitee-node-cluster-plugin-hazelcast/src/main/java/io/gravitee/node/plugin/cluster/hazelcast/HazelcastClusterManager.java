@@ -83,7 +83,7 @@ public class HazelcastClusterManager extends AbstractService<ClusterManager> imp
 
     @Override
     public <T> Topic<T> topic(final String name) {
-        ITopic<T> iTopic = hazelcastInstance.getReliableTopic(name);
+        ITopic<T> iTopic = hazelcastInstance.getTopic(name);
         return new HazelcastTopic<>(iTopic);
     }
 
