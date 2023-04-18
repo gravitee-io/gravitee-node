@@ -1,3 +1,10 @@
+# [3.1.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.3...3.1.0-alpha.4) (2023-04-18)
+
+
+### Bug Fixes
+
+* tmp enable standalone cache by default ([2fb8064](https://github.com/gravitee-io/gravitee-node/commit/2fb80644f91abe54c0dd1ea68b6f0277a99cffb7))
+
 # [3.1.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.2...3.1.0-alpha.3) (2023-04-14)
 
 
