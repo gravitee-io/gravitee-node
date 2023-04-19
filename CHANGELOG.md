@@ -1,3 +1,10 @@
+# [3.1.0-alpha.5](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.4...3.1.0-alpha.5) (2023-04-19)
+
+
+### Features
+
+* add new plugin type for cache manager ([3bf9804](https://github.com/gravitee-io/gravitee-node/commit/3bf9804b0596a70d0df7082c16b81037b5e38284))
+
 # [3.1.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.3...3.1.0-alpha.4) (2023-04-18)
 
 
