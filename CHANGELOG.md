@@ -1,3 +1,10 @@
+## [1.24.7](https://github.com/gravitee-io/gravitee-node/compare/1.24.6...1.24.7) (2023-04-24)
+
+
+### Bug Fixes
+
+* **prometheus:** Stream scraping output instead of using a single String instance ([6e4271b](https://github.com/gravitee-io/gravitee-node/commit/6e4271bf66faa109bd21b078629fc1f7ed895f51))
+
 ## [1.24.6](https://github.com/gravitee-io/gravitee-node/compare/1.24.5...1.24.6) (2023-03-31)
 
 
