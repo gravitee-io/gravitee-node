@@ -83,7 +83,17 @@
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
-                <artifactId>gravitee-node-cluster</artifactId>
+                <artifactId>gravitee-node-cluster-plugin-handler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-cache-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-cache-plugin-handler</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -126,12 +136,6 @@
                 <artifactId>gravitee-node-kubernetes</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>io.gravitee.node</groupId>
-                <artifactId>gravitee-node-cache</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
             <!-- Gravitee.io -->
             <dependency>
                 <groupId>io.gravitee.common</groupId>
