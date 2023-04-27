@@ -271,6 +271,7 @@
         <bouncycastle.version>1.70</bouncycastle.version>
         <guava.version>31.1-jre</guava.version>
         <license3j.version>3.2.0</license3j.version>
+        <lombok.version>1.18.24</lombok.version>
     </properties>
     <build>
         <plugins>

@@ -1,3 +1,145 @@
+## [2.0.7](https://github.com/gravitee-io/gravitee-node/compare/2.0.6...2.0.7) (2023-04-27)
+
+
+### Bug Fixes
+
+* add 'With' methods to HttpServerConfiguration ([1051060](https://github.com/gravitee-io/gravitee-node/commit/1051060a81435c7b67c69ee972e5447b6386d716))
+* add 'With' methods to HttpServerConfiguration ([a0bb68f](https://github.com/gravitee-io/gravitee-node/commit/a0bb68f5b2a57bbef1709292c583c18602ce6ce7))
+* **api:** load the right property source for /configuration ([935a394](https://github.com/gravitee-io/gravitee-node/commit/935a39473f78e4a0ab90b8a360694730bd4f31bf))
+* **api:** load the right property source for /configuration ([f9580e2](https://github.com/gravitee-io/gravitee-node/commit/f9580e26395fc4b92d72b81d7eb5c6f10e3fc784))
+* **api:** load the right property source for /configuration ([563b0f8](https://github.com/gravitee-io/gravitee-node/commit/563b0f8f62f278a52f9a355c9b7dd90b1e290465))
+* **api:** send head before writing response for /monitor ([66abc90](https://github.com/gravitee-io/gravitee-node/commit/66abc903384881e8bedd4b1f4b6141ba061d9c7d))
+* **api:** send head before writing response for /monitor ([08d02ea](https://github.com/gravitee-io/gravitee-node/commit/08d02ead134ee9a318ccbd58d8465d40378dbf76))
+* **api:** send head before writing response for /monitor ([3700dd0](https://github.com/gravitee-io/gravitee-node/commit/3700dd0cf91db2b9b182e3e940831cf22dc61bca))
+* avoid spring loading issue with vertx and k8s client ([ccbb643](https://github.com/gravitee-io/gravitee-node/commit/ccbb643f846aac4ea3e3647448bb1113cf44d6ce))
+* avoid spring loading issue with vertx and k8s client ([fe829f9](https://github.com/gravitee-io/gravitee-node/commit/fe829f9fcf9b80f2525925316553aa1db54737b7))
+* bump kubernetes client ([137eaf0](https://github.com/gravitee-io/gravitee-node/commit/137eaf0e48c306882cb37438a16968ece6684b24))
+* **prometheus:** Stream scraping output instead of using a single String instance ([6e4271b](https://github.com/gravitee-io/gravitee-node/commit/6e4271bf66faa109bd21b078629fc1f7ed895f51))
+* remove enforced INFO level for license ([0515ec5](https://github.com/gravitee-io/gravitee-node/commit/0515ec5a8acbe660cc3e9fa042edf21b535b0568))
+
+## [1.27.8](https://github.com/gravitee-io/gravitee-node/compare/1.27.7...1.27.8) (2023-04-27)
+
+
+### Bug Fixes
+
+* add 'With' methods to HttpServerConfiguration ([1051060](https://github.com/gravitee-io/gravitee-node/commit/1051060a81435c7b67c69ee972e5447b6386d716))
+* add 'With' methods to HttpServerConfiguration ([a0bb68f](https://github.com/gravitee-io/gravitee-node/commit/a0bb68f5b2a57bbef1709292c583c18602ce6ce7))
+* **api:** load the right property source for /configuration ([f9580e2](https://github.com/gravitee-io/gravitee-node/commit/f9580e26395fc4b92d72b81d7eb5c6f10e3fc784))
+* **api:** load the right property source for /configuration ([563b0f8](https://github.com/gravitee-io/gravitee-node/commit/563b0f8f62f278a52f9a355c9b7dd90b1e290465))
+* **api:** send head before writing response for /monitor ([08d02ea](https://github.com/gravitee-io/gravitee-node/commit/08d02ead134ee9a318ccbd58d8465d40378dbf76))
+* **api:** send head before writing response for /monitor ([3700dd0](https://github.com/gravitee-io/gravitee-node/commit/3700dd0cf91db2b9b182e3e940831cf22dc61bca))
+* avoid spring loading issue with vertx and k8s client ([fe829f9](https://github.com/gravitee-io/gravitee-node/commit/fe829f9fcf9b80f2525925316553aa1db54737b7))
+* bump kubernetes client ([137eaf0](https://github.com/gravitee-io/gravitee-node/commit/137eaf0e48c306882cb37438a16968ece6684b24))
+* **prometheus:** Stream scraping output instead of using a single String instance ([6e4271b](https://github.com/gravitee-io/gravitee-node/commit/6e4271bf66faa109bd21b078629fc1f7ed895f51))
+
+## [1.25.6](https://github.com/gravitee-io/gravitee-node/compare/1.25.5...1.25.6) (2023-04-27)
+
+
+### Bug Fixes
+
+* add 'With' methods to HttpServerConfiguration ([a0bb68f](https://github.com/gravitee-io/gravitee-node/commit/a0bb68f5b2a57bbef1709292c583c18602ce6ce7))
+* **api:** load the right property source for /configuration ([563b0f8](https://github.com/gravitee-io/gravitee-node/commit/563b0f8f62f278a52f9a355c9b7dd90b1e290465))
+* **api:** send head before writing response for /monitor ([3700dd0](https://github.com/gravitee-io/gravitee-node/commit/3700dd0cf91db2b9b182e3e940831cf22dc61bca))
+* **prometheus:** Stream scraping output instead of using a single String instance ([6e4271b](https://github.com/gravitee-io/gravitee-node/commit/6e4271bf66faa109bd21b078629fc1f7ed895f51))
+
+## [1.24.7](https://github.com/gravitee-io/gravitee-node/compare/1.24.6...1.24.7) (2023-04-24)
+
+
+### Bug Fixes
+
+* **prometheus:** Stream scraping output instead of using a single String instance ([6e4271b](https://github.com/gravitee-io/gravitee-node/commit/6e4271bf66faa109bd21b078629fc1f7ed895f51))
+
+## [1.24.6](https://github.com/gravitee-io/gravitee-node/compare/1.24.5...1.24.6) (2023-03-31)
+
+
+### Bug Fixes
+
+* add 'With' methods to HttpServerConfiguration ([a0bb68f](https://github.com/gravitee-io/gravitee-node/commit/a0bb68f5b2a57bbef1709292c583c18602ce6ce7))
+
+## [1.24.5](https://github.com/gravitee-io/gravitee-node/compare/1.24.4...1.24.5) (2023-02-16)
+
+
+### Bug Fixes
+
+* **api:** load the right property source for /configuration ([563b0f8](https://github.com/gravitee-io/gravitee-node/commit/563b0f8f62f278a52f9a355c9b7dd90b1e290465))
+
+## [1.24.4](https://github.com/gravitee-io/gravitee-node/compare/1.24.3...1.24.4) (2023-02-10)
+
+
+### Bug Fixes
+
+* **api:** send head before writing response for /monitor ([3700dd0](https://github.com/gravitee-io/gravitee-node/commit/3700dd0cf91db2b9b182e3e940831cf22dc61bca))
+
+## [1.25.5](https://github.com/gravitee-io/gravitee-node/compare/1.25.4...1.25.5) (2023-04-06)
+
+
+### Bug Fixes
+
+* bump kubernetes client ([137eaf0](https://github.com/gravitee-io/gravitee-node/commit/137eaf0e48c306882cb37438a16968ece6684b24))
+
+## [1.25.4](https://github.com/gravitee-io/gravitee-node/compare/1.25.3...1.25.4) (2023-03-31)
+
+
+### Bug Fixes
+
+* add 'With' methods to HttpServerConfiguration ([1051060](https://github.com/gravitee-io/gravitee-node/commit/1051060a81435c7b67c69ee972e5447b6386d716))
+
+## [1.25.3](https://github.com/gravitee-io/gravitee-node/compare/1.25.2...1.25.3) (2023-03-07)
+
+
+### Bug Fixes
+
+* avoid spring loading issue with vertx and k8s client ([fe829f9](https://github.com/gravitee-io/gravitee-node/commit/fe829f9fcf9b80f2525925316553aa1db54737b7))
+
+## [1.25.2](https://github.com/gravitee-io/gravitee-node/compare/1.25.1...1.25.2) (2023-02-16)
+
+
+### Bug Fixes
+
+* **api:** load the right property source for /configuration ([f9580e2](https://github.com/gravitee-io/gravitee-node/commit/f9580e26395fc4b92d72b81d7eb5c6f10e3fc784))
+
+## [1.25.1](https://github.com/gravitee-io/gravitee-node/compare/1.25.0...1.25.1) (2023-02-10)
+
+
+### Bug Fixes
+
+* **api:** send head before writing response for /monitor ([08d02ea](https://github.com/gravitee-io/gravitee-node/commit/08d02ead134ee9a318ccbd58d8465d40378dbf76))
+
+## [1.27.7](https://github.com/gravitee-io/gravitee-node/compare/1.27.6...1.27.7) (2023-03-13)
+
+
+### Bug Fixes
+
+* avoid spring loading issue with vertx and k8s client ([ccbb643](https://github.com/gravitee-io/gravitee-node/commit/ccbb643f846aac4ea3e3647448bb1113cf44d6ce))
+
+## [1.27.6](https://github.com/gravitee-io/gravitee-node/compare/1.27.5...1.27.6) (2023-03-09)
+
+
+### Bug Fixes
+
+* remove enforced INFO level for license ([0515ec5](https://github.com/gravitee-io/gravitee-node/commit/0515ec5a8acbe660cc3e9fa042edf21b535b0568))
+
+## [1.27.5](https://github.com/gravitee-io/gravitee-node/compare/1.27.4...1.27.5) (2023-02-16)
+
+
+### Bug Fixes
+
+* **api:** load the right property source for /configuration ([935a394](https://github.com/gravitee-io/gravitee-node/commit/935a39473f78e4a0ab90b8a360694730bd4f31bf))
+
+## [1.27.4](https://github.com/gravitee-io/gravitee-node/compare/1.27.3...1.27.4) (2023-02-10)
+
+
+### Bug Fixes
+
+* **api:** send head before writing response for /monitor ([66abc90](https://github.com/gravitee-io/gravitee-node/commit/66abc903384881e8bedd4b1f4b6141ba061d9c7d))
+
+## [2.0.6](https://github.com/gravitee-io/gravitee-node/compare/2.0.5...2.0.6) (2023-03-31)
+
+
+### Bug Fixes
+
+* add 'With' methods to HttpServerConfiguration ([c7210bb](https://github.com/gravitee-io/gravitee-node/commit/c7210bb7d102de5cfcde93fe29ddbd9af6b0a7a7))
+
 ## [3.0.5](https://github.com/gravitee-io/gravitee-node/compare/3.0.4...3.0.5) (2023-04-06)
 
 
