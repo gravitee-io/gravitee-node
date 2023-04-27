@@ -15,7 +15,6 @@
  */
 package io.gravitee.node.license;
 
-import ch.qos.logback.classic.Level;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.license.license3j.License3JLicense;
@@ -118,9 +117,6 @@ public class LicenseService extends AbstractService<LicenseService> {
     @Override
     protected void doStart() throws Exception {
         super.doStart();
-
-        // Ensure log level for license module to INFO
-        ((ch.qos.logback.classic.Logger) logger).setLevel(Level.INFO);
 
         this.loadLicense();
         this.startLicenseChecker();
