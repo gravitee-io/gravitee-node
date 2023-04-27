@@ -27,7 +27,6 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax0.license3j.Feature;
 import javax0.license3j.License;
 import javax0.license3j.io.LicenseReader;
 import org.slf4j.Logger;
@@ -178,8 +177,10 @@ public class LicenseService extends AbstractService<LicenseService> {
                 reader = new LicenseReader(new ByteArrayInputStream(licenseContent));
                 license = reader.read();
 
-                this.dump();
+                this.printLicenseInfo();
                 this.verify();
+            } catch (IllegalArgumentException iae) {
+                logger.error("License file is not valid", iae);
             } catch (IOException ioe) {
                 logger.error("License file can not be read", ioe);
             }
@@ -212,13 +213,18 @@ public class LicenseService extends AbstractService<LicenseService> {
     private String getLicenseFile() {
         String licenseFile = System.getProperty(GRAVITEE_LICENSE_PROPERTY);
         if (licenseFile == null || licenseFile.isEmpty()) {
-            licenseFile = System.getProperty(GRAVITEE_HOME_PROPERTY) + File.separator + "license" + File.separator + "license.key";
+            licenseFile = System.getProperty(GRAVITEE_HOME_PROPERTY) + File.separator + "license" + File.separator + GRAVITEE_LICENSE_KEY;
         }
 
         return licenseFile;
     }
 
     private void verify() throws Exception {
+        if (license == null) {
+            logger.debug("License will not be verified as it has not been loaded");
+            return;
+        }
+
         boolean valid = license.isOK(key);
 
         if (!valid) {
@@ -231,16 +237,6 @@ public class LicenseService extends AbstractService<LicenseService> {
             stopNode();
         }
 
-        // Apply additional checks according to the node implementation
-        //License3JLicense license3JLicense = new License3JLicense(license);
-
-        /*
-        if (!isValid(license3JLicense)) {
-            logger.error("License does not allow you to use {}. Please contact GraviteeSource to ask for a valid license.", node.name());
-            stopNode();
-        }
-         */
-
         Date expiration = license.get(LICENSE_EXPIRE_AT).getDate();
         long remainingDays = Math.round((expiration.getTime() - System.currentTimeMillis()) / (double) 86400000);
 
@@ -249,11 +245,13 @@ public class LicenseService extends AbstractService<LicenseService> {
         }
     }
 
-    private void dump() {
-        // Print features
-        logger.info("License informations: ");
-        Map<String, Feature> features = license.getFeatures();
-        features.forEach((name, feature) -> logger.info("\t{}: {}", name, feature.valueString()));
+    private void printLicenseInfo() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("License information: \n");
+        license
+            .getFeatures()
+            .forEach((name, feature) -> sb.append("\t").append(name).append(": ").append(feature.valueString()).append("\n"));
+        logger.info(sb.toString());
     }
 
     private class LicenseChecker extends TimerTask {
@@ -263,7 +261,7 @@ public class LicenseService extends AbstractService<LicenseService> {
             try {
                 LicenseService.this.verify();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("An error occurred while checking license", e);
             }
         }
     }
@@ -316,8 +314,8 @@ public class LicenseService extends AbstractService<LicenseService> {
                     }
                     Thread.yield();
                 }
-            } catch (Throwable e) {
-                // Log or rethrow the error
+            } catch (Exception e) {
+                logger.debug("An error occurred while watching license file", e);
             }
         }
 
