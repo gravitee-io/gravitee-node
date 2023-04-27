@@ -1,3 +1,31 @@
+## [1.24.7](https://github.com/gravitee-io/gravitee-node/compare/1.24.6...1.24.7) (2023-04-24)
+
+
+### Bug Fixes
+
+* **prometheus:** Stream scraping output instead of using a single String instance ([6e4271b](https://github.com/gravitee-io/gravitee-node/commit/6e4271bf66faa109bd21b078629fc1f7ed895f51))
+
+## [1.24.6](https://github.com/gravitee-io/gravitee-node/compare/1.24.5...1.24.6) (2023-03-31)
+
+
+### Bug Fixes
+
+* add 'With' methods to HttpServerConfiguration ([a0bb68f](https://github.com/gravitee-io/gravitee-node/commit/a0bb68f5b2a57bbef1709292c583c18602ce6ce7))
+
+## [1.24.5](https://github.com/gravitee-io/gravitee-node/compare/1.24.4...1.24.5) (2023-02-16)
+
+
+### Bug Fixes
+
+* **api:** load the right property source for /configuration ([563b0f8](https://github.com/gravitee-io/gravitee-node/commit/563b0f8f62f278a52f9a355c9b7dd90b1e290465))
+
+## [1.24.4](https://github.com/gravitee-io/gravitee-node/compare/1.24.3...1.24.4) (2023-02-10)
+
+
+### Bug Fixes
+
+* **api:** send head before writing response for /monitor ([3700dd0](https://github.com/gravitee-io/gravitee-node/commit/3700dd0cf91db2b9b182e3e940831cf22dc61bca))
+
 ## [1.25.5](https://github.com/gravitee-io/gravitee-node/compare/1.25.4...1.25.5) (2023-04-06)
 
 
