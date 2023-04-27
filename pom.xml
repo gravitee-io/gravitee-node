@@ -273,6 +273,7 @@
                 <configuration>
                     <nodeVersion>12.13.0</nodeVersion>
                     <prettierJavaVersion>1.6.1</prettierJavaVersion>
+                    <skip>${skip.validation}</skip>
                 </configuration>
                 <executions>
                     <execution>
