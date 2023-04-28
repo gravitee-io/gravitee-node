@@ -22,6 +22,7 @@ import io.gravitee.common.util.ListReverser;
 import io.gravitee.common.util.Version;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.api.license.License;
+import io.gravitee.node.cache.NodeCacheService;
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
 import io.gravitee.node.cluster.NodeClusterService;
 import io.gravitee.node.license.LicenseService;
@@ -140,6 +141,7 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
         components.add(PluginEventListener.class);
         components.add(PluginRegistry.class);
         components.add(NodeClusterService.class);
+        components.add(NodeCacheService.class);
         components.add(ServiceManager.class);
         components.add(ManagementService.class);
         components.add(NodeMonitoringEventHandler.class);
