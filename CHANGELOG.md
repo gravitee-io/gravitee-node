@@ -1,3 +1,10 @@
+# [3.1.0-alpha.6](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.5...3.1.0-alpha.6) (2023-05-03)
+
+
+### Bug Fixes
+
+* bump gravitee-kubernetes version to 2.0.2 ([7bec0f7](https://github.com/gravitee-io/gravitee-node/commit/7bec0f7eb78849347c6095e108c627bbd969929c))
+
 # [3.1.0-alpha.5](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.4...3.1.0-alpha.5) (2023-04-19)
 
 
