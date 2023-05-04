@@ -1,3 +1,10 @@
+## [1.25.7](https://github.com/gravitee-io/gravitee-node/compare/1.25.6...1.25.7) (2023-05-04)
+
+
+### Bug Fixes
+
+* license error in community mode ([ed2b2b5](https://github.com/gravitee-io/gravitee-node/commit/ed2b2b54f563d9828ae91c8421511ce5bd6febda))
+
 ## [1.25.6](https://github.com/gravitee-io/gravitee-node/compare/1.25.5...1.25.6) (2023-04-27)
 
 
