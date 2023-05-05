@@ -29,7 +29,7 @@
 
     <groupId>io.gravitee.node</groupId>
     <artifactId>gravitee-node</artifactId>
-    <version>3.1.0-alpha.8</version>
+    <version>3.1.0-archi-217-distributed-sync-SNAPSHOT</version>
 
     <name>Gravitee.io - Node</name>
 

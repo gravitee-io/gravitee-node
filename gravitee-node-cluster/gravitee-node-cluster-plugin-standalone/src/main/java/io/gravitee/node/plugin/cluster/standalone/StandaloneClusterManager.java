@@ -46,6 +46,11 @@ public class StandaloneClusterManager extends AbstractService<ClusterManager> im
     }
 
     @Override
+    public String clusterId() {
+        return "standalone";
+    }
+
+    @Override
     public Set<Member> members() {
         return Set.of(LOCAL_MEMBER);
     }

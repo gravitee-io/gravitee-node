@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>3.1.0-alpha.8</version>
+        <version>3.1.0-archi-217-distributed-sync-SNAPSHOT</version>
     </parent>
 
     <artifactId>gravitee-node-management</artifactId>

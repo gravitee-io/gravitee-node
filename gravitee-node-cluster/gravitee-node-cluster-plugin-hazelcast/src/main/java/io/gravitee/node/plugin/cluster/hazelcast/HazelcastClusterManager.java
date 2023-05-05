@@ -56,6 +56,11 @@ public class HazelcastClusterManager extends AbstractService<ClusterManager> imp
     }
 
     @Override
+    public String clusterId() {
+        return hazelcastInstance.getConfig().getClusterName();
+    }
+
+    @Override
     public Set<Member> members() {
         return hazelcastInstance
             .getCluster()

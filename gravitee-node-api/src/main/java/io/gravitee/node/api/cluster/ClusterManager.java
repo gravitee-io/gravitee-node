@@ -25,6 +25,10 @@ import java.util.Set;
  */
 public interface ClusterManager extends Service<ClusterManager> {
     /**
+     * @return the unique cluster identifier
+     */
+    String clusterId();
+    /**
      * @return the current list of members of this cluster
      */
     Set<Member> members();
