@@ -23,6 +23,4 @@ public interface MemberListener {
     void onMemberAdded(final Member member);
 
     void onMemberRemoved(final Member member);
-
-    void onMemberChanged(final Member member);
 }
