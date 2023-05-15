@@ -1,0 +1,53 @@
+= Gravitee Node Cluster
+
+== Description
+
+The *Gravitee Node Cluster* module offers the capabilities to set up a cluster of nodes. This cluster could be then used to communicate or share state.
+
+== Plugins
+
+To define the plugin to use, you must define the following property in `gravitee.yml`:
+
+```yaml
+cluster:
+    type: standalone|hazelcast
+```
+
+=== Standalone
+The *Standalone Plugin* is the default behavior. It is used as _fallback_ when no cluster is required. It means that each node knows only about itself and all nodes are considered as _primary_.
+
+==== Configuration
+This plugin is enabled by default and doesn't require extra configuration.
+
+=== Hazelcast
+The *Hazelcast Plugin* is entirely relying on Hazelcast to manage the cluster state. When this plugin is enabled, the node is becoming part of a cluster.
+
+==== Configuration
+
+The underlying Hazelcast cluster is dedicated to the cluster manager. By default, the file `${gravitee.home}/config/hazelcast-cluster.xml` is expected to configure it. The path could be overridden by setting `cluster.hazelcast.config-path` in `gravitee.yml`.
+
+A basic example:
+
+```xml
+<hazelcast xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.hazelcast.com/schema/config
+           http://www.hazelcast.com/schema/config/hazelcast-config-5.3.xsd">
+
+    <cluster-name>gio-apim-cluster</cluster-name>
+    <network>
+        <port auto-increment="true" port-count="100">5701</port>
+        <join>
+            <auto-detection enabled="true"/>
+            <multicast enabled="false"/>
+            <tcp-ip enabled="true">
+                <interface>127.0.0.1</interface>
+            </tcp-ip>
+        </join>
+    </network>
+</hazelcast>
+```
+
+== Usage
+
+In order to use the Cluster feature, you need to inject the `ClusterManager` into you component, and then use it. See JavaDoc in `io.gravitee.node.api.cluster.ClusterManager` for more details.
