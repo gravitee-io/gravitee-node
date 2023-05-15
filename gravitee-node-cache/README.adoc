@@ -1,0 +1,53 @@
+= Gravitee Node Cache
+
+== Description
+
+The *Gravitee Node Cache* module offers the capabilities to set up a global CacheManager. This Cache manager could be then used to create Cache to store data. The type of Cache will depend on the plugin used on the plate form.
+
+== Plugins
+
+To define the plugin to use, you must define the following property in `gravitee.yml`:
+
+```yaml
+cache:
+    type: standalone|hazelcast
+```
+
+=== Standalone
+The *Standalone Plugin* is a simple cache manager based on _Caffeine_ implementation. It allows creation of an in-memory cache with a simple configuration.
+
+==== Configuration
+This plugin is enabled by default and doesn't require extra configuration.
+
+=== Hazelcast
+The *Hazelcast Plugin* is entirely relying on Hazelcast implementation. It allows creating a local in-memory cache or distributed cache using Hazelcast IMap. This is to share data across a dedicated Hazelcast cluster.
+
+==== Configuration
+
+The underlying Hazelcast cluster is dedicated to the cache manager. A file `${gravitee.home}/config/hazelcast-cache.xml` is expected to configure it. The path could be overridden by setting `cache.hazelcast.config-path`.
+
+A basic example:
+
+```xml
+<hazelcast xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.hazelcast.com/schema/config
+           http://www.hazelcast.com/schema/config/hazelcast-config-5.3.xsd">
+
+    <cluster-name>gio-apim-distributed-cache</cluster-name>
+    <network>
+        <port auto-increment="true" port-count="100">5701</port>
+        <join>
+            <auto-detection enabled="true"/>
+            <multicast enabled="false"/>
+            <tcp-ip enabled="true">
+                <interface>127.0.0.1</interface>
+            </tcp-ip>
+        </join>
+    </network>
+</hazelcast>
+```
+
+== Usage
+
+In order to use the Cache feature, you need to inject the `CacheManager` into you component, and then use it. See JavaDoc in `io.gravitee.node.api.cache.CacheManager` for more details.

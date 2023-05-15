@@ -8,6 +8,131 @@ image:https://f.hubspotusercontent40.net/hubfs/7600448/gravitee-github-button.jp
 
 
 == Description
-The Gravitee.io node project is the cornerstone of every Gravitee.io products.
+The Gravitee.io node project is the cornerstone of every Gravitee.io product. It offers a piece of functionalities that can be selectively used out-of-the-box in a standard way.
 
-TO BE COMPLETED...
+== Modules
+=== Api
+The Gravitee Node Api module regroups all the interfaces that are implemented in the other modules.
+
+=== Cache
+The Gravitee Node Cache module regroups all the classes related to cache management plugins, and two plugins implementations: standalone and hazelcast.
+
+=== Certificates
+The Gravitee Node Certificates module defines implementations useful to deal with SSL. For example, it provides based implementations allowing to load keystore from the file system or initialize a keystore with a self-signed certificate. Other node modules depend on it.
+
+=== Cluster
+The Gravitee Node Cluster module regroups all the classes related to cluster management plugins, and two plugins implementations: standalone and hazelcast.
+
+=== Jetty
+The Gravitee Node Jetty module gives an easy way to configure and start a Jetty server. Most of the Gravitee products rely on the node jetty module to set up and start an HTTP server and expose a REST api.
+
+=== Kubernetes
+The Gravitee Node Kubernetes module offers useful implementations that work natively with k8s such as loading a keystore from a Kubernetes secret or resolving configuration entries from configmap.
+
+=== License
+The Gravitee Node License module provides an out-of-the-box feature allowing the detection and loading of a license key. It offers common access to license information. Many enterprise plugins are relying on it.
+
+=== Management
+The Gravitee Node Management module allows exposing a management HTTP server that exposes product information (ex: node info, Prometheus metrics, …). It is also extensible as each product can expose its own set of endpoints.
+
+=== Monitoring
+The Gravitee Node Monitoring module is responsible to set up a background task to collect monitoring information regularly. It also relies on the management module to expose an health HTTP endpoint that can be used in a common way to detect the unavailability of a node instance.
+
+=== Notifier
+The Gravitee Node Monitoring module offers a notification service that can be used by the different products to build an advanced notification system (ex: notify that a certificate is about to expire). It seamlessly works with any notifier plugin (slack, email, …).
+
+=== Plugins
+The Gravitee Node Plugins module contains internal code used to load and register services during the node startup phase.
+
+=== Reporter
+The Gravitee Node Monitoring module is in charge of detecting and registering all reporter plugins. It exposes a reporter service that can be used as a single point-of-report by the Gravitee products. Internally, all events reported are propagated to each registered reporter.
+
+=== Services
+The Gravitee Node Services module provides different services such as upgrader and initializer services. They are particularly useful to ensure data migration during product upgrades or data initialization during the startup phase.
+
+=== Tracing
+The Gravitee Node Services module gives an easy and common way to set up tracing (aka open telemetry) on a given product. It is able to automatically load and configure tracing plugin.
+
+=== Vertx
+The Gravitee Node Vertx module is a common piece of Gravitee products that offers the capabilities to set up vertx and instantiate vertx http servers easily.
+
+== Releases
+=== 👷 3.1.0 (alpha)
+The following is still a work in progress, as 3.1.0 has not been released yet.
+
+==== Changelog
+ * Add support for multi-servers
+ * Move cluster concept into plugins
+ * Move cache concept into plugins
+
+==== Vertx Http Server migration
+The readme provides all details regarding the usage of the VertxServerFactory. Here are some highlights of the main changes:
+
+ * The package has changed for the `VertxHttpServerFactory` use `io.gravitee.node.vertx.server.http.VertxHttpServerFactory`
+ * `HttpServerConfiguration` has been replaced with `io.gravitee.node.vertx.server.http.HttpServerOptions` which now provides a regular `builder()` method allowing configuring the server.
+ * `HttpServerOptions` builder can be initialized using the environment configuration. Then, any configuration can be overridden.
+
+==== New cluster manager migration
+Cluster Managers are now available via plugins. Default distribution contains a Standalone Cluster Manager which was and still is the default one.
+
+Two plugins are available :
+
+ * Standalone Cluster Manager which is the default plugin. This plugin is used when no cluster is configured, i.e. each node is alone in its own cluster.
+ * Hazelcast Cluster Manager which has to be added to the distribution and enable by setting `cluster.type` to _hazelcast_.
+
+Interfaces have slightly changed, here are the details for each:
+
+__ClusterManager__
+
+* Methods changed
+  - `getMembers()` has been renamed to `members()`
+  - `getLocalMember()` has been renamed to `localMember()`
+  - `isMasterNode()` has been renamed to `isPrimaryNode()`
+* Method added
+  - `removeMemberListener(MemberListener)`  allows to remove a previously registered listener
+  - `topic(String)` replace the old `MessageProducer` bean which has been removed and allows retrieval of a topic from its name
+
+__MemberListener__
+
+  * `memberAdded(Member)` has been renamed to `onMemberAdded(Member)`
+  * `memberRemoved(Member)` has been renamed to `onMemberRemoved(Member)`
+  * `memberChanged(Member)` has been renamed to `onMemberChanged(Member)`
+
+__Member__
+
+  * Methods changed
+    - `uuid()` has been renamed to `id()`
+    - `master()` has been renamed to primary()`
+  * Method added
+    - `local` which returns true if the associated member is the local one
+
+__MessageProducer__
+
+  * Has been removed and replaced by topic method in ClusterManager.
+
+__Topic__
+
+  * Has been moved from `io.gravitee.node.api.message to io.gravitee.node.api.cluster.messaging`.
+  * The use of UUID has been replaced by `String`
+
+__Message__
+
+  * Has been moved from `io.gravitee.node.api.message to io.gravitee.node.api.cluster.messaging`.
+
+__MessageConsumer__
+
+  * Has been renamed to `MessageListener` and moved to `io.gravitee.node.api.cluster.messaging`.
+
+
+==== New cache manager migration
+Cache Managers are now available via plugins. Default distribution contains a Standalone Cache Manager which was and still is the default one.
+
+Two plugins are available :
+
+* Standalone Cache Manager which is the default plugin. The cache will not be distributed and will always remain local to the node (in-memory).
+* Hazelcast Cache Manager which has to be added to the distribution and enable by setting `cache.type` to `hazelcast`. With this plugin the cache could be either local (in-memory) or distributed (Hazelcast IMap).
+
+Following changes have been introduced:
+
+ * Ability to define the scope of the cache (local or distributed) by using new `CacheConfiguration#distributed` attribute
+ * Replace Guava Cache by Caffeine
