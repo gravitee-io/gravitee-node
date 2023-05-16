@@ -1,3 +1,10 @@
+# [3.1.0-alpha.7](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.6...3.1.0-alpha.7) (2023-05-16)
+
+
+### Bug Fixes
+
+* bump kubernetes client to 2.0.3 ([51b64c2](https://github.com/gravitee-io/gravitee-node/commit/51b64c299a688ce4b8aa9b6214e417fc25043333))
+
 # [3.1.0-alpha.6](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.5...3.1.0-alpha.6) (2023-05-03)
 
 
