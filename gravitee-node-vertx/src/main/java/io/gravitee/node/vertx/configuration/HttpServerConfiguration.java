@@ -56,6 +56,7 @@ public class HttpServerConfiguration {
     private final String tlsProtocols;
     private final String keyStorePath;
     private final List<String> keyStoreKubernetes;
+    private final boolean keyStoreWatch;
     private final String keyStoreDefaultAlias;
     private final String keyStorePassword;
     private final String keyStoreType;
@@ -95,6 +96,7 @@ public class HttpServerConfiguration {
         this.tlsProtocols = builder.tlsProtocols;
         this.keyStorePath = builder.keyStorePath;
         this.keyStoreKubernetes = builder.keyStoreKubernetes;
+        this.keyStoreWatch = builder.keyStoreWatch;
         this.keyStoreDefaultAlias = builder.keyStoreDefaultAlias;
         this.keyStorePassword = builder.keyStorePassword;
         this.keyStoreType = builder.keyStoreType;
@@ -170,6 +172,10 @@ public class HttpServerConfiguration {
 
     public List<String> getKeystoreKubernetes() {
         return keyStoreKubernetes;
+    }
+
+    public boolean getKeyStoreWatch() {
+        return keyStoreWatch;
     }
 
     public String getKeyStoreDefaultAlias() {
@@ -291,6 +297,7 @@ public class HttpServerConfiguration {
         private String tlsProtocols;
         private String keyStorePath;
         private List<String> keyStoreKubernetes;
+        private boolean keyStoreWatch = true;
         private String keyStoreDefaultAlias;
         private String keyStorePassword;
         private String keyStoreType = CERTIFICATE_FORMAT_JKS;
@@ -400,6 +407,11 @@ public class HttpServerConfiguration {
 
         public HttpServerConfigurationBuilder withDefaultKeyStoreKubernetes(List<String> keyStoreKubernetes) {
             this.keyStoreKubernetes = keyStoreKubernetes;
+            return this;
+        }
+
+        public HttpServerConfigurationBuilder withDefaultKeyStoreWatch(boolean keyStoreWatch) {
+            this.keyStoreWatch = keyStoreWatch;
             return this;
         }
 
@@ -623,6 +635,7 @@ public class HttpServerConfiguration {
             this.keyStorePath = environment.getProperty(prefix + "ssl.keystore.path", keyStorePath);
             this.keyStoreCertificates = getCertificateValues(prefix + "ssl.keystore.certificates");
             this.keyStoreKubernetes = getArrayValues(prefix + "ssl.keystore.kubernetes", this.keyStoreKubernetes);
+            this.keyStoreWatch = environment.getProperty(prefix + "ssl.keystore.watch", Boolean.class, this.keyStoreWatch);
             this.keyStoreDefaultAlias = environment.getProperty(prefix + "ssl.keystore.defaultAlias");
             this.keyStorePassword = environment.getProperty(prefix + "ssl.keystore.password", keyStorePassword);
 
