@@ -113,7 +113,7 @@ public abstract class AbstractVertxHttpServerFactory<T> implements FactoryBean<T
                 .withKeyStoreType(httpServerConfiguration.getKeyStoreType())
                 .withKeyStoreCertificates(httpServerConfiguration.getKeyStoreCertificates())
                 .withKubernetesLocations(httpServerConfiguration.getKeystoreKubernetes())
-                .withWatch(true) // TODO: allow to configure watch (globally, just for keystore, ...) ?
+                .withWatch(httpServerConfiguration.getKeyStoreWatch())
                 .withDefaultAlias(httpServerConfiguration.getKeyStoreDefaultAlias())
                 .build();
 
