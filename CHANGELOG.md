@@ -1,3 +1,10 @@
+## [3.0.8](https://github.com/gravitee-io/gravitee-node/compare/3.0.7...3.0.8) (2023-05-24)
+
+
+### Bug Fixes
+
+* avoid npe when evaluating cpu load average ([c54bd58](https://github.com/gravitee-io/gravitee-node/commit/c54bd58b71a96fff38c8579403fbe8c2aa123433))
+
 ## [3.0.7](https://github.com/gravitee-io/gravitee-node/compare/3.0.6...3.0.7) (2023-05-04)
 
 
