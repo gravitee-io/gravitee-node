@@ -1,3 +1,11 @@
+## [1.24.9](https://github.com/gravitee-io/gravitee-node/compare/1.24.8...1.24.9) (2023-05-24)
+
+
+### Bug Fixes
+
+* add config to disable keystore watcher ([c28b55b](https://github.com/gravitee-io/gravitee-node/commit/c28b55bd46b0ee2786b24e603df1717139836c86))
+* avoid npe when evaluating cpu load average ([7dd7e90](https://github.com/gravitee-io/gravitee-node/commit/7dd7e902bd83459965a423893a44a64a279bed72))
+
 ## [1.24.8](https://github.com/gravitee-io/gravitee-node/compare/1.24.7...1.24.8) (2023-05-04)
 
 
