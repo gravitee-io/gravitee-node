@@ -80,8 +80,10 @@ public class NodeMonitorThread implements Runnable {
                 // OS metrics
                 OsInfo osInfo = monitor.getOs();
                 event.property("os.cpu.percent", osInfo.cpu.getPercent());
-                for (int i = 0; i < osInfo.cpu.getLoadAverage().length; i++) {
-                    event.property("os.cpu.average." + i, osInfo.cpu.getLoadAverage()[i]);
+                if (osInfo.cpu.getLoadAverage() != null) {
+                    for (int i = 0; i < osInfo.cpu.getLoadAverage().length; i++) {
+                        event.property("os.cpu.average." + i, osInfo.cpu.getLoadAverage()[i]);
+                    }
                 }
 
                 // Process metrics
