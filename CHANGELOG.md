@@ -1,3 +1,10 @@
+## [1.25.9](https://github.com/gravitee-io/gravitee-node/compare/1.25.8...1.25.9) (2023-05-25)
+
+
+### Bug Fixes
+
+* add config to disable keystore watcher ([4f33f25](https://github.com/gravitee-io/gravitee-node/commit/4f33f25cefffce52f900b171e01ddb094800b13f))
+
 ## [1.25.8](https://github.com/gravitee-io/gravitee-node/compare/1.25.7...1.25.8) (2023-05-24)
 
 
