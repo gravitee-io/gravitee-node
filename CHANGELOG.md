@@ -1,3 +1,10 @@
+# [3.1.0-alpha.9](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.8...3.1.0-alpha.9) (2023-05-29)
+
+
+### Features
+
+* add cluster id on ClusterManager interface ([153c441](https://github.com/gravitee-io/gravitee-node/commit/153c441d8c68babc0cc2cd1e6ce61e2c7dbb96fb))
+
 # [3.1.0-alpha.8](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.7...3.1.0-alpha.8) (2023-05-25)
 
 
