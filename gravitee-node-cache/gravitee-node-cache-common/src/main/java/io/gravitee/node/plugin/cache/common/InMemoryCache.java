@@ -142,7 +142,7 @@ public class InMemoryCache<K, V> implements Cache<K, V> {
 
     @Override
     public V put(K key, V value) {
-        return this.put(key, value, 0, TimeUnit.MILLISECONDS);
+        return this.put(key, value, configuration.getTimeToLiveInMs(), TimeUnit.MILLISECONDS);
     }
 
     @Override
