@@ -22,6 +22,7 @@ import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.reactivex.rxjava3.annotations.NonNull;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,25 +45,19 @@ public class ExcludeTagsFilter implements MeterFilter {
     @NonNull
     @Override
     public Meter.Id map(@NonNull Meter.Id id) {
-        if (id.getName().startsWith(category)) {
-            final AtomicBoolean filtered = new AtomicBoolean(false);
-
-            List<Tag> tags = stream(id.getTagsAsIterable().spliterator(), false)
-                .map(t -> {
-                    if (!excludedLabels.contains(t.getKey())) {
-                        return t;
-                    }
-
-                    filtered.set(true);
-                    return null;
-                })
-                .filter(Objects::nonNull)
-                .collect(toList());
-
-            // When some tags have been excluded, then replace tags collection.
-            if (filtered.get()) {
-                return id.replaceTags(tags);
+        if (!excludedLabels.isEmpty() && id.getName().startsWith(category)) {
+            List<Tag> tags = new ArrayList<>();
+            var iter = id.getTagsAsIterable().iterator();
+            var processedTags = 0;
+            while (iter.hasNext()) {
+                var t = iter.next();
+                if (!excludedLabels.contains(t.getKey())) {
+                    tags.add(t);
+                }
+                processedTags++;
             }
+
+            return processedTags > tags.size() ? id.replaceTags(tags) : id;
         }
         return id;
     }
