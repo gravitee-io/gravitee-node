@@ -1,3 +1,10 @@
+# [3.1.0-alpha.10](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.9...3.1.0-alpha.10) (2023-06-12)
+
+
+### Bug Fixes
+
+* **perf:** This fix rework the ExcludeTagsFilter to reduce a processing time ([4a52c0b](https://github.com/gravitee-io/gravitee-node/commit/4a52c0b4223477b949b106cdf97499a996e39e40))
+
 # [3.1.0-alpha.9](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.8...3.1.0-alpha.9) (2023-05-29)
 
 
