@@ -1,3 +1,10 @@
+# [3.1.0-alpha.11](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.10...3.1.0-alpha.11) (2023-06-17)
+
+
+### Bug Fixes
+
+* **deps:** bump gravitee-plugin to 2.0.0-alpha1 ([850236d](https://github.com/gravitee-io/gravitee-node/commit/850236d2c4cbd9ac49e6b02bf8b92c4b9f845d44))
+
 # [3.1.0-alpha.10](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.9...3.1.0-alpha.10) (2023-06-12)
 
 
