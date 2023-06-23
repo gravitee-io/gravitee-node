@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.api.plugin;
+package io.gravitee.node.api.license.model;
 
-import io.gravitee.node.api.Node;
-import io.gravitee.plugin.api.PluginDeploymentContext;
+import java.util.Set;
+import lombok.Data;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Antoine CORDIER (antoine.cordier at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface NodeDeploymentContext extends PluginDeploymentContext {
-    Node node();
+@Data
+public class LicensePack {
+
+    private Set<String> features;
 }

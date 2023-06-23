@@ -15,15 +15,24 @@
  */
 package io.gravitee.node.api.license;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Antoine CORDIER (antoine.cordier at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface License {
-    Optional<Feature> feature(String name);
+public interface NodeLicenseService {
+    String getTier();
 
-    Map<String, Object> features();
+    Set<String> getPacks();
+
+    Set<String> getFeatures();
+
+    boolean isFeatureEnabled(String featureName);
+
+    default boolean isFeatureMissing(String featureName) {
+        return !isFeatureEnabled(featureName);
+    }
+
+    void refresh();
 }

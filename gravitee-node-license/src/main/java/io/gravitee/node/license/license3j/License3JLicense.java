@@ -28,8 +28,6 @@ import java.util.stream.Collectors;
  */
 public class License3JLicense implements License {
 
-    private static final String FEATURE_INCLUDED = "included";
-
     private final javax0.license3j.License license;
 
     public License3JLicense(javax0.license3j.License license) {
@@ -40,11 +38,6 @@ public class License3JLicense implements License {
     public Optional<Feature> feature(String name) {
         javax0.license3j.Feature feature = (license == null) ? null : license.get(name);
         return (feature == null) ? Optional.empty() : Optional.of(new License3JFeature(feature));
-    }
-
-    @Override
-    public boolean isFeatureIncluded(String featureName) {
-        return feature(featureName).map(feature -> FEATURE_INCLUDED.equals(feature.getString())).orElse(false);
     }
 
     @Override

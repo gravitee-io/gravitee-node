@@ -15,8 +15,13 @@
  */
 package io.gravitee.node.container.spring;
 
+import io.gravitee.node.api.Node;
+import io.gravitee.node.api.license.LicenseModelService;
+import io.gravitee.node.api.license.NodeLicenseService;
 import io.gravitee.node.container.plugin.NodeDeploymentContextFactory;
+import io.gravitee.node.license.LicenseModelServiceImpl;
 import io.gravitee.node.license.LicenseService;
+import io.gravitee.node.license.NodeLicenseServiceImpl;
 import org.springframework.context.annotation.Bean;
 
 /**
@@ -26,12 +31,22 @@ import org.springframework.context.annotation.Bean;
 public class NodeContainerConfiguration {
 
     @Bean
-    public NodeDeploymentContextFactory nodeDeploymentContextFactory() {
-        return new NodeDeploymentContextFactory();
+    public NodeDeploymentContextFactory nodeDeploymentContextFactory(NodeLicenseService nodeLicenseService) {
+        return new NodeDeploymentContextFactory(nodeLicenseService);
     }
 
     @Bean
     public LicenseService licenseService() {
         return new LicenseService();
+    }
+
+    @Bean
+    public LicenseModelService licenseModelService() {
+        return new LicenseModelServiceImpl();
+    }
+
+    @Bean
+    public NodeLicenseService nodeLicenseService(Node node, LicenseModelService licenseModelService) {
+        return new NodeLicenseServiceImpl(node, licenseModelService);
     }
 }

@@ -53,6 +53,11 @@
             <artifactId>license3j</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+
         <!-- Spring dependencies -->
         <dependency>
             <groupId>org.springframework</groupId>

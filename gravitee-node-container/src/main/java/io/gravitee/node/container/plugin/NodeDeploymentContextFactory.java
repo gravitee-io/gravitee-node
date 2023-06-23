@@ -15,22 +15,29 @@
  */
 package io.gravitee.node.container.plugin;
 
-import io.gravitee.node.api.Node;
-import io.gravitee.node.api.plugin.NodeDeploymentContext;
+import io.gravitee.node.api.license.NodeLicenseService;
+import io.gravitee.plugin.api.PluginDeploymentContext;
 import io.gravitee.plugin.api.PluginDeploymentContextFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class NodeDeploymentContextFactory implements PluginDeploymentContextFactory<NodeDeploymentContext> {
+public class NodeDeploymentContextFactory implements PluginDeploymentContextFactory<PluginDeploymentContext> {
 
-    @Autowired
-    private Node node;
+    private final NodeLicenseService nodeLicenseService;
+
+    private NodePluginDeploymentContext nodePluginDeploymentContext;
+
+    public NodeDeploymentContextFactory(NodeLicenseService nodeLicenseService) {
+        this.nodeLicenseService = nodeLicenseService;
+    }
 
     @Override
-    public NodeDeploymentContext create() {
-        return () -> node;
+    public PluginDeploymentContext create() {
+        if (nodePluginDeploymentContext == null) {
+            nodePluginDeploymentContext = new NodePluginDeploymentContext(nodeLicenseService);
+        }
+        return nodePluginDeploymentContext;
     }
 }
