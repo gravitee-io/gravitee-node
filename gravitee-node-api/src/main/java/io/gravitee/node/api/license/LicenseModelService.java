@@ -15,15 +15,12 @@
  */
 package io.gravitee.node.api.license;
 
-import java.util.Map;
-import java.util.Optional;
+import io.gravitee.node.api.license.model.LicenseModel;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Antoine CORDIER (antoine.cordier at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface License {
-    Optional<Feature> feature(String name);
-
-    Map<String, Object> features();
+public interface LicenseModelService {
+    LicenseModel getLicenseModel();
 }

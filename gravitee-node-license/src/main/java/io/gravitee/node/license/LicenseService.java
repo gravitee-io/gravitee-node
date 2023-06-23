@@ -60,6 +60,9 @@ public class LicenseService extends AbstractService<LicenseService> {
     @Autowired
     private Environment environment;
 
+    @Autowired
+    private io.gravitee.node.api.license.NodeLicenseService nodeLicenseService;
+
     // prettier-ignore
     private final byte [] key = new byte[] {
             (byte)0x52,
@@ -177,9 +180,9 @@ public class LicenseService extends AbstractService<LicenseService> {
             try {
                 reader = new LicenseReader(new ByteArrayInputStream(licenseContent));
                 license = reader.read();
-
                 this.dump();
                 this.verify();
+                nodeLicenseService.refresh();
             } catch (IOException ioe) {
                 logger.error("License file can not be read", ioe);
             }
@@ -231,16 +234,6 @@ public class LicenseService extends AbstractService<LicenseService> {
             stopNode();
         }
 
-        // Apply additional checks according to the node implementation
-        //License3JLicense license3JLicense = new License3JLicense(license);
-
-        /*
-        if (!isValid(license3JLicense)) {
-            logger.error("License does not allow you to use {}. Please contact GraviteeSource to ask for a valid license.", node.name());
-            stopNode();
-        }
-         */
-
         Date expiration = license.get(LICENSE_EXPIRE_AT).getDate();
         long remainingDays = Math.round((expiration.getTime() - System.currentTimeMillis()) / (double) 86400000);
 
@@ -250,8 +243,7 @@ public class LicenseService extends AbstractService<LicenseService> {
     }
 
     private void dump() {
-        // Print features
-        logger.info("License informations: ");
+        logger.info("License information:");
         Map<String, Feature> features = license.getFeatures();
         features.forEach((name, feature) -> logger.info("\t{}: {}", name, feature.valueString()));
     }

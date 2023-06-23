@@ -13,17 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.api.license;
+package io.gravitee.node.container.plugin;
 
-import java.util.Map;
-import java.util.Optional;
+import io.gravitee.node.api.license.NodeLicenseService;
+import io.gravitee.plugin.api.PluginDeploymentContext;
+import lombok.AllArgsConstructor;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Antoine CORDIER (antoine.cordier at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface License {
-    Optional<Feature> feature(String name);
+@AllArgsConstructor
+public class NodePluginDeploymentContext implements PluginDeploymentContext {
 
-    Map<String, Object> features();
+    private final NodeLicenseService nodeLicenseService;
+
+    @Override
+    public boolean isPluginDeployable(String featureName) {
+        return nodeLicenseService.isFeatureEnabled(featureName);
+    }
 }
