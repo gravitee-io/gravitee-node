@@ -40,6 +40,9 @@ public class BaseKeyStoreManager implements KeyStoreManager {
     @Override
     public void registerLoader(KeyStoreLoader keyStoreLoader) {
         Objects.requireNonNull(keyStoreLoader, "KeyStoreLoader cannot be null");
+
+        // TODO subscribe to a secrets service, but need of plugins to be loaded or we wait for ever to have secret,
+        //  unless it is a separate service
         this.keyStoreLoaders.add(keyStoreLoader);
         keyStoreLoader.addListener(keyStoreBundle -> {
             try {

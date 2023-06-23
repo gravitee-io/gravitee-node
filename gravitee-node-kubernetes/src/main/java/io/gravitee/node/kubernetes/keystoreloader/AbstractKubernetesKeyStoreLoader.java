@@ -41,6 +41,8 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractKubernetesKeyStoreLoader<T> implements KeyStoreLoader {
 
+    // TODO when and who is creating instances of this ?
+
     private static final Logger logger = LoggerFactory.getLogger(AbstractKubernetesKeyStoreLoader.class);
     protected static final int RETRY_DELAY_MILLIS = 10000;
 

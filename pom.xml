@@ -47,10 +47,12 @@
         <module>gravitee-node-plugins</module>
         <module>gravitee-node-monitoring</module>
         <module>gravitee-node-jetty</module>
+        <module>gravitee-node-secrets</module>
         <module>gravitee-node-kubernetes</module>
         <module>gravitee-node-certificates</module>
         <module>gravitee-node-notifier</module>
         <module>gravitee-node-license</module>
+        <module>gravitee-node-secrets</module>
         <module>gravitee-node-services</module>
     </modules>
 
