@@ -18,6 +18,7 @@ packs:
     features:
       - apim-policy-assign-metrics
       - apim-policy-data-logging-masking
+      - apim-policy-geoip-filtering
   enterprise-identity-provider:
     features:
       - am-idp-salesforce

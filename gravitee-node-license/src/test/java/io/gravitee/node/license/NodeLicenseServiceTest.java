@@ -98,6 +98,7 @@ class NodeLicenseServiceTest {
         assertThat(service.getFeatures())
             .containsExactlyInAnyOrder(
                 "apim-en-schema-registry-provider",
+                "apim-policy-geoip-filtering",
                 "am-idp-cas",
                 "am-mfa-recovery-code",
                 "apim-en-entrypoint-http-get",
