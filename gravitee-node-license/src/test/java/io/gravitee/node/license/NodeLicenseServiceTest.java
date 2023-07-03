@@ -122,6 +122,7 @@ class NodeLicenseServiceTest {
                 "am-resource-http-factor",
                 "am-mfa-sms",
                 "apim-en-endpoint-kafka",
+                "gravitee-risk-assessment",
                 "am-idp-http-flow",
                 "apim-policy-assign-metrics",
                 "apim-openid-connect-sso",
@@ -140,7 +141,6 @@ class NodeLicenseServiceTest {
                 "apim-policy-ws-security-authentication",
                 "apim-reporter-tcp",
                 "am-idp-gateway-handler-saml",
-                "am-ep-risk-assessment",
                 "am-mfa-resource-http-factor"
             );
     }

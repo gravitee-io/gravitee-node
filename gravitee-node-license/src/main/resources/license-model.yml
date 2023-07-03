@@ -8,7 +8,7 @@ packs:
       - apim-sharding-tags
       - apim-openid-connect-sso
       - apim-debug-mode
-      - am-ep-risk-assessment
+      - gravitee-risk-assessment
       - apim-bridge-gateway
   enterprise-legacy-upgrade:
     features:
