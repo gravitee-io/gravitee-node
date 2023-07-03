@@ -9,6 +9,7 @@ packs:
       - apim-openid-connect-sso
       - apim-debug-mode
       - gravitee-risk-assessment
+      - risk-assessment # for removal
       - apim-bridge-gateway
   enterprise-legacy-upgrade:
     features:
@@ -17,7 +18,9 @@ packs:
   enterprise-policy:
     features:
       - apim-policy-assign-metrics
+      - policy-assign-metrics # for removal
       - apim-policy-data-logging-masking
+      - policy-data-logging-masking # for removal
       - apim-policy-geoip-filtering
   enterprise-identity-provider:
     features:
@@ -27,17 +30,24 @@ packs:
       - am-idp-kerberos
       - am-idp-azure-ad
       - am-idp-gateway-handler-saml
+      - am-gateway-handler-saml-idp # for removal
       - am-idp-http-flow
+      - http-flow-am-idp # for removal
       - am-idp-france-connect
       - am-idp-cas
+      - cas-am-idp # for removal
   enterprise-mfa-factor:
     features:
       - am-mfa-recovery-code
       - am-resource-twilio
       - am-mfa-http
+        am-factor-http # for removal
+      - am-factor-http # for removal
       - am-mfa-resource-http-factor
       - am-mfa-otp-sender
+      - am-factor-otp-sender # for removal
       - am-mfa-fido2
+      - am-factor-fido2 # for removal
       - am-resource-http-factor
       - am-mfa-sms
       - am-mfa-call
@@ -45,6 +55,7 @@ packs:
     features:
       - apim-reporter-tcp
       - apim-reporter-datadog
+      - reporter-datadog # for removal
   event-native:
     features:
       - apim-en-message-reactor
@@ -58,6 +69,7 @@ packs:
       - apim-en-endpoint-kafka
       - apim-en-endpoint-solace
       - apim-en-schema-registry-provider
+      - apim-connectors-advanced # for removal
 
 tiers:
   planet:
