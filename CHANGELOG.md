@@ -1,3 +1,23 @@
+# [4.0.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.11...4.0.0-alpha.1) (2023-07-03)
+
+
+### Bug Fixes
+
+* add old feature names to catalog ([255803e](https://github.com/gravitee-io/gravitee-node/commit/255803ecfbcd59023858a30628fdd6acb13d0530))
+* restore isFeatureEnabled in license interface ([6fb0dbe](https://github.com/gravitee-io/gravitee-node/commit/6fb0dbef2def0962da6120467b7a001e4a79b1ca))
+* update risk-assesment feature name ([ba156e8](https://github.com/gravitee-io/gravitee-node/commit/ba156e8fb1f05f48b62522ca786a2ea54ae13751))
+
+
+### Features
+
+* add apim-policy-geoip-filtering ([4464df1](https://github.com/gravitee-io/gravitee-node/commit/4464df1111fafb58d21d852b7acf600f136b61e3))
+* add v4 license model and utility services ([498dce9](https://github.com/gravitee-io/gravitee-node/commit/498dce938f683f1a6a17c9fa4add84a6b1189c4a))
+
+
+### BREAKING CHANGES
+
+* checking for feature enablement now relies on the NodeLicenseService
+
 # [3.1.0-alpha.11](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.10...3.1.0-alpha.11) (2023-06-17)
 
 
