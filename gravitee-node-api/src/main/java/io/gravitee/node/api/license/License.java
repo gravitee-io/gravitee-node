@@ -26,4 +26,12 @@ public interface License {
     Optional<Feature> feature(String name);
 
     Map<String, Object> features();
+
+    /**
+     * @deprecated since 4.0.0.
+     * This method is kept because Alert Engine as not been updated to the new license model and still uses
+     * the old way of checking the alert-engine feature.
+     */
+    @Deprecated(since = "4.0.0", forRemoval = true)
+    boolean isFeatureIncluded(String name);
 }
