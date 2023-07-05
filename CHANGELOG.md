@@ -1,3 +1,10 @@
+# [4.0.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/4.0.0-alpha.1...4.0.0-alpha.2) (2023-07-05)
+
+
+### Features
+
+* add apim-policy-transform-avro-json to catalog ([f9b4cdb](https://github.com/gravitee-io/gravitee-node/commit/f9b4cdbb2bd7163493da58c6931aa4b9f84ca6b6))
+
 # [4.0.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/3.1.0-alpha.11...4.0.0-alpha.1) (2023-07-03)
 
 
