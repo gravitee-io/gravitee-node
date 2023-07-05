@@ -102,6 +102,7 @@ class NodeLicenseServiceTest {
                 "am-idp-saml",
                 "apim-en-entrypoint-http-post",
                 "http-flow-am-idp",
+                "apim-policy-transform-avro-json",
                 "am-resource-twilio",
                 "apim-api-designer",
                 "apim-custom-roles",
