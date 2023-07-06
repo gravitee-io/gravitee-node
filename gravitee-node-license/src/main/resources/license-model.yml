@@ -21,7 +21,7 @@ packs:
       - policy-assign-metrics # for removal
       - apim-policy-data-logging-masking
       - policy-data-logging-masking # for removal
-      - apim-policy-geoip-filtering
+      - gravitee-geoip-filtering
       - apim-policy-transform-avro-json
   enterprise-identity-provider:
     features:

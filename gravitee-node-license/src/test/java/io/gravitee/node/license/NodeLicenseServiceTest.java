@@ -123,7 +123,7 @@ class NodeLicenseServiceTest {
                 "am-mfa-http am-factor-http",
                 "am-mfa-resource-http-factor",
                 "reporter-datadog",
-                "apim-policy-geoip-filtering",
+                "gravitee-geoip-filtering",
                 "am-idp-cas",
                 "am-mfa-recovery-code",
                 "apim-en-entrypoint-http-get",
