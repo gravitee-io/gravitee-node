@@ -1,3 +1,10 @@
+# [4.0.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/4.0.0-alpha.2...4.0.0-alpha.3) (2023-07-07)
+
+
+### Bug Fixes
+
+* license model syntax ([23859ec](https://github.com/gravitee-io/gravitee-node/commit/23859ecb1b3ad36de851f6db7009408ea0c045b2))
+
 # [4.0.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/4.0.0-alpha.1...4.0.0-alpha.2) (2023-07-05)
 
 
