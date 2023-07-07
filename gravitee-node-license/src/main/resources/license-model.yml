@@ -42,7 +42,6 @@ packs:
       - am-mfa-recovery-code
       - am-resource-twilio
       - am-mfa-http
-        am-factor-http # for removal
       - am-factor-http # for removal
       - am-mfa-resource-http-factor
       - am-mfa-otp-sender
