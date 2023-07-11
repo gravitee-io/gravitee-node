@@ -1,3 +1,15 @@
+# [4.0.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/4.0.0-alpha.3...4.0.0-alpha.4) (2023-07-11)
+
+
+### chore
+
+* bump gravitee-parent and gravitee-bom ([e9428a7](https://github.com/gravitee-io/gravitee-node/commit/e9428a73bc14a1164a98c1ccfc805f09cc8c933a))
+
+
+### BREAKING CHANGES
+
+* update code to JDK 17
+
 # [4.0.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/4.0.0-alpha.2...4.0.0-alpha.3) (2023-07-07)
 
 
