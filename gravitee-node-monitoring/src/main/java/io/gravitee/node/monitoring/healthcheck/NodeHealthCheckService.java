@@ -21,8 +21,6 @@ import io.gravitee.node.api.healthcheck.ProbeManager;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.monitoring.eventbus.HealthCheckCodec;
 import io.gravitee.node.monitoring.healthcheck.micrometer.NodeHealthCheckMicrometerHandler;
-import io.gravitee.node.monitoring.healthcheck.probe.CPUProbe;
-import io.gravitee.node.monitoring.healthcheck.probe.MemoryProbe;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
@@ -30,7 +28,6 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.MessageProducer;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.micrometer.backends.BackendRegistries;
-import java.util.Collections;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -97,7 +94,9 @@ public class NodeHealthCheckService extends AbstractService {
             vertx.cancelTimer(metricsPollerId);
         }
 
-        producer.close();
+        if (producer != null) {
+            producer.close();
+        }
     }
 
     @Override

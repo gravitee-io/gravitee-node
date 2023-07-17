@@ -59,6 +59,9 @@ public class LicenseService extends AbstractService<LicenseService> {
     @Autowired
     private Environment environment;
 
+    @Autowired
+    private io.gravitee.node.api.license.NodeLicenseService nodeLicenseService;
+
     // prettier-ignore
     private final byte [] key = new byte[] {
             (byte)0x52,
@@ -176,9 +179,9 @@ public class LicenseService extends AbstractService<LicenseService> {
             try {
                 reader = new LicenseReader(new ByteArrayInputStream(licenseContent));
                 license = reader.read();
-
                 this.printLicenseInfo();
                 this.verify();
+                nodeLicenseService.refresh();
             } catch (IllegalArgumentException iae) {
                 logger.error("License file is not valid", iae);
             } catch (IOException ioe) {

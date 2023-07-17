@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+    Copyright © 2015 The Gravitee team (http://gravitee.io)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
 
-            http://www.apache.org/licenses/LICENSE-2.0
+        http://www.apache.org/licenses/LICENSE-2.0
 
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,12 +24,12 @@
     <parent>
         <groupId>io.gravitee</groupId>
         <artifactId>gravitee-parent</artifactId>
-        <version>21.0.0</version>
+        <version>22.0.0</version>
     </parent>
 
     <groupId>io.gravitee.node</groupId>
     <artifactId>gravitee-node</artifactId>
-    <version>3.0.9</version>
+    <version>4.0.0-alpha.5</version>
 
     <name>Gravitee.io - Node</name>
 
@@ -83,7 +83,17 @@
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
-                <artifactId>gravitee-node-cluster</artifactId>
+                <artifactId>gravitee-node-cluster-plugin-handler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-cache-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-cache-plugin-handler</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -126,12 +136,6 @@
                 <artifactId>gravitee-node-kubernetes</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>io.gravitee.node</groupId>
-                <artifactId>gravitee-node-cache</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
             <!-- Gravitee.io -->
             <dependency>
                 <groupId>io.gravitee.common</groupId>
@@ -241,6 +245,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
@@ -254,26 +263,51 @@
     </dependencies>
 
     <properties>
-        <gravitee-bom.version>4.0.0</gravitee-bom.version>
-        <gravitee-common.version>2.1.0</gravitee-common.version>
-        <gravitee-plugin.version>1.25.0</gravitee-plugin.version>
+        <gravitee-bom.version>6.0.1</gravitee-bom.version>
+        <gravitee-common.version>2.1.1</gravitee-common.version>
+        <gravitee-plugin.version>2.0.0</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.25.0</gravitee-reporter-api.version>
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
-        <gravitee-kubernetes.version>2.0.1</gravitee-kubernetes.version>
-        <snakeyaml.version>1.31</snakeyaml.version>
-        <hazelcast.version>4.1.10</hazelcast.version>
+        <gravitee-kubernetes.version>2.0.3</gravitee-kubernetes.version>
+        <snakeyaml.version>2.0</snakeyaml.version>
+        <hazelcast.version>5.2.3</hazelcast.version>
         <gravitee-alert-api.version>1.8.0</gravitee-alert-api.version>
         <jmockit.version>1.49</jmockit.version>
 
         <!-- WARNING: the next two dependencies versions must be kept in sync regarding vertx-micrometer-metrics -->
-        <micrometer-registry-prometheus.version>1.6.2</micrometer-registry-prometheus.version>
+        <micrometer-registry-prometheus.version>1.10.7</micrometer-registry-prometheus.version>
         <LatencyUtils.version>2.0.3</LatencyUtils.version>
         <bouncycastle.version>1.70</bouncycastle.version>
         <guava.version>31.1-jre</guava.version>
         <license3j.version>3.2.0</license3j.version>
-        <lombok.version>1.18.24</lombok.version>
+        <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
     </properties>
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>${maven-assembly-plugin.version}</version>
+                    <inherited>true</inherited>
+                    <executions>
+                        <execution>
+                            <id>make-plugin-assembly</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                            <configuration>
+                                <appendAssemblyId>false</appendAssemblyId>
+                                <descriptors>
+                                    <descriptor>src/main/assembly/plugin-assembly.xml</descriptor>
+                                </descriptors>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -289,7 +323,7 @@
                 <artifactId>prettier-maven-plugin</artifactId>
                 <version>0.19</version>
                 <configuration>
-                    <nodeVersion>12.13.0</nodeVersion>
+                    <nodeVersion>16.16.0</nodeVersion>
                     <prettierJavaVersion>1.6.1</prettierJavaVersion>
                     <skip>${skip.validation}</skip>
                 </configuration>

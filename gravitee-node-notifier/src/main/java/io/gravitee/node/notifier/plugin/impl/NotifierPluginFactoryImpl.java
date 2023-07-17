@@ -168,7 +168,7 @@ public class NotifierPluginFactoryImpl implements NotifierPluginFactory {
     }
 
     private Set<Field> lookingForInjectableFields(Class<?> resourceClass) {
-        return ReflectionUtils.getAllFields(resourceClass, withAnnotation(Inject.class));
+        return ReflectionUtils.getAllFields(resourceClass, withAnnotations(Inject.class, jakarta.inject.Inject.class));
     }
 
     public static Predicate<Member> withParametersAssignableFrom(final Class... types) {

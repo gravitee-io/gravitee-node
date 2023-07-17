@@ -1,0 +1,230 @@
+= Gravitee Node Vertx
+
+== Description
+
+The *Gravitee Node Vertx* module is a common piece of Gravitee products which offer the capabilities to easily set up vertx and instantiate vertx http servers.
+
+In future evolutions, it will also provide a way to instantiate other kind of servers such a TCP.
+
+== Compatibility matrix
+
+|===
+|Node version | APIM / AM version
+
+|3.1.x and upper        | 4.x to latest
+|3.0.x to < 3.1.x                | 3.21.x to < 4.x
+|===
+
+== Automatic set up
+
+It is possible to automatically set up vertx and http servers by importing the `VertxConfiguration` class in your spring configuration. By doing that you'll get:
+
+* A pre-configured instance of `Vertx`
+* An instance of `VertxServerFactory` allowing to manually create new servers
+
+== Vertx set up
+
+The `gravitee-node-vertx` module offers a simple way to set up vertx by providing a `VertxFactory`. The following options are configurable:
+
+* Metrics
+* Tracing
+
+== Server Manager
+
+You can create your own `ServerManager` instance by using the `DefaultServerManager` class.
+You can manually register as many as servers you want. Server can be created using a `VertxServerFactory` (see below). You can also unregister the created servers once they aren't useful anymore.
+
+Once created and registered into the server manager, the whole list can be retrieved by calling the `serverManager.servers()` method. Alternatively, it is possible to use the `serverManager.servers(Class<T> serverClazz)` to retrieve only the servers of a specific type (ex: `VertxHttpServer.class`).
+
+NOTE: Server manager doesn't manage the lifecycle of the created server.
+
+== Server Factory
+
+A `VertxServerFactory` bean is created by default when importing the spring VertxConfiguration. This factory only supports creation of http server for now. Alternatively, you can use the `VertxHttpServerFactory` to achieve the same goal.
+
+The factory exposes a `create` method taking options in parameters. Depending on the type of options, the corresponding server instance will be created. The factory currently only supports `VertxHttpServerOptions`.
+
+=== Http Server
+
+Http server creation can be made using the `VertxServerFactory` by passing the appropriate `VertxHttpServerOptions`. The returned `VertxHttpServer` object will be pre-configured with all the given options but not started yet. To effectively start the server and accept incoming request, an instance must be created by calling `server.newInstance()`.
+
+To benefit from all the system cpus, you can create as many instances as cpus available. It is your own responsibility to manage the lifecycle (listen / stop) of each created instance.
+
+==== General configuration
+
+|===
+|Attributes | Default | Mandatory | Description
+
+|type | N/A     | Yes | The server type. Only 'http' is supported for now.
+|port | 8080     | Yes | The server listen port
+|host | 0.0.0.0     | Yes | The server listen host. By default, accept incoming traffic from everywhere.
+|secured | false     | Yes | Whether to enable or not TLS.
+|ssl | N/A     | No | The configuration related to TLS/MTLS. See TLS/MTLS section for details.
+|compressionSupported | false     | Yes | The configuration related to ssl. See below for details.
+|haproxy | N/A     | No | The configuration related to haproxy protocol support. See below for details.
+|alpn | false     | Yes | Enable the ALPN usage to (http1.1 / http/2 protocol negotiation)
+|idleTimeout | 0     | Yes | Set the idle timeout *in seconds*. Default value is 0. Zero means don't timeout. This determines if a connection will timeout and be closed if no data is received nor sent within the timeout.
+|tcpKeepAlive | true     | Yes | Set whether TCP keep alive is enabled or not.
+|maxChunkSize | 8192     | Yes | Set the maximum HTTP chunk size.
+|maxHeaderSize | 8192     | Yes | Set the maximum length of all headers for HTTP/1.x.
+|maxInitialLineLength | 4096     | Yes | Set the maximum length of the initial line for HTTP/1.x (e.g. "GET / HTTP/1.0").
+|maxFormAttributeSize | 8192     | Yes | Set the maximum size of a form attribute. Set to -1 to allow unlimited length.
+|handle100Continue | false     | Yes | Set whether 100 Continue should be handled automatically.
+|tracingPolicy | always     | Yes | Set the tracing policy for the server behavior when tracing is enabled. Possible values are 'always' to reuse an existing trace or create a new trace when no one exist, 'propagate' to propagate an existing trace and 'ignore' to not propragate traces.
+
+|===
+
+==== TLS / MTLS
+
+TLS configuration requires `secured` property to be set to `true`. Once enabled, the following configuration are available.
+
+|===
+|Attributes | Default | Mandatory | Description
+
+|ssl.clientAuth | none     | Yes | Enable the support of Mutual TLS. 'request' means that it is supported but not required. 'required' means forcing MTLS globally for all incoming traffic 'none' means no mtls. This requires to set up a truststore when activated. See truststore section for details.
+|ssl.sni | false     | Yes | Set whether the server supports Server Name Indiciation.
+|ssl.tlsProtocols | TLSv1.2, TLSv1.3     | Yes | Sets the list of enabled SSL/TLS protocols.
+|ssl.tlsCiphers | N/A     | No | Add authorized TLS ciphers. Ex: TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+|ssl.keystore | N/A     | No | The information required to enable TLS on the server (server certificate). See below for details.
+|ssl.truststore | N/A     | No | The information required to enable MTLS on the server (client certificate). See below for details.
+|ssl.openssl | false     | Yes | Enable OpenSSL Engine instead of default JDK SSL Engine.
+
+|===
+
+*Keystore*
+
+To configure TLS on the http server, you basically need to provide a keystore containing the certificate to expose (and the associated private key).
+
+|===
+|Attributes | Default | Mandatory | Description
+
+|ssl.keystore.type | jks     | Yes | Supports 'jks', 'pem', 'pkcs12' or 'self-signed'. When using 'self-signed', other keystore configuration are ignored and a self-signed certificate is generated on the fly and kept in memory (there is no persistence across restarts).
+|ssl.keystore.path | ${gravitee.home}/security/keystore.jks    | No | A path is required if certificate's type is jks or pkcs12.
+|ssl.keystore.certificates | N/A     | No | Certificates are required if keystore's type is pem. See below for details.
+|ssl.keystore.password | N/A   | No | The password to use to open the keystore.
+|ssl.keystore.watch | true     | No | If enabled, watches for any updates on the keystore and reload it.
+
+|===
+
+When using 'pem' keystore, the certificate and private key must be provided. Several certificates and keys can be provided thanks to the `certificates` configuration property. Each certificate of the array is composed of the following properties.
+
+|===
+|Attributes | Default | Mandatory | Description
+
+|ssl.keystore.certificates[].cert | N/A     | Yes | The certificate.
+|ssl.keystore.certificates[].key | N/A   | Yes | The private key.
+
+|===
+
+*Truststore*
+
+To configure Mutual TLS (MTLS) and support client certificate, you need to provide a truststore containing the certificate chain allowing to trust client certificates.
+
+|===
+|Attributes | Default | Mandatory | Description
+
+|ssl.truststore.type | jks     | Yes | Supports 'jks', 'pem', 'pkcs12'.
+|ssl.truststore.path | ${gravitee.home}/security/truststore.jks    | No | A path is required in any case. Supports either a simple path, either an array of paths.
+|ssl.truststore.password | N/A   | No | The password to use to open the keystore.
+
+|===
+
+
+==== Websocket
+
+The following configuration applies to `websocket` configuration node (ex: `websocket.enabled`).
+
+|===
+|Attributes | Default | Mandatory | Description
+
+|websocket.enabled | false     | Yes | Indicates if websocket are enabled or not.
+|websocket.subProtocols | N/A     | No | Set the WebSocket list of sub-protocol supported by the server. Ex: v10.stomp, v11.stomp, v12.stomp
+|ssl | N/A     | No | The configuration related to TLS, see TLS section for details.
+|websocket.perMessageWebSocketCompressionSupported | true     | Yes | Enable or disable support for WebSocket per-message deflate compression extension. It is automatically disabled if `websocket.enabled` is set to `false`.
+|websocket.perFrameWebSocketCompressionSupported | false     | Yes | Enable or disable support for the WebSocket per-frame deflate compression extension. It is automatically disabled if `websocket.enabled` is set to `false`.
+|websocket.maxWebSocketFrameSize |   65536   | Yes | Set the maximum WebSocket frames size.
+|websocket.maxWebSocketMessageSize | 262144     | Yes | Set the maximum WebSocket message size.
+
+|===
+
+==== HaProxy
+
+Allows enabling haproxy protocol. The following configuration are supported.
+
+|===
+|Attributes | Default | Mandatory | Description
+
+|haproxy.proxyProtocol | false     | Yes | Enable the haproxy protocol support or not.
+|haproxy.proxyProtocolTimeout | 10     | No | Set the timeout in seconds.
+
+|===
+
+=== Examples
+
+Bellow you will find an example of a single http server configuration for Gravitee APIM:
+
+```yaml
+# Gateway HTTP server
+http:
+  port: 8082
+  host: 0.0.0.0
+  idleTimeout: 0
+  tcpKeepAlive: true
+  compressionSupported: true
+  maxHeaderSize: 8192
+  maxChunkSize: 8192
+  maxInitialLineLength: 4096
+  secured: true
+  alpn: true
+  ssl:
+    clientAuth: request
+    tlsProtocols: TLSv1.2, TLSv1.3
+    tlsCiphers: TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+    keystore:
+      type: jks
+      path: ${gravitee.home}/security/keystore.jks  pkcs12
+      password: secret
+    truststore:
+      type: jks
+      path: ${gravitee.home}/security/truststore.jks
+      password: secret
+    sni: true
+    openssl: true
+  websocket:
+    enabled: true
+    subProtocols: v10.stomp, v11.stomp, v12.stomp
+    perMessageWebSocketCompressionSupported: true
+    perFrameWebSocketCompressionSupported: true
+  haproxy:
+    proxyProtocol: false
+    proxyProtocolTimeout: 10000
+```
+
+Here is an example of multi-servers configuration for Gravitee APIM (servers list takes precedence over single http server:
+
+```yaml
+servers:
+  - id: 'http'
+    type: http
+    port: 8082
+    secured: false
+  - id: 'http_secured'
+    type: http
+    port: 8443
+    secured: true
+    alpn: true
+    ssl:
+      clientAuth: request
+      tlsProtocols: TLSv1.2, TLSv1.3
+      tlsCiphers: TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+      keystore:
+        type: jks
+        path: ${gravitee.home}/security/keystore.jks  pkcs12
+        password: secret
+      truststore:
+        type: jks
+        path: ${gravitee.home}/security/truststore.jks
+        password: secret
+      sni: true
+      openssl: true
+```

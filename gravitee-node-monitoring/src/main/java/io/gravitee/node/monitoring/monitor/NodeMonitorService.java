@@ -15,7 +15,13 @@
  */
 package io.gravitee.node.monitoring.monitor;
 
-import static io.gravitee.node.monitoring.MonitoringConstants.*;
+import static io.gravitee.node.monitoring.MonitoringConstants.NODE_EVENT_START;
+import static io.gravitee.node.monitoring.MonitoringConstants.NODE_EVENT_STOP;
+import static io.gravitee.node.monitoring.MonitoringConstants.NODE_LIFECYCLE;
+import static io.gravitee.node.monitoring.MonitoringConstants.PROPERTY_NODE_APPLICATION;
+import static io.gravitee.node.monitoring.MonitoringConstants.PROPERTY_NODE_EVENT;
+import static io.gravitee.node.monitoring.MonitoringConstants.PROPERTY_NODE_HOSTNAME;
+import static io.gravitee.node.monitoring.MonitoringConstants.PROPERTY_NODE_ID;
 
 import io.gravitee.alert.api.event.Event;
 import io.gravitee.common.service.AbstractService;
@@ -141,7 +147,7 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
     @Override
     protected void doStop() throws Exception {
         if (enabled) {
-            if (!executorService.isShutdown()) {
+            if (executorService != null && !executorService.isShutdown()) {
                 LOGGER.info("Stop node monitor");
                 executorService.shutdownNow();
             } else {

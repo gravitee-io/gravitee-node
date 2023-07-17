@@ -32,19 +32,19 @@ public interface Cache<K, V> {
 
     Collection<V> values();
 
-    V get(K key);
+    V get(final K key);
 
-    V put(K key, V value);
+    V put(final K key, final V value);
 
-    V put(K key, V value, long ttl, TimeUnit ttlUnit);
+    V put(final K key, final V value, final long ttl, final TimeUnit ttlUnit);
 
-    void putAll(Map<? extends K, ? extends V> m);
+    void putAll(final Map<? extends K, ? extends V> m);
 
-    V evict(K key);
+    V evict(final K key);
 
     void clear();
 
-    void addCacheListener(CacheListener<K, V> listener);
+    String addCacheListener(CacheListener<K, V> listener);
 
-    boolean removeCacheListener(CacheListener<K, V> listener);
+    boolean removeCacheListener(final String listenerCacheId);
 }

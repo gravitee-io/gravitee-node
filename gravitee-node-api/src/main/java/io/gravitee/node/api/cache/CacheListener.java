@@ -16,9 +16,15 @@
 package io.gravitee.node.api.cache;
 
 /**
- * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
+ * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
  * @author GraviteeSource Team
  */
 public interface CacheListener<K, V> {
-    void onEvent(EntryEvent<K, V> event);
+    default void onEntryAdded(final K key, final V value) {}
+
+    default void onEntryEvicted(final K key, final V value) {}
+
+    default void onEntryUpdated(final K key, final V oldValue, final V value) {}
+
+    default void onEntryExpired(final K key, final V value) {}
 }

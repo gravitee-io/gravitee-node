@@ -23,7 +23,6 @@ import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.Node;
 import java.io.File;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.StaticLoggerBinder;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -62,8 +61,7 @@ public abstract class AbstractContainer extends AbstractService<Container> imple
         // If logback configuration available, load it, else, load default logback configuration
         if (logbackConfigurationfile.exists()) {
             System.setProperty("logback.configurationFile", logbackConfigurationfile.getAbsolutePath());
-            StaticLoggerBinder loggerBinder = StaticLoggerBinder.getSingleton();
-            LoggerContext loggerContext = (LoggerContext) loggerBinder.getLoggerFactory();
+            LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
             loggerContext.reset();
             JoranConfigurator configurator = new JoranConfigurator();
             configurator.setContext(loggerContext);

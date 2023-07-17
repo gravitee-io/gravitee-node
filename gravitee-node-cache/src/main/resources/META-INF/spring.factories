@@ -1,4 +1,0 @@
-io.gravitee.node.api.cache.CacheManager=\
-  io.gravitee.node.cache.hazelcast.HazelcastCacheManager, \
-  io.gravitee.node.cache.standalone.StandaloneCacheManager, \
-  io.gravitee.node.cache.redis.RedisCacheManager

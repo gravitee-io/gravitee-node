@@ -15,25 +15,46 @@
  */
 package io.gravitee.node.api.cluster;
 
-import java.util.Collection;
+import io.gravitee.common.service.Service;
+import io.gravitee.node.api.cluster.messaging.Topic;
+import java.util.Set;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface ClusterManager {
-    Collection<Member> getMembers();
-
-    Member getLocalMember();
+public interface ClusterManager extends Service<ClusterManager> {
+    /**
+     * @return the unique cluster identifier
+     */
+    String clusterId();
+    /**
+     * @return the current list of members of this cluster
+     */
+    Set<Member> members();
 
     /**
-     * Indicates if the local node is the master node of the cluster
-     *
-     * @return Local node is master node?
+     * @return the member attached to the local and current node instance
      */
-    boolean isMasterNode();
+    Member self();
 
-    void addMemberListener(MemberListener listener);
+    /**
+     * Allow to add a new {@link MemberListener} which will be notified when members come and go.
+     * @param listener the listener to be notified
+     */
+    void addMemberListener(final MemberListener listener);
 
-    void stop();
+    /**
+     * Allow to remove an existing {@link MemberListener}. It won't be notified anymore.
+     * @param listener the listener to be removed
+     */
+    void removeMemberListener(final MemberListener listener);
+
+    /**
+     * Return a {@link Topic<T>} used to publish or consume messages.
+     * @param name the name used to retrieve the topic
+     * @return a {@link Topic<T>}
+     * @param <T> the type of content that will be published or consumed.
+     */
+    <T> Topic<T> topic(final String name);
 }

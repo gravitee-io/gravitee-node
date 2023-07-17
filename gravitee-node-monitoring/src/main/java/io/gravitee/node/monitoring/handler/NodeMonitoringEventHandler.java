@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.Monitoring;
 import io.gravitee.node.api.Node;
+import io.gravitee.node.api.cluster.ClusterManager;
+import io.gravitee.node.api.cluster.messaging.Topic;
 import io.gravitee.node.api.healthcheck.HealthCheck;
 import io.gravitee.node.api.infos.NodeInfos;
 import io.gravitee.node.api.monitor.Monitor;
@@ -27,70 +29,148 @@ import io.gravitee.node.monitoring.NodeMonitoringService;
 import io.gravitee.node.monitoring.healthcheck.NodeHealthCheckService;
 import io.gravitee.node.monitoring.infos.NodeInfosService;
 import io.gravitee.node.monitoring.monitor.NodeMonitorService;
+import io.reactivex.rxjava3.core.Completable;
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
 import java.util.Date;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This handler is responsible to listen to all produced monitoring events and persist them.
+ * Persistence is done only on primary node.
  *
- * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
+ * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
  * @author GraviteeSource Team
  */
+@RequiredArgsConstructor
+@Slf4j
 public class NodeMonitoringEventHandler extends AbstractService<NodeMonitoringEventHandler> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NodeMonitoringEventHandler.class);
-
-    protected final Vertx vertx;
-    protected final ObjectMapper objectMapper;
-    protected final Node node;
-    protected final NodeMonitoringService nodeMonitoringService;
-
-    public NodeMonitoringEventHandler(Vertx vertx, ObjectMapper objectMapper, Node node, NodeMonitoringService nodeMonitoringService) {
-        this.vertx = vertx;
-        this.objectMapper = objectMapper;
-        this.node = node;
-        this.nodeMonitoringService = nodeMonitoringService;
-    }
+    private final Vertx vertx;
+    private final ClusterManager clusterManager;
+    private final ObjectMapper objectMapper;
+    private final Node node;
+    private final NodeMonitoringService nodeMonitoringService;
+    private Topic<NodeInfos> nodeInfosTopic;
+    private Topic<HealthCheck> healthCheckTopic;
+    private Topic<Monitor> monitorTopic;
+    private String monitorSubscriptionId;
+    private String healthCheckSubscription;
+    private String nodeInfoSubscription;
+    private MessageConsumer<NodeInfos> nodeInfosMessageConsumer;
+    private MessageConsumer<HealthCheck> healthCheckMessageConsumer;
+    private MessageConsumer<Monitor> monitorMessageConsumer;
 
     @Override
     protected void doStart() throws Exception {
         super.doStart();
-        vertx.eventBus().localConsumer(NodeInfosService.GIO_NODE_INFOS_BUS, this::handleNodeInfosMessage);
-        vertx.eventBus().localConsumer(NodeHealthCheckService.GIO_NODE_HEALTHCHECK_BUS, this::handleHealthCheckMessage);
-        vertx.eventBus().localConsumer(NodeMonitorService.GIO_NODE_MONITOR_BUS, this::handleMonitorMessage);
+        registerClusterListener();
+        registerInternalListener();
     }
 
-    protected void handleNodeInfosMessage(Message<NodeInfos> message) {
-        LOGGER.debug("Received node infos message from internal bus");
-        handleNodeInfos(message.body());
+    private void registerClusterListener() {
+        nodeInfosTopic = clusterManager.topic("node-infos");
+        nodeInfoSubscription =
+            nodeInfosTopic.addMessageListener(message -> {
+                log.debug("Received node infos message from cluster");
+                if (clusterManager.self().primary()) {
+                    log.debug("Processing node infos message");
+                    nodeMonitoringService
+                        .createOrUpdate(convert(message.content()))
+                        .ignoreElement()
+                        .onErrorResumeNext(throwable -> {
+                            log.error("Unable to process node infos message", throwable);
+                            return Completable.complete();
+                        })
+                        .subscribe();
+                }
+            });
+        healthCheckTopic = clusterManager.topic("node-healthcheck");
+        healthCheckSubscription =
+            healthCheckTopic.addMessageListener(message -> {
+                log.debug("Received health check message from cluster");
+                if (clusterManager.self().primary()) {
+                    log.debug("Processing health check message");
+                    nodeMonitoringService
+                        .createOrUpdate(convert(message.content()))
+                        .ignoreElement()
+                        .onErrorResumeNext(throwable -> {
+                            log.error("Unable to process health check message", throwable);
+                            return Completable.complete();
+                        })
+                        .subscribe();
+                }
+            });
+        monitorTopic = clusterManager.topic("node-monitor");
+        monitorSubscriptionId =
+            monitorTopic.addMessageListener(message -> {
+                log.debug("Received monitor message from cluster");
+                if (clusterManager.self().primary()) {
+                    log.debug("Processing monitor message");
+                    nodeMonitoringService
+                        .createOrUpdate(convert(message.content()))
+                        .ignoreElement()
+                        .onErrorResumeNext(throwable -> {
+                            log.error("Unable to process monitor message", throwable);
+                            return Completable.complete();
+                        })
+                        .subscribe();
+                }
+            });
     }
 
-    protected void handleHealthCheckMessage(Message<HealthCheck> message) {
-        LOGGER.debug("Received health check message from internal bus");
-        handleHealthCheck(message.body());
+    private void registerInternalListener() {
+        nodeInfosMessageConsumer =
+            vertx
+                .eventBus()
+                .localConsumer(
+                    NodeInfosService.GIO_NODE_INFOS_BUS,
+                    event -> {
+                        log.debug("Received node infos message from internal bus");
+                        nodeInfosTopic.publish(event.body());
+                    }
+                );
+        healthCheckMessageConsumer =
+            vertx
+                .eventBus()
+                .localConsumer(
+                    NodeHealthCheckService.GIO_NODE_HEALTHCHECK_BUS,
+                    event -> {
+                        log.debug("Received health check message from internal bus");
+                        healthCheckTopic.publish(event.body());
+                    }
+                );
+        monitorMessageConsumer =
+            vertx
+                .eventBus()
+                .localConsumer(
+                    NodeMonitorService.GIO_NODE_MONITOR_BUS,
+                    event -> {
+                        log.debug("Received monitor message from internal bus");
+                        monitorTopic.publish(event.body());
+                    }
+                );
     }
 
-    protected void handleMonitorMessage(Message<Monitor> message) {
-        LOGGER.debug("Received monitor message from internal bus");
-        handleMonitor(message.body());
-    }
+    @Override
+    protected void doStop() throws Exception {
+        super.doStop();
+        if (nodeInfosMessageConsumer != null) {
+            nodeInfosMessageConsumer.unregister();
+        }
+        if (healthCheckMessageConsumer != null) {
+            healthCheckMessageConsumer.unregister();
+        }
+        if (monitorMessageConsumer != null) {
+            monitorMessageConsumer.unregister();
+        }
 
-    protected void handleNodeInfos(NodeInfos nodeInfos) {
-        LOGGER.debug("Received node infos message from internal bus");
-        nodeMonitoringService.createOrUpdate(convert(nodeInfos)).subscribe();
-    }
-
-    protected void handleHealthCheck(HealthCheck healthCheck) {
-        LOGGER.debug("Processing health check data");
-        nodeMonitoringService.createOrUpdate(convert(healthCheck)).subscribe();
-    }
-
-    protected void handleMonitor(Monitor monitor) {
-        LOGGER.debug("Processing monitor data");
-        nodeMonitoringService.createOrUpdate(convert(monitor)).subscribe();
+        if (clusterManager != null) {
+            monitorTopic.removeMessageListener(nodeInfoSubscription);
+            monitorTopic.removeMessageListener(healthCheckSubscription);
+            monitorTopic.removeMessageListener(monitorSubscriptionId);
+        }
     }
 
     private Monitoring convert(NodeInfos nodeInfos) {
@@ -122,9 +202,11 @@ public class NodeMonitoringEventHandler extends AbstractService<NodeMonitoringEv
         monitoring.setNodeId(node.id());
 
         try {
-            monitoring.setPayload(objectMapper.writeValueAsString(payload));
+            if (payload != null) {
+                monitoring.setPayload(objectMapper.writeValueAsString(payload));
+            }
         } catch (JsonProcessingException e) {
-            LOGGER.error("An error occurred when trying to serialize monitoring payload to json");
+            log.error("An error occurred when trying to serialize monitoring payload to json");
         }
 
         return monitoring;
