@@ -264,18 +264,18 @@
 
     <properties>
         <gravitee-bom.version>6.0.1</gravitee-bom.version>
-        <gravitee-common.version>2.1.0</gravitee-common.version>
+        <gravitee-common.version>2.1.1</gravitee-common.version>
         <gravitee-plugin.version>2.0.0-alpha.3</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.25.0</gravitee-reporter-api.version>
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
         <gravitee-kubernetes.version>2.0.3</gravitee-kubernetes.version>
-        <snakeyaml.version>1.31</snakeyaml.version>
+        <snakeyaml.version>2.0</snakeyaml.version>
         <hazelcast.version>5.2.3</hazelcast.version>
         <gravitee-alert-api.version>1.8.0</gravitee-alert-api.version>
         <jmockit.version>1.49</jmockit.version>
 
         <!-- WARNING: the next two dependencies versions must be kept in sync regarding vertx-micrometer-metrics -->
-        <micrometer-registry-prometheus.version>1.6.2</micrometer-registry-prometheus.version>
+        <micrometer-registry-prometheus.version>1.10.7</micrometer-registry-prometheus.version>
         <LatencyUtils.version>2.0.3</LatencyUtils.version>
         <bouncycastle.version>1.70</bouncycastle.version>
         <guava.version>31.1-jre</guava.version>
