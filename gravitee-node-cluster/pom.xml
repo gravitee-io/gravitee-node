@@ -27,7 +27,6 @@
         <version>4.0.0-alpha.4</version>
     </parent>
 
-    <groupId>io.gravitee.node</groupId>
     <artifactId>gravitee-node-cluster</artifactId>
     <name>Gravitee.io - Node - Cluster</name>
     <packaging>pom</packaging>
