@@ -1,3 +1,43 @@
+# [4.0.0](https://github.com/gravitee-io/gravitee-node/compare/3.0.9...4.0.0) (2023-07-17)
+
+
+### Bug Fixes
+
+* add old feature names to catalog ([255803e](https://github.com/gravitee-io/gravitee-node/commit/255803ecfbcd59023858a30628fdd6acb13d0530))
+* avoid npe when evaluating cpu load average ([61c1dd7](https://github.com/gravitee-io/gravitee-node/commit/61c1dd7d16d8b1a983340def654a02bd08eabb61))
+* bump gravitee-kubernetes version to 2.0.2 ([7bec0f7](https://github.com/gravitee-io/gravitee-node/commit/7bec0f7eb78849347c6095e108c627bbd969929c))
+* bump kubernetes client to 2.0.3 ([51b64c2](https://github.com/gravitee-io/gravitee-node/commit/51b64c299a688ce4b8aa9b6214e417fc25043333))
+* **deps:** bump gravitee-plugin to 2.0.0-alpha1 ([850236d](https://github.com/gravitee-io/gravitee-node/commit/850236d2c4cbd9ac49e6b02bf8b92c4b9f845d44))
+* license model syntax ([23859ec](https://github.com/gravitee-io/gravitee-node/commit/23859ecb1b3ad36de851f6db7009408ea0c045b2))
+* **perf:** This fix rework the ExcludeTagsFilter to reduce a processing time ([4a52c0b](https://github.com/gravitee-io/gravitee-node/commit/4a52c0b4223477b949b106cdf97499a996e39e40))
+* restore isFeatureEnabled in license interface ([6fb0dbe](https://github.com/gravitee-io/gravitee-node/commit/6fb0dbef2def0962da6120467b7a001e4a79b1ca))
+* tmp enable standalone cache by default ([2fb8064](https://github.com/gravitee-io/gravitee-node/commit/2fb80644f91abe54c0dd1ea68b6f0277a99cffb7))
+* update risk-assesment feature name ([ba156e8](https://github.com/gravitee-io/gravitee-node/commit/ba156e8fb1f05f48b62522ca786a2ea54ae13751))
+* use simple hazelcast topic ([d45cac8](https://github.com/gravitee-io/gravitee-node/commit/d45cac845f992f83c1db54c5155b7d79f691886a))
+
+
+### chore
+
+* bump gravitee-parent and gravitee-bom ([e9428a7](https://github.com/gravitee-io/gravitee-node/commit/e9428a73bc14a1164a98c1ccfc805f09cc8c933a))
+
+
+### Features
+
+* add apim-policy-geoip-filtering ([4464df1](https://github.com/gravitee-io/gravitee-node/commit/4464df1111fafb58d21d852b7acf600f136b61e3))
+* add apim-policy-transform-avro-json to catalog ([f9b4cdb](https://github.com/gravitee-io/gravitee-node/commit/f9b4cdbb2bd7163493da58c6931aa4b9f84ca6b6))
+* add cluster id on ClusterManager interface ([153c441](https://github.com/gravitee-io/gravitee-node/commit/153c441d8c68babc0cc2cd1e6ce61e2c7dbb96fb))
+* add new plugin type for cache manager ([3bf9804](https://github.com/gravitee-io/gravitee-node/commit/3bf9804b0596a70d0df7082c16b81037b5e38284))
+* add support for multi-servers ([44af8ff](https://github.com/gravitee-io/gravitee-node/commit/44af8ffd125168fb4b6c4643e17d642d8ed433db))
+* add v4 license model and utility services ([498dce9](https://github.com/gravitee-io/gravitee-node/commit/498dce938f683f1a6a17c9fa4add84a6b1189c4a))
+* **node-notifier:** supports both javax and jakarta Inject annotation ([a909bff](https://github.com/gravitee-io/gravitee-node/commit/a909bffde7976f9e329c46db39ad787a310c2c56))
+* update cluster manager to be compatible with plugin management ([f69ad89](https://github.com/gravitee-io/gravitee-node/commit/f69ad895f8b80a091a196a5e167210a73c154e5a))
+
+
+### BREAKING CHANGES
+
+* update code to JDK 17
+* checking for feature enablement now relies on the NodeLicenseService
+
 # [4.0.0-alpha.5](https://github.com/gravitee-io/gravitee-node/compare/4.0.0-alpha.4...4.0.0-alpha.5) (2023-07-17)
 
 
