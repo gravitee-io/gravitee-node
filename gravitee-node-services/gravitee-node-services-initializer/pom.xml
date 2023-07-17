@@ -30,15 +30,6 @@
     <artifactId>gravitee-node-services-initializer</artifactId>
     <name>Gravitee.io - Node - Services - Initializer</name>
 
-    <dependencies>
-        <!-- Gravitee.io -->
-        <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
-
     <build>
         <resources>
             <resource>
