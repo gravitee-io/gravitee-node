@@ -29,11 +29,26 @@
     <artifactId>gravitee-node-notifier</artifactId>
     <name>Gravitee.io - Node - Notifier</name>
 
+    <properties>
+        <javax-inject.version>1</javax-inject.version>
+        <jakarta-inject.version>2.0.1</jakarta-inject.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-api</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>${javax-inject.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <version>${jakarta-inject.version}</version>
         </dependency>
 
         <dependency>
