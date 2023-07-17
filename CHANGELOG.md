@@ -1,3 +1,10 @@
+# [4.0.0-alpha.5](https://github.com/gravitee-io/gravitee-node/compare/4.0.0-alpha.4...4.0.0-alpha.5) (2023-07-17)
+
+
+### Features
+
+* **node-notifier:** supports both javax and jakarta Inject annotation ([a909bff](https://github.com/gravitee-io/gravitee-node/commit/a909bffde7976f9e329c46db39ad787a310c2c56))
+
 # [4.0.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/4.0.0-alpha.3...4.0.0-alpha.4) (2023-07-11)
 
 
