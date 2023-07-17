@@ -265,7 +265,7 @@
     <properties>
         <gravitee-bom.version>6.0.1</gravitee-bom.version>
         <gravitee-common.version>2.1.1</gravitee-common.version>
-        <gravitee-plugin.version>2.0.0-alpha.3</gravitee-plugin.version>
+        <gravitee-plugin.version>2.0.0</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.25.0</gravitee-reporter-api.version>
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
         <gravitee-kubernetes.version>2.0.3</gravitee-kubernetes.version>
