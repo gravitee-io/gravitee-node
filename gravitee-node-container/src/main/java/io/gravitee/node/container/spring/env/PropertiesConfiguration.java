@@ -15,9 +15,11 @@
  */
 package io.gravitee.node.container.spring.env;
 
-import io.gravitee.node.kubernetes.propertyresolver.PropertyResolverFactoriesLoader;
+import io.gravitee.node.secrets.service.resolver.PropertyResolverFactoriesLoader;
+
 import java.io.IOException;
 import java.util.Properties;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
@@ -38,7 +40,7 @@ public class PropertiesConfiguration {
     public static final String GRAVITEE_CONFIGURATION = "gravitee.conf";
 
     @Bean(name = "graviteeProperties")
-    public static Properties graviteeProperties() throws IOException {
+    public Properties graviteeProperties() throws IOException {
         LOGGER.info("Loading Gravitee configuration.");
 
         YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
@@ -56,7 +58,7 @@ public class PropertiesConfiguration {
     }
 
     @Bean
-    public static PropertyResolverFactoriesLoader propertyResolverFactoriesLoader() {
+    public PropertyResolverFactoriesLoader propertyResolverFactoriesLoader() {
         return new PropertyResolverFactoriesLoader();
     }
 }

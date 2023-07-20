@@ -21,6 +21,7 @@ import io.gravitee.kubernetes.client.api.WatchQuery;
 import io.gravitee.kubernetes.client.model.v1.ConfigMap;
 import io.gravitee.kubernetes.client.model.v1.KubernetesEventType;
 import io.gravitee.kubernetes.client.model.v1.Secret;
+import io.gravitee.node.secrets.service.resolver.PropertyResolver;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import java.util.Base64;
@@ -34,7 +35,7 @@ import org.springframework.util.Assert;
  * @author GraviteeSource Team
  * @since 3.9.11
  */
-public class KubernetesPropertyResolver implements PropertyResolver {
+public class KubernetesPropertyResolver implements PropertyResolver<Object> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KubernetesPropertyResolver.class);
 

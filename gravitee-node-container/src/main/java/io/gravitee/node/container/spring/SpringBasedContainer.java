@@ -26,9 +26,12 @@ import io.gravitee.node.management.http.spring.ManagementConfiguration;
 import io.gravitee.node.monitoring.spring.NodeMonitoringConfiguration;
 import io.gravitee.node.plugins.service.spring.ServiceConfiguration;
 import io.gravitee.node.reporter.spring.ReporterConfiguration;
+import io.gravitee.node.secrets.service.spring.SecretServiceBeanFactory;
+import io.gravitee.node.secrets.spring.SecretProviderBeanFactory;
 import io.gravitee.plugin.core.spring.PluginConfiguration;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -38,11 +41,12 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Slf4j
 public abstract class SpringBasedContainer extends AbstractContainer {
 
     private ConfigurableApplicationContext ctx;
 
-    public SpringBasedContainer() {
+    protected SpringBasedContainer() {
         super();
     }
 
@@ -76,6 +80,8 @@ public abstract class SpringBasedContainer extends AbstractContainer {
         classes.add(ReporterConfiguration.class);
 
         classes.add(NodeContainerConfiguration.class);
+        classes.add(SecretProviderBeanFactory.class);
+        classes.add(SecretServiceBeanFactory.class);
         classes.add(NodeClusterConfiguration.class);
         classes.add(NodeCacheConfiguration.class);
         classes.add(NodeMonitoringConfiguration.class);
@@ -87,8 +93,9 @@ public abstract class SpringBasedContainer extends AbstractContainer {
     @Override
     protected void doStop() throws Exception {
         if (!stopped) {
-            LoggerFactory.getLogger(this.getClass()).info("Shutting-down {}...", name());
-
+            if (log.isInfoEnabled()) {
+                log.info("Shutting-down {}...", name());
+            }
             try {
                 node().stop();
             } catch (Exception ex) {

@@ -32,6 +32,7 @@ import io.gravitee.node.monitoring.infos.NodeInfosService;
 import io.gravitee.node.monitoring.monitor.NodeMonitorService;
 import io.gravitee.node.plugins.service.ServiceManager;
 import io.gravitee.node.reporter.ReporterManager;
+import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
 import io.gravitee.plugin.core.api.PluginRegistry;
 import io.gravitee.plugin.core.internal.PluginEventListener;
 import java.lang.management.ManagementFactory;
