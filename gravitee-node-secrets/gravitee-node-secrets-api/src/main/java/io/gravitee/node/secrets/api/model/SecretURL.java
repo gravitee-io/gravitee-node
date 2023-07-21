@@ -1,7 +1,10 @@
 package io.gravitee.node.secrets.api.model;
 
 import com.google.common.base.Splitter;
+
 import java.util.*;
+
+import com.google.common.base.Strings;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -14,29 +17,41 @@ public record SecretURL(String provider, String path, Map<String, String> query)
     private static final Splitter queryParamSplitter = Splitter.on('&');
     private static final Splitter queryParamKeyValueSplitter = Splitter.on('=');
     public static final String SCHEME = "secret://";
+    public static final String URL_FORMAT_ERROR = "Secret URL '%s' should have the following format %s<provider>/<word>[/<word>]*[?key=value&key2=value2]";
 
-    public static SecretURL from(String location) {
-        if (!location.startsWith(SCHEME)) {
-            throw new IllegalArgumentException("secret URL should start with %s".formatted(SCHEME));
+    public static SecretURL from(String url) {
+        if (!url.startsWith(SCHEME)) {
+            throw new IllegalArgumentException(URL_FORMAT_ERROR.formatted(url, SCHEME));
         }
-        String schemeLess = location.substring(SCHEME.length());
+        String schemeLess = url.substring(SCHEME.length());
         int firstSlash = schemeLess.indexOf('/');
-        if (firstSlash < 0) {
-            throw new IllegalArgumentException("secret URL should start with %s%s/".formatted(SCHEME, "<provider>"));
+        if (firstSlash < 0 || firstSlash == schemeLess.length() - 1) {
+            throw new IllegalArgumentException(URL_FORMAT_ERROR.formatted(url, SCHEME));
         }
+
         String provider = schemeLess.substring(0, firstSlash);
-        int interrogationMarkIndex = location.indexOf('?');
+        int questionMarkPos = schemeLess.indexOf('?');
+        if (questionMarkPos == firstSlash + 1) {
+            throw new IllegalArgumentException(URL_FORMAT_ERROR.formatted(url, SCHEME));
+        }
+
         final String path;
         final Map<String, String> query;
-        if (interrogationMarkIndex > 0) {
-            path = schemeLess.substring(provider.length(), interrogationMarkIndex);
-            query = parseQuery(schemeLess.substring(interrogationMarkIndex + 1));
+
+        if (questionMarkPos > 0) {
+            path = schemeLess.substring(provider.length(), questionMarkPos);
+            query = parseQuery(schemeLess.substring(questionMarkPos + 1));
         } else {
             path = schemeLess.substring(provider.length());
             query = Map.of();
         }
 
-        return new SecretURL(provider, path, query);
+        SecretURL secretURL = new SecretURL(provider, path, query);
+        if (secretURL.pathAsList().stream().map(String::trim).anyMatch(Strings::isNullOrEmpty)) {
+            throw new IllegalArgumentException("Secret URL '%s' contains spaces-only url parts".formatted(url));
+        }
+
+        return secretURL;
     }
 
     private static Map<String, String> parseQuery(String substring) {
@@ -69,9 +84,9 @@ public record SecretURL(String provider, String path, Map<String, String> query)
 
     public boolean isWatchable() {
         return query()
-            .entrySet()
-            .stream()
-            .anyMatch(e -> Objects.equals(e.getKey(), WellKnownQueryParam.WATCH) && Objects.equals(e.getValue(), "true"));
+                .entrySet()
+                .stream()
+                .anyMatch(e -> Objects.equals(e.getKey(), WellKnownQueryParam.WATCH) && Boolean.parseBoolean(e.getValue()));
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

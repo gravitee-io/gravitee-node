@@ -15,7 +15,11 @@ import io.gravitee.node.secrets.api.model.SecretURL;
 import io.gravitee.plugin.core.api.Plugin;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
+
 import java.util.*;
+
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -84,8 +88,9 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
             return Maybe.just(secrets.get(secretMount));
         }
         return secretProviders
-            .getOrDefault(secretMount.provider(), new ErrorSecretProvider())
-            .resolve(secretMount)
+                .getOrDefault(secretMount.provider(), new ErrorSecretProvider())
+                .resolve(secretMount)
+                .subscribeOn(Schedulers.io())
             .doOnSuccess(secret -> secrets.put(secretMount, secret));
     }
 
@@ -93,8 +98,10 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
     public Flowable<Secret> watch(SecretMount secretMount, SecretEvent.Type... events) {
         final SecretProvider provider = secretProviders.getOrDefault(secretMount.provider(), new ErrorSecretProvider());
         return provider
-            .watch(secretMount, events)
-            .doOnNext(event -> this.syncCache(event, secretMount)) // add cache call back so caller can know
+                .watch(secretMount, events)
+                .subscribeOn(Schedulers.io())
+                .doOnNext(event -> this.syncCache(event, secretMount)) // add cache call back so caller can know
+                .filter(event -> event.type() != SecretEvent.Type.DELETED)
             .map(SecretEvent::secret)
             .doFinally(provider::stop);
     }
