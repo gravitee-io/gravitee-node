@@ -16,6 +16,7 @@
 package io.gravitee.node.secrets;
 
 import io.gravitee.node.secrets.api.SecretManagerConfiguration;
+import io.gravitee.node.secrets.api.SecretProvider;
 import io.gravitee.node.secrets.api.SecretProviderFactory;
 import io.gravitee.plugin.core.api.ConfigurablePlugin;
 
@@ -23,12 +24,10 @@ import io.gravitee.plugin.core.api.ConfigurablePlugin;
  * @author GraviteeSource Team
  */
 public interface SecretProviderPlugin<T extends SecretProviderFactory, C extends SecretManagerConfiguration> extends ConfigurablePlugin<C> {
-    String PLUGIN_TYPE = "secret-provider";
-
     Class<T> secretProviderFactory();
 
     @Override
     default String type() {
-        return PLUGIN_TYPE;
+        return SecretProvider.PLUGIN_TYPE;
     }
 }

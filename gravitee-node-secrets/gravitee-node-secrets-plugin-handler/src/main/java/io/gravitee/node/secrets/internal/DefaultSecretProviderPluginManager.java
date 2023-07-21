@@ -27,6 +27,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +45,7 @@ public class DefaultSecretProviderPluginManager
 
     private final Map<String, SecretProviderFactory> notDeployedPluginFactories = new HashMap<>();
     private final PluginConfigurationHelper pluginConfigurationHelper;
+    private Consumer<String> onNewPluginCallback;
 
     public DefaultSecretProviderPluginManager(
         final SecretProviderClassLoaderFactory classLoaderFactory,
@@ -51,6 +53,11 @@ public class DefaultSecretProviderPluginManager
     ) {
         this.classLoaderFactory = classLoaderFactory;
         this.pluginConfigurationHelper = pluginConfigurationHelper;
+    }
+
+    @Override
+    public void setOnNewPluginCallback(Consumer<String> callback) {
+        this.onNewPluginCallback = callback;
     }
 
     @Override
@@ -68,6 +75,9 @@ public class DefaultSecretProviderPluginManager
                 factories.put(plugin.id(), factory);
             } else {
                 notDeployedPluginFactories.put(plugin.id(), factory);
+            }
+            if (onNewPluginCallback != null) {
+                onNewPluginCallback.accept(plugin.id());
             }
         } catch (Exception ex) {
             logger.error("Unexpected error while loading endpoint plugin: {}", plugin.clazz(), ex);

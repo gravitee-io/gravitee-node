@@ -19,59 +19,64 @@ import io.gravitee.node.secrets.api.errors.SecretManagerConfigurationException;
 import io.gravitee.node.secrets.api.errors.SecretProviderNotFoundException;
 import io.gravitee.node.secrets.api.model.Secret;
 import io.gravitee.node.secrets.api.model.SecretMount;
+import io.gravitee.node.secrets.api.model.SecretURL;
 import io.gravitee.node.secrets.service.AbstractSecretProviderDispatcher;
 import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
+ * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
- * @since 3.9.11
  */
 @Slf4j
-public class GraviteeConfigurationSecretPropertyResolver implements PropertyResolver<Secret> {
+public class GraviteeConfigurationSecretPropertyResolver implements WatchablePropertyResolver<Secret> {
 
     @Autowired
     private GraviteeConfigurationSecretResolverDispatcher dispatcher;
 
-    private static final String SCHEME = "secrets://";
-
     @Override
-    public boolean supports(String currentValue) {
-        Objects.requireNonNull(currentValue);
-        return dispatcher.enabledManagers().stream().anyMatch(manager -> currentValue.startsWith(String.format("%s%s/", SCHEME, manager)));
+    public boolean supports(String value) {
+        Objects.requireNonNull(value);
+        return dispatcher
+            .enabledManagers()
+            .stream()
+            .anyMatch(manager -> value.startsWith(String.format("%s%s/", SecretURL.SCHEME, manager)));
     }
 
     @Override
     public Maybe<Secret> resolve(String location) {
-        return dispatcher.resolve(toSecretMount(location));
+        return dispatcher.resolve(toSecretLocation(location));
+    }
+
+    @Override
+    public boolean isWatchable(String value) {
+        return SecretURL.from(value).isWatchable();
     }
 
     @Override
     public Flowable<Secret> watch(String location) {
-        return dispatcher.watch(toSecretMount(location));
+        return dispatcher.watch(toSecretLocation(location));
     }
 
-    private SecretMount toSecretMount(String location) {
-        String schemeLess = location.substring(SCHEME.length());
-        String id = schemeLess.substring(0, schemeLess.indexOf('/'));
+    private SecretMount toSecretLocation(String location) {
+        SecretURL url = SecretURL.from(location);
         return dispatcher
-            .findSecretProvider(id)
+            .findSecretProvider(url.provider())
             .map(secretProvider -> {
                 try {
-                    return secretProvider.fromURL(new URL(location));
-                } catch (MalformedURLException e) {
+                    return secretProvider.fromURL(url);
+                } catch (IllegalArgumentException e) {
                     throw new SecretManagerConfigurationException("cannot create secret URL from: " + location, e);
                 }
             })
             .orElseThrow(() ->
-                new SecretProviderNotFoundException(AbstractSecretProviderDispatcher.SECRET_PROVIDER_NOT_FOUND_FOR_ID.formatted(id))
+                new SecretProviderNotFoundException(
+                    AbstractSecretProviderDispatcher.SECRET_PROVIDER_NOT_FOUND_FOR_ID.formatted(url.provider())
+                )
             );
     }
 }

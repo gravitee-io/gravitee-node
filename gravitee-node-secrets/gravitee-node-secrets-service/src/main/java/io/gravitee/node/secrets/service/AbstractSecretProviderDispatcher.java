@@ -1,6 +1,5 @@
 package io.gravitee.node.secrets.service;
 
-import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.secrets.SecretProviderPlugin;
 import io.gravitee.node.secrets.SecretProviderPluginManager;
 import io.gravitee.node.secrets.api.SecretManagerConfiguration;
@@ -12,12 +11,11 @@ import io.gravitee.node.secrets.api.errors.SecretProviderNotFoundException;
 import io.gravitee.node.secrets.api.model.Secret;
 import io.gravitee.node.secrets.api.model.SecretEvent;
 import io.gravitee.node.secrets.api.model.SecretMount;
+import io.gravitee.node.secrets.api.model.SecretURL;
 import io.gravitee.plugin.core.api.Plugin;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
-import java.net.URL;
 import java.util.*;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -37,16 +35,16 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
         this.secretProviderPluginManager = secretProviderPluginManager;
     }
 
-    protected void init() throws Exception {
-        // enabled managers
-        List<String> enabledManagers =
-            this.filterEnabledManagers(secretProviderPluginManager.findAll().stream().map(Plugin::id).collect(Collectors.toSet()));
-
-        // read all configs (in priority order if set)
-        for (String id : enabledManagers) {
-            SecretProviderPlugin<?, ?> secretProviderPlugin = secretProviderPluginManager.get(id);
-            Class<? extends SecretManagerConfiguration> configurationClass = secretProviderPlugin.configuration();
-            SecretProviderFactory<SecretManagerConfiguration> factory = secretProviderPluginManager.getFactoryById(id);
+    protected final void createAndRegister(String id) {
+        try {
+            final SecretProviderPlugin<?, ?> secretProviderPlugin = secretProviderPluginManager.get(id);
+            final Class<? extends SecretManagerConfiguration> configurationClass = secretProviderPlugin.configuration();
+            final SecretProviderFactory<SecretManagerConfiguration> factory;
+            if (id.equals("kubernetes")) {
+                factory = secretProviderPluginManager.getFactoryById(id, true);
+            } else {
+                factory = secretProviderPluginManager.getFactoryById(id);
+            }
             if (configurationClass != null && factory != null) {
                 // read the config using the plugin class loader
                 SecretManagerConfiguration config =
@@ -56,12 +54,25 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
             } else {
                 throw new SecretProviderNotFoundException(SECRET_PROVIDER_NOT_FOUND_FOR_ID.formatted(id));
             }
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("cannot load plugin %s properly: ".formatted(id));
         }
-
-        log.info("Secret provider loaded: {}", enabledManagers);
     }
 
-    protected void stop() throws Exception {
+    protected final void createAllSecretProviders() throws Exception {
+        List<String> managers = secretProviderPluginManager.findAll().stream().map(Plugin::id).toList();
+
+        // read all configs (in priority order if set)
+        for (String id : managers) {
+            if (isEnabled(id)) {
+                createAndRegister(id);
+            }
+        }
+
+        log.info("Secret provider loaded: {}", secretProviders.keySet());
+    }
+
+    public void stopAllProviders() {
         for (SecretProvider secretProvider : secretProviders.values()) {
             secretProvider.stop();
         }
@@ -101,6 +112,8 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
         return Optional.ofNullable(secretProviders.get(id));
     }
 
+    public abstract boolean isEnabled(String pluginId);
+
     static class ErrorSecretProvider implements SecretProvider {
 
         @Override
@@ -114,7 +127,7 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
         }
 
         @Override
-        public SecretMount fromURL(URL url) {
+        public SecretMount fromURL(SecretURL url) {
             throw new SecretProviderNotFoundException("No secret provider plugin found for url: " + url);
         }
     }

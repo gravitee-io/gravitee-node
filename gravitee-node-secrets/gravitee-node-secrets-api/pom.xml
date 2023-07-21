@@ -23,7 +23,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node-secrets</artifactId>
-        <version>4.0.0-alpha.4</version>
+        <version>4.0.0</version>
     </parent>
 
     <artifactId>gravitee-node-secrets-api</artifactId>
@@ -39,6 +39,10 @@
         <dependency>
             <groupId>io.reactivex.rxjava3</groupId>
             <artifactId>rxjava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
         </dependency>
 
     </dependencies>

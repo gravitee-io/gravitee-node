@@ -23,11 +23,17 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node-secrets</artifactId>
-        <version>4.0.0-alpha.4</version>
+        <version>4.0.0</version>
     </parent>
 
-    <artifactId>gravitee-node-secrets-kubernetes-plugin</artifactId>
-    <name>Gravitee.io - Node - Secrets - Kubernetes - Plugin</name>
+    <artifactId>gravitee-node-secrets-plugin-kubernetes</artifactId>
+    <name>Gravitee.io - Node - Secrets - Plugin - Kubernetes</name>
+
+    <properties>
+        <kubernetes-client-java.version>18.0.1</kubernetes-client-java.version>
+        <gson.version>2.9.0</gson.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.gravitee.node</groupId>
@@ -36,6 +42,18 @@
         <dependency>
             <groupId>io.gravitee.gateway</groupId>
             <artifactId>gravitee-gateway-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>${gson.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.kubernetes</groupId>
+            <artifactId>client-java</artifactId>
+            <version>${kubernetes-client-java.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>

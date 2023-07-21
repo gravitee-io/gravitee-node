@@ -17,6 +17,7 @@ package io.gravitee.node.secrets.internal;
 
 import io.gravitee.node.secrets.SecretProviderPlugin;
 import io.gravitee.node.secrets.api.SecretManagerConfiguration;
+import io.gravitee.node.secrets.api.SecretProvider;
 import io.gravitee.plugin.core.api.AbstractSimplePluginHandler;
 import io.gravitee.plugin.core.api.Plugin;
 import java.io.IOException;
@@ -33,12 +34,12 @@ public class SecretProviderPluginHandler extends AbstractSimplePluginHandler<Sec
 
     @Override
     public boolean canHandle(final Plugin plugin) {
-        return SecretProviderPlugin.PLUGIN_TYPE.equalsIgnoreCase(plugin.type());
+        return SecretProvider.PLUGIN_TYPE.equalsIgnoreCase(plugin.type());
     }
 
     @Override
     protected String type() {
-        return SecretProviderPlugin.PLUGIN_TYPE;
+        return SecretProvider.PLUGIN_TYPE;
     }
 
     @Override

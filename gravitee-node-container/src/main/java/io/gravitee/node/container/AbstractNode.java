@@ -32,9 +32,12 @@ import io.gravitee.node.monitoring.infos.NodeInfosService;
 import io.gravitee.node.monitoring.monitor.NodeMonitorService;
 import io.gravitee.node.plugins.service.ServiceManager;
 import io.gravitee.node.reporter.ReporterManager;
-import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
 import io.gravitee.plugin.core.api.PluginRegistry;
 import io.gravitee.plugin.core.internal.PluginEventListener;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.env.Environment;
+
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -42,35 +45,28 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.env.Environment;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Slf4j
 public abstract class AbstractNode extends AbstractService<Node> implements Node, ApplicationContextAware {
-
-    protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-
-    protected ApplicationContext applicationContext;
 
     private String hostname;
 
-    public AbstractNode() {
+    protected AbstractNode() {
         try {
             hostname = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException uhe) {
-            LOGGER.warn("Could not get hostname / IP", uhe);
+            log.warn("Could not get hostname / IP", uhe);
         }
     }
 
+    @Override
     protected void doStart() throws Exception {
-        this.LOGGER.info("{} is now starting...", this.name());
+        log.info("{} is now starting...", this.name());
+
         long startTime = System.currentTimeMillis();
         List<Class<? extends LifecycleComponent>> components = this.components();
 
@@ -84,7 +80,7 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
             processId = processId.split("@")[0];
         }
 
-        this.LOGGER.info(
+        log.info(
                 "{} id[{}] version[{}] pid[{}] build[{}#{}] jvm[{}/{}/{}] started in {} ms.",
                 this.name(),
                 this.id(),
@@ -96,7 +92,7 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
                 ManagementFactory.getRuntimeMXBean().getVmName(),
                 ManagementFactory.getRuntimeMXBean().getVmVersion(),
                 endTime - startTime
-            );
+        );
     }
 
     @Override
@@ -107,23 +103,24 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
         final Integer shutdownDelay = environment.getProperty("gracefulShutdown.delay", Integer.class, 0);
         final TimeUnit shutdownUnit = TimeUnit.valueOf(environment.getProperty("gracefulShutdown.unit", String.class, "MILLISECONDS"));
 
-        LOGGER.info("Applying graceful shutdown delay {} {}", shutdownDelay, shutdownUnit);
+        log.info("Applying graceful shutdown delay {} {}", shutdownDelay, shutdownUnit);
         Thread.sleep(Duration.ofMillis(shutdownUnit.toMillis(shutdownDelay)).toMillis());
-        LOGGER.info("Graceful shutdown delay exhausted");
+        log.info("Graceful shutdown delay exhausted");
 
         return this;
     }
 
+    @Override
     protected void doStop() throws Exception {
-        this.LOGGER.info("{} is stopping", this.name());
+        log.info("{} is stopping", this.name());
 
         final List<Class<? extends LifecycleComponent>> components = this.components();
 
-        preStopComponents(new ListReverser(components));
-        stopComponents(new ListReverser(components));
-        postStopComponents(new ListReverser(components));
+        preStopComponents(new ListReverser<>(components));
+        stopComponents(new ListReverser<>(components));
+        postStopComponents(new ListReverser<>(components));
 
-        this.LOGGER.info("{} stopped", this.name());
+        log.info("{} stopped", this.name());
     }
 
     @Override
@@ -131,6 +128,7 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
         return hostname;
     }
 
+    @Override
     public abstract String name();
 
     @Override
@@ -158,17 +156,13 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
         return applicationContext.getBean(LicenseService.class).getLicense();
     }
 
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
-
     private void preStartComponents(Iterable<Class<? extends LifecycleComponent>> components) throws Exception {
         for (Class<? extends LifecycleComponent> componentClass : components) {
             try {
-                LOGGER.debug("\tPre-starting component: {}", componentClass.getSimpleName());
+                log.debug("\tPre-starting component: {}", componentClass.getSimpleName());
                 this.applicationContext.getBean(componentClass).preStart();
             } catch (Exception e) {
-                this.LOGGER.error("An error occurred while pre-starting component {}", componentClass, e);
+                log.error("An error occurred while pre-starting component {}", componentClass, e);
                 throw e;
             }
         }
@@ -177,10 +171,10 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
     private void startComponents(Iterable<Class<? extends LifecycleComponent>> components) throws Exception {
         for (Class<? extends LifecycleComponent> componentClass : components) {
             try {
-                LOGGER.info("\tStarting component: {}", componentClass.getSimpleName());
+                log.info("\tStarting component: {}", componentClass.getSimpleName());
                 this.applicationContext.getBean(componentClass).start();
             } catch (Exception e) {
-                this.LOGGER.error("An error occurred while starting component {}", componentClass, e);
+                log.error("An error occurred while starting component {}", componentClass, e);
                 throw e;
             }
         }
@@ -189,10 +183,10 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
     private void postStartComponents(Iterable<Class<? extends LifecycleComponent>> components) throws Exception {
         for (Class<? extends LifecycleComponent> componentClass : components) {
             try {
-                LOGGER.debug("\tPost-starting component: {}", componentClass.getSimpleName());
+                log.debug("\tPost-starting component: {}", componentClass.getSimpleName());
                 this.applicationContext.getBean(componentClass).postStart();
             } catch (Exception e) {
-                this.LOGGER.error("An error occurred while post-starting component {}", componentClass, e);
+                log.error("An error occurred while post-starting component {}", componentClass, e);
                 throw e;
             }
         }
@@ -203,11 +197,11 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
             try {
                 LifecycleComponent<?> lifecycleComponent = this.applicationContext.getBean(componentClass);
                 if (lifecycleComponent.lifecycleState() != Lifecycle.State.STOPPING) {
-                    this.LOGGER.debug("\tPre-stopping component: {}", componentClass.getSimpleName());
+                    log.debug("\tPre-stopping component: {}", componentClass.getSimpleName());
                     lifecycleComponent.preStop();
                 }
             } catch (Exception e) {
-                this.LOGGER.error("An error occurred while pre-stopping component {}", componentClass.getSimpleName(), e);
+                log.error("An error occurred while pre-stopping component {}", componentClass.getSimpleName(), e);
             }
         }
     }
@@ -217,11 +211,11 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
             try {
                 LifecycleComponent<?> lifecycleComponent = this.applicationContext.getBean(componentClass);
                 if (lifecycleComponent.lifecycleState() != Lifecycle.State.STOPPED) {
-                    this.LOGGER.info("\tStopping component: {}", componentClass.getSimpleName());
+                    log.info("\tStopping component: {}", componentClass.getSimpleName());
                     lifecycleComponent.stop();
                 }
             } catch (Exception e) {
-                this.LOGGER.error("An error occurred while stopping component {}", componentClass.getSimpleName(), e);
+                log.error("An error occurred while stopping component {}", componentClass.getSimpleName(), e);
             }
         }
     }
@@ -229,10 +223,10 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
     private void postStopComponents(Iterable<Class<? extends LifecycleComponent>> components) throws Exception {
         for (Class<? extends LifecycleComponent> componentClass : components) {
             try {
-                LOGGER.debug("\tPost-stopping component: {}", componentClass.getSimpleName());
+                log.debug("\tPost-stopping component: {}", componentClass.getSimpleName());
                 this.applicationContext.getBean(componentClass).postStop();
             } catch (Exception e) {
-                this.LOGGER.error("An error occurred while post-stopping component {}", componentClass, e);
+                log.error("An error occurred while post-stopping component {}", componentClass, e);
                 throw e;
             }
         }

@@ -15,39 +15,33 @@
  */
 package io.gravitee.node.secrets.api;
 
-import io.gravitee.common.component.Lifecycle;
-import io.gravitee.common.component.LifecycleComponent;
 import io.gravitee.node.secrets.api.errors.SecretManagerException;
 import io.gravitee.node.secrets.api.model.Secret;
 import io.gravitee.node.secrets.api.model.SecretEvent;
 import io.gravitee.node.secrets.api.model.SecretMount;
+import io.gravitee.node.secrets.api.model.SecretURL;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
-import java.net.URL;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface SecretProvider extends LifecycleComponent<SecretProvider> {
+public interface SecretProvider {
+    String PLUGIN_URL_SCHEME = "secret://";
+    String PLUGIN_TYPE = "secret-provider";
+
     Maybe<Secret> resolve(SecretMount secretMount) throws SecretManagerException;
 
     Flowable<SecretEvent> watch(SecretMount secretMount, SecretEvent.Type... events);
 
-    SecretMount fromURL(URL url);
+    SecretMount fromURL(SecretURL url);
 
-    @Override
-    default SecretProvider start() throws Exception {
+    default SecretProvider start() throws SecretManagerException {
         return this;
     }
 
-    @Override
-    default SecretProvider stop() throws Exception {
+    default SecretProvider stop() {
         return this;
-    }
-
-    @Override
-    default Lifecycle.State lifecycleState() {
-        return null;
     }
 }

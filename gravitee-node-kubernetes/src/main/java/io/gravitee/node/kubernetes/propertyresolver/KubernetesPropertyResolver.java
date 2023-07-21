@@ -21,7 +21,7 @@ import io.gravitee.kubernetes.client.api.WatchQuery;
 import io.gravitee.kubernetes.client.model.v1.ConfigMap;
 import io.gravitee.kubernetes.client.model.v1.KubernetesEventType;
 import io.gravitee.kubernetes.client.model.v1.Secret;
-import io.gravitee.node.secrets.service.resolver.PropertyResolver;
+import io.gravitee.node.secrets.service.resolver.WatchablePropertyResolver;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import java.util.Base64;
@@ -35,7 +35,7 @@ import org.springframework.util.Assert;
  * @author GraviteeSource Team
  * @since 3.9.11
  */
-public class KubernetesPropertyResolver implements PropertyResolver<Object> {
+public class KubernetesPropertyResolver implements WatchablePropertyResolver<Object> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KubernetesPropertyResolver.class);
 
@@ -54,11 +54,11 @@ public class KubernetesPropertyResolver implements PropertyResolver<Object> {
         Assert.notNull(location, "Location can not be null");
 
         String[] properties = parsePropertyName(location); // kubernetes://default/configmaps/gravitee-config/management.db.name
-        if (properties == null) {
+        if (properties.length == 0) {
             return Maybe.empty();
         }
 
-        LOGGER.debug("Resolve location [{}]", location);
+        LOGGER.debug("Resolve configuration [{}]", location);
 
         if ("secrets".equals(properties[1])) { // type
             return resolvePropertyFromSecret(generateLocation(properties))
@@ -75,11 +75,11 @@ public class KubernetesPropertyResolver implements PropertyResolver<Object> {
         Assert.notNull(location, "Location can not be null");
 
         String[] properties = parsePropertyName(location); // kubernetes://default/configmaps/gravitee-config/my_key
-        if (properties == null) {
+        if (properties.length == 0) {
             return Flowable.empty();
         }
 
-        LOGGER.debug("Start watching location [{}]", location);
+        LOGGER.debug("Start watching configuration [{}]", location);
 
         if ("secrets".equals(properties[1])) { // type
             return kubernetesClient
@@ -106,7 +106,7 @@ public class KubernetesPropertyResolver implements PropertyResolver<Object> {
     private String[] parsePropertyName(String currentValue) {
         if (!supports(currentValue)) {
             LOGGER.error("Does not support scheme {}", currentValue);
-            return null;
+            return new String[0];
         }
 
         String[] properties = currentValue.substring(13).split("/"); // eliminate initial kubernetes://
@@ -115,7 +115,7 @@ public class KubernetesPropertyResolver implements PropertyResolver<Object> {
             LOGGER.error(
                 "Wrong property value. A correct format looks like this \"kubernetes://{namespace}/configmaps/{configmap-name}/key\""
             );
-            return null;
+            return new String[0];
         }
 
         return properties;
@@ -139,7 +139,7 @@ public class KubernetesPropertyResolver implements PropertyResolver<Object> {
                 if (configMap != null) {
                     return Maybe.just(configMap.getData().get(query.getResourceKey()));
                 } else {
-                    LOGGER.warn("Key not found in this location [{}]", location);
+                    LOGGER.warn("Key not found in this configuration [{}]", location);
                     return Maybe.empty();
                 }
             });
@@ -153,7 +153,7 @@ public class KubernetesPropertyResolver implements PropertyResolver<Object> {
                 if (secret != null) {
                     return Maybe.just(secret.getData().get(query.getResourceKey()));
                 } else {
-                    LOGGER.debug("Key not found in this location [{}]", location);
+                    LOGGER.debug("Key not found in this configuration [{}]", location);
                     return Maybe.empty();
                 }
             });

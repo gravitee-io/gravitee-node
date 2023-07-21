@@ -26,6 +26,6 @@
         <version>4.0.0-alpha.4</version>
     </parent>
 
-    <artifactId>gravitee-node-secrets-vault-plugin</artifactId>
-    <name>Gravitee.io - Node - Secrets - Vault - Plugin</name>
+    <artifactId>gravitee-node-secrets-plugin-hc-vault</artifactId>
+    <name>Gravitee.io - Node - Secrets - Plugin - HC Vault</name>
 </project>
