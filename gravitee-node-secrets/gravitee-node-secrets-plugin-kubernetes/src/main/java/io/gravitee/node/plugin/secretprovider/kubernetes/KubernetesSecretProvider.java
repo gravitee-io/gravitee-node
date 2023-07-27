@@ -30,7 +30,7 @@ public class KubernetesSecretProvider implements SecretProvider {
     }
 
     @Override
-    public Maybe<Secret> resolve(SecretMount secretMount) throws SecretManagerException {
+    public Maybe<Secret> resolve(SecretMount secretMount) {
         try {
             K8sSecretLocation k8sLocation = K8sSecretLocation.fromLocation(secretMount.location());
             Optional<V1Secret> k8sSecret = client.getSecret(k8sLocation);
@@ -43,7 +43,7 @@ public class KubernetesSecretProvider implements SecretProvider {
                     .map(decoded -> new Secret(decoded, null))
             );
         } catch (ApiException e) {
-            throw new SecretManagerException(e);
+            return Maybe.error(new SecretManagerException(e));
         }
     }
 

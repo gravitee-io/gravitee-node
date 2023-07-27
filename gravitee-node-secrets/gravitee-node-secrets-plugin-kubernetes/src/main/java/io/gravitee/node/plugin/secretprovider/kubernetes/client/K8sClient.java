@@ -14,7 +14,6 @@ import io.kubernetes.client.openapi.models.V1Secret;
 import io.kubernetes.client.openapi.models.V1SecretList;
 import io.kubernetes.client.util.ClientBuilder;
 import io.kubernetes.client.util.KubeConfig;
-import io.kubernetes.client.util.Strings;
 import io.kubernetes.client.util.Watch;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
@@ -41,7 +40,7 @@ public class K8sClient {
 
     public K8sClient(K8sConfig configuration) {
         ApiClient client;
-        if (Strings.isNullOrEmpty(configuration.getKubeConfigFile())) {
+        if (configuration.isClusterBased()) {
             try {
                 client = ClientBuilder.cluster().build();
             } catch (IOException e) {
@@ -145,7 +144,11 @@ public class K8sClient {
                             BackpressureStrategy.ERROR
                         )
                         .mergeWith(callbackErrors.toFlowable(BackpressureStrategy.ERROR))
-                        .doFinally(() -> closeOrLogError(watch));
+                        .share()
+                        .doFinally(() -> {
+                            closeOrLogError(watch);
+                            watches.remove(key);
+                        });
                 });
             }
         );

@@ -1,10 +1,8 @@
 package io.gravitee.node.secrets.api.model;
 
 import com.google.common.base.Splitter;
-
-import java.util.*;
-
 import com.google.common.base.Strings;
+import java.util.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -13,11 +11,13 @@ import lombok.NoArgsConstructor;
  * @author GraviteeSource Team
  */
 public record SecretURL(String provider, String path, Map<String, String> query) {
-    private static final Splitter urlPathSplitter = Splitter.on('/');
+    public static final char URL_SEPARATOR = '/';
+    private static final Splitter urlPathSplitter = Splitter.on(URL_SEPARATOR);
     private static final Splitter queryParamSplitter = Splitter.on('&');
     private static final Splitter queryParamKeyValueSplitter = Splitter.on('=');
     public static final String SCHEME = "secret://";
-    public static final String URL_FORMAT_ERROR = "Secret URL '%s' should have the following format %s<provider>/<word>[/<word>]*[?key=value&key2=value2]";
+    public static final String URL_FORMAT_ERROR =
+        "Secret URL '%s' should have the following format %s<provider>/<word>[/<word>]*[?key=value&key2=value2]";
 
     public static SecretURL from(String url) {
         if (!url.startsWith(SCHEME)) {
@@ -84,9 +84,9 @@ public record SecretURL(String provider, String path, Map<String, String> query)
 
     public boolean isWatchable() {
         return query()
-                .entrySet()
-                .stream()
-                .anyMatch(e -> Objects.equals(e.getKey(), WellKnownQueryParam.WATCH) && Boolean.parseBoolean(e.getValue()));
+            .entrySet()
+            .stream()
+            .anyMatch(e -> Objects.equals(e.getKey(), WellKnownQueryParam.WATCH) && Boolean.parseBoolean(e.getValue()));
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

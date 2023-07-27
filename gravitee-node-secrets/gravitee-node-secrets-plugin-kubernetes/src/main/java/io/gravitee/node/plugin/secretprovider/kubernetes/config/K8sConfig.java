@@ -28,4 +28,8 @@ public class K8sConfig implements SecretManagerConfiguration {
         kubeConfigFile = (String) properties.getOrDefault(Fields.kubeConfigFile, "");
         timeoutMs = (int) properties.getOrDefault(Fields.timeoutMs, 3000);
     }
+
+    public boolean isClusterBased() {
+        return kubeConfigFile.isBlank();
+    }
 }

@@ -82,10 +82,8 @@ public abstract class AbstractGraviteePropertySource extends EnumerablePropertyS
     private void watchProperty(WatchablePropertyResolver<?> propertyResolver, String name, Object value) {
         propertyResolver
             .watch(value.toString())
-            .doOnNext(newValue -> source.put(name, newValue))
-            .doOnError(t -> LOGGER.error("Unable to update property {}", name, t))
             .doOnComplete(() -> watchProperty(propertyResolver, name, value))
-            .subscribe();
+            .subscribe(newValue -> source.put(name, newValue), t -> LOGGER.error("Unable to update property {}", name, t));
     }
 
     @Override

@@ -80,7 +80,7 @@ public class DefaultSecretProviderPluginManager
                 onNewPluginCallback.accept(plugin.id());
             }
         } catch (Exception ex) {
-            logger.error("Unexpected error while loading endpoint plugin: {}", plugin.clazz(), ex);
+            logger.error("Unexpected error while loading secret provider plugin: {}", plugin.clazz(), ex);
         }
     }
 

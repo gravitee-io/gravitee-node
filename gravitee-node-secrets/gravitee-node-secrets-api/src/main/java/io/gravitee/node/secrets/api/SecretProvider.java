@@ -31,7 +31,7 @@ public interface SecretProvider {
     String PLUGIN_URL_SCHEME = "secret://";
     String PLUGIN_TYPE = "secret-provider";
 
-    Maybe<Secret> resolve(SecretMount secretMount) throws SecretManagerException;
+    Maybe<Secret> resolve(SecretMount secretMount);
 
     Flowable<SecretEvent> watch(SecretMount secretMount, SecretEvent.Type... events);
 

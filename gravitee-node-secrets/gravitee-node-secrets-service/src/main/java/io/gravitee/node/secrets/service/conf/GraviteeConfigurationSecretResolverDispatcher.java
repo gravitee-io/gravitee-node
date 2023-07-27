@@ -5,18 +5,19 @@ import io.gravitee.node.secrets.SecretProviderPluginManager;
 import io.gravitee.node.secrets.api.SecretManagerConfiguration;
 import io.gravitee.node.secrets.api.errors.SecretManagerConfigurationException;
 import io.gravitee.node.secrets.api.model.Secret;
+import io.gravitee.node.secrets.api.util.ConfigHelper;
 import io.gravitee.node.secrets.service.AbstractSecretProviderDispatcher;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import org.apache.commons.collections4.keyvalue.AbstractKeyValue;
-import org.apache.commons.collections4.keyvalue.DefaultMapEntry;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.env.*;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
@@ -94,13 +95,6 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
 
     private Map<String, Object> getChoppedPropertiesStartingWith(ConfigurableEnvironment env, String prefix) {
         Map<String, Object> result = EnvironmentUtils.getAllProperties(env);
-
-        return result
-            .entrySet()
-            .stream()
-            .filter(e -> e.getKey().startsWith(prefix))
-            // chopping the prefix out of the key
-            .map(e -> new DefaultMapEntry<>(e.getKey().substring(prefix.length() + 1), e.getValue()))
-            .collect(Collectors.toMap(AbstractKeyValue::getKey, AbstractKeyValue::getValue));
+        return ConfigHelper.removePrefix(result, prefix);
     }
 }

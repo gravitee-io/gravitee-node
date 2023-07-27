@@ -23,9 +23,44 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node-secrets</artifactId>
-        <version>4.0.0-alpha.4</version>
+        <version>4.0.0</version>
     </parent>
 
     <artifactId>gravitee-node-secrets-plugin-hc-vault</artifactId>
     <name>Gravitee.io - Node - Secrets - Plugin - HC Vault</name>
+
+    <properties>
+        <vault-java-driver.version>6.0.0</vault-java-driver.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-secrets-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.gravitee.gateway</groupId>
+            <artifactId>gravitee-gateway-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.jopenlibs</groupId>
+            <artifactId>vault-java-driver</artifactId>
+            <version>${vault-java-driver.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>
