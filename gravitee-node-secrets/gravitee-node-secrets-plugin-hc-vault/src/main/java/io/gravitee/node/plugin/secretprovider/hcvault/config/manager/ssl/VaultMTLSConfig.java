@@ -3,6 +3,7 @@ package io.gravitee.node.plugin.secretprovider.hcvault.config.manager.ssl;
 import io.gravitee.node.plugin.secretprovider.hcvault.HCVaultSecretProvider;
 import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.VaultConfig;
 import io.gravitee.node.plugin.secretprovider.hcvault.util.EnumUtil;
+import io.gravitee.node.secrets.api.util.ConfigHelper;
 import java.util.Map;
 import java.util.Objects;
 import lombok.AccessLevel;
@@ -32,8 +33,8 @@ public class VaultMTLSConfig {
                 (String) Objects.requireNonNull(properties.get(Fields.format)),
                 Format.class
             );
-        this.cert = (String) Objects.requireNonNull(properties.get(Fields.cert));
-        this.key = (String) Objects.requireNonNull(properties.get(Fields.key));
+        this.cert = ConfigHelper.getStringOrSecret(properties, Fields.cert);
+        this.key = ConfigHelper.getStringOrSecret(properties, Fields.key);
     }
 
     public enum Format {

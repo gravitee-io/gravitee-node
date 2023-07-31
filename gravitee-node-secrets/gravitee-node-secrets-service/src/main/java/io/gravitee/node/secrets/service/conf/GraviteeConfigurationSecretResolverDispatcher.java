@@ -76,8 +76,8 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
 
     @Override
     public <T extends SecretManagerConfiguration> T readConfiguration(String pluginId, Class<?> configurationClass) {
-        Map<String, Object> configurationProperties = getChoppedPropertiesStartingWith(
-            (ConfigurableEnvironment) environment,
+        Map<String, Object> configurationProperties = ConfigHelper.removePrefix(
+            EnvironmentUtils.getAllProperties((ConfigurableEnvironment) environment),
             String.format("%s.%s", SECRETS_CONFIG_KEY, pluginId)
         );
 
@@ -91,10 +91,5 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
                 e
             );
         }
-    }
-
-    private Map<String, Object> getChoppedPropertiesStartingWith(ConfigurableEnvironment env, String prefix) {
-        Map<String, Object> result = EnvironmentUtils.getAllProperties(env);
-        return ConfigHelper.removePrefix(result, prefix);
     }
 }

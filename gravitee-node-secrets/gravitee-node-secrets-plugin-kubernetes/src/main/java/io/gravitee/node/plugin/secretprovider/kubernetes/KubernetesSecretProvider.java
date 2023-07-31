@@ -39,7 +39,7 @@ public class KubernetesSecretProvider implements SecretProvider {
                 k8sSecret
                     .map(V1Secret::getData)
                     .map(data -> data.get(k8sLocation.key()))
-                    .map(Base64.getDecoder()::decode)
+                    // .map(Base64.getDecoder()::decode)
                     .map(decoded -> new Secret(decoded, null))
             );
         } catch (ApiException e) {

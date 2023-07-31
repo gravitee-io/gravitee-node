@@ -43,7 +43,7 @@ public class VaultSSLConfig {
                 );
             switch (format) {
                 case PEM -> {
-                    pem = (String) Objects.requireNonNull(properties.get(Fields.pem));
+                    pem = ConfigHelper.getStringOrSecret(properties, Fields.pem);
                     ouc.pemUTF8(pem);
                 }
                 case PEMFILE -> {
@@ -52,7 +52,7 @@ public class VaultSSLConfig {
                 }
                 case KEYSTORE -> {
                     file = (String) Objects.requireNonNull(properties.get(Fields.file));
-                    password = (String) properties.get(Fields.password);
+                    password = ConfigHelper.getStringOrSecret(properties, Fields.password, null);
                     ouc.keyStoreFile(new File(file), password);
                 }
                 case TRUSTSTORE -> {

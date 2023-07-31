@@ -2,6 +2,7 @@ package io.gravitee.node.plugin.secretprovider.hcvault.config.manager.auth;
 
 import io.github.jopenlibs.vault.Vault;
 import io.github.jopenlibs.vault.VaultException;
+import io.gravitee.node.secrets.api.util.ConfigHelper;
 import java.util.Map;
 import java.util.Objects;
 import lombok.*;
@@ -22,7 +23,7 @@ public class VaultGitHubAuthConfig extends VaultAuthConfig {
 
     public VaultGitHubAuthConfig(Map<String, Object> properties) {
         super(Method.GITHUB);
-        token = (String) Objects.requireNonNull(properties.get(Fields.token));
+        token = ConfigHelper.getStringOrSecret(properties, Fields.token);
         path = (String) properties.getOrDefault(Fields.path, "github");
     }
 }

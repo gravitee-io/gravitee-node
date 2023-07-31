@@ -1,8 +1,7 @@
 package io.gravitee.node.plugin.secretprovider.hcvault.config.manager.auth;
 
-import io.github.jopenlibs.vault.Vault;
-import io.github.jopenlibs.vault.VaultException;
 import io.github.jopenlibs.vault.api.sys.mounts.TimeToLive;
+import io.gravitee.node.secrets.api.util.ConfigHelper;
 import java.util.Map;
 import java.util.Objects;
 import lombok.*;
@@ -28,7 +27,7 @@ public class VaultAppRoleAuthConfig extends VaultAuthConfig {
 
     public VaultAppRoleAuthConfig(Map<String, Object> properties) {
         super(Method.APPROLE);
-        roleId = (String) Objects.requireNonNull(properties.get(Fields.roleId));
-        secretId = (String) Objects.requireNonNull(properties.get(Fields.secretId));
+        roleId = ConfigHelper.getStringOrSecret(properties, Fields.roleId);
+        secretId = ConfigHelper.getStringOrSecret(properties, Fields.secretId);
     }
 }

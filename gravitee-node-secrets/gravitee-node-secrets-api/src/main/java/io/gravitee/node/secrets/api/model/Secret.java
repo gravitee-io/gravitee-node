@@ -1,5 +1,7 @@
 package io.gravitee.node.secrets.api.model;
 
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
@@ -18,13 +20,17 @@ import lombok.experimental.Accessors;
 public final class Secret {
 
     private final byte[] value;
-    private final Date expiresAt;
+    private final Instant expiresAt;
 
     public boolean isEmpty() {
         return value == null || value.length == 0;
     }
 
-    public Optional<Date> expiresAt() {
+    public Optional<Instant> expiresAt() {
         return Optional.ofNullable(expiresAt);
+    }
+
+    public String asString() {
+        return new String(value(), StandardCharsets.UTF_8);
     }
 }

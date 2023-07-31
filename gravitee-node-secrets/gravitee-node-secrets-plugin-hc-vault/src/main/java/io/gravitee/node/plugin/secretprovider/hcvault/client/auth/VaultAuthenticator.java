@@ -46,27 +46,29 @@ public abstract class VaultAuthenticator<C extends VaultAuthConfig> {
         if (getActiveToken() == null) {
             // first lookup
             VaultToken firstToken = doAuthenticate(newVaultFromConfig(vaultConfig));
-            Duration delay = Duration.between(Instant.now(), firstToken.expiry());
             updateActiveToken(firstToken);
-            log.info("vault token will be renewed every {} for auth method: {}", delay, getAuthConfig().getMethod());
-            // renew token when expiring, every expiring period
-            this.tokenRenewal =
-                Schedulers
-                    .io()
-                    .schedulePeriodicallyDirect(
-                        () -> {
-                            try {
-                                VaultToken renewed = renewToken(newVaultWithToken(vaultConfig, getActiveToken()));
-                                log.info("vault token renewed for auth method: {}", getAuthConfig().getMethod());
-                                updateActiveToken(renewed);
-                            } catch (VaultException e) {
-                                log.error("Cannot renew token", e);
-                            }
-                        },
-                        delay.getSeconds(),
-                        delay.getSeconds(),
-                        TimeUnit.SECONDS
-                    );
+            if (firstToken.expiry() != null) {
+                Duration delay = Duration.between(Instant.now(), firstToken.expiry());
+                log.info("vault token will be renewed every {} for auth method: {}", delay, getAuthConfig().getMethod());
+                // renew token when expiring, every expiring period
+                this.tokenRenewal =
+                    Schedulers
+                        .io()
+                        .schedulePeriodicallyDirect(
+                            () -> {
+                                try {
+                                    VaultToken renewed = renewToken(newVaultWithToken(vaultConfig, getActiveToken()));
+                                    log.info("vault token renewed for auth method: {}", getAuthConfig().getMethod());
+                                    updateActiveToken(renewed);
+                                } catch (VaultException e) {
+                                    log.error("Cannot renew token", e);
+                                }
+                            },
+                            delay.getSeconds(),
+                            delay.getSeconds(),
+                            TimeUnit.SECONDS
+                        );
+            }
         }
         return newVaultWithToken(vaultConfig, getActiveToken());
     }
@@ -103,8 +105,13 @@ public abstract class VaultAuthenticator<C extends VaultAuthConfig> {
 
     protected final VaultToken toVaultToken(AuthResponse authResponse) {
         String authClientToken = authResponse.getAuthClientToken();
-        Instant expiry = Instant.now().plusSeconds(authResponse.getAuthLeaseDuration());
-        return new VaultToken(authClientToken, expiry, authResponse.getRenewable());
+        long authLeaseDuration = authResponse.getAuthLeaseDuration();
+        if (authLeaseDuration > 0) {
+            Instant expiry = Instant.now().plusSeconds(authLeaseDuration);
+            return new VaultToken(authClientToken, expiry, authResponse.getRenewable());
+        } else {
+            return new VaultToken(authClientToken, null, authResponse.getRenewable());
+        }
     }
 
     @RequiredArgsConstructor

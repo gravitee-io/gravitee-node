@@ -10,9 +10,9 @@ import io.gravitee.node.secrets.api.model.Secret;
 import io.gravitee.node.secrets.api.model.SecretEvent;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
+
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -70,9 +70,9 @@ public class VaultClient {
 
     public static Maybe<Secret> toSecret(VaultSecretLocation location, LogicalResponse response) {
         if (response.getData().containsKey(location.dataKey())) {
-            Date expireAt = null;
+            Instant expireAt = null;
             if (response.getLeaseDuration() > 0) {
-                expireAt = Date.from(Instant.now().plusSeconds(response.getLeaseDuration()));
+                expireAt = Instant.now().plusSeconds(response.getLeaseDuration());
             }
             return Maybe.just(new Secret(response.getData().get(location.dataKey()).getBytes(StandardCharsets.UTF_8), expireAt));
         }

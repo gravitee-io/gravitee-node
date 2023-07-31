@@ -1,6 +1,8 @@
 package io.gravitee.node.secrets.api.util;
 
+import io.gravitee.node.secrets.api.model.Secret;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -13,6 +15,22 @@ import org.apache.commons.collections4.keyvalue.DefaultMapEntry;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ConfigHelper {
+
+    public static String getStringOrSecret(Map<String, Object> propertiesMap, String propertyName, String defaultValue) {
+        return secretAsStringOrCast(propertiesMap.getOrDefault(propertyName, defaultValue));
+    }
+
+    public static String getStringOrSecret(Map<String, Object> propertiesMap, String propertyName) {
+        Object data = Objects.requireNonNull(propertiesMap.get(propertyName));
+        return secretAsStringOrCast(data);
+    }
+
+    private static String secretAsStringOrCast(Object data) {
+        if (data instanceof Secret secret) {
+            return secret.asString();
+        }
+        return (String) data;
+    }
 
     public static Map<String, Object> removePrefix(Map<String, Object> propertiesMap, String prefix) {
         return propertiesMap

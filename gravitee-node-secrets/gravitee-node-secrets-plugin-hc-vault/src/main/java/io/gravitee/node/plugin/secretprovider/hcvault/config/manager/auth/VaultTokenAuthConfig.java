@@ -1,9 +1,13 @@
 package io.gravitee.node.plugin.secretprovider.hcvault.config.manager.auth;
 
-import java.util.Map;
-import java.util.Objects;
-import lombok.*;
+import io.gravitee.node.secrets.api.util.ConfigHelper;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
+
+import java.util.Map;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
@@ -23,6 +27,6 @@ public class VaultTokenAuthConfig extends VaultAuthConfig {
 
     public VaultTokenAuthConfig(Map<String, Object> properties) {
         super(Method.TOKEN);
-        token = (String) Objects.requireNonNull(properties.get(VaultGitHubAuthConfig.Fields.token));
+        token = ConfigHelper.getStringOrSecret(properties, VaultGitHubAuthConfig.Fields.token);
     }
 }
