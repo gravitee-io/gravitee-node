@@ -6,12 +6,10 @@ import io.github.jopenlibs.vault.response.LogicalResponse;
 import io.gravitee.node.plugin.secretprovider.hcvault.client.auth.VaultAuthenticator;
 import io.gravitee.node.plugin.secretprovider.hcvault.config.VaultSecretLocation;
 import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.VaultConfig;
-import io.gravitee.node.secrets.api.model.Secret;
 import io.gravitee.node.secrets.api.model.SecretEvent;
+import io.gravitee.node.secrets.api.model.SecretMap;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
-
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,10 +30,10 @@ public class VaultClient {
         this.authenticator = authenticator;
     }
 
-    public Maybe<Secret> read(VaultSecretLocation location) {
+    public Maybe<SecretMap> read(VaultSecretLocation location) {
         try {
             Vault vault = authenticator.authenticate(vaultConfig);
-            return Maybe.just(vault.logical().read(location.secretPath())).flatMap(response -> VaultClient.toSecret(location, response));
+            return Maybe.just(vault.logical().read(location.secretPath())).flatMap(VaultClient::toSecret);
         } catch (VaultException e) {
             return Maybe.error(e);
         }
@@ -56,7 +54,7 @@ public class VaultClient {
                     .share()
                     .onErrorResumeNext(e -> {
                         if (e instanceof VaultException va && va.getHttpStatusCode() == 404) {
-                            return Flowable.just(new SecretEvent(SecretEvent.Type.DELETED, new Secret(new byte[0], null)));
+                            return Flowable.just(new SecretEvent(SecretEvent.Type.DELETED, new SecretMap(null)));
                         }
                         return Flowable.error(e);
                     })
@@ -68,14 +66,11 @@ public class VaultClient {
         authenticator.stop();
     }
 
-    public static Maybe<Secret> toSecret(VaultSecretLocation location, LogicalResponse response) {
-        if (response.getData().containsKey(location.dataKey())) {
-            Instant expireAt = null;
-            if (response.getLeaseDuration() > 0) {
-                expireAt = Instant.now().plusSeconds(response.getLeaseDuration());
-            }
-            return Maybe.just(new Secret(response.getData().get(location.dataKey()).getBytes(StandardCharsets.UTF_8), expireAt));
+    public static Maybe<SecretMap> toSecret(LogicalResponse response) {
+        Instant expireAt = null;
+        if (response.getLeaseDuration() > 0) {
+            expireAt = Instant.now().plusSeconds(response.getLeaseDuration());
         }
-        return Maybe.empty();
+        return Maybe.just(SecretMap.of(response.getData(), expireAt));
     }
 }

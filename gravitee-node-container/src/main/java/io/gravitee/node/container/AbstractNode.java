@@ -34,10 +34,6 @@ import io.gravitee.node.plugins.service.ServiceManager;
 import io.gravitee.node.reporter.ReporterManager;
 import io.gravitee.plugin.core.api.PluginRegistry;
 import io.gravitee.plugin.core.internal.PluginEventListener;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.env.Environment;
-
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -45,6 +41,9 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.env.Environment;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -81,17 +80,17 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
         }
 
         log.info(
-                "{} id[{}] version[{}] pid[{}] build[{}#{}] jvm[{}/{}/{}] started in {} ms.",
-                this.name(),
-                this.id(),
-                Version.RUNTIME_VERSION.MAJOR_VERSION,
-                processId,
-                Version.RUNTIME_VERSION.BUILD_NUMBER,
-                Version.RUNTIME_VERSION.REVISION,
-                ManagementFactory.getRuntimeMXBean().getVmVendor(),
-                ManagementFactory.getRuntimeMXBean().getVmName(),
-                ManagementFactory.getRuntimeMXBean().getVmVersion(),
-                endTime - startTime
+            "{} id[{}] version[{}] pid[{}] build[{}#{}] jvm[{}/{}/{}] started in {} ms.",
+            this.name(),
+            this.id(),
+            Version.RUNTIME_VERSION.MAJOR_VERSION,
+            processId,
+            Version.RUNTIME_VERSION.BUILD_NUMBER,
+            Version.RUNTIME_VERSION.REVISION,
+            ManagementFactory.getRuntimeMXBean().getVmVendor(),
+            ManagementFactory.getRuntimeMXBean().getVmName(),
+            ManagementFactory.getRuntimeMXBean().getVmVersion(),
+            endTime - startTime
         );
     }
 

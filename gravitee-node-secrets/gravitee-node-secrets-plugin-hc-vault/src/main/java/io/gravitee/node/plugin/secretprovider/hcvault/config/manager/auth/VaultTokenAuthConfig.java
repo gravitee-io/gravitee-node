@@ -1,13 +1,12 @@
 package io.gravitee.node.plugin.secretprovider.hcvault.config.manager.auth;
 
 import io.gravitee.node.secrets.api.util.ConfigHelper;
+import java.util.Map;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
-
-import java.util.Map;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)

@@ -20,6 +20,9 @@ public record K8sSecretLocation(String namespace, String secret, String key) {
     private static final String LOCATION_KEY = "key";
 
     public Map<String, Object> asMap() {
+        if (key == null) {
+            return Map.of(LOCATION_NAMESPACE, namespace, LOCATION_SECRET, secret);
+        }
         return Map.of(LOCATION_NAMESPACE, namespace, LOCATION_SECRET, secret, LOCATION_KEY, key);
     }
 
@@ -33,6 +36,9 @@ public record K8sSecretLocation(String namespace, String secret, String key) {
 
     public static K8sSecretLocation fromURL(SecretURL url) {
         List<String> elements = url.pathAsList();
+        if (elements.size() == 2) {
+            return new K8sSecretLocation(elements.get(0), elements.get(1), null);
+        }
         if (elements.size() == 3) {
             return new K8sSecretLocation(elements.get(0), elements.get(1), elements.get(2));
         }

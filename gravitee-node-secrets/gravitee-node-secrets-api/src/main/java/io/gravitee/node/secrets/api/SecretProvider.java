@@ -16,10 +16,7 @@
 package io.gravitee.node.secrets.api;
 
 import io.gravitee.node.secrets.api.errors.SecretManagerException;
-import io.gravitee.node.secrets.api.model.Secret;
-import io.gravitee.node.secrets.api.model.SecretEvent;
-import io.gravitee.node.secrets.api.model.SecretMount;
-import io.gravitee.node.secrets.api.model.SecretURL;
+import io.gravitee.node.secrets.api.model.*;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 
@@ -31,7 +28,7 @@ public interface SecretProvider {
     String PLUGIN_URL_SCHEME = "secret://";
     String PLUGIN_TYPE = "secret-provider";
 
-    Maybe<Secret> resolve(SecretMount secretMount);
+    Maybe<SecretMap> resolve(SecretMount secretMount);
 
     Flowable<SecretEvent> watch(SecretMount secretMount, SecretEvent.Type... events);
 

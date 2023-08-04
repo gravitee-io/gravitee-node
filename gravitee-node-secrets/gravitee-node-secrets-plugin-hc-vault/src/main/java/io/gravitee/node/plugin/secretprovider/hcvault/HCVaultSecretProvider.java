@@ -9,11 +9,20 @@ import io.gravitee.node.secrets.api.errors.SecretManagerException;
 import io.gravitee.node.secrets.api.model.*;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
+import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 
 @Slf4j
 public class HCVaultSecretProvider implements SecretProvider {
 
+    private static final Map<String, SecretMap.WellKnownSecretKey> DEFAULT_WELL_KNOW_SECRET_KEYS = Map.of(
+        "certificate",
+        SecretMap.WellKnownSecretKey.CERTIFICATE,
+        "private_key",
+        SecretMap.WellKnownSecretKey.PRIVATE_KEY
+    );
     public static final String PLUGIN_ID = "vault";
     private final VaultClient client;
 
@@ -23,9 +32,9 @@ public class HCVaultSecretProvider implements SecretProvider {
     }
 
     @Override
-    public Maybe<Secret> resolve(SecretMount secretMount) {
+    public Maybe<SecretMap> resolve(SecretMount secretMount) {
         VaultSecretLocation location = VaultSecretLocation.fromLocation(secretMount.location());
-        return client.read(location);
+        return client.read(location).doOnSuccess(secretMap -> handleWellKnownSecretKeys(secretMap, secretMount));
     }
 
     @Override
@@ -43,6 +52,16 @@ public class HCVaultSecretProvider implements SecretProvider {
     @Override
     public SecretMount fromURL(SecretURL url) {
         VaultSecretLocation vaultSecretLocation = VaultSecretLocation.fromURL(url);
-        return new SecretMount(url.provider(), new SecretLocation(vaultSecretLocation.asMap()), url);
+        return new SecretMount(url.provider(), new SecretLocation(vaultSecretLocation.asMap()), vaultSecretLocation.key(), url);
+    }
+
+    private void handleWellKnownSecretKeys(SecretMap secretMap, SecretMount secretMount) {
+        secretMap.handleWellKnownSecretKeys(
+            Optional
+                .ofNullable(secretMount.secretURL())
+                .map(SecretURL::wellKnowKeyMap)
+                .filter(MapUtils::isNotEmpty)
+                .orElse(DEFAULT_WELL_KNOW_SECRET_KEYS)
+        );
     }
 }

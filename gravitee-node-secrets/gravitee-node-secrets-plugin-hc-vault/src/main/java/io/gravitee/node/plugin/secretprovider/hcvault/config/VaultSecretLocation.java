@@ -14,12 +14,12 @@ import java.util.Objects;
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public record VaultSecretLocation(String secretPath, String dataKey) {
+public record VaultSecretLocation(String secretPath, String key) {
     private static final String LOCATION_SECRET = "secretPath";
-    private static final String LOCATION_KEY = "dataKey";
+    private static final String LOCATION_KEY = "key";
 
     public Map<String, Object> asMap() {
-        return Map.of(LOCATION_SECRET, secretPath, LOCATION_KEY, dataKey);
+        return Map.of(LOCATION_SECRET, secretPath, LOCATION_KEY, key);
     }
 
     public static VaultSecretLocation fromLocation(SecretLocation location) {

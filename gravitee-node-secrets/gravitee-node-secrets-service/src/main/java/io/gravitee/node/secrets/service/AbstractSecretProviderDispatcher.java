@@ -8,10 +8,7 @@ import io.gravitee.node.secrets.api.SecretProviderDispatcher;
 import io.gravitee.node.secrets.api.SecretProviderFactory;
 import io.gravitee.node.secrets.api.errors.SecretManagerException;
 import io.gravitee.node.secrets.api.errors.SecretProviderNotFoundException;
-import io.gravitee.node.secrets.api.model.Secret;
-import io.gravitee.node.secrets.api.model.SecretEvent;
-import io.gravitee.node.secrets.api.model.SecretMount;
-import io.gravitee.node.secrets.api.model.SecretURL;
+import io.gravitee.node.secrets.api.model.*;
 import io.gravitee.plugin.core.api.Plugin;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
@@ -31,7 +28,7 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
     private final SecretProviderPluginManager secretProviderPluginManager;
 
     private final Map<String, SecretProvider> secretProviders = new HashMap<>();
-    private final Map<SecretMount, Secret> secrets = Collections.synchronizedMap(new HashMap<>());
+    private final Map<SecretLocation, SecretMap> secrets = Collections.synchronizedMap(new HashMap<>());
 
     protected AbstractSecretProviderDispatcher(SecretProviderPluginManager secretProviderPluginManager) {
         this.secretProviderPluginManager = secretProviderPluginManager;
@@ -81,35 +78,51 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
     }
 
     @Override
-    public Maybe<Secret> resolve(SecretMount secretMount) throws SecretProviderNotFoundException, SecretManagerException {
-        if (secrets.containsKey(secretMount)) {
-            return Maybe.just(secrets.get(secretMount));
+    public Maybe<SecretMap> resolve(SecretMount secretMount) throws SecretProviderNotFoundException, SecretManagerException {
+        if (secrets.containsKey(secretMount.location())) {
+            return Maybe.just(secrets.get(secretMount.location()));
         }
         return secretProviders
             .getOrDefault(secretMount.provider(), new ErrorSecretProvider())
             .resolve(secretMount)
             .subscribeOn(Schedulers.io())
-            .doOnSuccess(secret -> secrets.put(secretMount, secret));
+            .doOnSuccess(secretMap -> secrets.put(secretMount.location(), secretMap));
     }
 
     @Override
-    public Flowable<Secret> watch(SecretMount secretMount, SecretEvent.Type... events) {
+    public Maybe<Secret> resolveKey(SecretMount secretMount) throws SecretProviderNotFoundException, SecretManagerException {
+        if (secretMount.isKeyEmpty()) {
+            return Maybe.error(new IllegalArgumentException("cannot request secret key, no key provided"));
+        }
+        return resolve(secretMount).flatMap(secretMap -> Maybe.fromOptional(secretMap.getSecret(secretMount)));
+    }
+
+    @Override
+    public Flowable<SecretMap> watch(SecretMount secretMount, SecretEvent.Type... events) {
         final SecretProvider provider = secretProviders.getOrDefault(secretMount.provider(), new ErrorSecretProvider());
         return provider
             .watch(secretMount, events)
             .subscribeOn(Schedulers.io())
-            .doOnNext(event -> this.syncCache(event, secretMount)) // add cache call back so caller can know
+            .doOnNext(event -> this.syncCache(event, secretMount.location())) // add cache call back so caller can know
             .filter(event -> event.type() != SecretEvent.Type.DELETED)
-            .map(SecretEvent::secret)
+            .map(SecretEvent::secretMap)
             .doFinally(provider::stop);
     }
 
-    private void syncCache(SecretEvent secretEvent, SecretMount secretMount) {
+    @Override
+    public Flowable<Secret> watchKey(SecretMount secretMount, SecretEvent.Type... events) {
+        if (secretMount.isKeyEmpty()) {
+            return Flowable.error(new IllegalArgumentException("cannot request secret key, no key provided"));
+        }
+        return watch(secretMount).flatMapMaybe(secretMap -> Maybe.fromOptional(secretMap.getSecret(secretMount)));
+    }
+
+    private void syncCache(SecretEvent secretEvent, SecretLocation secretLocation) {
         //NOSONAR TODO  use an actual cache and do it properly with TTL (or not based on the mount or plugin configuration)
         if (Objects.requireNonNull(secretEvent.type()) == SecretEvent.Type.DELETED) {
-            secrets.remove(secretMount);
+            secrets.remove(secretLocation);
         } else if (secretEvent.type() == SecretEvent.Type.CREATED || secretEvent.type() == SecretEvent.Type.UPDATED) {
-            secrets.put(secretMount, secretEvent.secret());
+            secrets.put(secretLocation, secretEvent.secretMap());
         }
     }
 
@@ -122,7 +135,7 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
     static class ErrorSecretProvider implements SecretProvider {
 
         @Override
-        public Maybe<Secret> resolve(SecretMount secretMount) {
+        public Maybe<SecretMap> resolve(SecretMount secretMount) {
             return Maybe.error(new SecretProviderNotFoundException(SECRET_PROVIDER_NOT_FOUND_FOR_ID.formatted(secretMount.provider())));
         }
 

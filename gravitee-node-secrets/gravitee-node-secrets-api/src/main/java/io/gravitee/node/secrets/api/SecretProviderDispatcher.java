@@ -4,6 +4,7 @@ import io.gravitee.node.secrets.api.errors.SecretManagerException;
 import io.gravitee.node.secrets.api.errors.SecretProviderNotFoundException;
 import io.gravitee.node.secrets.api.model.Secret;
 import io.gravitee.node.secrets.api.model.SecretEvent;
+import io.gravitee.node.secrets.api.model.SecretMap;
 import io.gravitee.node.secrets.api.model.SecretMount;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
@@ -15,7 +16,11 @@ import io.reactivex.rxjava3.core.Maybe;
 public interface SecretProviderDispatcher {
     <T extends SecretManagerConfiguration> T readConfiguration(String managerId, Class<?> configurationClass);
 
-    Maybe<Secret> resolve(SecretMount secretMount) throws SecretProviderNotFoundException, SecretManagerException;
+    Maybe<SecretMap> resolve(SecretMount secretMount) throws SecretProviderNotFoundException, SecretManagerException;
 
-    Flowable<Secret> watch(SecretMount secretMount, SecretEvent.Type... events);
+    Maybe<Secret> resolveKey(SecretMount secretMount) throws SecretProviderNotFoundException, SecretManagerException;
+
+    Flowable<SecretMap> watch(SecretMount secretMount, SecretEvent.Type... events);
+
+    Flowable<Secret> watchKey(SecretMount secretMount, SecretEvent.Type... events);
 }

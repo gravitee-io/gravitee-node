@@ -6,8 +6,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.apache.commons.collections4.keyvalue.AbstractKeyValue;
-import org.apache.commons.collections4.keyvalue.DefaultMapEntry;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
@@ -38,7 +36,6 @@ public class ConfigHelper {
             .stream()
             .filter(e -> e.getKey().startsWith(prefix))
             // chopping the prefix out of the key
-            .map(e -> new DefaultMapEntry<>(e.getKey().substring(prefix.length() + 1), e.getValue()))
-            .collect(Collectors.toMap(AbstractKeyValue::getKey, AbstractKeyValue::getValue));
+            .collect(Collectors.toMap(e -> e.getKey().substring(prefix.length() + 1), Map.Entry::getValue));
     }
 }

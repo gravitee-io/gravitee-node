@@ -1,6 +1,5 @@
 package io.gravitee.node.secrets.api.model;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,9 +37,5 @@ public class SecretLocation {
 
     public <T> T getOrDefault(String key, String defaultValue) {
         return (T) properties.getOrDefault(key, defaultValue);
-    }
-
-    public SecretLocation sealed() {
-        return new SecretLocation(Collections.unmodifiableMap(properties), false);
     }
 }

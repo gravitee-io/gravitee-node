@@ -15,12 +15,8 @@
  */
 package io.gravitee.node.secrets.service.resolver;
 
-import io.gravitee.node.secrets.api.errors.SecretManagerConfigurationException;
-import io.gravitee.node.secrets.api.errors.SecretProviderNotFoundException;
 import io.gravitee.node.secrets.api.model.Secret;
-import io.gravitee.node.secrets.api.model.SecretMount;
 import io.gravitee.node.secrets.api.model.SecretURL;
-import io.gravitee.node.secrets.service.AbstractSecretProviderDispatcher;
 import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
@@ -41,15 +37,12 @@ public class GraviteeConfigurationSecretPropertyResolver implements WatchablePro
     @Override
     public boolean supports(String value) {
         Objects.requireNonNull(value);
-        return dispatcher
-            .enabledManagers()
-            .stream()
-            .anyMatch(manager -> value.startsWith(String.format("%s%s/", SecretURL.SCHEME, manager)));
+        return dispatcher.isResolvable(value);
     }
 
     @Override
     public Maybe<Secret> resolve(String location) {
-        return dispatcher.resolve(toSecretLocation(location));
+        return dispatcher.resolveKey(dispatcher.toSecretMount(location));
     }
 
     @Override
@@ -59,24 +52,6 @@ public class GraviteeConfigurationSecretPropertyResolver implements WatchablePro
 
     @Override
     public Flowable<Secret> watch(String location) {
-        return dispatcher.watch(toSecretLocation(location));
-    }
-
-    private SecretMount toSecretLocation(String location) {
-        SecretURL url = SecretURL.from(location);
-        return dispatcher
-            .findSecretProvider(url.provider())
-            .map(secretProvider -> {
-                try {
-                    return secretProvider.fromURL(url);
-                } catch (IllegalArgumentException e) {
-                    throw new SecretManagerConfigurationException("cannot create secret URL from: " + location, e);
-                }
-            })
-            .orElseThrow(() ->
-                new SecretProviderNotFoundException(
-                    AbstractSecretProviderDispatcher.SECRET_PROVIDER_NOT_FOUND_FOR_ID.formatted(url.provider())
-                )
-            );
+        return dispatcher.watchKey(dispatcher.toSecretMount(location));
     }
 }
