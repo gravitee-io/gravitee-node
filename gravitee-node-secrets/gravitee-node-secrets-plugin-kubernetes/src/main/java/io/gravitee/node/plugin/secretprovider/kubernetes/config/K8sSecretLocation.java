@@ -28,22 +28,24 @@ public record K8sSecretLocation(String namespace, String secret, String key) {
 
     public static K8sSecretLocation fromLocation(SecretLocation location) {
         return new K8sSecretLocation(
-            location.getOrDefault(LOCATION_NAMESPACE, "default"),
+            Objects.requireNonNull(location.get(LOCATION_NAMESPACE)),
             Objects.requireNonNull(location.get(LOCATION_SECRET)),
             location.get(LOCATION_KEY)
         );
     }
 
-    public static K8sSecretLocation fromURL(SecretURL url) {
+    public static K8sSecretLocation fromURL(SecretURL url, K8sConfig k8sConfig) {
+        String namespace = url.query().get(SecretURL.WellKnownQueryParam.NAMESPACE).stream().findFirst().orElse(k8sConfig.getNamespace());
+
         List<String> elements = url.pathAsList();
-        if (elements.size() == 2) {
-            return new K8sSecretLocation(elements.get(0), elements.get(1), null);
+        if (elements.size() == 1) {
+            return new K8sSecretLocation(namespace, elements.get(0), null);
         }
-        if (elements.size() == 3) {
-            return new K8sSecretLocation(elements.get(0), elements.get(1), elements.get(2));
+        if (elements.size() == 2) {
+            return new K8sSecretLocation(namespace, elements.get(0), elements.get(1));
         }
         throw new SecretManagerConfigurationException(
-            "URL is not valid for Kubernetes Secret Provider plugin. Should be %s%s/<namespace>/<secret name>/<field in secret> but was: '%s'".formatted(
+            "URL is not valid for Kubernetes Secret Provider plugin. Should be %s%s/<secret name>[/<field in secret>][?namespace=<name> but was: '%s'".formatted(
                     PLUGIN_URL_SCHEME,
                     PLUGIN_ID,
                     url

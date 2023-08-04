@@ -31,9 +31,11 @@ public class KubernetesSecretProvider implements SecretProvider {
     public static final String PLUGIN_ID = "kubernetes";
 
     private final K8sClient client;
+    private final K8sConfig k8sConfig;
 
     public KubernetesSecretProvider(K8sConfig k8sConfig) {
         this.client = new K8sClient(k8sConfig);
+        this.k8sConfig = k8sConfig;
     }
 
     @Override
@@ -69,7 +71,7 @@ public class KubernetesSecretProvider implements SecretProvider {
 
     @Override
     public SecretMount fromURL(SecretURL url) {
-        K8sSecretLocation k8sSecretLocation = K8sSecretLocation.fromURL(url);
+        K8sSecretLocation k8sSecretLocation = K8sSecretLocation.fromURL(url, k8sConfig);
         return new SecretMount(url.provider(), new SecretLocation(k8sSecretLocation.asMap()), k8sSecretLocation.key(), url);
     }
 

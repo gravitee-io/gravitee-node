@@ -33,7 +33,12 @@ public class VaultClient {
     public Maybe<SecretMap> read(VaultSecretLocation location) {
         try {
             Vault vault = authenticator.authenticate(vaultConfig);
-            return Maybe.just(vault.logical().read(location.secretPath())).flatMap(VaultClient::toSecret);
+            String namespace = location.namespace();
+            if (namespace == null || namespace.isBlank()) {
+                return Maybe.just(vault.logical().read(location.secretPath())).flatMap(VaultClient::toSecret);
+            } else {
+                return Maybe.just(vault.logical().withNameSpace(namespace).read(location.secretPath())).flatMap(VaultClient::toSecret);
+            }
         } catch (VaultException e) {
             return Maybe.error(e);
         }

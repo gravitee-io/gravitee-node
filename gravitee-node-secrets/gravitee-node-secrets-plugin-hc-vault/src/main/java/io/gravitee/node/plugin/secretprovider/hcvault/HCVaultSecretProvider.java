@@ -25,10 +25,12 @@ public class HCVaultSecretProvider implements SecretProvider {
     );
     public static final String PLUGIN_ID = "vault";
     private final VaultClient client;
+    private final VaultConfig vaultConfig;
 
     public HCVaultSecretProvider(VaultConfig vaultConfig) throws SecretManagerException {
         VaultAuthenticatorFactory vaultAuthenticatorFactory = new VaultAuthenticatorFactory();
         this.client = new VaultClient(vaultConfig, vaultAuthenticatorFactory.create(vaultConfig.getAuth()));
+        this.vaultConfig = vaultConfig;
     }
 
     @Override
@@ -51,7 +53,7 @@ public class HCVaultSecretProvider implements SecretProvider {
 
     @Override
     public SecretMount fromURL(SecretURL url) {
-        VaultSecretLocation vaultSecretLocation = VaultSecretLocation.fromURL(url);
+        VaultSecretLocation vaultSecretLocation = VaultSecretLocation.fromURL(url, vaultConfig);
         return new SecretMount(url.provider(), new SecretLocation(vaultSecretLocation.asMap()), vaultSecretLocation.key(), url);
     }
 

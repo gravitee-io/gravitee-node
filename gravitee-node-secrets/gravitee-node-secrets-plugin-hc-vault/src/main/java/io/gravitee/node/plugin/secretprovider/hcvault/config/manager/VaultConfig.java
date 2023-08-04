@@ -36,7 +36,7 @@ public class VaultConfig implements SecretManagerConfiguration {
     private boolean enabled;
     private String host;
     private int port;
-    private String nameSpace;
+    private String namespace;
     private String token;
     private KVEngineVersion kvEngine;
     private int readTimeoutSec;
@@ -52,7 +52,7 @@ public class VaultConfig implements SecretManagerConfiguration {
         enabled = (boolean) properties.getOrDefault(Fields.enabled, false);
         host = (String) Objects.requireNonNull(properties.get(Fields.host));
         port = (int) Objects.requireNonNull(properties.get(Fields.port));
-        nameSpace = (String) properties.getOrDefault(Fields.nameSpace, "default");
+        namespace = (String) properties.getOrDefault(Fields.namespace, "default");
         kvEngine =
             EnumUtil.valueOfCaseInsensitive(
                 DEPTH_2_CONFIG.formatted(HCVaultSecretProvider.PLUGIN_ID, Fields.kvEngine),
@@ -87,7 +87,7 @@ public class VaultConfig implements SecretManagerConfiguration {
             .address(
                 this.ssl.isEnabled() ? "https://%s:%d".formatted(this.host, this.port) : "http://%s:%d".formatted(this.host, this.port)
             )
-            .nameSpace(this.nameSpace)
+            .nameSpace(this.namespace)
             .token(token)
             .engineVersion(kvEngine.version());
         config.sslConfig(this.ssl.getSslConfig());

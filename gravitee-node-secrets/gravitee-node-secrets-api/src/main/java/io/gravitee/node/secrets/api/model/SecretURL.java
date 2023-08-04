@@ -125,5 +125,6 @@ public record SecretURL(String provider, String path, Multimap<String, String> q
 
         public static final String WATCH = "watch";
         public static final String KEYMAP = "keymap";
+        public static final String NAMESPACE = "namespace";
     }
 }

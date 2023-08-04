@@ -20,6 +20,7 @@ public class K8sConfig implements SecretManagerConfiguration {
     private boolean enabled;
     private String kubeConfigFile;
     private int timeoutMs;
+    private String namespace;
 
     // called by introspection
     public K8sConfig(Map<String, Object> properties) {
@@ -27,6 +28,7 @@ public class K8sConfig implements SecretManagerConfiguration {
         enabled = (boolean) properties.getOrDefault(Fields.enabled, false);
         kubeConfigFile = (String) properties.getOrDefault(Fields.kubeConfigFile, "");
         timeoutMs = (int) properties.getOrDefault(Fields.timeoutMs, 3000);
+        namespace = (String) properties.getOrDefault(Fields.namespace, "default");
     }
 
     public boolean isClusterBased() {
