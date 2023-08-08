@@ -43,7 +43,7 @@ public class AWSSecretProvider implements SecretProvider {
         // and listen to it via SNS for instance.
         // see https://docs.aws.amazon.com/secretsmanager/latest/userguide/monitoring-eventbridge.html
         // we could also setup a polling on rotation schedule ?rotation=12d and poll every 12 days.
-        return Flowable.error(new NoSuchMethodException("not implemented"));
+        return Flowable.error(new NoSuchMethodException("not watch implemented"));
     }
 
     @Override

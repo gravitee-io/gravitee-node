@@ -11,6 +11,12 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 
 /**
+ * Represent a secret in the Secret Manager. It is a map key/secret.
+ * It has when possible an expiration to help cache storage.
+ * <p>
+ * Secrets can be pulled directly or using {@link WellKnownSecretKey} for well know secrets type (TLS and Basic Auth).
+ * An explicit call to {@link #handleWellKnownSecretKeys(Map)} with a mapping must be performed to extract well know keys.
+ *
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
@@ -52,12 +58,20 @@ public final class SecretMap {
         return Optional.ofNullable(expireAt);
     }
 
+    /**
+     * Make well know key accessible via {@link #wellKnown(WellKnownSecretKey)}
+     * The map must passed on at follows:
+     * <li>key: the name if the well-known key inside the secret data</li>
+     * <li>value: the matching {@link WellKnownSecretKey}</li>
+     *
+     * @param mapping the map describing the mapping
+     */
     public void handleWellKnownSecretKeys(Map<String, WellKnownSecretKey> mapping) {
         map
-            .entrySet()
-            .stream()
-            .filter(entry -> mapping.get(entry.getKey()) != null)
-            .forEach(entry -> wellKnown.put(mapping.get(entry.getKey()), entry.getValue()));
+                .entrySet()
+                .stream()
+                .filter(entry -> mapping.get(entry.getKey()) != null)
+                .forEach(entry -> wellKnown.put(mapping.get(entry.getKey()), entry.getValue()));
     }
 
     public Optional<Secret> wellKnown(WellKnownSecretKey key) {

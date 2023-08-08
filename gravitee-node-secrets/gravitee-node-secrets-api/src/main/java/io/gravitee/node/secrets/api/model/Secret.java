@@ -6,6 +6,9 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
+ * This represents a single secret value.
+ * It can be constructed from a byte array or from a String. By default, data is NOT considered base64 encoded.
+ *
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
