@@ -5,6 +5,7 @@ import io.gravitee.node.plugin.secretprovider.hcvault.client.auth.VaultAuthentic
 import io.gravitee.node.plugin.secretprovider.hcvault.config.VaultSecretLocation;
 import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.VaultConfig;
 import io.gravitee.node.secrets.api.SecretProvider;
+import io.gravitee.node.secrets.api.errors.SecretManagerConfigurationException;
 import io.gravitee.node.secrets.api.errors.SecretManagerException;
 import io.gravitee.node.secrets.api.model.*;
 import io.reactivex.rxjava3.core.Flowable;
@@ -53,6 +54,15 @@ public class HCVaultSecretProvider implements SecretProvider {
 
     @Override
     public SecretMount fromURL(SecretURL url) {
+        if (url.path().indexOf(SecretURL.URL_SEPARATOR) < 0) {
+            throw new SecretManagerConfigurationException(
+                "URL is not valid for HC Vault Secret Provider plugin. Should be %s%s/<mount>/<secret>[:<data field>] but was: '%s'".formatted(
+                        PLUGIN_URL_SCHEME,
+                        PLUGIN_ID,
+                        url
+                    )
+            );
+        }
         VaultSecretLocation vaultSecretLocation = VaultSecretLocation.fromURL(url, vaultConfig);
         return new SecretMount(url.provider(), new SecretLocation(vaultSecretLocation.asMap()), vaultSecretLocation.key(), url);
     }

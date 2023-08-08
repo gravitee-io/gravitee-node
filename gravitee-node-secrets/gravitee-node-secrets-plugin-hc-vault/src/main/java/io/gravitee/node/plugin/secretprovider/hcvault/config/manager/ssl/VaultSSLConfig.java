@@ -4,7 +4,6 @@ import io.github.jopenlibs.vault.SslConfig;
 import io.github.jopenlibs.vault.VaultException;
 import io.gravitee.node.plugin.secretprovider.hcvault.HCVaultSecretProvider;
 import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.VaultConfig;
-import io.gravitee.node.plugin.secretprovider.hcvault.util.EnumUtil;
 import io.gravitee.node.secrets.api.util.ConfigHelper;
 import java.io.File;
 import java.util.Map;
@@ -36,10 +35,10 @@ public class VaultSSLConfig {
         this.enabled = (boolean) properties.getOrDefault(Fields.enabled, false);
         if (enabled) {
             this.format =
-                EnumUtil.valueOfCaseInsensitive(
-                    "%s.%s.%s".formatted(HCVaultSecretProvider.PLUGIN_ID, VaultConfig.Fields.ssl, Fields.format),
+                ConfigHelper.enumValueOfIgnoreCase(
                     (String) Objects.requireNonNull(properties.get(Fields.format)),
-                    Format.class
+                    Format.class,
+                    "%s.%s.%s".formatted(HCVaultSecretProvider.PLUGIN_ID, VaultConfig.Fields.ssl, Fields.format)
                 );
             switch (format) {
                 case PEM -> {

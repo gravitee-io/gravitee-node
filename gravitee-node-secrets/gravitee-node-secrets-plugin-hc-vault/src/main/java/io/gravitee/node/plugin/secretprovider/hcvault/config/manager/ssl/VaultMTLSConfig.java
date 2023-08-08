@@ -2,7 +2,6 @@ package io.gravitee.node.plugin.secretprovider.hcvault.config.manager.ssl;
 
 import io.gravitee.node.plugin.secretprovider.hcvault.HCVaultSecretProvider;
 import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.VaultConfig;
-import io.gravitee.node.plugin.secretprovider.hcvault.util.EnumUtil;
 import io.gravitee.node.secrets.api.util.ConfigHelper;
 import java.util.Map;
 import java.util.Objects;
@@ -28,10 +27,10 @@ public class VaultMTLSConfig {
     public VaultMTLSConfig(Map<String, Object> properties) {
         this.enabled = (boolean) properties.getOrDefault(Fields.enabled, false);
         this.format =
-            EnumUtil.valueOfCaseInsensitive(
-                "%s.%s.%s".formatted(HCVaultSecretProvider.PLUGIN_ID, VaultConfig.Fields.ssl, Fields.format),
+            ConfigHelper.enumValueOfIgnoreCase(
                 (String) Objects.requireNonNull(properties.get(Fields.format)),
-                Format.class
+                Format.class,
+                "%s.%s.%s".formatted(HCVaultSecretProvider.PLUGIN_ID, VaultConfig.Fields.ssl, Fields.format)
             );
         this.cert = ConfigHelper.getStringOrSecret(properties, Fields.cert);
         this.key = ConfigHelper.getStringOrSecret(properties, Fields.key);

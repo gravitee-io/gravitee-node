@@ -3,6 +3,7 @@ package io.gravitee.node.secrets.service.conf;
 import io.gravitee.common.util.EnvironmentUtils;
 import io.gravitee.node.secrets.SecretProviderPluginManager;
 import io.gravitee.node.secrets.api.SecretManagerConfiguration;
+import io.gravitee.node.secrets.api.SecretProvider;
 import io.gravitee.node.secrets.api.errors.SecretManagerConfigurationException;
 import io.gravitee.node.secrets.api.errors.SecretProviderNotFoundException;
 import io.gravitee.node.secrets.api.model.Secret;
@@ -102,22 +103,28 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
 
     public boolean canHandle(String location) {
         Objects.requireNonNull(location);
-        return enabledManagers().stream().anyMatch(manager -> canManagerHande(location, manager));
+        return (
+            location.startsWith(SecretProvider.PLUGIN_URL_SCHEME) &&
+            enabledManagers().stream().anyMatch(manager -> canManagerHande(location, manager))
+        );
     }
 
     public boolean isResolvable(String location) {
         Objects.requireNonNull(location);
-        return enabledManagers()
-            .stream()
-            .anyMatch(manager -> {
-                try {
-                    SecretMount secretMount = toSecretMount(location);
-                    return canManagerHande(location, manager) && !secretMount.isKeyEmpty();
-                } catch (IllegalArgumentException | SecretProviderNotFoundException e) {
-                    // URL might not be suitable for resolving property
-                    return false;
-                }
-            });
+        return (
+            location.startsWith(SecretProvider.PLUGIN_URL_SCHEME) &&
+            enabledManagers()
+                .stream()
+                .anyMatch(manager -> {
+                    try {
+                        SecretMount secretMount = toSecretMount(location);
+                        return canManagerHande(location, manager) && !secretMount.isKeyEmpty();
+                    } catch (IllegalArgumentException | SecretProviderNotFoundException e) {
+                        // URL might not be suitable for resolving property
+                        return false;
+                    }
+                })
+        );
     }
 
     public SecretMount toSecretMount(String location) {

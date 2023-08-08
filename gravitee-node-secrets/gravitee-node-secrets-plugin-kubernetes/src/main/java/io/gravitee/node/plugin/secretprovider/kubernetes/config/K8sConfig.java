@@ -26,6 +26,9 @@ public class K8sConfig implements SecretManagerConfiguration {
     public K8sConfig(Map<String, Object> properties) {
         Objects.requireNonNull(properties);
         enabled = (boolean) properties.getOrDefault(Fields.enabled, false);
+        if (!isEnabled()) {
+            return;
+        }
         kubeConfigFile = (String) properties.getOrDefault(Fields.kubeConfigFile, "");
         timeoutMs = (int) properties.getOrDefault(Fields.timeoutMs, 3000);
         namespace = (String) properties.getOrDefault(Fields.namespace, "default");

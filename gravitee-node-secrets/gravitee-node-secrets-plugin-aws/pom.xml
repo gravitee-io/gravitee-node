@@ -26,28 +26,56 @@
         <version>4.0.0</version>
     </parent>
 
-    <artifactId>gravitee-node-secrets-plugin-hc-vault</artifactId>
-    <name>Gravitee.io - Node - Secrets - Plugin - HC Vault</name>
-
+    <artifactId>gravitee-node-secrets-plugin-aws</artifactId>
+    <name>Gravitee.io - Node - Secrets - Plugin - AWS</name>
     <properties>
-        <vault-java-driver.version>6.0.0</vault-java-driver.version>
+        <aws.sdk-version>2.20.119</aws.sdk-version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws.sdk-version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>secretsmanager</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>netty-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>apache-client</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-secrets-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>io.gravitee.gateway</groupId>
-            <artifactId>gravitee-gateway-api</artifactId>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.jopenlibs</groupId>
-            <artifactId>vault-java-driver</artifactId>
-            <version>${vault-java-driver.version}</version>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>url-connection-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>apache-client</artifactId>
         </dependency>
     </dependencies>
 
@@ -65,4 +93,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

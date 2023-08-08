@@ -1,7 +1,6 @@
 package io.gravitee.node.secrets.api.model;
 
 import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import java.util.*;
@@ -13,50 +12,74 @@ import lombok.NoArgsConstructor;
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public record SecretURL(String provider, String path, Multimap<String, String> query) {
+public record SecretURL(String provider, String path, String key, Multimap<String, String> query) {
     public static final char URL_SEPARATOR = '/';
     private static final Splitter urlPathSplitter = Splitter.on(URL_SEPARATOR);
     private static final Splitter queryParamSplitter = Splitter.on('&');
     private static final Splitter queryParamKeyValueSplitter = Splitter.on('=');
     private static final Splitter keyMapParamValueSplitter = Splitter.on(':');
     public static final String SCHEME = "secret://";
-    public static final String URL_FORMAT_ERROR =
-        "Secret URL '%s' should have the following format %s<provider>/<word>[/<word>]*[?key1=value1&key2=value2]";
 
     public static SecretURL from(String url) {
         url = Objects.requireNonNull(url).trim();
         if (!url.startsWith(SCHEME)) {
-            throw new IllegalArgumentException(URL_FORMAT_ERROR.formatted(url, SCHEME));
+            throwFormatError(url);
         }
         String schemeLess = url.substring(SCHEME.length());
         int firstSlash = schemeLess.indexOf('/');
         if (firstSlash < 0 || firstSlash == schemeLess.length() - 1) {
-            throw new IllegalArgumentException(URL_FORMAT_ERROR.formatted(url, SCHEME));
+            throwFormatError(url);
         }
 
-        String provider = schemeLess.substring(0, firstSlash);
+        String provider = schemeLess.substring(0, firstSlash).trim();
         int questionMarkPos = schemeLess.indexOf('?');
         if (questionMarkPos == firstSlash + 1) {
-            throw new IllegalArgumentException(URL_FORMAT_ERROR.formatted(url, SCHEME));
+            throwFormatError(url);
         }
 
-        final String path;
+        String path;
+        final String key;
         final Multimap<String, String> query;
 
         if (questionMarkPos > 0) {
-            path = schemeLess.substring(provider.length(), questionMarkPos);
+            path = schemeLess.substring(provider.length() + 1, questionMarkPos).trim();
             query = parseQuery(schemeLess.substring(questionMarkPos + 1));
         } else {
-            path = schemeLess.substring(provider.length());
+            path = schemeLess.substring(provider.length() + 1).trim();
             query = MultimapBuilder.hashKeys().arrayListValues().build();
         }
 
-        SecretURL secretURL = new SecretURL(provider, path, query);
-        if (secretURL.pathAsList().stream().map(String::trim).anyMatch(Strings::isNullOrEmpty)) {
-            throw new IllegalArgumentException("Secret URL '%s' contains spaces-only url parts".formatted(url));
+        int columnIndex = path.lastIndexOf(':');
+        if (columnIndex > path.lastIndexOf(URL_SEPARATOR)) {
+            key = path.substring(columnIndex + 1);
+            path = path.substring(0, columnIndex);
+        } else {
+            key = null;
         }
 
-        return secretURL;
+        // remove trailing slashes
+        while (!path.isEmpty() && path.charAt(path.length() - 1) == URL_SEPARATOR) {
+            path = path.substring(0, path.length() - 1);
+        }
+
+        if (path.isBlank()) {
+            throwFormatError(url);
+        }
+
+        if (urlPathSplitter.splitToList(path).stream().anyMatch(String::isBlank)) {
+            throwFormatError(url);
+        }
+
+        return new SecretURL(provider, path, key, query);
+    }
+
+    private static void throwFormatError(String url) {
+        throw new IllegalArgumentException(
+            "Secret URL '%s' should have the following format %s<provider>/<path or name>[:<key>][?option=value1&option=value2]".formatted(
+                    url,
+                    SCHEME
+                )
+        );
     }
 
     private static Multimap<String, String> parseQuery(String substring) {
@@ -76,15 +99,6 @@ public record SecretURL(String provider, String path, Multimap<String, String> q
                 }
             });
         return query;
-    }
-
-    public List<String> pathAsList() {
-        String noTrailingSlashedPath = path;
-        while (noTrailingSlashedPath.endsWith("/")) {
-            noTrailingSlashedPath = noTrailingSlashedPath.substring(0, noTrailingSlashedPath.length() - 1);
-        }
-        // elude starting slash
-        return urlPathSplitter.splitToList(noTrailingSlashedPath.substring(1));
     }
 
     public boolean isWatchable() {

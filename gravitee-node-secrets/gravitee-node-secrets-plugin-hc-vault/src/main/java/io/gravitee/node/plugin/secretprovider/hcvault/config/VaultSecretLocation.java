@@ -33,22 +33,10 @@ public record VaultSecretLocation(String namespace, String secretPath, String ke
     }
 
     public static VaultSecretLocation fromURL(SecretURL url, VaultConfig vaultConfig) {
-        List<String> elements = url.pathAsList();
-
-        if (elements.size() >= 2) {
-            int last = elements.size() - 1;
-            return new VaultSecretLocation(
-                url.query().get(SecretURL.WellKnownQueryParam.NAMESPACE).stream().findFirst().orElse(vaultConfig.getNamespace()),
-                String.join(String.valueOf(SecretURL.URL_SEPARATOR), elements.subList(0, last)),
-                elements.get(last)
-            );
-        }
-        throw new SecretManagerConfigurationException(
-            "URL is not valid for Kubernetes Secret Provider plugin. Should be %s%s/<mount>/<secret path>/<data field> but was: '%s'".formatted(
-                    PLUGIN_URL_SCHEME,
-                    PLUGIN_ID,
-                    url
-                )
+        return new VaultSecretLocation(
+            url.query().get(SecretURL.WellKnownQueryParam.NAMESPACE).stream().findFirst().orElse(vaultConfig.getNamespace()),
+            url.path(),
+            url.key()
         );
     }
 }

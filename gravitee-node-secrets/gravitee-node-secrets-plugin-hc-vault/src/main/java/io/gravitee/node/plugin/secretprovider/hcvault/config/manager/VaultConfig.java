@@ -2,13 +2,8 @@ package io.gravitee.node.plugin.secretprovider.hcvault.config.manager;
 
 import io.github.jopenlibs.vault.VaultException;
 import io.gravitee.node.plugin.secretprovider.hcvault.HCVaultSecretProvider;
-import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.auth.VaultAppRoleAuthConfig;
-import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.auth.VaultAuthConfig;
-import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.auth.VaultGitHubAuthConfig;
-import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.auth.VaultTokenAuthConfig;
-import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.auth.VaultUserPassAuthConfig;
+import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.auth.*;
 import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.ssl.VaultSSLConfig;
-import io.gravitee.node.plugin.secretprovider.hcvault.util.EnumUtil;
 import io.gravitee.node.secrets.api.SecretManagerConfiguration;
 import io.gravitee.node.secrets.api.util.ConfigHelper;
 import java.util.Map;
@@ -50,24 +45,27 @@ public class VaultConfig implements SecretManagerConfiguration {
     public VaultConfig(Map<String, Object> properties) throws VaultException {
         Objects.requireNonNull(properties);
         enabled = (boolean) properties.getOrDefault(Fields.enabled, false);
+        if (!isEnabled()) {
+            return;
+        }
         host = (String) Objects.requireNonNull(properties.get(Fields.host));
         port = (int) Objects.requireNonNull(properties.get(Fields.port));
         namespace = (String) properties.getOrDefault(Fields.namespace, "default");
         kvEngine =
-            EnumUtil.valueOfCaseInsensitive(
-                DEPTH_2_CONFIG.formatted(HCVaultSecretProvider.PLUGIN_ID, Fields.kvEngine),
+            ConfigHelper.enumValueOfIgnoreCase(
                 (String) properties.getOrDefault(Fields.kvEngine, KVEngineVersion.V2.name()),
-                KVEngineVersion.class
+                KVEngineVersion.class,
+                DEPTH_2_CONFIG.formatted(HCVaultSecretProvider.PLUGIN_ID, Fields.kvEngine)
             );
         readTimeoutSec = (int) properties.getOrDefault(Fields.readTimeoutSec, 2);
         connectTimeoutSec = (int) properties.getOrDefault(Fields.connectTimeoutSec, 3);
         retry = new VaultRetryConfig(ConfigHelper.removePrefix(properties, Fields.retry));
         ssl = new VaultSSLConfig(ConfigHelper.removePrefix(properties, "ssl"));
 
-        VaultAuthConfig.Method authMethod = EnumUtil.valueOfCaseInsensitive(
-            DEPTH_3_CONFIG.formatted(HCVaultSecretProvider.PLUGIN_ID, Fields.auth, VaultAuthConfig.Fields.method),
+        VaultAuthConfig.Method authMethod = ConfigHelper.enumValueOfIgnoreCase(
             (String) Objects.requireNonNull(properties.get(DEPTH_2_CONFIG.formatted(Fields.auth, VaultAuthConfig.Fields.method))),
-            VaultAuthConfig.Method.class
+            VaultAuthConfig.Method.class,
+            DEPTH_3_CONFIG.formatted(HCVaultSecretProvider.PLUGIN_ID, Fields.auth, VaultAuthConfig.Fields.method)
         );
         String authConfigPrefix = DEPTH_2_CONFIG.formatted(Fields.auth, AUTH_CONFIG_FIELD);
         switch (authMethod) {

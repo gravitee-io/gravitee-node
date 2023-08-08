@@ -38,10 +38,12 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-secrets-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.gravitee.gateway</groupId>
             <artifactId>gravitee-gateway-api</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -58,6 +60,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
