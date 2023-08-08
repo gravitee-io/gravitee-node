@@ -23,6 +23,7 @@ packs:
             - policy-data-logging-masking # for removal
             - apim-policy-geoip-filtering
             - apim-policy-transform-avro-json
+            - am-policy-mfa-challenge
     enterprise-identity-provider:
         features:
             - am-idp-salesforce
