@@ -1,3 +1,10 @@
+# [4.1.0](https://github.com/gravitee-io/gravitee-node/compare/4.0.0...4.1.0) (2023-08-21)
+
+
+### Features
+
+* add license feature for AM ([538d8be](https://github.com/gravitee-io/gravitee-node/commit/538d8be467640badc8f442b779f376c1e3f3ed30))
+
 # [4.0.0](https://github.com/gravitee-io/gravitee-node/compare/3.0.9...4.0.0) (2023-07-17)
 
 
