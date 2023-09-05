@@ -20,17 +20,22 @@ import io.gravitee.node.secrets.api.SecretManagerConfiguration;
 import io.gravitee.node.secrets.api.SecretProvider;
 import io.gravitee.plugin.core.api.AbstractSimplePluginHandler;
 import io.gravitee.plugin.core.api.Plugin;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.io.IOException;
 import java.net.URLClassLoader;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author GraviteeSource Team
  */
 public class SecretProviderPluginHandler extends AbstractSimplePluginHandler<SecretProviderPlugin<?, ?>> {
 
+    private final DefaultSecretProviderPluginManager secretProviderPluginManager;
+
     @Autowired
-    private DefaultSecretProviderPluginManager endpointPluginManager;
+    public SecretProviderPluginHandler(DefaultSecretProviderPluginManager secretProviderPluginManager) {
+        this.secretProviderPluginManager = secretProviderPluginManager;
+    }
 
     @Override
     public boolean canHandle(final Plugin plugin) {
@@ -43,7 +48,7 @@ public class SecretProviderPluginHandler extends AbstractSimplePluginHandler<Sec
     }
 
     @Override
-    @SuppressWarnings({ "rawtypes, unchecked" })
+    @SuppressWarnings({"rawtypes, unchecked", "java:S3740"})
     protected SecretProviderPlugin<?, ?> create(final Plugin plugin, final Class<?> pluginClass) {
         Class<? extends SecretManagerConfiguration> configurationClass = new SecretManagerConfigurationClassFinder()
             .lookupFirst(pluginClass);
@@ -53,7 +58,7 @@ public class SecretProviderPluginHandler extends AbstractSimplePluginHandler<Sec
 
     @Override
     protected void register(SecretProviderPlugin<?, ?> secretProviderPlugin) {
-        endpointPluginManager.register(secretProviderPlugin);
+        secretProviderPluginManager.register(secretProviderPlugin);
 
         // Once registered, the classloader should be released
         final ClassLoader classLoader = secretProviderPlugin.secretProviderFactory().getClassLoader();

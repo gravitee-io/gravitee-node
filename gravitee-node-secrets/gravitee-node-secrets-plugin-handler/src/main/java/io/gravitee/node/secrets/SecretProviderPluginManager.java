@@ -2,7 +2,7 @@ package io.gravitee.node.secrets;
 
 import io.gravitee.node.secrets.api.SecretProviderFactory;
 import io.gravitee.plugin.core.api.ConfigurablePluginManager;
-import java.io.IOException;
+
 import java.util.function.Consumer;
 
 /**
@@ -15,12 +15,6 @@ public interface SecretProviderPluginManager extends ConfigurablePluginManager<S
     }
 
     <T extends SecretProviderFactory> T getFactoryById(final String pluginId, boolean includeNotDeployed);
-
-    default String getSharedConfigurationSchema(String pluginId) throws IOException {
-        return getSharedConfigurationSchema(pluginId, false);
-    }
-
-    String getSharedConfigurationSchema(String pluginId, boolean includeNotDeployed) throws IOException;
 
     void setOnNewPluginCallback(Consumer<String> callback);
 }

@@ -64,7 +64,7 @@ public class DefaultSecretProviderPluginManager
     public void register(final SecretProviderPlugin<?, ?> plugin) {
         super.register(plugin);
 
-        // Create endpoint
+
         PluginClassLoader pluginClassLoader = classLoaderFactory.getOrCreateClassLoader(plugin);
         try {
             final Class<SecretProviderFactory> secretProviderFactoryClass = (Class<SecretProviderFactory>) pluginClassLoader.loadClass(
@@ -107,9 +107,5 @@ public class DefaultSecretProviderPluginManager
         }
         return factory;
     }
-
-    @Override
-    public String getSharedConfigurationSchema(String pluginId, boolean includeNotDeployed) throws IOException {
-        return getSchema(pluginId, "sharedConfiguration", includeNotDeployed);
-    }
+    
 }
