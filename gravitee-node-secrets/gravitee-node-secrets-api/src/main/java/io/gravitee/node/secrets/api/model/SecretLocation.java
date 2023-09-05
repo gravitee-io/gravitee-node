@@ -2,9 +2,10 @@ package io.gravitee.node.secrets.api.model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
- * This class represents where the secret is from a provider perspective. It is a mat internally.
+ * This class represents where the secret is from a provider perspective. It is a map internally.
  *
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
@@ -30,14 +31,17 @@ public class SecretLocation {
     }
 
     public <T> T get(String key) {
+        Objects.requireNonNull(key);
         return (T) properties.get(key);
     }
 
-    public <T> T put(String key, Object value) {
-        return (T) properties.put(key, value);
+    public void put(String key, Object value) {
+        Objects.requireNonNull(key);
+        properties.put(key, value);
     }
 
     public <T> T getOrDefault(String key, String defaultValue) {
+        Objects.requireNonNull(key);
         return (T) properties.getOrDefault(key, defaultValue);
     }
 }

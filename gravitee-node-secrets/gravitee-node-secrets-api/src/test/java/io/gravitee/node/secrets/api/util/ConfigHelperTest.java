@@ -1,8 +1,10 @@
 package io.gravitee.node.secrets.api.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.gravitee.node.secrets.api.model.Secret;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -37,5 +39,33 @@ class ConfigHelperTest {
         var chopped = ConfigHelper.removePrefix(properties, prefix);
         assertThat(chopped.keySet()).containsExactlyInAnyOrderElementsOf(rest);
         assertThat(chopped.values()).allMatch(v -> Objects.equals(v, Boolean.TRUE));
+    }
+
+    @Test
+    void should_find_value_in_enum() {
+        TestEnum a = ConfigHelper.enumValueOfIgnoreCase("a", TestEnum.class, null);
+        assertThat(a).isSameAs(TestEnum.A);
+        TestEnum A = ConfigHelper.enumValueOfIgnoreCase("A", TestEnum.class, null);
+        assertThat(A).isSameAs(TestEnum.A);
+        TestEnum b = ConfigHelper.enumValueOfIgnoreCase("b", TestEnum.class, null);
+        assertThat(b).isSameAs(TestEnum.b);
+        TestEnum B = ConfigHelper.enumValueOfIgnoreCase("B", TestEnum.class, null);
+        assertThat(B).isSameAs(TestEnum.b);
+        assertThatCode(() -> ConfigHelper.enumValueOfIgnoreCase("c", TestEnum.class, "foo.bar.baz.puk"))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("foo.bar.baz.puk");
+    }
+
+    @Test
+    void should_get_secret_or_string() {
+        Map<String, Object> properties = Map.of("foo", "bar", "foo_secret", new Secret("bar"));
+        assertThat(ConfigHelper.getStringOrSecret(properties, "foo")).isEqualTo("bar");
+        assertThat(ConfigHelper.getStringOrSecret(properties, "foo_secret")).isEqualTo("bar");
+        assertThat(ConfigHelper.getStringOrSecret(properties, "puk", "yeah")).isEqualTo("yeah");
+    }
+
+    public enum TestEnum {
+        A,
+        b,
     }
 }

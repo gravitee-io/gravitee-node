@@ -15,10 +15,25 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ConfigHelper {
 
+    /**
+     * Get a {@link Secret} and convert it to a string, or return the String for a given key
+     *
+     * @param propertiesMap the property map
+     * @param propertyName  the property
+     * @param defaultValue  a default value if the property is not found
+     * @return a converted secret, the string or the default value
+     */
     public static String getStringOrSecret(Map<String, Object> propertiesMap, String propertyName, String defaultValue) {
         return secretAsStringOrCast(propertiesMap.getOrDefault(propertyName, defaultValue));
     }
 
+    /**
+     * Get a {@link Secret} and convert it to a string, or return the String for a given key, or it fails
+     *
+     * @param propertiesMap the property map
+     * @param propertyName  the property
+     * @return a converted secret
+     */
     public static String getStringOrSecret(Map<String, Object> propertiesMap, String propertyName) {
         Object data = Objects.requireNonNull(propertiesMap.get(propertyName));
         return secretAsStringOrCast(data);
@@ -57,6 +72,20 @@ public class ConfigHelper {
         );
     }
 
+    /**
+     * Keep entries starting with a given prefix from a property map but remove the prefix.
+     * <p>Examples for 'auth' as prefix.</p>
+     *
+     * <ul>
+     *     <li><code>auth.method        => method</code></li>
+     *     <li><code>auth.basic.username => basic.username</code></li>
+     *     <li><code>hello.world => [skipped]</code></li>
+     * </ul>
+     *
+     * @param propertiesMap the map to filter out
+     * @param prefix        the prefix to match
+     * @return a new map containing filtered properties without the prefix
+     */
     public static Map<String, Object> removePrefix(Map<String, Object> propertiesMap, String prefix) {
         return propertiesMap
             .entrySet()

@@ -29,10 +29,11 @@ public record SecretURL(String provider, String path, String key, Multimap<Strin
      * </p>
      * <li>secret://is mandatory</li>
      * <li>provider is mandatory and should match a secret provider id</li>
-     * <li>"path or name" is mandatory if a free string that can contain forward slashes ('/').
+     * <li>"path or name" is mandatory, a free string that can contain forward slashes ('/').
      * If an empty string or spaces are found between two forward slashes (eg. <code>//</code> or <code>/ /</code>) parsing will fail.</li>
      * <li>key is optional and cannot replace "name or path"</li>
-     * <li>query string is optional and is simply split into key value pairs. Pair are always list as can be specified more than once</li>
+     * <li>query string is optional and is simply split into key/value pairs.
+     * Pair are always list as can be specified more than once. If no value is parsed, then <code>true</code> is set</li>
      *
      * @param url the string to parse
      * @return SecretURL object
@@ -119,44 +120,51 @@ public record SecretURL(String provider, String path, String key, Multimap<Strin
         return query;
     }
 
+    /**
+     * Browser query string to find 'watch' with value 'true'
+     *
+     * @return true if <code>watch=true</code> was found.
+     */
     public boolean isWatchable() {
         return query()
-                .entries()
-                .stream()
-                .anyMatch(e -> Objects.equals(e.getKey(), WellKnownQueryParam.WATCH) && Boolean.parseBoolean(e.getValue()));
+            .entries()
+            .stream()
+            .anyMatch(e -> Objects.equals(e.getKey(), WellKnownQueryParam.WATCH) && Boolean.parseBoolean(e.getValue()));
     }
 
     /**
-     * Extract the well-knows keys from the <code>keymap</code> query string.
+     * <p>Extract the well-known keys from the <code>keymap</code> query string.</p>
+     * <p>format is &lt;well known key&gt;:&lt;key in secret&gt;</p>
+     * If the well known key is unknown then it is ignored.
      *
      * @return a map to help extracting well known keys out of the secret.
      * @see SecretMap#handleWellKnownSecretKeys(Map)
+     * @see SecretMap.WellKnownSecretKey
      */
     public Map<String, SecretMap.WellKnownSecretKey> wellKnowKeyMap() {
-        record Mapping(String secretKey, SecretMap.WellKnownSecretKey wellKnow) {
-        }
+        record Mapping(String secretKey, SecretMap.WellKnownSecretKey wellKnow) {}
         return query()
-                .get(WellKnownQueryParam.KEYMAP)
-                .stream()
-                .map(keyMap -> {
-                    List<String> mapping = keyMapParamValueSplitter.splitToList(keyMap);
-                    if (mapping.size() == 2) {
-                        // eg. certificate:tls.crt
-                        String wellKnown = mapping.get(0).trim().toUpperCase();
-                        String secretKey = mapping.get(1).trim();
-                        if (wellKnown.isEmpty() || secretKey.isEmpty()) {
-                            throw new IllegalArgumentException("keymap '%s' is not valid".formatted(keyMap));
-                        }
-                        try {
-                            return new Mapping(secretKey, SecretMap.WellKnownSecretKey.valueOf(wellKnown));
-                        } catch (IllegalArgumentException e) {
-                            // no op, will return "empty"
-                        }
+            .get(WellKnownQueryParam.KEYMAP)
+            .stream()
+            .map(keyMap -> {
+                List<String> mapping = keyMapParamValueSplitter.splitToList(keyMap);
+                if (mapping.size() == 2) {
+                    // eg. certificate:tls.crt
+                    String wellKnown = mapping.get(0).trim().toUpperCase();
+                    String secretKey = mapping.get(1).trim();
+                    if (wellKnown.isEmpty() || secretKey.isEmpty()) {
+                        throw new IllegalArgumentException("keymap '%s' is not valid".formatted(keyMap));
                     }
-                    return new Mapping(null, null);
-                })
-                .filter(mapping -> mapping.wellKnow() != null)
-                .collect(Collectors.toMap(Mapping::secretKey, Mapping::wellKnow));
+                    try {
+                        return new Mapping(secretKey, SecretMap.WellKnownSecretKey.valueOf(wellKnown));
+                    } catch (IllegalArgumentException e) {
+                        // no op, will return "empty"
+                    }
+                }
+                return new Mapping(null, null);
+            })
+            .filter(mapping -> mapping.wellKnow() != null)
+            .collect(Collectors.toMap(Mapping::secretKey, Mapping::wellKnow));
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

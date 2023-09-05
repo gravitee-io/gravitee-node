@@ -57,7 +57,7 @@ public interface SecretProvider {
     SecretMount fromURL(SecretURL url);
 
     /**
-     * perforems startup logic if need be (is called once after a new instance is created)
+     * Performs startup logic if need be (is called once after a new instance is created)
      *
      * @return self
      * @throws SecretManagerException in case secret provider cannot be started
@@ -67,7 +67,7 @@ public interface SecretProvider {
     }
 
     /**
-     * Stops what needs to be stopped when the plugin is no longer required ort the Gateway stops
+     * Stops what needs to be stopped when the plugin is no longer required or when the Gateway stops
      *
      * @return self
      */
