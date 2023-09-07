@@ -38,9 +38,6 @@
     <modules>
         <module>gravitee-node-secrets-plugin-handler</module>
         <module>gravitee-node-secrets-service</module>
-        <module>gravitee-node-secrets-plugin-kubernetes</module>
-        <module>gravitee-node-secrets-plugin-hc-vault</module>
-        <module>gravitee-node-secrets-plugin-aws</module>
     </modules>
 
     <dependencyManagement>
