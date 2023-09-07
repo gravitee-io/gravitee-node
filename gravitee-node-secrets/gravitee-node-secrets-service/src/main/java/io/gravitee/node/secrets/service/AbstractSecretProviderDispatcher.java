@@ -118,7 +118,7 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
     }
 
     private void syncCache(SecretEvent secretEvent, SecretLocation secretLocation) {
-        //NOSONAR TODO  use an actual cache and do it properly with TTL (or not based on the mount or plugin configuration)
+        // NOSONAR TODO  use an actual cache and do it properly with TTL (or not based on the mount or plugin configuration)
         if (Objects.requireNonNull(secretEvent.type()) == SecretEvent.Type.DELETED) {
             secrets.remove(secretLocation);
         } else if (secretEvent.type() == SecretEvent.Type.CREATED || secretEvent.type() == SecretEvent.Type.UPDATED) {
