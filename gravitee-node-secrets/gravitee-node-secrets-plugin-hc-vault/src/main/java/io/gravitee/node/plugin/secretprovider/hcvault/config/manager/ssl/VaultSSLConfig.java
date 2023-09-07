@@ -2,9 +2,9 @@ package io.gravitee.node.plugin.secretprovider.hcvault.config.manager.ssl;
 
 import io.github.jopenlibs.vault.SslConfig;
 import io.github.jopenlibs.vault.VaultException;
+import io.gravitee.node.api.secrets.util.ConfigHelper;
 import io.gravitee.node.plugin.secretprovider.hcvault.HCVaultSecretProvider;
 import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.VaultConfig;
-import io.gravitee.node.secrets.api.util.ConfigHelper;
 import java.io.File;
 import java.util.Map;
 import java.util.Objects;

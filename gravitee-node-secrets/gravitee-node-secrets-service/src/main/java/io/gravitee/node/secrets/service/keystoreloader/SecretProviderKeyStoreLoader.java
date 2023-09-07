@@ -4,14 +4,13 @@ import io.gravitee.common.util.KeyStoreUtils;
 import io.gravitee.node.api.certificate.KeyStoreBundle;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
-import io.gravitee.node.secrets.api.model.Secret;
-import io.gravitee.node.secrets.api.model.SecretMap;
-import io.gravitee.node.secrets.api.model.SecretMount;
+import io.gravitee.node.api.secrets.model.Secret;
+import io.gravitee.node.api.secrets.model.SecretMap;
+import io.gravitee.node.api.secrets.model.SecretMount;
 import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 

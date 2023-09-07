@@ -1,18 +1,17 @@
 package io.gravitee.node.secrets.service;
 
+import io.gravitee.node.api.secrets.SecretManagerConfiguration;
+import io.gravitee.node.api.secrets.SecretProvider;
+import io.gravitee.node.api.secrets.SecretProviderDispatcher;
+import io.gravitee.node.api.secrets.SecretProviderFactory;
+import io.gravitee.node.api.secrets.errors.SecretManagerException;
+import io.gravitee.node.api.secrets.errors.SecretProviderNotFoundException;
+import io.gravitee.node.api.secrets.model.*;
 import io.gravitee.node.secrets.SecretProviderPlugin;
 import io.gravitee.node.secrets.SecretProviderPluginManager;
-import io.gravitee.node.secrets.api.SecretManagerConfiguration;
-import io.gravitee.node.secrets.api.SecretProvider;
-import io.gravitee.node.secrets.api.SecretProviderDispatcher;
-import io.gravitee.node.secrets.api.SecretProviderFactory;
-import io.gravitee.node.secrets.api.errors.SecretManagerException;
-import io.gravitee.node.secrets.api.errors.SecretProviderNotFoundException;
-import io.gravitee.node.secrets.api.model.*;
 import io.gravitee.plugin.core.api.Plugin;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
-import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.util.*;
 import lombok.extern.slf4j.Slf4j;

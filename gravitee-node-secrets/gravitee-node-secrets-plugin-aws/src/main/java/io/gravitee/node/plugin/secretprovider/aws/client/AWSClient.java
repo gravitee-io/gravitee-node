@@ -1,8 +1,8 @@
 package io.gravitee.node.plugin.secretprovider.aws.client;
 
+import io.gravitee.node.api.secrets.errors.SecretManagerException;
 import io.gravitee.node.plugin.secretprovider.aws.config.AWSConfig;
 import io.gravitee.node.plugin.secretprovider.aws.config.AWSSecretLocation;
-import io.gravitee.node.secrets.api.errors.SecretManagerException;
 import io.vertx.core.json.Json;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;

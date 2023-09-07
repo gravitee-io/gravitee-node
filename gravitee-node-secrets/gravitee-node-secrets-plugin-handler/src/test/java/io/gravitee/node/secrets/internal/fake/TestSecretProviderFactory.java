@@ -1,7 +1,7 @@
 package io.gravitee.node.secrets.internal.fake;
 
-import io.gravitee.node.secrets.api.SecretProvider;
-import io.gravitee.node.secrets.api.SecretProviderFactory;
+import io.gravitee.node.api.secrets.SecretProvider;
+import io.gravitee.node.api.secrets.SecretProviderFactory;
 
 public class TestSecretProviderFactory implements SecretProviderFactory<TestSecretProviderConfiguration> {
 

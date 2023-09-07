@@ -1,11 +1,11 @@
 package io.gravitee.node.plugin.secretprovider.aws.config;
 
+import io.gravitee.node.api.secrets.errors.SecretManagerException;
+import io.gravitee.node.api.secrets.util.ConfigHelper;
 import io.gravitee.node.plugin.secretprovider.aws.config.auth.AWSAuthConfig;
 import io.gravitee.node.plugin.secretprovider.aws.config.auth.AWSChainAuthConfig;
 import io.gravitee.node.plugin.secretprovider.aws.config.auth.AWSStaticAuthConfig;
 import io.gravitee.node.secrets.api.SecretManagerConfiguration;
-import io.gravitee.node.secrets.api.errors.SecretManagerException;
-import io.gravitee.node.secrets.api.util.ConfigHelper;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;

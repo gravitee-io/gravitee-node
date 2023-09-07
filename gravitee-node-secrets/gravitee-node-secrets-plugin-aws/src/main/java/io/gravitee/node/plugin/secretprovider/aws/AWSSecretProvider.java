@@ -1,10 +1,10 @@
 package io.gravitee.node.plugin.secretprovider.aws;
 
+import io.gravitee.node.api.secrets.model.*;
 import io.gravitee.node.plugin.secretprovider.aws.client.AWSClient;
 import io.gravitee.node.plugin.secretprovider.aws.config.AWSConfig;
 import io.gravitee.node.plugin.secretprovider.aws.config.AWSSecretLocation;
 import io.gravitee.node.secrets.api.SecretProvider;
-import io.gravitee.node.secrets.api.model.*;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import java.util.Map;

@@ -1,13 +1,10 @@
 package io.gravitee.node.plugin.secretprovider.aws.config.auth;
 
-import io.gravitee.node.secrets.api.util.ConfigHelper;
+import io.gravitee.node.api.secrets.util.ConfigHelper;
 import java.util.Map;
-import java.util.Objects;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 

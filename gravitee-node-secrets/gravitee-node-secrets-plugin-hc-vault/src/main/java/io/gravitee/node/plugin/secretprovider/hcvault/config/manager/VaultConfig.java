@@ -1,11 +1,11 @@
 package io.gravitee.node.plugin.secretprovider.hcvault.config.manager;
 
 import io.github.jopenlibs.vault.VaultException;
+import io.gravitee.node.api.secrets.util.ConfigHelper;
 import io.gravitee.node.plugin.secretprovider.hcvault.HCVaultSecretProvider;
 import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.auth.*;
 import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.ssl.VaultSSLConfig;
 import io.gravitee.node.secrets.api.SecretManagerConfiguration;
-import io.gravitee.node.secrets.api.util.ConfigHelper;
 import java.util.Map;
 import java.util.Objects;
 import lombok.Data;

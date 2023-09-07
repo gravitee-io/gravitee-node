@@ -3,7 +3,7 @@ package io.gravitee.node.secrets.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.gravitee.gateway.reactive.api.helper.PluginConfigurationHelper;
-import io.gravitee.node.secrets.api.SecretProviderFactory;
+import io.gravitee.node.api.secrets.SecretProviderFactory;
 import io.gravitee.node.secrets.internal.fake.TestSecretProviderConfiguration;
 import io.gravitee.node.secrets.internal.fake.TestSecretProviderFactory;
 import io.gravitee.node.secrets.internal.fake.TestSecretProviderPlugin;

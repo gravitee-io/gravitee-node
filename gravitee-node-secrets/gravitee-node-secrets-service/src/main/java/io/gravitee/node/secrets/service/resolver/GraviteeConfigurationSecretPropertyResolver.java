@@ -15,8 +15,9 @@
  */
 package io.gravitee.node.secrets.service.resolver;
 
-import io.gravitee.node.secrets.api.model.Secret;
-import io.gravitee.node.secrets.api.model.SecretURL;
+import io.gravitee.node.api.secrets.model.Secret;
+import io.gravitee.node.api.secrets.model.SecretURL;
+import io.gravitee.node.api.secrets.resolver.WatchablePropertyResolver;
 import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;

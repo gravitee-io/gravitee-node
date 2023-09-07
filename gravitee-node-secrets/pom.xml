@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>4.0.0</version>
+        <version>4.1.0</version>
     </parent>
 
     <artifactId>gravitee-node-secrets</artifactId>
@@ -36,7 +36,6 @@
     </properties>
 
     <modules>
-        <module>gravitee-node-secrets-api</module>
         <module>gravitee-node-secrets-plugin-handler</module>
         <module>gravitee-node-secrets-service</module>
         <module>gravitee-node-secrets-plugin-kubernetes</module>

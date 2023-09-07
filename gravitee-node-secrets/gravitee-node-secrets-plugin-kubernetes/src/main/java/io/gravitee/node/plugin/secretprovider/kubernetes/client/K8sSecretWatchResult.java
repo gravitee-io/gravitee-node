@@ -1,6 +1,6 @@
 package io.gravitee.node.plugin.secretprovider.kubernetes.client;
 
-import io.gravitee.node.secrets.api.model.SecretEvent;
+import io.gravitee.node.api.secrets.model.SecretEvent;
 import io.kubernetes.client.openapi.models.V1Secret;
 
 /**

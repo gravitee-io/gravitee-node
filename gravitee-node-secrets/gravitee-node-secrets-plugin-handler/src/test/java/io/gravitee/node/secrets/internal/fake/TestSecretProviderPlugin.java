@@ -1,7 +1,7 @@
 package io.gravitee.node.secrets.internal.fake;
 
+import io.gravitee.node.api.secrets.SecretProvider;
 import io.gravitee.node.secrets.SecretProviderPlugin;
-import io.gravitee.node.secrets.api.SecretProvider;
 import io.gravitee.plugin.core.api.PluginManifest;
 import java.net.URL;
 import java.nio.file.Path;

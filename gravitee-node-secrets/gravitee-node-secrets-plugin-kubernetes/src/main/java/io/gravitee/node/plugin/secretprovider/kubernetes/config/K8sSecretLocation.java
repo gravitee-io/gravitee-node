@@ -1,7 +1,7 @@
 package io.gravitee.node.plugin.secretprovider.kubernetes.config;
 
-import io.gravitee.node.secrets.api.model.SecretLocation;
-import io.gravitee.node.secrets.api.model.SecretURL;
+import io.gravitee.node.api.secrets.model.SecretLocation;
+import io.gravitee.node.api.secrets.model.SecretURL;
 import java.util.Map;
 import java.util.Objects;
 

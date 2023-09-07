@@ -15,9 +15,9 @@
  */
 package io.gravitee.node.secrets.internal;
 
+import io.gravitee.node.api.secrets.SecretManagerConfiguration;
+import io.gravitee.node.api.secrets.SecretProviderFactory;
 import io.gravitee.node.secrets.SecretProviderPlugin;
-import io.gravitee.node.secrets.api.SecretManagerConfiguration;
-import io.gravitee.node.secrets.api.SecretProviderFactory;
 import io.gravitee.plugin.core.api.Plugin;
 import io.gravitee.plugin.core.api.PluginManifest;
 import java.net.URL;

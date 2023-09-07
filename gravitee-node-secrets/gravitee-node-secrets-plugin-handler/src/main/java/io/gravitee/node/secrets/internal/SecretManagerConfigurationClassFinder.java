@@ -1,6 +1,6 @@
 package io.gravitee.node.secrets.internal;
 
-import io.gravitee.node.secrets.api.SecretManagerConfiguration;
+import io.gravitee.node.api.secrets.SecretManagerConfiguration;
 import io.gravitee.plugin.core.api.AbstractSingleSubTypesFinder;
 import java.util.Collection;
 import lombok.extern.slf4j.Slf4j;

@@ -16,13 +16,12 @@
 package io.gravitee.node.secrets.internal;
 
 import io.gravitee.gateway.reactive.api.helper.PluginConfigurationHelper;
+import io.gravitee.node.api.secrets.SecretProviderFactory;
 import io.gravitee.node.secrets.SecretProviderClassLoaderFactory;
 import io.gravitee.node.secrets.SecretProviderPlugin;
 import io.gravitee.node.secrets.SecretProviderPluginManager;
-import io.gravitee.node.secrets.api.SecretProviderFactory;
 import io.gravitee.plugin.core.api.AbstractConfigurablePluginManager;
 import io.gravitee.plugin.core.api.PluginClassLoader;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;

@@ -1,6 +1,6 @@
 package io.gravitee.node.plugin.secretprovider.hcvault.config.manager.auth;
 
-import io.gravitee.node.secrets.api.util.ConfigHelper;
+import io.gravitee.node.api.secrets.util.ConfigHelper;
 import java.util.Map;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;

@@ -15,9 +15,9 @@
  */
 package io.gravitee.node.container.spring.env;
 
-import io.gravitee.node.secrets.service.resolver.PropertyResolver;
-import io.gravitee.node.secrets.service.resolver.PropertyResolverFactoriesLoader;
-import io.gravitee.node.secrets.service.resolver.WatchablePropertyResolver;
+import io.gravitee.node.api.secrets.resolver.PropertyResolver;
+import io.gravitee.node.api.secrets.resolver.PropertyResolverFactoriesLoader;
+import io.gravitee.node.api.secrets.resolver.WatchablePropertyResolver;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;

@@ -1,13 +1,11 @@
 package io.gravitee.node.plugin.secretprovider.hcvault.config;
 
-import static io.gravitee.node.plugin.secretprovider.hcvault.HCVaultSecretProvider.PLUGIN_ID;
 import static io.gravitee.node.secrets.api.SecretProvider.PLUGIN_URL_SCHEME;
 
+import io.gravitee.node.api.secrets.errors.SecretManagerConfigurationException;
+import io.gravitee.node.api.secrets.model.SecretLocation;
+import io.gravitee.node.api.secrets.model.SecretURL;
 import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.VaultConfig;
-import io.gravitee.node.secrets.api.errors.SecretManagerConfigurationException;
-import io.gravitee.node.secrets.api.model.SecretLocation;
-import io.gravitee.node.secrets.api.model.SecretURL;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 

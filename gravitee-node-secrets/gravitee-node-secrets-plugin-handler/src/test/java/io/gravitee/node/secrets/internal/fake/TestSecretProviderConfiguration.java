@@ -1,6 +1,6 @@
 package io.gravitee.node.secrets.internal.fake;
 
-import io.gravitee.node.secrets.api.SecretManagerConfiguration;
+import io.gravitee.node.api.secrets.SecretManagerConfiguration;
 
 public class TestSecretProviderConfiguration implements SecretManagerConfiguration {
 

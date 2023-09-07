@@ -1,15 +1,15 @@
 package io.gravitee.node.secrets.service.conf;
 
 import io.gravitee.common.util.EnvironmentUtils;
+import io.gravitee.node.api.secrets.SecretManagerConfiguration;
+import io.gravitee.node.api.secrets.SecretProvider;
+import io.gravitee.node.api.secrets.errors.SecretManagerConfigurationException;
+import io.gravitee.node.api.secrets.errors.SecretProviderNotFoundException;
+import io.gravitee.node.api.secrets.model.Secret;
+import io.gravitee.node.api.secrets.model.SecretMount;
+import io.gravitee.node.api.secrets.model.SecretURL;
+import io.gravitee.node.api.secrets.util.ConfigHelper;
 import io.gravitee.node.secrets.SecretProviderPluginManager;
-import io.gravitee.node.secrets.api.SecretManagerConfiguration;
-import io.gravitee.node.secrets.api.SecretProvider;
-import io.gravitee.node.secrets.api.errors.SecretManagerConfigurationException;
-import io.gravitee.node.secrets.api.errors.SecretProviderNotFoundException;
-import io.gravitee.node.secrets.api.model.Secret;
-import io.gravitee.node.secrets.api.model.SecretMount;
-import io.gravitee.node.secrets.api.model.SecretURL;
-import io.gravitee.node.secrets.api.util.ConfigHelper;
 import io.gravitee.node.secrets.service.AbstractSecretProviderDispatcher;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

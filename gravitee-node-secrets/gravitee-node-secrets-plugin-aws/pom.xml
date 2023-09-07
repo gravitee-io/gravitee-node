@@ -61,7 +61,7 @@
         </dependency>
         <dependency>
             <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-secrets-api</artifactId>
+            <artifactId>gravitee-node-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

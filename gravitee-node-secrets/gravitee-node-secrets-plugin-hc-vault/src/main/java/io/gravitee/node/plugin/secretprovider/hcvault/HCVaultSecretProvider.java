@@ -1,13 +1,13 @@
 package io.gravitee.node.plugin.secretprovider.hcvault;
 
+import io.gravitee.node.api.secrets.errors.SecretManagerConfigurationException;
+import io.gravitee.node.api.secrets.errors.SecretManagerException;
+import io.gravitee.node.api.secrets.model.*;
 import io.gravitee.node.plugin.secretprovider.hcvault.client.VaultClient;
 import io.gravitee.node.plugin.secretprovider.hcvault.client.auth.VaultAuthenticatorFactory;
 import io.gravitee.node.plugin.secretprovider.hcvault.config.VaultSecretLocation;
 import io.gravitee.node.plugin.secretprovider.hcvault.config.manager.VaultConfig;
 import io.gravitee.node.secrets.api.SecretProvider;
-import io.gravitee.node.secrets.api.errors.SecretManagerConfigurationException;
-import io.gravitee.node.secrets.api.errors.SecretManagerException;
-import io.gravitee.node.secrets.api.model.*;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import java.util.Map;

@@ -21,7 +21,7 @@ import io.gravitee.kubernetes.client.api.WatchQuery;
 import io.gravitee.kubernetes.client.model.v1.ConfigMap;
 import io.gravitee.kubernetes.client.model.v1.KubernetesEventType;
 import io.gravitee.kubernetes.client.model.v1.Secret;
-import io.gravitee.node.secrets.service.resolver.WatchablePropertyResolver;
+import io.gravitee.node.api.secrets.resolver.WatchablePropertyResolver;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import java.util.Base64;
