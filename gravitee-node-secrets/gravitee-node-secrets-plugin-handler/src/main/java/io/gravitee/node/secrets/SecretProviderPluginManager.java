@@ -2,7 +2,6 @@ package io.gravitee.node.secrets;
 
 import io.gravitee.node.secrets.api.SecretProviderFactory;
 import io.gravitee.plugin.core.api.ConfigurablePluginManager;
-
 import java.util.function.Consumer;
 
 /**

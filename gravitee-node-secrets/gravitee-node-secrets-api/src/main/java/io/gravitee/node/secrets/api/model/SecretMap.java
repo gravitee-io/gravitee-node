@@ -1,13 +1,12 @@
 package io.gravitee.node.secrets.api.model;
 
-import lombok.EqualsAndHashCode;
+import static java.util.stream.Collectors.toMap;
 
 import java.time.Instant;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
-
-import static java.util.stream.Collectors.toMap;
+import lombok.EqualsAndHashCode;
 
 /**
  * Represent a secret in the Secret Manager. It is a map key/secret.
@@ -124,10 +123,10 @@ public final class SecretMap {
      */
     public void handleWellKnownSecretKeys(Map<String, WellKnownSecretKey> mapping) {
         map
-                .entrySet()
-                .stream()
-                .filter(entry -> mapping.get(entry.getKey()) != null)
-                .forEach(entry -> wellKnown.put(mapping.get(entry.getKey()), entry.getValue()));
+            .entrySet()
+            .stream()
+            .filter(entry -> mapping.get(entry.getKey()) != null)
+            .forEach(entry -> wellKnown.put(mapping.get(entry.getKey()), entry.getValue()));
     }
 
     /**

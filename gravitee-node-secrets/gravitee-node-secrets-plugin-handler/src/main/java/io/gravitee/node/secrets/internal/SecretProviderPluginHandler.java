@@ -20,10 +20,9 @@ import io.gravitee.node.secrets.api.SecretManagerConfiguration;
 import io.gravitee.node.secrets.api.SecretProvider;
 import io.gravitee.plugin.core.api.AbstractSimplePluginHandler;
 import io.gravitee.plugin.core.api.Plugin;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.io.IOException;
 import java.net.URLClassLoader;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author GraviteeSource Team
@@ -48,7 +47,7 @@ public class SecretProviderPluginHandler extends AbstractSimplePluginHandler<Sec
     }
 
     @Override
-    @SuppressWarnings({"rawtypes, unchecked", "java:S3740"})
+    @SuppressWarnings({ "rawtypes, unchecked", "java:S3740" })
     protected SecretProviderPlugin<?, ?> create(final Plugin plugin, final Class<?> pluginClass) {
         Class<? extends SecretManagerConfiguration> configurationClass = new SecretManagerConfigurationClassFinder()
             .lookupFirst(pluginClass);
