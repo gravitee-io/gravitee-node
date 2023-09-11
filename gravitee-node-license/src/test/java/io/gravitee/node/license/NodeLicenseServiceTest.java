@@ -154,7 +154,8 @@ class NodeLicenseServiceTest {
                 "apim-reporter-tcp",
                 "policy-data-logging-masking",
                 "am-idp-gateway-handler-saml",
-                "am-policy-mfa-challenge"
+                "am-policy-mfa-challenge",
+                "am-policy-account-linking"
             );
     }
 

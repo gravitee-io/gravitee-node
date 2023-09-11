@@ -24,6 +24,7 @@ packs:
             - apim-policy-geoip-filtering
             - apim-policy-transform-avro-json
             - am-policy-mfa-challenge
+            - am-policy-account-linking
     enterprise-identity-provider:
         features:
             - am-idp-salesforce
