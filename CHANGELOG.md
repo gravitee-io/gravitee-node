@@ -1,3 +1,10 @@
+# [4.2.0](https://github.com/gravitee-io/gravitee-node/compare/4.1.0...4.2.0) (2023-09-11)
+
+
+### Features
+
+* add AM Account Linking policy ([6418962](https://github.com/gravitee-io/gravitee-node/commit/641896252b0b80c6e58500204324f3cd656ae63e))
+
 # [4.1.0](https://github.com/gravitee-io/gravitee-node/compare/4.0.0...4.1.0) (2023-08-21)
 
 
