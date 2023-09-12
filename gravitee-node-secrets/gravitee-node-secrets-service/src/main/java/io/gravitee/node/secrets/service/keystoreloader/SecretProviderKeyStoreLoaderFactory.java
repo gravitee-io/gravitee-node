@@ -24,6 +24,7 @@ public class SecretProviderKeyStoreLoaderFactory implements KeyStoreLoaderFactor
         final String secretLocation = options.getSecretLocation();
         return (
             secretLocation != null &&
+            options.getKeyStoreType() != null &&
             SUPPORTED_TYPES.contains(options.getKeyStoreType().toUpperCase()) &&
             secretResolverDispatcher.canHandle(secretLocation)
         );

@@ -1,4 +1,4 @@
-package io.gravitee.node.secrets.internal.fake;
+package io.gravitee.node.secrets.plugins.internal.test;
 
 import io.gravitee.node.api.secrets.SecretManagerConfiguration;
 

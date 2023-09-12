@@ -1,7 +1,7 @@
 package io.gravitee.node.secrets.service.spring;
 
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
-import io.gravitee.node.secrets.SecretProviderPluginManager;
+import io.gravitee.node.secrets.plugins.SecretProviderPluginManager;
 import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
 import io.gravitee.node.secrets.service.keystoreloader.SecretProviderKeyStoreLoaderFactory;
 import org.springframework.context.annotation.Bean;

@@ -26,8 +26,8 @@ import io.gravitee.node.management.http.spring.ManagementConfiguration;
 import io.gravitee.node.monitoring.spring.NodeMonitoringConfiguration;
 import io.gravitee.node.plugins.service.spring.ServiceConfiguration;
 import io.gravitee.node.reporter.spring.ReporterConfiguration;
+import io.gravitee.node.secrets.plugins.spring.SecretProviderBeanFactory;
 import io.gravitee.node.secrets.service.spring.SecretServiceBeanFactory;
-import io.gravitee.node.secrets.spring.SecretProviderBeanFactory;
 import io.gravitee.plugin.core.spring.PluginConfiguration;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 @Slf4j
 public abstract class SpringBasedContainer extends AbstractContainer {
 
-    private ConfigurableApplicationContext ctx;
+    private AnnotationConfigApplicationContext ctx;
 
     protected SpringBasedContainer() {
         super();
@@ -61,7 +61,7 @@ public abstract class SpringBasedContainer extends AbstractContainer {
         ctx = new AnnotationConfigApplicationContext();
 
         List<Class<?>> classes = annotatedClasses();
-        classes.forEach(aClass -> ((AnnotationConfigApplicationContext) ctx).register(aClass));
+        classes.forEach(ctx::register);
 
         // Finally refresh the context
         ctx.refresh();

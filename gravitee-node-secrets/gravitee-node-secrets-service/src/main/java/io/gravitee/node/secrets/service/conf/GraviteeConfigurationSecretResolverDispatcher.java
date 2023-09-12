@@ -4,19 +4,16 @@ import io.gravitee.common.util.EnvironmentUtils;
 import io.gravitee.node.api.secrets.SecretManagerConfiguration;
 import io.gravitee.node.api.secrets.SecretProvider;
 import io.gravitee.node.api.secrets.errors.SecretManagerConfigurationException;
+import io.gravitee.node.api.secrets.errors.SecretManagerException;
 import io.gravitee.node.api.secrets.errors.SecretProviderNotFoundException;
-import io.gravitee.node.api.secrets.model.Secret;
-import io.gravitee.node.api.secrets.model.SecretMount;
-import io.gravitee.node.api.secrets.model.SecretURL;
+import io.gravitee.node.api.secrets.model.*;
 import io.gravitee.node.api.secrets.util.ConfigHelper;
-import io.gravitee.node.secrets.SecretProviderPluginManager;
+import io.gravitee.node.secrets.plugins.SecretProviderPluginManager;
 import io.gravitee.node.secrets.service.AbstractSecretProviderDispatcher;
+import io.reactivex.rxjava3.core.Maybe;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import javax.annotation.Nonnull;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -27,7 +24,6 @@ import org.springframework.core.env.Environment;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
- *
  * @author GraviteeSource Team
  */
 @Slf4j
@@ -35,6 +31,8 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
 
     private static final String SECRETS_CONFIG_KEY = "secrets";
     private final Environment environment;
+
+    private final Map<SecretLocation, SecretMap> secrets = Collections.synchronizedMap(new HashMap<>());
 
     @Getter
     @Accessors(fluent = true)
@@ -101,6 +99,14 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
         }
     }
 
+    @Override
+    public Maybe<SecretMap> resolve(SecretMount secretMount) throws SecretProviderNotFoundException, SecretManagerException {
+        if (secrets.containsKey(secretMount.location())) {
+            return Maybe.just(secrets.get(secretMount.location()));
+        }
+        return super.resolve(secretMount).doOnSuccess(secretMap -> secrets.put(secretMount.location(), secretMap));
+    }
+
     public boolean canHandle(String location) {
         Objects.requireNonNull(location);
         return (
@@ -142,6 +148,11 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
                     AbstractSecretProviderDispatcher.SECRET_PROVIDER_NOT_FOUND_FOR_ID.formatted(url.provider())
                 )
             );
+    }
+
+    // for tests
+    Map<SecretLocation, SecretMap> secrets() {
+        return Map.copyOf(secrets);
     }
 
     private static boolean canManagerHande(String location, String manager) {

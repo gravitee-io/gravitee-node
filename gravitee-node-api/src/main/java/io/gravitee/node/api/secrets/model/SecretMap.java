@@ -120,13 +120,15 @@ public final class SecretMap {
      * if the key in the secret is not found, it will be ignored
      *
      * @param mapping the map describing the mapping
+     * @return this updated {@link SecretMap} instance
      */
-    public void handleWellKnownSecretKeys(Map<String, WellKnownSecretKey> mapping) {
+    public SecretMap handleWellKnownSecretKeys(Map<String, WellKnownSecretKey> mapping) {
         map
             .entrySet()
             .stream()
             .filter(entry -> mapping.get(entry.getKey()) != null)
             .forEach(entry -> wellKnown.put(mapping.get(entry.getKey()), entry.getValue()));
+        return this;
     }
 
     /**

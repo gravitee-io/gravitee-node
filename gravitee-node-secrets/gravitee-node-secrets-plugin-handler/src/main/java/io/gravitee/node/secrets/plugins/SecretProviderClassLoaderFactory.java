@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.secrets.internal;
+package io.gravitee.node.secrets.plugins;
 
-import io.gravitee.node.secrets.SecretProviderClassLoaderFactory;
-import io.gravitee.node.secrets.SecretProviderPlugin;
-import io.gravitee.plugin.core.internal.PluginClassLoaderFactoryImpl;
+import io.gravitee.plugin.core.api.PluginClassLoader;
+import io.gravitee.plugin.core.api.PluginClassLoaderFactory;
 
 /**
  * @author GraviteeSource Team
  */
-public class DefaultSecretProviderClassLoaderFactory
-    extends PluginClassLoaderFactoryImpl<SecretProviderPlugin<?, ?>>
-    implements SecretProviderClassLoaderFactory {}
+public interface SecretProviderClassLoaderFactory extends PluginClassLoaderFactory<SecretProviderPlugin<?, ?>> {
+    @Override
+    default PluginClassLoader getOrCreateClassLoader(SecretProviderPlugin<?, ?> secretProviderPlugin) {
+        return getOrCreateClassLoader(secretProviderPlugin, secretProviderPlugin.getClass().getClassLoader());
+    }
+}

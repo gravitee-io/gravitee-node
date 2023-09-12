@@ -1,4 +1,4 @@
-package io.gravitee.node.secrets;
+package io.gravitee.node.secrets.plugins;
 
 import io.gravitee.node.api.secrets.SecretProviderFactory;
 import io.gravitee.plugin.core.api.ConfigurablePluginManager;

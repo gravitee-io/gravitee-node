@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.secrets.internal;
+package io.gravitee.node.secrets.plugins.internal;
 
-import io.gravitee.gateway.reactive.api.helper.PluginConfigurationHelper;
 import io.gravitee.node.api.secrets.SecretProviderFactory;
-import io.gravitee.node.secrets.SecretProviderClassLoaderFactory;
-import io.gravitee.node.secrets.SecretProviderPlugin;
-import io.gravitee.node.secrets.SecretProviderPluginManager;
+import io.gravitee.node.secrets.plugins.SecretProviderClassLoaderFactory;
+import io.gravitee.node.secrets.plugins.SecretProviderPlugin;
+import io.gravitee.node.secrets.plugins.SecretProviderPluginManager;
 import io.gravitee.plugin.core.api.AbstractConfigurablePluginManager;
 import io.gravitee.plugin.core.api.PluginClassLoader;
 import java.lang.reflect.Constructor;
@@ -43,15 +42,10 @@ public class DefaultSecretProviderPluginManager
     private final Map<String, SecretProviderFactory> factories = new HashMap<>();
 
     private final Map<String, SecretProviderFactory> notDeployedPluginFactories = new HashMap<>();
-    private final PluginConfigurationHelper pluginConfigurationHelper;
     private Consumer<String> onNewPluginCallback;
 
-    public DefaultSecretProviderPluginManager(
-        final SecretProviderClassLoaderFactory classLoaderFactory,
-        final PluginConfigurationHelper pluginConfigurationHelper
-    ) {
+    public DefaultSecretProviderPluginManager(final SecretProviderClassLoaderFactory classLoaderFactory) {
         this.classLoaderFactory = classLoaderFactory;
-        this.pluginConfigurationHelper = pluginConfigurationHelper;
     }
 
     @Override
@@ -84,17 +78,8 @@ public class DefaultSecretProviderPluginManager
 
     private SecretProviderFactory createFactory(final Class<SecretProviderFactory> factoryClass)
         throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-        SecretProviderFactory factory;
-        try {
-            Constructor<SecretProviderFactory> constructorWithConfigurationHelper = factoryClass.getDeclaredConstructor(
-                PluginConfigurationHelper.class
-            );
-            factory = constructorWithConfigurationHelper.newInstance(pluginConfigurationHelper);
-        } catch (NoSuchMethodException e) {
-            Constructor<SecretProviderFactory> emptyConstructor = factoryClass.getDeclaredConstructor();
-            factory = emptyConstructor.newInstance();
-        }
-        return factory;
+        Constructor<SecretProviderFactory> emptyConstructor = factoryClass.getDeclaredConstructor();
+        return emptyConstructor.newInstance();
     }
 
     @Override

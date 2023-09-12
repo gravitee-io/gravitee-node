@@ -1,12 +1,11 @@
-package io.gravitee.node.secrets.internal;
+package io.gravitee.node.secrets.plugins.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.gravitee.gateway.reactive.api.helper.PluginConfigurationHelper;
 import io.gravitee.node.api.secrets.SecretProvider;
-import io.gravitee.node.secrets.SecretProviderPlugin;
-import io.gravitee.node.secrets.internal.fake.TestSecretProviderFactory;
-import io.gravitee.node.secrets.internal.fake.TestSecretProviderPlugin;
+import io.gravitee.node.secrets.plugins.SecretProviderPlugin;
+import io.gravitee.node.secrets.plugins.internal.test.TestSecretProviderFactory;
+import io.gravitee.node.secrets.plugins.internal.test.TestSecretProviderPlugin;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -19,8 +18,7 @@ import org.junit.jupiter.api.Test;
 class SecretProviderPluginHandlerTest {
 
     private final DefaultSecretProviderPluginManager pluginManager = new DefaultSecretProviderPluginManager(
-        new DefaultSecretProviderClassLoaderFactory(),
-        new PluginConfigurationHelper(null, null)
+        new DefaultSecretProviderClassLoaderFactory()
     );
     final SecretProviderPluginHandler cut = new SecretProviderPluginHandler(pluginManager);
 

@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.secrets.internal;
+package io.gravitee.node.secrets.plugins.internal;
 
 import io.gravitee.node.api.secrets.SecretManagerConfiguration;
 import io.gravitee.node.api.secrets.SecretProvider;
-import io.gravitee.node.secrets.SecretProviderPlugin;
+import io.gravitee.node.secrets.plugins.SecretProviderPlugin;
 import io.gravitee.plugin.core.api.AbstractSimplePluginHandler;
 import io.gravitee.plugin.core.api.Plugin;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package io.gravitee.node.secrets.internal;
+package io.gravitee.node.secrets.plugins.internal;
 
 import io.gravitee.node.api.secrets.SecretManagerConfiguration;
 import io.gravitee.plugin.core.api.AbstractSingleSubTypesFinder;

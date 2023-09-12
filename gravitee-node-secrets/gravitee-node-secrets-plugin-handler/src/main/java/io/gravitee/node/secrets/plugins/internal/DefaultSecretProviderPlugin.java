@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.secrets.internal;
+package io.gravitee.node.secrets.plugins.internal;
 
 import io.gravitee.node.api.secrets.SecretManagerConfiguration;
 import io.gravitee.node.api.secrets.SecretProviderFactory;
-import io.gravitee.node.secrets.SecretProviderPlugin;
+import io.gravitee.node.secrets.plugins.SecretProviderPlugin;
 import io.gravitee.plugin.core.api.Plugin;
 import io.gravitee.plugin.core.api.PluginManifest;
 import java.net.URL;
@@ -26,14 +26,14 @@ import java.nio.file.Path;
 /**
  * @author GraviteeSource Team
  */
-class DefaultSecretProviderPlugin<F extends SecretProviderFactory<C>, C extends SecretManagerConfiguration>
+public class DefaultSecretProviderPlugin<F extends SecretProviderFactory<C>, C extends SecretManagerConfiguration>
     implements SecretProviderPlugin<F, C> {
 
     private final Plugin plugin;
     private final Class<F> secretProviderClass;
     private final Class<C> secretProviderConfigurationClass;
 
-    DefaultSecretProviderPlugin(
+    public DefaultSecretProviderPlugin(
         final Plugin plugin,
         final Class<F> secretProviderFactoryClass,
         final Class<C> secretProviderConfigurationClass

@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.secrets.spring;
+package io.gravitee.node.secrets.plugins.spring;
 
-import io.gravitee.gateway.reactive.api.helper.PluginConfigurationHelper;
-import io.gravitee.node.secrets.SecretProviderClassLoaderFactory;
-import io.gravitee.node.secrets.internal.DefaultSecretProviderClassLoaderFactory;
-import io.gravitee.node.secrets.internal.DefaultSecretProviderPluginManager;
+import io.gravitee.node.secrets.plugins.SecretProviderClassLoaderFactory;
+import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderClassLoaderFactory;
+import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderPluginManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -30,10 +29,9 @@ public class SecretProviderBeanFactory {
 
     @Bean
     public DefaultSecretProviderPluginManager secretProviderPluginManager(
-        final SecretProviderClassLoaderFactory secretProviderClassLoaderFactory,
-        final PluginConfigurationHelper pluginConfigurationHelper
+        final SecretProviderClassLoaderFactory secretProviderClassLoaderFactory
     ) {
-        return new DefaultSecretProviderPluginManager(secretProviderClassLoaderFactory, pluginConfigurationHelper);
+        return new DefaultSecretProviderPluginManager(secretProviderClassLoaderFactory);
     }
 
     @Bean

@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>4.1.0</version>
+        <version>4.2.0</version>
     </parent>
 
     <artifactId>gravitee-node-secrets</artifactId>
@@ -42,11 +42,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>io.gravitee.gateway</groupId>
-                <artifactId>gravitee-gateway-api</artifactId>
-                <version>${gravitee-grateway-api.version}</version>
-            </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-secrets-api</artifactId>

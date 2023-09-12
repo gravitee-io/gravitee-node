@@ -7,13 +7,14 @@ import io.gravitee.node.api.secrets.SecretProviderFactory;
 import io.gravitee.node.api.secrets.errors.SecretManagerException;
 import io.gravitee.node.api.secrets.errors.SecretProviderNotFoundException;
 import io.gravitee.node.api.secrets.model.*;
-import io.gravitee.node.secrets.SecretProviderPlugin;
-import io.gravitee.node.secrets.SecretProviderPluginManager;
-import io.gravitee.plugin.core.api.Plugin;
+import io.gravitee.node.secrets.plugins.SecretProviderPlugin;
+import io.gravitee.node.secrets.plugins.SecretProviderPluginManager;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -27,7 +28,6 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
     private final SecretProviderPluginManager secretProviderPluginManager;
 
     private final Map<String, SecretProvider> secretProviders = new HashMap<>();
-    private final Map<SecretLocation, SecretMap> secrets = Collections.synchronizedMap(new HashMap<>());
 
     protected AbstractSecretProviderDispatcher(SecretProviderPluginManager secretProviderPluginManager) {
         this.secretProviderPluginManager = secretProviderPluginManager;
@@ -57,35 +57,12 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
         }
     }
 
-    protected final void createAllSecretProviders() throws Exception {
-        List<String> managers = secretProviderPluginManager.findAll().stream().map(Plugin::id).toList();
-
-        // read all configs (in priority order if set)
-        for (String id : managers) {
-            if (isEnabled(id)) {
-                createAndRegister(id);
-            }
-        }
-
-        log.info("Secret provider loaded: {}", secretProviders.keySet());
-    }
-
-    public void stopAllProviders() {
-        for (SecretProvider secretProvider : secretProviders.values()) {
-            secretProvider.stop();
-        }
-    }
-
     @Override
     public Maybe<SecretMap> resolve(SecretMount secretMount) throws SecretProviderNotFoundException, SecretManagerException {
-        if (secrets.containsKey(secretMount.location())) {
-            return Maybe.just(secrets.get(secretMount.location()));
-        }
         return secretProviders
             .getOrDefault(secretMount.provider(), new ErrorSecretProvider())
             .resolve(secretMount)
-            .subscribeOn(Schedulers.io())
-            .doOnSuccess(secretMap -> secrets.put(secretMount.location(), secretMap));
+            .subscribeOn(Schedulers.io());
     }
 
     @Override
@@ -102,7 +79,6 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
         return provider
             .watch(secretMount, events)
             .subscribeOn(Schedulers.io())
-            .doOnNext(event -> this.syncCache(event, secretMount.location())) // add cache call back so caller can know
             .filter(event -> event.type() != SecretEvent.Type.DELETED)
             .map(SecretEvent::secretMap)
             .doFinally(provider::stop);
@@ -114,15 +90,6 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
             return Flowable.error(new IllegalArgumentException("cannot request secret key, no key provided"));
         }
         return watch(secretMount).flatMapMaybe(secretMap -> Maybe.fromOptional(secretMap.getSecret(secretMount)));
-    }
-
-    private void syncCache(SecretEvent secretEvent, SecretLocation secretLocation) {
-        // NOSONAR TODO  use an actual cache and do it properly with TTL (or not based on the mount or plugin configuration)
-        if (Objects.requireNonNull(secretEvent.type()) == SecretEvent.Type.DELETED) {
-            secrets.remove(secretLocation);
-        } else if (secretEvent.type() == SecretEvent.Type.CREATED || secretEvent.type() == SecretEvent.Type.UPDATED) {
-            secrets.put(secretLocation, secretEvent.secretMap());
-        }
     }
 
     public Optional<SecretProvider> findSecretProvider(String id) {
