@@ -53,6 +53,7 @@ packs:
             - am-resource-http-factor
             - am-mfa-sms
             - am-mfa-call
+            - am-resource-sfr
     observability:
         features:
             - apim-reporter-tcp
