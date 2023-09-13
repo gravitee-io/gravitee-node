@@ -1,3 +1,10 @@
+# [4.3.0](https://github.com/gravitee-io/gravitee-node/compare/4.2.0...4.3.0) (2023-09-13)
+
+
+### Features
+
+* add AM SFR SMS resource plugin ([fca0429](https://github.com/gravitee-io/gravitee-node/commit/fca04292af31472efc8732789b9dd8cf67545587))
+
 # [4.2.0](https://github.com/gravitee-io/gravitee-node/compare/4.1.0...4.2.0) (2023-09-11)
 
 
