@@ -24,16 +24,12 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>4.2.0</version>
+        <version>4.3.1</version>
     </parent>
 
     <artifactId>gravitee-node-secrets</artifactId>
     <name>Gravitee.io - Node - Secrets</name>
     <packaging>pom</packaging>
-
-    <properties>
-        <gravitee-grateway-api.version>3.0.0-alpha.5</gravitee-grateway-api.version>
-    </properties>
 
     <modules>
         <module>gravitee-node-secrets-plugin-handler</module>
