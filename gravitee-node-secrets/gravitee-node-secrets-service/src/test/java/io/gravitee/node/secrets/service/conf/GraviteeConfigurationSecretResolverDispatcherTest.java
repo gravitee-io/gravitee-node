@@ -32,11 +32,11 @@ class GraviteeConfigurationSecretResolverDispatcherTest {
         assertThat(cut.findSecretProvider("test")).isPresent();
         assertThat(cut.isEnabled("foooooooo")).isFalse();
         assertThat(cut.isEnabled("test")).isTrue();
-        assertThat(cut.enabledManagers()).containsExactly("test");
+        assertThat(cut.enabledProviders()).containsExactly("test");
         assertThat(cut.canHandle("secret://foooooo/test:password")).isFalse();
         assertThat(cut.canHandle("secret://test/test:password")).isTrue();
-        assertThat(cut.isResolvable("secret://foooooo/test:password")).isFalse();
-        assertThat(cut.isResolvable("secret://test/test:password")).isTrue();
+        assertThat(cut.canResolveSingleValue("secret://foooooo/test:password")).isFalse();
+        assertThat(cut.canResolveSingleValue("secret://test/test:password")).isTrue();
     }
 
     @Test

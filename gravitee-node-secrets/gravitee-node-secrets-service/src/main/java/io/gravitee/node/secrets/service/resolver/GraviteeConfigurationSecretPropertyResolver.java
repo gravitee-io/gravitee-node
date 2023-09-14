@@ -41,7 +41,7 @@ public class GraviteeConfigurationSecretPropertyResolver implements WatchablePro
     @Override
     public boolean supports(String value) {
         if (value == null) return false;
-        return dispatcher.isResolvable(value);
+        return dispatcher.canResolveSingleValue(value);
     }
 
     @Override

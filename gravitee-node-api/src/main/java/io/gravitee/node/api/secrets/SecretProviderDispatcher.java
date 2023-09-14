@@ -50,10 +50,10 @@ public interface SecretProviderDispatcher {
     Maybe<Secret> resolveKey(SecretMount secretMount) throws SecretProviderNotFoundException, SecretManagerException;
 
     /**
-     * Delegates to {@link SecretProvider#watch(SecretMount, SecretEvent.Type...)} in order to resolve a {@link SecretMap}. Only created secret or updated secrets are returned.
+     * Delegates to {@link SecretProvider#watch(SecretMount)} in order to resolve a {@link SecretMap}.
      *
      * @param secretMount the secret mount to resolve
-     * @param events      events to filter, null means "all"
+     * @param events      events to filter, <code>null</code> means "all"
      * @return a secret map
      * @throws SecretProviderNotFoundException if the {@link SecretMount#provider()} does match an enabled secret provider plugin
      * @throws SecretManagerException          if the secret manager throws an exception during resolution
@@ -61,9 +61,9 @@ public interface SecretProviderDispatcher {
     Flowable<SecretMap> watch(SecretMount secretMount, SecretEvent.Type... events);
 
     /**
-     * Delegates to {@link SecretProvider#watch(SecretMount, SecretEvent.Type...)} in order to resolve a {@link SecretMap}.
+     * Delegates to {@link SecretProvider#watch(SecretMount)} in order to resolve a {@link SecretMap}.
      * Then uses {@link SecretMount#key()} to extract the secret from the map.
-     * No secret is published is none is found or the key do not exists in the secret map
+     * No secret is published is none is found or the key do not exist in the secret map
      *
      * @param secretMount the secret mount to resolve
      * @param events      events to filter, null means "all"

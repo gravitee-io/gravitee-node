@@ -26,18 +26,19 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author GraviteeSource Team
  */
+@Slf4j
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class DefaultSecretProviderPluginManager
     extends AbstractConfigurablePluginManager<SecretProviderPlugin<?, ?>>
     implements SecretProviderPluginManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultSecretProviderPluginManager.class);
     private final SecretProviderClassLoaderFactory classLoaderFactory;
     private final Map<String, SecretProviderFactory> factories = new HashMap<>();
 
@@ -72,7 +73,7 @@ public class DefaultSecretProviderPluginManager
                 onNewPluginCallback.accept(plugin.id());
             }
         } catch (Exception ex) {
-            logger.error("Unexpected error while loading secret provider plugin: {}", plugin.clazz(), ex);
+            log.error("Unexpected error while loading secret provider plugin: {}", plugin.clazz(), ex);
         }
     }
 

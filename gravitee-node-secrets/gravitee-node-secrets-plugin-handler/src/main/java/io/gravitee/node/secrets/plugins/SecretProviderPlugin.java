@@ -24,6 +24,9 @@ import io.gravitee.plugin.core.api.ConfigurablePlugin;
  * @author GraviteeSource Team
  */
 public interface SecretProviderPlugin<T extends SecretProviderFactory, C extends SecretManagerConfiguration> extends ConfigurablePlugin<C> {
+    /**
+     * @return the class of the secret provider factory
+     */
     Class<T> secretProviderFactory();
 
     @Override

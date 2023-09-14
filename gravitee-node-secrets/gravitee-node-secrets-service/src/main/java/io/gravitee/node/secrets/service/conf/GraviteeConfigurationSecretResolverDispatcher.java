@@ -36,7 +36,7 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
 
     @Getter
     @Accessors(fluent = true)
-    private final List<String> enabledManagers = new ArrayList<>();
+    private final List<String> enabledProviders = new ArrayList<>();
 
     public GraviteeConfigurationSecretResolverDispatcher(SecretProviderPluginManager secretProviderPluginManager, Environment environment) {
         super(secretProviderPluginManager);
@@ -45,7 +45,7 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
         secretProviderPluginManager.setOnNewPluginCallback(pluginId -> {
             if (isEnabled(pluginId)) {
                 super.createAndRegister(pluginId);
-                enabledManagers.add(pluginId);
+                enabledProviders.add(pluginId);
             }
         });
     }
@@ -107,24 +107,36 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
         return super.resolve(secretMount).doOnSuccess(secretMap -> secrets.put(secretMount.location(), secretMap));
     }
 
+    /**
+     * Check if the value given can be handled by a provider.
+     *
+     * @param location the URL of a secret
+     * @return true if there is a provider able to handle this URL
+     */
     public boolean canHandle(String location) {
         Objects.requireNonNull(location);
         return (
             location.startsWith(SecretProvider.PLUGIN_URL_SCHEME) &&
-            enabledManagers().stream().anyMatch(manager -> canManagerHande(location, manager))
+            enabledProviders().stream().anyMatch(manager -> canProviderHandle(location, manager))
         );
     }
 
-    public boolean isResolvable(String location) {
+    /**
+     * Check if the value given can be handled by a provider and if the URL can to be use to resolve a single value
+     *
+     * @param location the URL of a secret
+     * @return true if they location can return a single secret
+     */
+    public boolean canResolveSingleValue(String location) {
         Objects.requireNonNull(location);
         return (
             location.startsWith(SecretProvider.PLUGIN_URL_SCHEME) &&
-            enabledManagers()
+            enabledProviders()
                 .stream()
                 .anyMatch(manager -> {
                     try {
                         SecretMount secretMount = toSecretMount(location);
-                        return canManagerHande(location, manager) && !secretMount.isKeyEmpty();
+                        return canProviderHandle(location, manager) && !secretMount.isKeyEmpty();
                     } catch (IllegalArgumentException | SecretProviderNotFoundException e) {
                         // URL might not be suitable for resolving property
                         return false;
@@ -133,6 +145,15 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
         );
     }
 
+    /**
+     * Uses a secret provider to convert a URL to {@link SecretMount}
+     *
+     * @param location secret location
+     * @return a {@link SecretMount}
+     * @throws SecretProviderNotFoundException     if the URL points a non-existing secret provider
+     * @throws SecretManagerConfigurationException if the URL processing led to an error
+     * @throws IllegalArgumentException            if the URL is well formatted
+     */
     public SecretMount toSecretMount(String location) {
         SecretURL url = SecretURL.from(location);
         return this.findSecretProvider(url.provider())
@@ -155,7 +176,7 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
         return Map.copyOf(secrets);
     }
 
-    private static boolean canManagerHande(String location, String manager) {
+    private static boolean canProviderHandle(String location, String manager) {
         return location.startsWith("%s%s/".formatted(SecretURL.SCHEME, manager));
     }
 }

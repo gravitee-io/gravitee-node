@@ -14,7 +14,7 @@ public class TestSecretProvider implements SecretProvider {
     }
 
     @Override
-    public Flowable<SecretEvent> watch(SecretMount secretMount, SecretEvent.Type... events) {
+    public Flowable<SecretEvent> watch(SecretMount secretMount) {
         return Flowable.just(new SecretEvent(SecretEvent.Type.CREATED, SecretMap.of(Map.of("password", "secret"))));
     }
 

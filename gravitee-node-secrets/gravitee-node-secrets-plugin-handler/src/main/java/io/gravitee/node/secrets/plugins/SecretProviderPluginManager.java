@@ -15,5 +15,10 @@ public interface SecretProviderPluginManager extends ConfigurablePluginManager<S
 
     <T extends SecretProviderFactory> T getFactoryById(final String pluginId, boolean includeNotDeployed);
 
+    /**
+     * to set a callback that will be called once the plugin is loaded. This meant to have a spring bean know that the plugin has just been loaded.
+     *
+     * @param callback a consumer of the plugin id
+     */
     void setOnNewPluginCallback(Consumer<String> callback);
 }

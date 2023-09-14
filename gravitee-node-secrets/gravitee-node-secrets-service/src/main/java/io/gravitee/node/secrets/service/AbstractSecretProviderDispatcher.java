@@ -12,6 +12,7 @@ import io.gravitee.node.secrets.plugins.SecretProviderPluginManager;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -37,12 +38,7 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
         try {
             final SecretProviderPlugin<?, ?> secretProviderPlugin = secretProviderPluginManager.get(id);
             final Class<? extends SecretManagerConfiguration> configurationClass = secretProviderPlugin.configuration();
-            final SecretProviderFactory<SecretManagerConfiguration> factory;
-            if (id.equals("kubernetes")) {
-                factory = secretProviderPluginManager.getFactoryById(id, true);
-            } else {
-                factory = secretProviderPluginManager.getFactoryById(id);
-            }
+            final SecretProviderFactory<SecretManagerConfiguration> factory = secretProviderPluginManager.getFactoryById(id);
             if (configurationClass != null && factory != null) {
                 // read the config using the plugin class loader
                 SecretManagerConfiguration config =
@@ -77,9 +73,9 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
     public Flowable<SecretMap> watch(SecretMount secretMount, SecretEvent.Type... events) {
         final SecretProvider provider = secretProviders.getOrDefault(secretMount.provider(), new ErrorSecretProvider());
         return provider
-            .watch(secretMount, events)
+            .watch(secretMount)
+            .filter(secretEvent -> events == null || events.length == 0 || Arrays.asList(events).contains(secretEvent.type()))
             .subscribeOn(Schedulers.io())
-            .filter(event -> event.type() != SecretEvent.Type.DELETED)
             .map(SecretEvent::secretMap)
             .doFinally(provider::stop);
     }
@@ -106,7 +102,7 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
         }
 
         @Override
-        public Flowable<SecretEvent> watch(SecretMount secretMount, SecretEvent.Type... events) {
+        public Flowable<SecretEvent> watch(SecretMount secretMount) {
             return Flowable.error(new SecretProviderNotFoundException(SECRET_PROVIDER_NOT_FOUND_FOR_ID.formatted(secretMount.provider())));
         }
 

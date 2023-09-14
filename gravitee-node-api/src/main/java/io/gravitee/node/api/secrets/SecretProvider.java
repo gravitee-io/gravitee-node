@@ -42,10 +42,9 @@ public interface SecretProvider {
      * Watches a secret. May perform a {@link #resolve(SecretMount)} but is not bound to by contract.
      *
      * @param secretMount where the secret is mounted.
-     * @param events      events that are allow to be pushed, null means "all"
      * @return a {@link Flowable} of event that contains the secret map of an empty secret map in case of deletion.
      */
-    Flowable<SecretEvent> watch(SecretMount secretMount, SecretEvent.Type... events);
+    Flowable<SecretEvent> watch(SecretMount secretMount);
 
     /**
      * Turns a parsed URL into a {@link SecretMount}

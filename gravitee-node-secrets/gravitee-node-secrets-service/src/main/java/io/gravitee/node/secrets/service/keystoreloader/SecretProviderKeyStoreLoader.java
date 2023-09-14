@@ -5,6 +5,7 @@ import io.gravitee.node.api.certificate.KeyStoreBundle;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.api.secrets.model.Secret;
+import io.gravitee.node.api.secrets.model.SecretEvent;
 import io.gravitee.node.api.secrets.model.SecretMap;
 import io.gravitee.node.api.secrets.model.SecretMount;
 import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
@@ -42,7 +43,7 @@ public class SecretProviderKeyStoreLoader implements KeyStoreLoader {
         if (options.isWatch()) {
             this.watch =
                 secretResolverDispatcher
-                    .watch(secretMount)
+                    .watch(secretMount, SecretEvent.Type.UPDATED, SecretEvent.Type.CREATED)
                     .skip(1) // watch will get the data again, we don't need it
                     .subscribe(secretMap -> createBundleAndNotify(secretMap, secretMount), ex -> log.error("cannot create keystore", ex));
         }
@@ -108,7 +109,7 @@ public class SecretProviderKeyStoreLoader implements KeyStoreLoader {
         listeners.add(listener);
     }
 
-    void notifyListeners(KeyStoreBundle bundle) {
+    private void notifyListeners(KeyStoreBundle bundle) {
         listeners.forEach(c -> c.accept(bundle));
     }
 }
