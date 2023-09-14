@@ -1,3 +1,10 @@
+## [4.3.1](https://github.com/gravitee-io/gravitee-node/compare/4.3.0...4.3.1) (2023-09-14)
+
+
+### Bug Fixes
+
+* bump gravitee-common to 3.3.3 ([f2363dc](https://github.com/gravitee-io/gravitee-node/commit/f2363dce64377a81d62adfb2c1f9b68ca8030e16))
+
 # [4.3.0](https://github.com/gravitee-io/gravitee-node/compare/4.2.0...4.3.0) (2023-09-13)
 
 
