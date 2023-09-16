@@ -270,7 +270,7 @@
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
         <gravitee-kubernetes.version>2.0.3</gravitee-kubernetes.version>
         <snakeyaml.version>2.0</snakeyaml.version>
-        <hazelcast.version>5.2.3</hazelcast.version>
+        <hazelcast.version>5.3.2</hazelcast.version>
         <gravitee-alert-api.version>1.8.0</gravitee-alert-api.version>
         <jmockit.version>1.49</jmockit.version>
 
