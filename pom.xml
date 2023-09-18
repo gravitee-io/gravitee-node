@@ -56,7 +56,7 @@
     </modules>
 
     <properties>
-        <gravitee-bom.version>6.0.3</gravitee-bom.version>
+        <gravitee-bom.version>6.0.6</gravitee-bom.version>
         <gravitee-common.version>3.3.3</gravitee-common.version>
         <gravitee-plugin.version>2.1.0-archi-222-secret-managers-SNAPSHOT</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.25.0</gravitee-reporter-api.version>
@@ -71,7 +71,7 @@
         <micrometer-registry-prometheus.version>1.10.7</micrometer-registry-prometheus.version>
         <LatencyUtils.version>2.0.3</LatencyUtils.version>
         <bouncycastle.version>1.70</bouncycastle.version>
-        <guava.version>31.1-jre</guava.version>
+        <guava.version>32.0.1-jre</guava.version>
         <license3j.version>3.2.0</license3j.version>
         <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
     </properties>

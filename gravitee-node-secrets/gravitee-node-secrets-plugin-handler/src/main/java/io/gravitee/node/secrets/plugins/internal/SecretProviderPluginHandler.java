@@ -22,17 +22,19 @@ import io.gravitee.plugin.core.api.AbstractSimplePluginHandler;
 import io.gravitee.plugin.core.api.Plugin;
 import java.io.IOException;
 import java.net.URLClassLoader;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author GraviteeSource Team
  */
+@NoArgsConstructor
 public class SecretProviderPluginHandler extends AbstractSimplePluginHandler<SecretProviderPlugin<?, ?>> {
 
-    private final DefaultSecretProviderPluginManager secretProviderPluginManager;
-
     @Autowired
-    public SecretProviderPluginHandler(DefaultSecretProviderPluginManager secretProviderPluginManager) {
+    private DefaultSecretProviderPluginManager secretProviderPluginManager;
+
+    SecretProviderPluginHandler(DefaultSecretProviderPluginManager secretProviderPluginManager) {
         this.secretProviderPluginManager = secretProviderPluginManager;
     }
 

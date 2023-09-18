@@ -21,6 +21,7 @@ import io.gravitee.node.api.secrets.resolver.WatchablePropertyResolver;
 import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -29,11 +30,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author GraviteeSource Team
  */
 @Slf4j
+@NoArgsConstructor
 public class GraviteeConfigurationSecretPropertyResolver implements WatchablePropertyResolver<Secret> {
 
-    private final GraviteeConfigurationSecretResolverDispatcher dispatcher;
-
     @Autowired
+    private GraviteeConfigurationSecretResolverDispatcher dispatcher;
+
     public GraviteeConfigurationSecretPropertyResolver(GraviteeConfigurationSecretResolverDispatcher dispatcher) {
         this.dispatcher = dispatcher;
     }
