@@ -84,7 +84,7 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
     public <T extends SecretManagerConfiguration> T readConfiguration(String pluginId, Class<?> configurationClass) {
         Map<String, Object> configurationProperties = ConfigHelper.removePrefix(
             EnvironmentUtils.getAllProperties((ConfigurableEnvironment) environment),
-            String.format("%s.%s", SECRETS_CONFIG_KEY, pluginId)
+            "%s.%s".formatted(SECRETS_CONFIG_KEY, pluginId)
         );
 
         try {
@@ -136,7 +136,17 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
                 .anyMatch(manager -> {
                     try {
                         SecretMount secretMount = toSecretMount(location);
-                        return canProviderHandle(location, manager) && !secretMount.isKeyEmpty();
+                        if (canProviderHandle(location, manager)) {
+                            if (secretMount.isKeyEmpty()) {
+                                throw new IllegalArgumentException(
+                                    "Secret URL should must specify a 'key' in order to resolve a single value, such as: %s:<KEY>".formatted(
+                                            location
+                                        )
+                                );
+                            }
+                            return true;
+                        }
+                        return false;
                     } catch (IllegalArgumentException | SecretProviderNotFoundException e) {
                         // URL might not be suitable for resolving property
                         return false;

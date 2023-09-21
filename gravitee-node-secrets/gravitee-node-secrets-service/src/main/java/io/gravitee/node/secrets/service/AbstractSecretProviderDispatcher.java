@@ -85,7 +85,7 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
         if (secretMount.isKeyEmpty()) {
             return Flowable.error(new IllegalArgumentException("cannot request secret key, no key provided"));
         }
-        return watch(secretMount).flatMapMaybe(secretMap -> Maybe.fromOptional(secretMap.getSecret(secretMount)));
+        return watch(secretMount, events).flatMapMaybe(secretMap -> Maybe.fromOptional(secretMap.getSecret(secretMount)));
     }
 
     public Optional<SecretProvider> findSecretProvider(String id) {

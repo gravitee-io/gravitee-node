@@ -12,7 +12,7 @@ import com.google.common.base.Strings;
  */
 public record SecretMount(String provider, SecretLocation location, String key, SecretURL secretURL) {
     /**
-     * Test the precense of a key
+     * Test the presence of a key
      *
      * @return true is the key is present
      */
