@@ -5,13 +5,11 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import io.gravitee.node.api.secrets.model.Secret;
-
+import io.gravitee.node.api.secrets.model.SecretLocation;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
-
-import io.gravitee.node.api.secrets.model.SecretLocation;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -28,11 +26,11 @@ class ConfigHelperTest {
 
     static Stream<Arguments> properties() {
         return Stream.of(
-                arguments("empty", Map.of(), "foo", List.of()),
-                arguments("single value", Map.of("foo.bar", true), "foo", List.of("bar")),
-                arguments("two values", Map.of("foo.bar", true, "foo.joe", true), "foo", List.of("bar", "joe")),
-                arguments("no match", Map.of("foo.bar", true), "bar", List.of()),
-                arguments("partial match", Map.of("foo.bar", true, "puz.joe", true), "foo", List.of("bar"))
+            arguments("empty", Map.of(), "foo", List.of()),
+            arguments("single value", Map.of("foo.bar", true), "foo", List.of("bar")),
+            arguments("two values", Map.of("foo.bar", true, "foo.joe", true), "foo", List.of("bar", "joe")),
+            arguments("no match", Map.of("foo.bar", true), "bar", List.of()),
+            arguments("partial match", Map.of("foo.bar", true, "puz.joe", true), "foo", List.of("bar"))
         );
     }
 
@@ -55,8 +53,8 @@ class ConfigHelperTest {
         TestEnum B = ConfigHelper.enumValueOfIgnoreCase("B", TestEnum.class, null);
         assertThat(B).isSameAs(TestEnum.b);
         assertThatCode(() -> ConfigHelper.enumValueOfIgnoreCase("c", TestEnum.class, "foo.bar.baz.puk"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("foo.bar.baz.puk");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("foo.bar.baz.puk");
     }
 
     @Test
@@ -69,17 +67,17 @@ class ConfigHelperTest {
 
     static Stream<Arguments> stringProps() {
         return Stream.of(
-                arguments("default int", Map.of(), Integer.class, 42, null),
-                arguments("int as string", Map.of("test", "42"), Integer.class, null, 42),
-                arguments("int", Map.of("test", 42), Integer.class, null, 42),
-                arguments("default boolean", Map.of(), Boolean.class, true, null),
-                arguments("boolean as string", Map.of("test", "true"), Boolean.class, null, true),
-                arguments("boolean", Map.of("test", false), Boolean.class, null, false),
-                arguments("default long", Map.of(), Long.class, 42L, null),
-                arguments("long as string", Map.of("test", "42"), Long.class, null, 42L),
-                arguments("long", Map.of("test", 42L), Long.class, null, 42L),
-                arguments("default string", Map.of(), String.class, "foo", null),
-                arguments("string", Map.of("test", "foo"), String.class, null, "foo")
+            arguments("default int", Map.of(), Integer.class, 42, null),
+            arguments("int as string", Map.of("test", "42"), Integer.class, null, 42),
+            arguments("int", Map.of("test", 42), Integer.class, null, 42),
+            arguments("default boolean", Map.of(), Boolean.class, true, null),
+            arguments("boolean as string", Map.of("test", "true"), Boolean.class, null, true),
+            arguments("boolean", Map.of("test", false), Boolean.class, null, false),
+            arguments("default long", Map.of(), Long.class, 42L, null),
+            arguments("long as string", Map.of("test", "42"), Long.class, null, 42L),
+            arguments("long", Map.of("test", 42L), Long.class, null, 42L),
+            arguments("default string", Map.of(), String.class, "foo", null),
+            arguments("string", Map.of("test", "foo"), String.class, null, "foo")
         );
     }
 
@@ -93,14 +91,17 @@ class ConfigHelperTest {
         }
     }
 
-
     @Test
     void should_fail_without_default() {
         Map<String, Object> empty = Map.of();
         Map<String, Object> withUnsupported = Map.of("test", "foo");
-        assertThatCode(() -> ConfigHelper.getProperty(empty, "test", String.class)).isInstanceOf(NullPointerException.class).hasMessageContaining("'test'");
+        assertThatCode(() -> ConfigHelper.getProperty(empty, "test", String.class))
+            .isInstanceOf(NullPointerException.class)
+            .hasMessageContaining("'test'");
         assertThatCode(() -> ConfigHelper.getProperty(null, "test", String.class)).isInstanceOf(NullPointerException.class);
-        assertThatCode(() -> ConfigHelper.getProperty(withUnsupported, "test", SecretLocation.class)).isInstanceOf(IllegalArgumentException.class).hasMessageContaining(SecretLocation.class.getName());
+        assertThatCode(() -> ConfigHelper.getProperty(withUnsupported, "test", SecretLocation.class))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining(SecretLocation.class.getName());
     }
 
     public enum TestEnum {

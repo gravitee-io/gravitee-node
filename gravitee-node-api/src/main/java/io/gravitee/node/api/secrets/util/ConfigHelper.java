@@ -88,12 +88,12 @@ public class ConfigHelper {
      */
     public static Map<String, Object> removePrefix(Map<String, Object> propertiesMap, String prefix) {
         return propertiesMap
-                .entrySet()
-                .stream()
-                .filter(e -> e.getKey().startsWith(prefix))
-                .filter(e -> Objects.nonNull(e.getValue()))
-                // chopping the prefix out of the key
-                .collect(Collectors.toMap(e -> e.getKey().substring(prefix.length() + 1), Map.Entry::getValue));
+            .entrySet()
+            .stream()
+            .filter(e -> e.getKey().startsWith(prefix))
+            .filter(e -> Objects.nonNull(e.getValue()))
+            // chopping the prefix out of the key
+            .collect(Collectors.toMap(e -> e.getKey().substring(prefix.length() + 1), Map.Entry::getValue));
     }
 
     /**
@@ -155,11 +155,11 @@ public class ConfigHelper {
                 case "java.lang.Long" -> {
                     return (T) Long.valueOf(str);
                 }
-                default ->
-                        throw new IllegalArgumentException("Cannot convert property '%s' to type: %s".formatted(property, type.getName()));
+                default -> throw new IllegalArgumentException(
+                    "Cannot convert property '%s' to type: %s".formatted(property, type.getName())
+                );
             }
         }
         throw new IllegalArgumentException("Cannot convert property '%s' of type: %s".formatted(property, value.getClass().getName()));
     }
-
 }
