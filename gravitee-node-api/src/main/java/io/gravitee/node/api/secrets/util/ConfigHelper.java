@@ -74,6 +74,7 @@ public class ConfigHelper {
 
     /**
      * Keep entries starting with a given prefix from a property map but remove the prefix.
+     * Null values are skipped from that first filtering pass.
      * <p>Examples for 'auth' as prefix.</p>
      *
      * <ul>

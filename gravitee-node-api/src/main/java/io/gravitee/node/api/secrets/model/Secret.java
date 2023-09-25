@@ -35,11 +35,11 @@ public final class Secret {
      *
      * @param data          a byte array or a String
      * @param base64Encoded to declare data as base64 encoded
-     * @throws IllegalArgumentException if <code>data</code> is not byte array or String
+     * @throws IllegalArgumentException if <code>data</code> is not byte array or String or is null
      */
     public Secret(Object data, boolean base64Encoded) {
         if (!(data instanceof String) && !(data instanceof byte[])) {
-            throw new IllegalArgumentException("secret can only be of type String or byte[] any may not be null");
+            throw new IllegalArgumentException("secret can only be of type String or byte[] and must not be null");
         }
         this.data = data;
         this.base64Encoded = base64Encoded;
@@ -64,7 +64,7 @@ public final class Secret {
      * If {@link Secret} is a String, convert to byte array assuming String is UTF-8.
      * If {@link Secret} is declared to contains base64 data, it will be decoded.
      *
-     * @return usage secret value as bytes
+     * @return secret value as bytes
      * @see Base64.Decoder#decode(byte[])
      */
     public byte[] asBytes() {
@@ -82,7 +82,7 @@ public final class Secret {
      * If {@link Secret} is a byte array, convert to String assuming bytes are UTF-8.
      * If {@link Secret} is declared to contains base64 data, it will be decoded.
      *
-     * @return usable secret value as String
+     * @return secret value as String
      * @see Base64.Decoder#decode(byte[])
      */
     public String asString() {

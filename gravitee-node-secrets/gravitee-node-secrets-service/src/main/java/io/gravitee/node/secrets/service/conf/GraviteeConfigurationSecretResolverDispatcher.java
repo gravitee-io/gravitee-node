@@ -129,30 +129,21 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
      */
     public boolean canResolveSingleValue(String location) {
         Objects.requireNonNull(location);
-        return (
-            location.startsWith(SecretProvider.PLUGIN_URL_SCHEME) &&
-            enabledProviders()
-                .stream()
-                .anyMatch(manager -> {
-                    try {
-                        SecretMount secretMount = toSecretMount(location);
-                        if (canProviderHandle(location, manager)) {
-                            if (secretMount.isKeyEmpty()) {
-                                throw new IllegalArgumentException(
-                                    "Secret URL should must specify a 'key' in order to resolve a single value, such as: %s:<KEY>".formatted(
-                                            location
-                                        )
-                                );
-                            }
-                            return true;
-                        }
-                        return false;
-                    } catch (IllegalArgumentException | SecretProviderNotFoundException e) {
-                        // URL might not be suitable for resolving property
-                        return false;
-                    }
-                })
-        );
+        if (canHandle(location)) {
+            try {
+                SecretMount secretMount = toSecretMount(location);
+                if (secretMount.isKeyEmpty()) {
+                    throw new IllegalArgumentException(
+                        "Secret URL should must specify a 'key' in order to resolve a single value, such as: %s:<KEY>".formatted(location)
+                    );
+                }
+                return true;
+            } catch (IllegalArgumentException | SecretProviderNotFoundException e) {
+                // URL might not be suitable for resolving property
+                return false;
+            }
+        }
+        return false;
     }
 
     /**

@@ -32,7 +32,7 @@ public interface SecretProviderDispatcher {
      *
      * @param secretMount the secret mount to resolve
      * @return a secret map
-     * @throws SecretProviderNotFoundException if the {@link SecretMount#provider()} does match an enabled secret provider plugin
+     * @throws SecretProviderNotFoundException if the {@link SecretMount#provider()} does not match an enabled secret provider plugin
      * @throws SecretManagerException          if the secret manager throws an exception during resolution
      */
     Maybe<SecretMap> resolve(SecretMount secretMount) throws SecretProviderNotFoundException, SecretManagerException;
@@ -44,18 +44,18 @@ public interface SecretProviderDispatcher {
      *
      * @param secretMount the secret mount to resolve
      * @return a secret map
-     * @throws SecretProviderNotFoundException if the {@link SecretMount#provider()} does match an enabled secret provider plugin
+     * @throws SecretProviderNotFoundException if the {@link SecretMount#provider()} does not match an enabled secret provider plugin
      * @throws SecretManagerException          if the secret manager throws an exception during resolution
      */
     Maybe<Secret> resolveKey(SecretMount secretMount) throws SecretProviderNotFoundException, SecretManagerException;
 
     /**
-     * Delegates to {@link SecretProvider#watch(SecretMount)} in order to resolve a {@link SecretMap}.
+     * Delegates to {@link SecretProvider#watch(SecretMount)} in order to watch a {@link SecretMap}.
      *
      * @param secretMount the secret mount to resolve
      * @param events      events to filter, <code>null</code> means "all"
      * @return a secret map
-     * @throws SecretProviderNotFoundException if the {@link SecretMount#provider()} does match an enabled secret provider plugin
+     * @throws SecretProviderNotFoundException if the {@link SecretMount#provider()} does not match an enabled secret provider plugin
      * @throws SecretManagerException          if the secret manager throws an exception during resolution
      */
     Flowable<SecretMap> watch(SecretMount secretMount, SecretEvent.Type... events);
@@ -68,7 +68,7 @@ public interface SecretProviderDispatcher {
      * @param secretMount the secret mount to resolve
      * @param events      events to filter, null means "all"
      * @return a secret map
-     * @throws SecretProviderNotFoundException if the {@link SecretMount#provider()} does match an enabled secret provider plugin
+     * @throws SecretProviderNotFoundException if the {@link SecretMount#provider()} does not match an enabled secret provider plugin
      * @throws SecretManagerException          if the secret manager throws an exception during resolution
      */
     Flowable<Secret> watchKey(SecretMount secretMount, SecretEvent.Type... events);

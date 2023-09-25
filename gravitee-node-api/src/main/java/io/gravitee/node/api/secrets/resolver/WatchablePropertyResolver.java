@@ -11,14 +11,14 @@ public interface WatchablePropertyResolver<T> extends PropertyResolver<T> {
      * Check if this property can be watched
      *
      * @param value the property value
-     * @return true if revolve or watch can be called
+     * @return true if {@link #watch(String)} can be called
      */
     default boolean isWatchable(String value) {
         return true;
     }
 
     /**
-     * Watch for any changes in the property and emmit the new values
+     * Watch for any changes in the property and emit the new values
      *
      * @param location the value as a URL
      * @return a Flowable of resolved value
