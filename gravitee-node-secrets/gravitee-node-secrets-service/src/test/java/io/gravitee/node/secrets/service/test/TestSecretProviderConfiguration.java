@@ -2,6 +2,7 @@ package io.gravitee.node.secrets.service.test;
 
 import io.gravitee.node.api.secrets.SecretManagerConfiguration;
 import io.gravitee.node.api.secrets.util.ConfigHelper;
+import java.util.HashMap;
 import java.util.Map;
 
 public class TestSecretProviderConfiguration implements SecretManagerConfiguration {
@@ -19,7 +20,7 @@ public class TestSecretProviderConfiguration implements SecretManagerConfigurati
         return (boolean) config.get("enabled");
     }
 
-    public Map<String, ?> getTestSecrets() {
-        return testSecrets;
+    public Map<String, Object> getTestSecrets() {
+        return new HashMap<>(testSecrets);
     }
 }

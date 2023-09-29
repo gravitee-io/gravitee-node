@@ -43,8 +43,7 @@ public class SecretProviderKeyStoreLoader implements KeyStoreLoader {
         if (options.isWatch()) {
             this.watch =
                 secretResolverDispatcher
-                    .watch(secretMount, SecretEvent.Type.UPDATED, SecretEvent.Type.CREATED)
-                    .skip(1) // watch will get the data again, we don't need it
+                    .watch(secretMount, SecretEvent.Type.UPDATED)
                     .subscribe(secretMap -> createBundleAndNotify(secretMap, secretMount), ex -> log.error("cannot create keystore", ex));
         }
     }

@@ -22,9 +22,13 @@ public class TestSecretProvider implements SecretProvider {
 
     @Override
     public Flowable<SecretEvent> watch(SecretMount secretMount) {
+        Map<String, Object> created = conf.getTestSecrets();
+        created.put("created_flag", "true");
+        Map<String, Object> updated = conf.getTestSecrets();
+        updated.put("updated_flag", "true");
         return Flowable.just(
-            new SecretEvent(SecretEvent.Type.CREATED, secretMap(conf.getTestSecrets(), secretMount)),
-            new SecretEvent(SecretEvent.Type.UPDATED, secretMap(conf.getTestSecrets(), secretMount))
+            new SecretEvent(SecretEvent.Type.CREATED, secretMap(created, secretMount)),
+            new SecretEvent(SecretEvent.Type.UPDATED, secretMap(updated, secretMount))
         );
     }
 

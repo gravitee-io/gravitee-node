@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import io.gravitee.node.api.secrets.errors.SecretManagerConfigurationException;
 import io.gravitee.node.api.secrets.errors.SecretProviderNotFoundException;
 import io.gravitee.node.api.secrets.model.Secret;
+import io.gravitee.node.api.secrets.model.SecretEvent;
 import io.gravitee.node.api.secrets.model.SecretMap;
 import io.gravitee.node.api.secrets.model.SecretMount;
 import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderPluginManager;
@@ -72,8 +73,7 @@ class GraviteeConfigurationSecretResolverDispatcherTest {
         GraviteeConfigurationSecretResolverDispatcher cut = newDispatcher(pluginManager, env);
         SecretMount secretMount = cut.toSecretMount("secret://test/test:password");
 
-        Secret secret = cut.watchKey(secretMount).blockingFirst();
-        assertThat(secret).isNotNull();
+        Secret secret = cut.watchKey(secretMount).blockingFirst(); // don't about the rest
         assertThat(secret.asString()).isEqualTo("thisIsTheBestPasswordOfAllTime!");
         // secret was NOT cached
         assertThat(cut.secrets().get(secretMount.location())).isNull();
@@ -85,6 +85,39 @@ class GraviteeConfigurationSecretResolverDispatcherTest {
             .get()
             .extracting(Secret::asString)
             .isEqualTo("thisIsTheBestPasswordOfAllTime!");
+    }
+
+    @Test
+    void should_create_secret_provider_and_watch_filtered() {
+        DefaultSecretProviderPluginManager pluginManager = newPluginManager();
+        MockEnvironment env = newEnvironment();
+        env.setProperty("secrets.test.secrets.password", "thisIsTheBestPasswordOfAllTime!");
+        GraviteeConfigurationSecretResolverDispatcher cut = newDispatcher(pluginManager, env);
+        SecretMount secretMount = cut.toSecretMount("secret://test/test:password");
+
+        // make sure we have two different maps (Flowable always returns the same)
+        SecretMap first = cut.watch(secretMount).blockingFirst();
+        SecretMap last = cut.watch(secretMount).blockingLast();
+        assertThat(first).isNotEqualTo(last).isNotNull();
+        assertThat(first.getSecret(new SecretMount(null, null, "created_flag", null))).isPresent();
+        assertThat(first.getSecret(new SecretMount(null, null, "updated_flag", null))).isNotPresent();
+        assertThat(last.getSecret(new SecretMount(null, null, "created_flag", null))).isNotPresent();
+        assertThat(last.getSecret(new SecretMount(null, null, "updated_flag", null))).isPresent();
+
+        first = cut.watch(secretMount, SecretEvent.Type.UPDATED).blockingFirst();
+        last = cut.watch(secretMount, SecretEvent.Type.UPDATED).blockingLast();
+        assertThat(first).isEqualTo(last).isNotNull();
+        assertThat(first.getSecret(new SecretMount(null, null, "created_flag", null))).isNotPresent();
+        assertThat(first.getSecret(new SecretMount(null, null, "updated_flag", null))).isPresent();
+
+        first = cut.watch(secretMount, SecretEvent.Type.CREATED).blockingFirst();
+        last = cut.watch(secretMount, SecretEvent.Type.CREATED).blockingLast();
+        assertThat(first).isEqualTo(last).isNotNull();
+        assertThat(first.getSecret(new SecretMount(null, null, "created_flag", null))).isPresent();
+        assertThat(first.getSecret(new SecretMount(null, null, "updated_flag", null))).isNotPresent();
+
+        Iterable<SecretMap> all = cut.watch(secretMount, SecretEvent.Type.DELETED).blockingIterable();
+        assertThat(all).isEmpty();
     }
 
     @Test
