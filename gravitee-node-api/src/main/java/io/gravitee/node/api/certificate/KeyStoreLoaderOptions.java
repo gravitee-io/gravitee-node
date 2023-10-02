@@ -27,6 +27,7 @@ public class KeyStoreLoaderOptions {
     private String keyStorePassword;
     private String keyStoreType;
     private List<String> kubernetesLocations;
+    private String secretLocation;
     private List<CertificateOptions> keyStoreCertificates;
     private boolean watch = true;
     private String defaultAlias = null;
@@ -69,6 +70,14 @@ public class KeyStoreLoaderOptions {
 
     public void setKubernetesLocations(List<String> kubernetesLocations) {
         this.kubernetesLocations = kubernetesLocations;
+    }
+
+    public String getSecretLocation() {
+        return secretLocation;
+    }
+
+    public void setSecretLocation(String secretLocation) {
+        this.secretLocation = secretLocation;
     }
 
     public boolean isWatch() {
@@ -116,6 +125,11 @@ public class KeyStoreLoaderOptions {
 
         public Builder withKubernetesLocations(List<String> kubernetesLocations) {
             keyStoreLoaderOptions.setKubernetesLocations(kubernetesLocations);
+            return this;
+        }
+
+        public Builder withSecretLocation(String secretLocation) {
+            keyStoreLoaderOptions.setSecretLocation(secretLocation);
             return this;
         }
 

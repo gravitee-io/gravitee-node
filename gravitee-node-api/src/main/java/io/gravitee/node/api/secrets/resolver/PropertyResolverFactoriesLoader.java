@@ -13,34 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.kubernetes.propertyresolver;
+package io.gravitee.node.api.secrets.resolver;
 
-import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.Maybe;
+import io.gravitee.common.spring.factory.SpringFactoriesLoader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  * @since 3.9.11
  */
-public interface PropertyResolver {
-    /**
-     * Check if this property can be resolved
-     * @param currentValue
-     * @return
-     */
-    boolean supports(String currentValue);
+public class PropertyResolverFactoriesLoader extends SpringFactoriesLoader<PropertyResolver> {
 
-    /**
-     * @param location
-     * @return The values of the given property if exist
-     */
-    Maybe<Object> resolve(String location);
+    @Override
+    protected Class<PropertyResolver> getObjectType() {
+        return PropertyResolver.class;
+    }
 
-    /**
-     * Watch for any changes in the property and emmit the new values
-     * @param location
-     * @return last value
-     */
-    Flowable<Object> watch(String location);
+    public List<PropertyResolver> getPropertyResolvers() {
+        return new ArrayList<>(getFactoriesInstances());
+    }
 }
