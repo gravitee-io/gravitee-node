@@ -1,6 +1,15 @@
 # [4.5.0](https://github.com/gravitee-io/gravitee-node/compare/4.4.0...4.5.0) (2023-11-17)
 
 
+# [4.4.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/4.3.1...4.4.0-alpha.1) (2023-10-02)
+
+
+### Features
+
+* archi-222 secret provider plugin handling and configuration service ([#244](https://github.com/gravitee-io/gravitee-node/issues/244)) ([f5cd242](https://github.com/gravitee-io/gravitee-node/commit/f5cd242260b149933729beea81b56812d82fdd5b))
+
+
+
 ### Features
 
 * allow AE as an enterprise feature ([476165c](https://github.com/gravitee-io/gravitee-node/commit/476165c2e40a83a2cf33f4f7c811b50aeb2487d4))

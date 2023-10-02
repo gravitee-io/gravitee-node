@@ -24,15 +24,11 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>4.5.0-alpha.1</version>
+        <version>4.5.0</version>
     </parent>
 
-    <artifactId>gravitee-node-vertx</artifactId>
-    <name>Gravitee.io - Node - Vert.x Support</name>
-
-    <properties>
-        <mockito-inline.version>3.12.4</mockito-inline.version>
-    </properties>
+    <artifactId>gravitee-node-license</artifactId>
+    <name>Gravitee.io - Node - License</name>
 
     <dependencies>
         <!-- Gravitee.io -->
@@ -42,67 +38,71 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-tracing</artifactId>
-            <version>${project.version}</version>
+            <groupId>io.gravitee.common</groupId>
+            <artifactId>gravitee-common</artifactId>
         </dependency>
         <dependency>
             <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-certificates</artifactId>
+            <artifactId>gravitee-node-management</artifactId>
             <version>${project.version}</version>
         </dependency>
 
-        <!-- Vert.x -->
+        <!-- Licensing -->
         <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-micrometer-metrics</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-rx-java3</artifactId>
+            <groupId>com.javax0.license3j</groupId>
+            <artifactId>license3j</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>${micrometer-registry-prometheus.version}</version>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.latencyutils</groupId>
-            <artifactId>LatencyUtils</artifactId>
-            <version>${LatencyUtils.version}</version>
-        </dependency>
-
-        <!-- Spring -->
+        <!-- Spring dependencies -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <scope>provided</scope>
         </dependency>
-
-        <!-- Tests -->
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <scope>test</scope>
+            <artifactId>spring-beans</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-inline</artifactId>
-            <version>${mockito-inline.version}</version>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
 
+        <!-- Bouncy Castle -->
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

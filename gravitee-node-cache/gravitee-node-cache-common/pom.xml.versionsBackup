@@ -22,18 +22,29 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.gravitee.node.services</groupId>
-        <artifactId>gravitee-node-services</artifactId>
-        <version>4.5.0-alpha.1</version>
+        <groupId>io.gravitee.node</groupId>
+        <artifactId>gravitee-node-cache</artifactId>
+        <version>4.5.0</version>
     </parent>
 
-    <artifactId>gravitee-node-services-upgrader</artifactId>
-    <name>Gravitee.io - Node - Services - Upgrader</name>
+    <artifactId>gravitee-node-cache-common</artifactId>
+    <name>Gravitee.io - Node - Cache - Common</name>
+    <properties>
+        <caffeine.version>3.1.6</caffeine.version>
+        <awaitility.version>4.2.0</awaitility.version>
+    </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.jmockit</groupId>
-            <artifactId>jmockit</artifactId>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>${caffeine.version}</version>
         </dependency>
     </dependencies>
 
@@ -47,12 +58,7 @@
 
         <plugins>
             <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>
-                        -javaagent:"${settings.localRepository}"/org/jmockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar
-                    </argLine>
-                </configuration>
+                <artifactId>maven-assembly-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

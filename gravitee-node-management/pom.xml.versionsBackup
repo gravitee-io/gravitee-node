@@ -24,15 +24,11 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>4.5.0-alpha.1</version>
+        <version>4.5.0</version>
     </parent>
 
-    <artifactId>gravitee-node-vertx</artifactId>
-    <name>Gravitee.io - Node - Vert.x Support</name>
-
-    <properties>
-        <mockito-inline.version>3.12.4</mockito-inline.version>
-    </properties>
+    <artifactId>gravitee-node-management</artifactId>
+    <name>Gravitee.io - Node - Management</name>
 
     <dependencies>
         <!-- Gravitee.io -->
@@ -41,37 +37,23 @@
             <artifactId>gravitee-node-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+
         <dependency>
             <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-tracing</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-certificates</artifactId>
+            <artifactId>gravitee-node-vertx</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- Vert.x -->
         <dependency>
             <groupId>io.vertx</groupId>
-            <artifactId>vertx-micrometer-metrics</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-rx-java3</artifactId>
+            <artifactId>vertx-web</artifactId>
         </dependency>
 
+        <!-- Jackson dependencies -->
         <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>${micrometer-registry-prometheus.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.latencyutils</groupId>
-            <artifactId>LatencyUtils</artifactId>
-            <version>${LatencyUtils.version}</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
         <!-- Spring -->
@@ -84,25 +66,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <scope>provided</scope>
-        </dependency>
-
-        <!-- Tests -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-inline</artifactId>
-            <version>${mockito-inline.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
         </dependency>
     </dependencies>
 </project>

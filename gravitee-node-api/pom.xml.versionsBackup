@@ -23,41 +23,45 @@
 
     <parent>
         <groupId>io.gravitee.node</groupId>
-        <artifactId>gravitee-node-cache</artifactId>
-        <version>4.5.0-alpha.1</version>
+        <artifactId>gravitee-node</artifactId>
+        <version>4.5.0</version>
     </parent>
 
-    <artifactId>gravitee-node-cache-plugin-standalone</artifactId>
-    <name>Gravitee.io - Node - Cache - Plugin - Standalone</name>
-    <description>Standalone Cache is the default plugin used for in-memory caching.</description>
+    <artifactId>gravitee-node-api</artifactId>
+    <name>Gravitee.io - Node - API</name>
 
     <dependencies>
+        <!-- Gravitee.io dependencies -->
         <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-api</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
+            <groupId>io.gravitee.common</groupId>
+            <artifactId>gravitee-common</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-cache-common</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
+            <groupId>io.gravitee.plugin</groupId>
+            <artifactId>gravitee-plugin-api</artifactId>
+            <version>${gravitee-plugin.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.gravitee.reporter</groupId>
+            <artifactId>gravitee-reporter-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.gravitee.tracing</groupId>
+            <artifactId>gravitee-tracing-api</artifactId>
+        </dependency>
+
+        <!-- RxJava 3 -->
+        <dependency>
+            <groupId>io.reactivex.rxjava3</groupId>
+            <artifactId>rxjava</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
         </dependency>
     </dependencies>
-
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-
-        <plugins>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 </project>

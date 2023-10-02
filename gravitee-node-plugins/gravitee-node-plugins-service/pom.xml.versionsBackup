@@ -22,38 +22,18 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.gravitee.node.services</groupId>
-        <artifactId>gravitee-node-services</artifactId>
-        <version>4.5.0-alpha.1</version>
+        <groupId>io.gravitee.node</groupId>
+        <artifactId>gravitee-node-plugins</artifactId>
+        <version>4.5.0</version>
     </parent>
 
-    <artifactId>gravitee-node-services-upgrader</artifactId>
-    <name>Gravitee.io - Node - Services - Upgrader</name>
+    <artifactId>gravitee-node-plugins-service</artifactId>
+    <name>Gravitee.io - Node - Plugins - Services</name>
 
     <dependencies>
         <dependency>
-            <groupId>org.jmockit</groupId>
-            <artifactId>jmockit</artifactId>
+            <groupId>io.gravitee.plugin</groupId>
+            <artifactId>gravitee-plugin-core</artifactId>
         </dependency>
     </dependencies>
-
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-
-        <plugins>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>
-                        -javaagent:"${settings.localRepository}"/org/jmockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar
-                    </argLine>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>
