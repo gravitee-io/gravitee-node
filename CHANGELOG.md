@@ -1,3 +1,10 @@
+# [4.4.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/4.3.1...4.4.0-alpha.1) (2023-10-02)
+
+
+### Features
+
+* archi-222 secret provider plugin handling and configuration service ([#244](https://github.com/gravitee-io/gravitee-node/issues/244)) ([f5cd242](https://github.com/gravitee-io/gravitee-node/commit/f5cd242260b149933729beea81b56812d82fdd5b))
+
 ## [4.3.1](https://github.com/gravitee-io/gravitee-node/compare/4.3.0...4.3.1) (2023-09-14)
 
 
