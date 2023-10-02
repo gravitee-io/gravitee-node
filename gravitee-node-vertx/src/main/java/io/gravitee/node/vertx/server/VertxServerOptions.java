@@ -73,6 +73,7 @@ public class VertxServerOptions implements ServerOptions {
     protected String tlsProtocols;
     protected String keyStorePath;
     protected List<String> keyStoreKubernetes;
+    protected String keyStoreSecret;
     protected String keyStoreDefaultAlias;
     protected String keyStorePassword;
 
@@ -190,6 +191,7 @@ public class VertxServerOptions implements ServerOptions {
             this.keyStorePath(environment.getProperty(prefix + ".ssl.keystore.path"));
             this.keyStoreCertificates(getCertificateValues(prefix + ".ssl.keystore.certificates"));
             this.keyStoreKubernetes(getArrayValues(prefix + ".ssl.keystore.kubernetes"));
+            this.keyStoreSecret(environment.getProperty(prefix + ".ssl.keystore.secret"));
             this.keyStoreDefaultAlias(environment.getProperty(prefix + ".ssl.keystore.defaultAlias"));
             this.keyStorePassword(environment.getProperty(prefix + ".ssl.keystore.password"));
             this.keyStoreWatch(environment.getProperty(prefix + ".ssl.keystore.watch", Boolean.class, DEFAULT_STORE_WATCH));

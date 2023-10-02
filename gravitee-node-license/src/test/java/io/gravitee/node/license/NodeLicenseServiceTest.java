@@ -87,7 +87,8 @@ class NodeLicenseServiceTest {
                 "enterprise-legacy-upgrade",
                 "observability",
                 "event-native",
-                "enterprise-policy"
+                "enterprise-policy",
+                "enterprise-secret-manager"
             );
     }
 
@@ -157,6 +158,8 @@ class NodeLicenseServiceTest {
                 "am-policy-mfa-challenge",
                 "am-policy-account-linking",
                 "am-resource-sfr",
+                "gravitee-en-secretprovider-aws",
+                "gravitee-en-secretprovider-vault",
                 "alert-engine"
             );
     }

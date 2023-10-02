@@ -212,7 +212,8 @@ public class VertxHttpServerOptions extends VertxServerOptions {
                 .withKeyStoreType(keyStoreType)
                 .withKeyStoreCertificates(keyStoreCertificates)
                 .withKubernetesLocations(keyStoreKubernetes)
-                .withWatch(keyStoreWatch) // TODO: allow to configure watch (globally, just for keystore, ...) ?
+                .withSecretLocation(keyStoreSecret)
+                .withWatch(keyStoreWatch)
                 .withDefaultAlias(keyStoreDefaultAlias)
                 .build();
 
