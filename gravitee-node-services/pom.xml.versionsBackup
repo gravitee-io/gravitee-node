@@ -22,18 +22,39 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.gravitee.node.services</groupId>
-        <artifactId>gravitee-node-services</artifactId>
-        <version>4.5.0-alpha.1</version>
+        <groupId>io.gravitee.node</groupId>
+        <artifactId>gravitee-node</artifactId>
+        <version>4.5.0</version>
     </parent>
 
-    <artifactId>gravitee-node-services-upgrader</artifactId>
-    <name>Gravitee.io - Node - Services - Upgrader</name>
+    <groupId>io.gravitee.node.services</groupId>
+    <artifactId>gravitee-node-services</artifactId>
+    <name>Gravitee.io - Node - Services</name>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>gravitee-node-services-initializer</module>
+        <module>gravitee-node-services-upgrader</module>
+    </modules>
 
     <dependencies>
+        <!-- Gravitee.io -->
         <dependency>
-            <groupId>org.jmockit</groupId>
-            <artifactId>jmockit</artifactId>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -44,16 +65,5 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-
-        <plugins>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>
-                        -javaagent:"${settings.localRepository}"/org/jmockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar
-                    </argLine>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
 </project>

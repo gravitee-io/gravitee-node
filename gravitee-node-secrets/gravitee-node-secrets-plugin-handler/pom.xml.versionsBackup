@@ -20,40 +20,25 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
-        <groupId>io.gravitee.node.services</groupId>
-        <artifactId>gravitee-node-services</artifactId>
-        <version>4.5.0-alpha.1</version>
+        <groupId>io.gravitee.node</groupId>
+        <artifactId>gravitee-node-secrets</artifactId>
+        <version>4.4.0-alpha.1</version>
     </parent>
 
-    <artifactId>gravitee-node-services-upgrader</artifactId>
-    <name>Gravitee.io - Node - Services - Upgrader</name>
+    <artifactId>gravitee-node-secrets-plugin-handler</artifactId>
+    <name>Gravitee.io - Node - Secrets - Plugin - Handler</name>
 
     <dependencies>
+
         <dependency>
-            <groupId>org.jmockit</groupId>
-            <artifactId>jmockit</artifactId>
+            <groupId>io.gravitee.plugin</groupId>
+            <artifactId>gravitee-plugin-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-api</artifactId>
         </dependency>
     </dependencies>
 
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-
-        <plugins>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>
-                        -javaagent:"${settings.localRepository}"/org/jmockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar
-                    </argLine>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

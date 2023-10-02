@@ -20,60 +20,62 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>io.gravitee.node</groupId>
-        <artifactId>gravitee-node-secrets</artifactId>
-        <version>4.5.0-alpha.1</version>
+        <artifactId>gravitee-node</artifactId>
+        <version>4.5.0</version>
     </parent>
 
-    <artifactId>gravitee-node-secrets-service</artifactId>
-    <name>Gravitee.io - Node - Secrets - Service</name>
+    <artifactId>gravitee-node-jetty</artifactId>
+    <name>Gravitee.io - Node - Jetty</name>
 
     <dependencies>
+        <!-- Gravitee.io -->
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-container</artifactId>
         </dependency>
+
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-secrets-plugin-handler</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.reactivex.rxjava3</groupId>
-            <artifactId>rxjava</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-certificates</artifactId>
-        </dependency>
-        <!-- tests -->
+
+        <!-- Spring -->
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- Bouncy Castle -->
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>${bouncycastle.version}</version>
-            <scope>test</scope>
+            <artifactId>spring-beans</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk15on</artifactId>
-            <version>${bouncycastle.version}</version>
-            <scope>test</scope>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
+        <!-- To override Spring commons-logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+        </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+        </dependency>
+
+        <!-- Jetty -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.awaitility</groupId>
-            <artifactId>awaitility</artifactId>
-            <version>4.2.0</version>
-            <scope>test</scope>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlets</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-jmx</artifactId>
         </dependency>
     </dependencies>
 </project>

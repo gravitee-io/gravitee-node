@@ -22,38 +22,30 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.gravitee.node.services</groupId>
-        <artifactId>gravitee-node-services</artifactId>
-        <version>4.5.0-alpha.1</version>
+        <groupId>io.gravitee.node</groupId>
+        <artifactId>gravitee-node</artifactId>
+        <version>4.5.0</version>
     </parent>
 
-    <artifactId>gravitee-node-services-upgrader</artifactId>
-    <name>Gravitee.io - Node - Services - Upgrader</name>
+    <artifactId>gravitee-node-cache</artifactId>
+    <name>Gravitee.io - Node - Cache</name>
+    <packaging>pom</packaging>
 
+    <properties>
+        <awaitility.version>4.2.0</awaitility.version>
+    </properties>
+    <modules>
+        <module>gravitee-node-cache-common</module>
+        <module>gravitee-node-cache-plugin-handler</module>
+        <module>gravitee-node-cache-plugin-standalone</module>
+        <module>gravitee-node-cache-plugin-hazelcast</module>
+    </modules>
     <dependencies>
         <dependency>
-            <groupId>org.jmockit</groupId>
-            <artifactId>jmockit</artifactId>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>${awaitility.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-
-        <plugins>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>
-                        -javaagent:"${settings.localRepository}"/org/jmockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar
-                    </argLine>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

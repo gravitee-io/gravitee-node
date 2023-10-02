@@ -23,41 +23,47 @@
 
     <parent>
         <groupId>io.gravitee.node</groupId>
-        <artifactId>gravitee-node-cache</artifactId>
-        <version>4.5.0-alpha.1</version>
+        <artifactId>gravitee-node</artifactId>
+        <version>4.5.0</version>
     </parent>
 
-    <artifactId>gravitee-node-cache-plugin-standalone</artifactId>
-    <name>Gravitee.io - Node - Cache - Plugin - Standalone</name>
-    <description>Standalone Cache is the default plugin used for in-memory caching.</description>
+    <artifactId>gravitee-node-plugins</artifactId>
+    <name>Gravitee.io - Node - Plugins</name>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>gravitee-node-plugins-service</module>
+    </modules>
 
     <dependencies>
+        <!-- Gravitee.io -->
         <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-api</artifactId>
-            <version>${project.version}</version>
+            <groupId>io.gravitee.common</groupId>
+            <artifactId>gravitee-common</artifactId>
+        </dependency>
+
+        <!-- Spring -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-cache-common</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
             <scope>provided</scope>
+        </dependency>
+
+        <!-- Unit Tests -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-
-        <plugins>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 </project>

@@ -19,61 +19,64 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
+        <artifactId>gravitee-node</artifactId>
         <groupId>io.gravitee.node</groupId>
-        <artifactId>gravitee-node-secrets</artifactId>
-        <version>4.5.0-alpha.1</version>
+        <version>4.5.0</version>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>gravitee-node-secrets-service</artifactId>
-    <name>Gravitee.io - Node - Secrets - Service</name>
+    <artifactId>gravitee-node-notifier</artifactId>
+    <name>Gravitee.io - Node - Notifier</name>
+
+    <properties>
+        <javax-inject.version>1</javax-inject.version>
+        <jakarta-inject.version>2.0.1</jakarta-inject.version>
+    </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-secrets-plugin-handler</artifactId>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>${javax-inject.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.reactivex.rxjava3</groupId>
-            <artifactId>rxjava</artifactId>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <version>${jakarta-inject.version}</version>
         </dependency>
+
         <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-certificates</artifactId>
+            <groupId>io.gravitee.plugin</groupId>
+            <artifactId>gravitee-plugin-notifier</artifactId>
         </dependency>
-        <!-- tests -->
+
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-rx-java3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Bouncy Castle -->
         <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>${bouncycastle.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk15on</artifactId>
-            <version>${bouncycastle.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.awaitility</groupId>
-            <artifactId>awaitility</artifactId>
-            <version>4.2.0</version>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
 </project>

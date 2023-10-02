@@ -23,16 +23,12 @@
 
     <parent>
         <groupId>io.gravitee.node</groupId>
-        <artifactId>gravitee-node</artifactId>
-        <version>4.5.0-alpha.1</version>
+        <artifactId>gravitee-node-cluster</artifactId>
+        <version>4.5.0</version>
     </parent>
 
-    <artifactId>gravitee-node-vertx</artifactId>
-    <name>Gravitee.io - Node - Vert.x Support</name>
-
-    <properties>
-        <mockito-inline.version>3.12.4</mockito-inline.version>
-    </properties>
+    <artifactId>gravitee-node-cluster-plugin-handler</artifactId>
+    <name>Gravitee.io - Node - Cluster - Plugin - Handler</name>
 
     <dependencies>
         <!-- Gravitee.io -->
@@ -41,68 +37,74 @@
             <artifactId>gravitee-node-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+
         <dependency>
             <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-tracing</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-certificates</artifactId>
+            <artifactId>gravitee-node-plugins-service</artifactId>
             <version>${project.version}</version>
         </dependency>
 
-        <!-- Vert.x -->
         <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-micrometer-metrics</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-rx-java3</artifactId>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-management</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>${micrometer-registry-prometheus.version}</version>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-reporter</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.latencyutils</groupId>
-            <artifactId>LatencyUtils</artifactId>
-            <version>${LatencyUtils.version}</version>
+            <groupId>io.gravitee.common</groupId>
+            <artifactId>gravitee-common</artifactId>
         </dependency>
 
-        <!-- Spring -->
+        <!-- Logging -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+        </dependency>
+
+        <!-- Spring dependencies -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <scope>provided</scope>
         </dependency>
-
-        <!-- Tests -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <scope>test</scope>
         </dependency>
 
+        <!-- Used to load configuration file -->
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-inline</artifactId>
-            <version>${mockito-inline.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>${snakeyaml.version}</version>
         </dependency>
     </dependencies>
 </project>
