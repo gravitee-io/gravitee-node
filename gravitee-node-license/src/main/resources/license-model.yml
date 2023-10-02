@@ -87,6 +87,7 @@ tiers:
             - enterprise-identity-provider
             - observability
             - enterprise-policy
+            - event-native
     universe:
         packs:
             - enterprise-features
