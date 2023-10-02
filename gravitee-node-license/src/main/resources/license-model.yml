@@ -73,6 +73,10 @@ packs:
             - apim-en-endpoint-solace
             - apim-en-schema-registry-provider
             - apim-connectors-advanced # for removal
+    enterprise-secret-manager:
+        features:
+            - gravitee-en-secretprovider-vault
+            - gravitee-en-secretprovider-aws
 
 tiers:
     planet:
@@ -96,3 +100,4 @@ tiers:
             - enterprise-policy
             - event-native
             - enterprise-mfa-factor
+            - enterprise-secret-manager
