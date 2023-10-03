@@ -47,11 +47,13 @@
 
 # [4.6.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/4.4.0-alpha.5...4.4.0-alpha.6) (2023-11-13)
 
+
 ### Bug Fixes
 
 * reshuffle options in the right place, fix sonar issues ([0e17162](https://github.com/gravitee-io/gravitee-node/commit/0e1716256bcfdbda658c05552033ebdbb049e457))
 
 * clean license file ([a4e25a1](https://github.com/gravitee-io/gravitee-node/commit/a4e25a1750aa14004b9cb37103b684ab54598bd0))
+
 
 ### Features
 
