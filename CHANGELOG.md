@@ -1,3 +1,10 @@
+# [4.4.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/4.4.0-alpha.1...4.4.0-alpha.2) (2023-10-03)
+
+
+### Bug Fixes
+
+* update kubernetes client to version 3.0.0 ([23ca163](https://github.com/gravitee-io/gravitee-node/commit/23ca1636a4f22ebe6752f94b009c8ac583bc6e59))
+
 # [4.4.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/4.3.1...4.4.0-alpha.1) (2023-10-02)
 
 
