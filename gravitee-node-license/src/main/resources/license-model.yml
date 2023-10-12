@@ -77,7 +77,6 @@ packs:
     enterprise-secret-manager:
         features:
             - gravitee-en-secretprovider-vault
-            - gravitee-en-secretprovider-aws
 
 tiers:
     planet:
