@@ -1,3 +1,10 @@
+# [4.4.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/4.4.0-alpha.2...4.4.0-alpha.3) (2023-10-12)
+
+
+### Bug Fixes
+
+* clean license file ([a4e25a1](https://github.com/gravitee-io/gravitee-node/commit/a4e25a1750aa14004b9cb37103b684ab54598bd0))
+
 # [4.4.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/4.4.0-alpha.1...4.4.0-alpha.2) (2023-10-03)
 
 
