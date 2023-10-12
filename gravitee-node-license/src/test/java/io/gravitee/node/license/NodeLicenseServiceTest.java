@@ -158,7 +158,6 @@ class NodeLicenseServiceTest {
                 "am-policy-mfa-challenge",
                 "am-policy-account-linking",
                 "am-resource-sfr",
-                "gravitee-en-secretprovider-aws",
                 "gravitee-en-secretprovider-vault"
             );
     }
