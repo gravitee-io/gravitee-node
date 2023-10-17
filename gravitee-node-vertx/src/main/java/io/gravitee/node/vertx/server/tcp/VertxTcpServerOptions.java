@@ -16,8 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @SuperBuilder
 public class VertxTcpServerOptions extends VertxServerOptions {
 
-    public static String TCP_PREFIX = "tcp";
-    private boolean logActivity;
+    public static final String TCP_PREFIX = "tcp";
 
     public NetServerOptions createNetServerOptions() {
         var options = new NetServerOptions();
@@ -26,13 +25,11 @@ public class VertxTcpServerOptions extends VertxServerOptions {
         options.setPort(this.port);
         options.setHost(this.host);
 
-        options.setLogActivity(this.logActivity);
-
-        // FIXME: must be secure with SNI on
-        if (this.secured) {
-            options.setSni(sni);
-            // Specify client auth (mtls).
+        if (this.secured && this.sni) {
+            options.setSni(true);
             options.setClientAuth(ClientAuth.valueOf(clientAuth));
+        } else {
+            throw new IllegalArgumentException("Cannot start unsecured TCP server without SNI enabled");
         }
 
         setupTcp(options);
