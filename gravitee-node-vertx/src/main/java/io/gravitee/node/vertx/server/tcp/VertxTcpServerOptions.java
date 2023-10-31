@@ -29,7 +29,7 @@ public class VertxTcpServerOptions extends VertxServerOptions {
             options.setSni(true);
             options.setClientAuth(ClientAuth.valueOf(clientAuth));
         } else {
-            throw new IllegalArgumentException("Cannot start unsecured TCP server without SNI enabled");
+            throw new IllegalArgumentException("Cannot start unsecured TCP server or without SNI enabled");
         }
 
         setupTcp(options);
