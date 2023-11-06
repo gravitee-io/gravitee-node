@@ -206,8 +206,8 @@ class VertxTcpServerOptionsTest {
 
     @Test
     void should_throw_illegal_argument_exception_from_environment_configuration_when_prefix_is_not_set() {
-        VertxServerOptionsBuilder<?, ?> builder = builder().environment(environment);
-        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, builder::build);
+        VertxServerOptionsBuilder<?, ?> builder = builder();
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> builder.environment(environment));
 
         assertThat(exception.getMessage()).isEqualTo("Prefix must be set before environment");
     }
