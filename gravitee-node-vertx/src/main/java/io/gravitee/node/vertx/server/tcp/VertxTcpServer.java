@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
+ * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
 public class VertxTcpServer extends VertxServer<NetServer, VertxTcpServerOptions> {

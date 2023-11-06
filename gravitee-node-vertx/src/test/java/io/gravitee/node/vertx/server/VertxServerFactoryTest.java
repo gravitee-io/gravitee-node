@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 import io.gravitee.node.vertx.server.http.VertxHttpServerOptions;
+import io.gravitee.node.vertx.server.tcp.VertxTcpServerOptions;
 import io.vertx.rxjava3.core.Vertx;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,16 @@ class VertxServerFactoryTest {
     @Test
     void should_create_vertx_http_server() {
         final VertxHttpServerOptions options = VertxHttpServerOptions.builder().build();
+        final VertxServer<?, VertxServerOptions> vertxServer = cut.create(options);
+
+        assertThat(vertxServer).isNotNull();
+        assertThat(vertxServer.options()).isEqualTo(options);
+        assertThat(vertxServer.instances()).isEmpty();
+    }
+
+    @Test
+    void should_create_vertx_net_server() {
+        final VertxTcpServerOptions options = VertxTcpServerOptions.builder().build();
         final VertxServer<?, VertxServerOptions> vertxServer = cut.create(options);
 
         assertThat(vertxServer).isNotNull();

@@ -19,7 +19,7 @@ import io.gravitee.node.api.server.ServerFactory;
 import io.vertx.rxjava3.core.Vertx;
 
 /**
- * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
+ * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
 public class VertxTcpServerFactory implements ServerFactory<VertxTcpServer, VertxTcpServerOptions> {
