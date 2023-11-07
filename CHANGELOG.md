@@ -1,3 +1,10 @@
+# [4.4.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/4.4.0-alpha.3...4.4.0-alpha.4) (2023-11-07)
+
+
+### Features
+
+* TCP proxy server factory and options ([ee48796](https://github.com/gravitee-io/gravitee-node/commit/ee487963b1fe1e5e16c533a3984bb0586e0abf3f))
+
 # [4.4.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/4.4.0-alpha.2...4.4.0-alpha.3) (2023-10-12)
 
 
