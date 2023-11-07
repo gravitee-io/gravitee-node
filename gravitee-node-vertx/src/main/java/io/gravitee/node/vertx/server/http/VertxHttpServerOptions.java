@@ -45,10 +45,9 @@ public class VertxHttpServerOptions extends VertxServerOptions {
     public static String HTTP_PREFIX = "http";
     public static final boolean DEFAULT_WEBSOCKET_ENABLED = false;
     public static final List<String> DEFAULT_WEBSOCKET_SUB_PROTOCOLS = new ArrayList<>();
-    public static final boolean DEFAULT_TCP_KEEP_ALIVE = true;
+    public static final boolean DEFAULT_ALPN = false;
     public static final boolean DEFAULT_HANDLE_100_CONTINUE = false;
     public static final String DEFAULT_TRACING_POLICY = HttpServerOptions.DEFAULT_TRACING_POLICY.name();
-    public static final int DEFAULT_IDLE_TIMEOUT = HttpServerOptions.DEFAULT_IDLE_TIMEOUT;
     public static final int DEFAULT_MAX_HEADER_SIZE = HttpServerOptions.DEFAULT_MAX_HEADER_SIZE;
     public static final int DEFAULT_MAX_CHUNK_SIZE = HttpServerOptions.DEFAULT_MAX_CHUNK_SIZE;
     public static final int DEFAULT_MAX_INITIAL_LINE_LENGTH = HttpServerOptions.DEFAULT_MAX_INITIAL_LINE_LENGTH;
@@ -62,12 +61,6 @@ public class VertxHttpServerOptions extends VertxServerOptions {
 
     @Builder.Default
     protected boolean alpn = DEFAULT_ALPN;
-
-    @Builder.Default
-    protected int idleTimeout = DEFAULT_IDLE_TIMEOUT;
-
-    @Builder.Default
-    protected boolean tcpKeepAlive = DEFAULT_TCP_KEEP_ALIVE;
 
     @Builder.Default
     private String tracingPolicy = DEFAULT_TRACING_POLICY;
@@ -113,8 +106,6 @@ public class VertxHttpServerOptions extends VertxServerOptions {
             super.environment(environment);
 
             this.alpn(environment.getProperty(prefix + ".alpn", Boolean.class, DEFAULT_ALPN));
-            this.idleTimeout(environment.getProperty(prefix + ".idleTimeout", Integer.class, DEFAULT_IDLE_TIMEOUT));
-            this.tcpKeepAlive(environment.getProperty(prefix + ".tcpKeepAlive", Boolean.class, DEFAULT_TCP_KEEP_ALIVE));
             this.tracingPolicy(environment.getProperty(prefix + ".tracingPolicy", DEFAULT_TRACING_POLICY));
             this.handle100Continue(environment.getProperty(prefix + ".handle100Continue", Boolean.class, DEFAULT_HANDLE_100_CONTINUE));
             this.maxHeaderSize(environment.getProperty(prefix + ".maxHeaderSize", Integer.class, DEFAULT_MAX_HEADER_SIZE));
@@ -167,60 +158,14 @@ public class VertxHttpServerOptions extends VertxServerOptions {
         options.setPort(this.port);
         options.setHost(this.host);
 
+        setupTcp(options);
+
         if (this.secured) {
-            if (keyStoreLoaderManager == null) {
-                throw new IllegalArgumentException("You must provide a KeyStoreLoaderManager when 'secured' is enabled.");
-            }
-
-            if (openssl) {
-                options.setSslEngineOptions(new OpenSSLEngineOptions());
-            }
-
-            options.setSsl(secured);
             options.setUseAlpn(alpn);
             options.setSni(sni);
 
-            // TLS protocol support
-            if (tlsProtocols != null) {
-                options.setEnabledSecureTransportProtocols(new HashSet<>(Arrays.asList(tlsProtocols.split("\\s*,\\s*"))));
-            }
-
-            // Restrict the authorized ciphers
-            if (authorizedTlsCipherSuites != null) {
-                authorizedTlsCipherSuites.stream().map(String::trim).forEach(options::addEnabledCipherSuite);
-            }
-
             // Specify client auth (mtls).
             options.setClientAuth(ClientAuth.valueOf(clientAuth));
-
-            if (trustStorePaths != null && !trustStorePaths.isEmpty()) {
-                if (trustStoreType == null || trustStoreType.isEmpty() || trustStoreType.equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)) {
-                    options.setTrustStoreOptions(new JksOptions().setPath(trustStorePaths.get(0)).setPassword(trustStorePassword));
-                } else if (trustStoreType.equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)) {
-                    final PemTrustOptions pemTrustOptions = new PemTrustOptions();
-                    trustStorePaths.forEach(pemTrustOptions::addCertPath);
-                    options.setPemTrustOptions(pemTrustOptions);
-                } else if (trustStoreType.equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)) {
-                    options.setPfxTrustOptions(new PfxOptions().setPath(trustStorePaths.get(0)).setPassword(trustStorePassword));
-                }
-            }
-
-            final KeyStoreLoaderOptions keyStoreLoaderOptions = KeyStoreLoaderOptions
-                .builder()
-                .withKeyStorePath(keyStorePath)
-                .withKeyStorePassword(keyStorePassword)
-                .withKeyStoreType(keyStoreType)
-                .withKeyStoreCertificates(keyStoreCertificates)
-                .withKubernetesLocations(keyStoreKubernetes)
-                .withSecretLocation(keyStoreSecret)
-                .withWatch(keyStoreWatch)
-                .withDefaultAlias(keyStoreDefaultAlias)
-                .build();
-
-            final VertxKeyStoreManager keyStoreManager = new VertxKeyStoreManager(sni);
-            final KeyStoreLoader keyStoreLoader = keyStoreLoaderManager.create(keyStoreLoaderOptions);
-            keyStoreManager.registerLoader(keyStoreLoader);
-            options.setKeyCertOptions(keyStoreManager.getKeyCertOptions());
         }
 
         if (haProxyProtocol) {
@@ -230,8 +175,6 @@ public class VertxHttpServerOptions extends VertxServerOptions {
         // Customizable configuration
         options.setHandle100ContinueAutomatically(handle100Continue);
         options.setCompressionSupported(compressionSupported);
-        options.setIdleTimeout(idleTimeout);
-        options.setTcpKeepAlive(tcpKeepAlive);
         options.setMaxChunkSize(maxChunkSize);
         options.setMaxHeaderSize(maxHeaderSize);
         options.setMaxInitialLineLength(maxInitialLineLength);

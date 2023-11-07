@@ -18,6 +18,8 @@ package io.gravitee.node.vertx.server;
 import io.gravitee.node.api.server.ServerFactory;
 import io.gravitee.node.vertx.server.http.VertxHttpServerFactory;
 import io.gravitee.node.vertx.server.http.VertxHttpServerOptions;
+import io.gravitee.node.vertx.server.tcp.VertxTcpServerFactory;
+import io.gravitee.node.vertx.server.tcp.VertxTcpServerOptions;
 import io.vertx.rxjava3.core.Vertx;
 
 /**
@@ -27,16 +29,21 @@ import io.vertx.rxjava3.core.Vertx;
 public class VertxServerFactory<T extends VertxServer<?, C>, C extends VertxServerOptions> implements ServerFactory<T, C> {
 
     private final VertxHttpServerFactory httpServerFactory;
+    private final VertxTcpServerFactory tcpServerFactory;
 
     public VertxServerFactory(Vertx vertx) {
         this.httpServerFactory = new VertxHttpServerFactory(vertx);
+        this.tcpServerFactory = new VertxTcpServerFactory(vertx);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public T create(C options) {
-        if (options instanceof VertxHttpServerOptions) {
-            return (T) httpServerFactory.create((VertxHttpServerOptions) options);
+        if (options instanceof VertxHttpServerOptions http) {
+            return (T) httpServerFactory.create(http);
+        }
+        if (options instanceof VertxTcpServerOptions tcp) {
+            return (T) tcpServerFactory.create(tcp);
         }
 
         throw new IllegalArgumentException(
