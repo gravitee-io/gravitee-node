@@ -15,7 +15,7 @@
  */
 package io.gravitee.node.container.plugin;
 
-import io.gravitee.node.api.license.NodeLicenseService;
+import io.gravitee.node.api.license.LicenseManager;
 import io.gravitee.plugin.api.PluginDeploymentContext;
 import io.gravitee.plugin.api.PluginDeploymentContextFactory;
 
@@ -25,18 +25,18 @@ import io.gravitee.plugin.api.PluginDeploymentContextFactory;
  */
 public class NodeDeploymentContextFactory implements PluginDeploymentContextFactory<PluginDeploymentContext> {
 
-    private final NodeLicenseService nodeLicenseService;
+    private final LicenseManager licenseManager;
 
     private NodePluginDeploymentContext nodePluginDeploymentContext;
 
-    public NodeDeploymentContextFactory(NodeLicenseService nodeLicenseService) {
-        this.nodeLicenseService = nodeLicenseService;
+    public NodeDeploymentContextFactory(LicenseManager licenseManager) {
+        this.licenseManager = licenseManager;
     }
 
     @Override
     public PluginDeploymentContext create() {
         if (nodePluginDeploymentContext == null) {
-            nodePluginDeploymentContext = new NodePluginDeploymentContext(nodeLicenseService);
+            nodePluginDeploymentContext = new NodePluginDeploymentContext(licenseManager);
         }
         return nodePluginDeploymentContext;
     }

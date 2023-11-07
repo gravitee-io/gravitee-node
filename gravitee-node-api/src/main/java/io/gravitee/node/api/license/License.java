@@ -1,37 +1,105 @@
-/**
- * Copyright (C) 2015 The Gravitee team (http://gravitee.io)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package io.gravitee.node.api.license;
 
+import java.util.Date;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * Represents a license structure that can be used to check enabled features.
+ *
+ * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
 public interface License {
-    Optional<Feature> feature(String name);
-
-    Map<String, Object> features();
+    String REFERENCE_TYPE_PLATFORM = "PLATFORM";
+    String REFERENCE_ID_PLATFORM = "PLATFORM";
+    String REFERENCE_TYPE_ORGANIZATION = "ORGANIZATION";
 
     /**
-     * @deprecated since 4.0.0.
-     * This method is kept because Alert Engine as not been updated to the new license model and still uses
-     * the old way of checking the alert-engine feature.
+     * The reference type the license is associated to (e.g. PLATFORM, ORGANIZATION, ...)
+     * @return the reference type the license is associated to.
      */
-    @Deprecated(since = "4.0.0", forRemoval = true)
-    boolean isFeatureIncluded(String name);
+    @Nonnull
+    String getReferenceType();
+
+    /**
+     * The reference id the license is associated to (e.g. organization identifier when associated to an organization)
+     * @return the reference type the license is associated to.
+     */
+    @Nonnull
+    String getReferenceId();
+
+    /**
+     * Return the tier associated with this license.
+     *
+     * @return the tier or <code>null</code> if no tier is assigned for this license.
+     */
+    @Nullable
+    String getTier();
+
+    /**
+     * Return the list of all packs allowed by this license.
+     *
+     * @return the list of all packs allowed by this license or empty if no packs is assigned.
+     */
+    @Nonnull
+    Set<String> getPacks();
+
+    /**
+     * Return the list of all features allowed for this license. The list of the features is built from the tier, packs and all individual features assigned.
+     *
+     * @return the list of all features allowed for this license.
+     */
+    @Nonnull
+    Set<String> getFeatures();
+
+    /**
+     * Indicates if a feature is enabled or not for this license.
+     *
+     * @param feature the feature to check.
+     *
+     * @return <code>true</code> if the feature is allowed, <code>false</code> else.
+     */
+    boolean isFeatureEnabled(String feature);
+
+    /**
+     * Verify that the license is valid. This checks both the signature and the expiration date.
+     *
+     * @throws InvalidLicenseException if the license is expired or invalid.
+     */
+    void verify() throws InvalidLicenseException;
+
+    /**
+     * Return the expiration date of the license or <code>null</code> if the license has no expiration date.
+     *
+     * @return the license expiration date.
+     */
+    @Nullable
+    Date getExpirationDate();
+
+    /**
+     * Indicates if the license is expired or not.
+     * Having a <code>null</code> expiration date means no expiration.
+     *
+     * @return <code>true</code> if the license has expired, <code>false</code> else.
+     */
+    boolean isExpired();
+
+    /**
+     * Return a map of all the attributes of the license.
+     *
+     * @return a map of all the attributes of the license.
+     */
+    @Nonnull
+    Map<String, Object> getAttributes();
+
+    /**
+     * Return a map of all the raw information of the license.
+     *
+     * @return a map of all the raw information of the license.
+     */
+    @Nonnull
+    Map<String, String> getRawAttributes();
 }

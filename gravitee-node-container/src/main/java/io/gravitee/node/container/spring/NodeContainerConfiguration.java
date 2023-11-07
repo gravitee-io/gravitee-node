@@ -16,12 +16,17 @@
 package io.gravitee.node.container.spring;
 
 import io.gravitee.node.api.Node;
+import io.gravitee.node.api.configuration.Configuration;
+import io.gravitee.node.api.license.LicenseFactory;
+import io.gravitee.node.api.license.LicenseManager;
 import io.gravitee.node.api.license.LicenseModelService;
-import io.gravitee.node.api.license.NodeLicenseService;
 import io.gravitee.node.container.plugin.NodeDeploymentContextFactory;
-import io.gravitee.node.license.LicenseModelServiceImpl;
-import io.gravitee.node.license.LicenseService;
-import io.gravitee.node.license.NodeLicenseServiceImpl;
+import io.gravitee.node.license.DefaultLicenseFactory;
+import io.gravitee.node.license.DefaultLicenseManager;
+import io.gravitee.node.license.DefaultLicenseModelService;
+import io.gravitee.node.license.LicenseLoaderService;
+import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
+import io.gravitee.plugin.core.api.PluginRegistry;
 import org.springframework.context.annotation.Bean;
 
 /**
@@ -31,22 +36,33 @@ import org.springframework.context.annotation.Bean;
 public class NodeContainerConfiguration {
 
     @Bean
-    public NodeDeploymentContextFactory nodeDeploymentContextFactory(NodeLicenseService nodeLicenseService) {
-        return new NodeDeploymentContextFactory(nodeLicenseService);
+    public NodeDeploymentContextFactory nodeDeploymentContextFactory(LicenseManager licenseManager) {
+        return new NodeDeploymentContextFactory(licenseManager);
     }
 
     @Bean
-    public LicenseService licenseService() {
-        return new LicenseService();
+    public LicenseManager licenseManager(PluginRegistry pluginRegistry) {
+        return new DefaultLicenseManager(pluginRegistry);
+    }
+
+    @Bean
+    public LicenseFactory managedLicenseFactory(LicenseModelService licenseModelService) {
+        return new DefaultLicenseFactory(licenseModelService);
     }
 
     @Bean
     public LicenseModelService licenseModelService() {
-        return new LicenseModelServiceImpl();
+        return new DefaultLicenseModelService();
     }
 
     @Bean
-    public NodeLicenseService nodeLicenseService(Node node, LicenseModelService licenseModelService) {
-        return new NodeLicenseServiceImpl(node, licenseModelService);
+    public LicenseLoaderService licenseLoaderService(
+        Node node,
+        Configuration configuration,
+        LicenseFactory licenseFactory,
+        LicenseManager licenseManager,
+        ManagementEndpointManager managementEndpointManager
+    ) {
+        return new LicenseLoaderService(node, configuration, licenseFactory, licenseManager, managementEndpointManager);
     }
 }

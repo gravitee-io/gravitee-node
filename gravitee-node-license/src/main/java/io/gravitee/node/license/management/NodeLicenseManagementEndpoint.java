@@ -18,7 +18,8 @@ package io.gravitee.node.license.management;
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.common.http.HttpStatusCode;
 import io.gravitee.common.http.MediaType;
-import io.gravitee.node.api.Node;
+import io.gravitee.node.api.license.License;
+import io.gravitee.node.api.license.LicenseManager;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
@@ -31,10 +32,10 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class NodeLicenseManagementEndpoint implements ManagementEndpoint {
 
-    private final Node node;
+    private final LicenseManager licenseManager;
 
-    public NodeLicenseManagementEndpoint(final Node node) {
-        this.node = node;
+    public NodeLicenseManagementEndpoint(final LicenseManager licenseManager) {
+        this.licenseManager = licenseManager;
     }
 
     @Override
@@ -51,17 +52,15 @@ public class NodeLicenseManagementEndpoint implements ManagementEndpoint {
     public void handle(RoutingContext ctx) {
         HttpServerResponse response = ctx.response();
 
-        if (node.license() == null) {
-            response.setStatusCode(HttpStatusCode.NOT_FOUND_404).end();
-        } else {
-            response.setStatusCode(HttpStatusCode.OK_200);
-            response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-            response.setChunked(true);
+        final License platformLicense = licenseManager.getPlatformLicense();
 
-            JsonObject payload = new JsonObject();
-            node.license().features().forEach(payload::put);
+        response.setStatusCode(HttpStatusCode.OK_200);
+        response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        response.setChunked(true);
 
-            response.end(payload.encodePrettily());
-        }
+        JsonObject payload = new JsonObject();
+        platformLicense.getRawAttributes().forEach(payload::put);
+
+        response.end(payload.encodePrettily());
     }
 }

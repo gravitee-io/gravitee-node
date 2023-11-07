@@ -15,7 +15,8 @@
  */
 package io.gravitee.node.container.plugin;
 
-import io.gravitee.node.api.license.NodeLicenseService;
+import io.gravitee.node.api.license.License;
+import io.gravitee.node.api.license.LicenseManager;
 import io.gravitee.plugin.api.PluginDeploymentContext;
 import lombok.AllArgsConstructor;
 
@@ -26,10 +27,15 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class NodePluginDeploymentContext implements PluginDeploymentContext {
 
-    private final NodeLicenseService nodeLicenseService;
+    private LicenseManager licenseManager;
 
     @Override
     public boolean isPluginDeployable(String featureName) {
-        return nodeLicenseService.isFeatureEnabled(featureName);
+        if (featureName != null) {
+            final License platformLicense = licenseManager.getPlatformLicense();
+            return platformLicense.isFeatureEnabled(featureName);
+        }
+
+        return true;
     }
 }
