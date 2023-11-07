@@ -21,10 +21,11 @@ import io.gravitee.common.service.AbstractService;
 import io.gravitee.common.util.ListReverser;
 import io.gravitee.common.util.Version;
 import io.gravitee.node.api.Node;
-import io.gravitee.node.api.license.License;
+import io.gravitee.node.api.license.LicenseManager;
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
 import io.gravitee.node.cluster.NodeClusterService;
-import io.gravitee.node.license.LicenseService;
+import io.gravitee.node.license.DefaultLicenseManager;
+import io.gravitee.node.license.LicenseLoaderService;
 import io.gravitee.node.management.http.ManagementService;
 import io.gravitee.node.monitoring.handler.NodeMonitoringEventHandler;
 import io.gravitee.node.monitoring.healthcheck.NodeHealthCheckService;
@@ -134,7 +135,8 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
     public List<Class<? extends LifecycleComponent>> components() {
         List<Class<? extends LifecycleComponent>> components = new ArrayList<>();
 
-        components.add(LicenseService.class);
+        components.add(LicenseManager.class);
+        components.add(LicenseLoaderService.class);
         components.add(PluginEventListener.class);
         components.add(PluginRegistry.class);
         components.add(NodeClusterService.class);
@@ -148,11 +150,6 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
         components.add(KeyStoreLoaderManager.class);
 
         return components;
-    }
-
-    @Override
-    public License license() {
-        return applicationContext.getBean(LicenseService.class).getLicense();
     }
 
     private void preStartComponents(Iterable<Class<? extends LifecycleComponent>> components) throws Exception {

@@ -29,7 +29,7 @@
 
     <groupId>io.gravitee.node</groupId>
     <artifactId>gravitee-node</artifactId>
-    <version>4.8.1</version>
+    <version>5.0.0-archi-278-organization-license-support-SNAPSHOT</version>
 
     <name>Gravitee.io - Node</name>
 

@@ -57,8 +57,26 @@ The Gravitee Node Services module gives an easy and common way to set up tracing
 The Gravitee Node Vertx module is a common piece of Gravitee products that offers the capabilities to set up vertx and instantiate vertx http servers easily.
 
 == Releases
-=== 👷 3.1.0 (alpha)
-The following is still a work in progress, as 3.1.0 has not been released yet.
+
+=== 5.0.x
+The following has been implemented on v5.0.x
+
+==== Changelog
+
+ * Add support for organization license
+
+==== LicenseManager migration
+
+Framework now offers support for both platform and organization licenses. Here are some highlights of the main changes:
+
+ * No more `Node.license()` → use LicenseManager.getPlatformLicense() instead
+ * Platform license is never null. If no license key is specified by the user, an OSS license with no feature and no expiry will be considered.
+ * Any product that needs to support the license at the organization level can implement the repository layer implementing the `LicenseRepository` interface and the appropriate synchronizer.
+ * `LicenseService` no longer exists. Loading the platform license is now achieved by `NodeLicenseLoader`. Customers who have changed the log level on `io.gravitee.node.license.LicenseService` to avoid logging license information must adapt their `logback.xml` configuration to use `io.gravitee.node.license.LicenseLoaderService` instead.
+ * Technical API allows access to the platform license which previously ended with a 404 if the license key is not specified → OSS License will now be returned instead.
+
+=== 4.0.x
+The following has been implemented on v4.0.x
 
 ==== Changelog
  * Add support for multi-servers

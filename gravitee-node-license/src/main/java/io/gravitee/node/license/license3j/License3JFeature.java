@@ -15,14 +15,13 @@
  */
 package io.gravitee.node.license.license3j;
 
-import io.gravitee.node.api.license.Feature;
-import java.time.Instant;
+import java.util.Date;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class License3JFeature implements Feature {
+public class License3JFeature {
 
     private final javax0.license3j.Feature feature;
 
@@ -30,18 +29,15 @@ public class License3JFeature implements Feature {
         this.feature = feature;
     }
 
-    @Override
     public String getString() {
         return feature.getString();
     }
 
-    @Override
     public int getInt() {
         return feature.getInt();
     }
 
-    @Override
-    public Instant getDate() {
-        return feature.getDate().toInstant();
+    public Date getDate() {
+        return feature.getDate();
     }
 }

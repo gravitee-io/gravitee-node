@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
  * @author GraviteeSource Team
  */
 @Component
-public class LicenseModelServiceImpl implements LicenseModelService {
+public class DefaultLicenseModelService implements LicenseModelService {
 
     private static final String YAML_MODEL = "license-model.yml";
     private static final YAMLMapper YAML_MAPPER = new YAMLMapper();
