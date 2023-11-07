@@ -17,12 +17,19 @@ package io.gravitee.node.vertx.server;
 
 import io.gravitee.common.utils.UUID;
 import io.gravitee.node.api.certificate.CertificateOptions;
+import io.gravitee.node.api.certificate.KeyStoreLoader;
+import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.api.server.ServerOptions;
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
+import io.gravitee.node.vertx.cert.VertxKeyStoreManager;
 import io.gravitee.node.vertx.server.http.VertxHttpServerOptions;
+import io.gravitee.node.vertx.server.tcp.VertxTcpServerOptions;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.net.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -39,9 +46,9 @@ import org.springframework.core.env.Environment;
 public class VertxServerOptions implements ServerOptions {
 
     public static final boolean DEFAULT_SECURED = false;
-    public static final boolean DEFAULT_ALPN = false;
     public static final boolean DEFAULT_SNI = false;
     public static final boolean DEFAULT_OPENSSL = false;
+    public static final boolean DEFAULT_TCP_KEEP_ALIVE = true;
     public static final String CERTIFICATE_FORMAT_JKS = "JKS";
     public static final String CERTIFICATE_FORMAT_PEM = "PEM";
     public static final String CERTIFICATE_FORMAT_PKCS12 = "PKCS12";
@@ -50,6 +57,8 @@ public class VertxServerOptions implements ServerOptions {
     public static final boolean DEFAULT_STORE_WATCH = true;
     public static final String DEFAULT_LISTENING_HOST = "0.0.0.0";
     public static final int DEFAULT_PORT = 8080;
+    public static final int TCP_DEFAULT_PORT = 4080;
+    public static final int DEFAULT_IDLE_TIMEOUT = HttpServerOptions.DEFAULT_IDLE_TIMEOUT;
     public static final String DEFAULT_CLIENT_AUTH = ClientAuth.NONE.name();
     public static final boolean DEFAULT_HAPROXY_PROTOCOL = false;
     public static final long DEFAULT_HAPROXY_PROTOCOL_TIMEOUT = HttpServerOptions.DEFAULT_PROXY_PROTOCOL_TIMEOUT;
@@ -69,6 +78,12 @@ public class VertxServerOptions implements ServerOptions {
 
     @Builder.Default
     protected boolean openssl = DEFAULT_OPENSSL;
+
+    @Builder.Default
+    protected int idleTimeout = DEFAULT_IDLE_TIMEOUT;
+
+    @Builder.Default
+    protected boolean tcpKeepAlive = DEFAULT_TCP_KEEP_ALIVE;
 
     protected String tlsProtocols;
     protected String keyStorePath;
@@ -124,6 +139,13 @@ public class VertxServerOptions implements ServerOptions {
         final String type = environment.getProperty(prefix + ".type");
         if (type == null || "http".equals(type)) {
             return VertxHttpServerOptions.builder().prefix(prefix).environment(environment).keyStoreLoaderManager(keyStoreLoaderManager);
+        } else if ("tcp".equals(type)) {
+            return VertxTcpServerOptions
+                .builder()
+                .prefix(prefix)
+                .environment(environment)
+                .keyStoreLoaderManager(keyStoreLoaderManager)
+                .defaultPort(TCP_DEFAULT_PORT);
         } else {
             throw new IllegalArgumentException("Server type [" + type + "] is not supported");
         }
@@ -169,6 +191,10 @@ public class VertxServerOptions implements ServerOptions {
             this.id(environment.getProperty(prefix + ".id", UUID.random().toString()));
             this.port(Integer.parseInt(environment.getProperty(prefix + ".port", String.valueOf(defaultPort))));
             this.host(environment.getProperty(prefix + ".host", DEFAULT_LISTENING_HOST));
+
+            this.idleTimeout(environment.getProperty(prefix + ".idleTimeout", Integer.class, DEFAULT_IDLE_TIMEOUT));
+            this.tcpKeepAlive(environment.getProperty(prefix + ".tcpKeepAlive", Boolean.class, DEFAULT_TCP_KEEP_ALIVE));
+
             this.secured(environment.getProperty(prefix + ".secured", Boolean.class, DEFAULT_SECURED));
             this.sni(environment.getProperty(prefix + ".ssl.sni", Boolean.class, DEFAULT_SNI));
             this.openssl(environment.getProperty(prefix + ".ssl.openssl", Boolean.class, DEFAULT_OPENSSL));
@@ -258,5 +284,62 @@ public class VertxServerOptions implements ServerOptions {
 
             return values;
         }
+    }
+
+    protected final void setupTcp(TCPSSLOptions options) {
+        if (this.secured) {
+            if (keyStoreLoaderManager == null) {
+                throw new IllegalArgumentException("You must provide a KeyStoreLoaderManager when 'secured' is enabled.");
+            }
+
+            if (openssl) {
+                options.setSslEngineOptions(new OpenSSLEngineOptions());
+            }
+
+            options.setSsl(secured);
+
+            // TLS protocol support
+            if (tlsProtocols != null) {
+                options.setEnabledSecureTransportProtocols(new HashSet<>(Arrays.asList(tlsProtocols.split("\\s*,\\s*"))));
+            }
+
+            // Restrict the authorized ciphers
+            if (authorizedTlsCipherSuites != null) {
+                authorizedTlsCipherSuites.stream().map(String::trim).forEach(options::addEnabledCipherSuite);
+            }
+
+            if (trustStorePaths != null && !trustStorePaths.isEmpty()) {
+                if (trustStoreType == null || trustStoreType.isEmpty() || trustStoreType.equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)) {
+                    options.setTrustStoreOptions(new JksOptions().setPath(trustStorePaths.get(0)).setPassword(trustStorePassword));
+                } else if (trustStoreType.equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)) {
+                    final PemTrustOptions pemTrustOptions = new PemTrustOptions();
+                    trustStorePaths.forEach(pemTrustOptions::addCertPath);
+                    options.setPemTrustOptions(pemTrustOptions);
+                } else if (trustStoreType.equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)) {
+                    options.setPfxTrustOptions(new PfxOptions().setPath(trustStorePaths.get(0)).setPassword(trustStorePassword));
+                }
+            }
+
+            final KeyStoreLoaderOptions keyStoreLoaderOptions = KeyStoreLoaderOptions
+                .builder()
+                .withKeyStorePath(keyStorePath)
+                .withKeyStorePassword(keyStorePassword)
+                .withKeyStoreType(keyStoreType)
+                .withKeyStoreCertificates(keyStoreCertificates)
+                .withKubernetesLocations(keyStoreKubernetes)
+                .withSecretLocation(keyStoreSecret)
+                .withWatch(keyStoreWatch)
+                .withDefaultAlias(keyStoreDefaultAlias)
+                .build();
+
+            final VertxKeyStoreManager keyStoreManager = new VertxKeyStoreManager(sni);
+            final KeyStoreLoader keyStoreLoader = keyStoreLoaderManager.create(keyStoreLoaderOptions);
+            keyStoreManager.registerLoader(keyStoreLoader);
+            options.setKeyCertOptions(keyStoreManager.getKeyCertOptions());
+        }
+
+        // Customizable configuration
+        options.setIdleTimeout(idleTimeout);
+        options.setTcpKeepAlive(tcpKeepAlive);
     }
 }

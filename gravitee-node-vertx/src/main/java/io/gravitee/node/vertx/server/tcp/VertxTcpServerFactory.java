@@ -13,32 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.vertx.server;
+package io.gravitee.node.vertx.server.tcp;
 
-import io.gravitee.node.api.server.Server;
+import io.gravitee.node.api.server.ServerFactory;
 import io.vertx.rxjava3.core.Vertx;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import lombok.RequiredArgsConstructor;
 
 /**
- * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
+ * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-@RequiredArgsConstructor
-public abstract class VertxServer<T, C extends VertxServerOptions> implements Server<C> {
+public class VertxTcpServerFactory implements ServerFactory<VertxTcpServer, VertxTcpServerOptions> {
 
-    protected final String id;
-    protected final Vertx vertx;
-    protected final C options;
-    protected final List<T> delegates = new CopyOnWriteArrayList<>();
+    private final Vertx vertx;
 
-    @Override
-    public String id() {
-        return id;
+    public VertxTcpServerFactory(Vertx vertx) {
+        this.vertx = vertx;
     }
 
-    public abstract T newInstance();
-
-    public abstract List<T> instances();
+    @Override
+    public VertxTcpServer create(VertxTcpServerOptions options) {
+        return new VertxTcpServer(options.getId(), vertx, options);
+    }
 }
