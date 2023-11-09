@@ -1,3 +1,10 @@
+# [4.4.0-alpha.5](https://github.com/gravitee-io/gravitee-node/compare/4.4.0-alpha.4...4.4.0-alpha.5) (2023-11-09)
+
+
+### Features
+
+* add support for Gravitee Pem Registry ([a892edb](https://github.com/gravitee-io/gravitee-node/commit/a892edb5d0ab6e02d7bc855f0349966fe0eb55d6))
+
 # [4.4.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/4.4.0-alpha.3...4.4.0-alpha.4) (2023-11-07)
 
 
