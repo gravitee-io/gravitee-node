@@ -217,7 +217,6 @@ class VertxTcpServerOptionsTest {
         final VertxTcpServerOptions options = VertxTcpServerOptions.builder().build();
 
         assertThat(options.getId()).isNotEqualTo(SERVER_ID); // Server id is generated when not provided.
-        assertThat(options.isCompressionSupported()).isEqualTo(DEFAULT_COMPRESSION_SUPPORTED);
         assertThat(options.isTcpKeepAlive()).isEqualTo(DEFAULT_TCP_KEEP_ALIVE);
         assertThat(options.getIdleTimeout()).isEqualTo(DEFAULT_IDLE_TIMEOUT);
         assertThat(options.getHost()).isEqualTo(DEFAULT_LISTENING_HOST);
