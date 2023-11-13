@@ -15,17 +15,12 @@
  */
 package io.gravitee.node.vertx.server.http;
 
-import io.gravitee.node.api.certificate.KeyStoreLoader;
-import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
-import io.gravitee.node.vertx.cert.VertxKeyStoreManager;
 import io.gravitee.node.vertx.server.VertxServerOptions;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.net.*;
 import io.vertx.core.tracing.TracingPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -42,9 +37,8 @@ import org.springframework.core.env.Environment;
 @SuperBuilder
 public class VertxHttpServerOptions extends VertxServerOptions {
 
-    public static String HTTP_PREFIX = "http";
+    public static final String HTTP_PREFIX = "http";
     public static final boolean DEFAULT_WEBSOCKET_ENABLED = false;
-    public static final List<String> DEFAULT_WEBSOCKET_SUB_PROTOCOLS = new ArrayList<>();
     public static final boolean DEFAULT_ALPN = false;
     public static final boolean DEFAULT_HANDLE_100_CONTINUE = false;
     public static final String DEFAULT_TRACING_POLICY = HttpServerOptions.DEFAULT_TRACING_POLICY.name();
@@ -52,6 +46,7 @@ public class VertxHttpServerOptions extends VertxServerOptions {
     public static final int DEFAULT_MAX_CHUNK_SIZE = HttpServerOptions.DEFAULT_MAX_CHUNK_SIZE;
     public static final int DEFAULT_MAX_INITIAL_LINE_LENGTH = HttpServerOptions.DEFAULT_MAX_INITIAL_LINE_LENGTH;
     public static final int DEFAULT_MAX_FORM_ATTRIBUTE_SIZE = HttpServerOptions.DEFAULT_MAX_FORM_ATTRIBUTE_SIZE;
+    public static final boolean DEFAULT_COMPRESSION_SUPPORTED = HttpServerOptions.DEFAULT_COMPRESSION_SUPPORTED;
     public static final boolean DEFAULT_PER_MESSAGE_WEBSOCKET_COMPRESSION_SUPPORTED =
         HttpServerOptions.DEFAULT_PER_MESSAGE_WEBSOCKET_COMPRESSION_SUPPORTED;
     public static final boolean DEFAULT_PER_FRAME_WEBSOCKET_COMPRESSION_SUPPORTED =
@@ -81,6 +76,9 @@ public class VertxHttpServerOptions extends VertxServerOptions {
     private int maxFormAttributeSize = DEFAULT_MAX_FORM_ATTRIBUTE_SIZE;
 
     @Builder.Default
+    protected boolean compressionSupported = DEFAULT_COMPRESSION_SUPPORTED;
+
+    @Builder.Default
     private boolean websocketEnabled = DEFAULT_WEBSOCKET_ENABLED;
 
     private String websocketSubProtocols;
@@ -102,6 +100,7 @@ public class VertxHttpServerOptions extends VertxServerOptions {
     >
         extends VertxServerOptionsBuilder<C, B> {
 
+        @Override
         public B environment(Environment environment) {
             super.environment(environment);
 
@@ -115,6 +114,10 @@ public class VertxHttpServerOptions extends VertxServerOptions {
                 );
             this.maxFormAttributeSize(
                     environment.getProperty(prefix + ".maxFormAttributeSize", Integer.class, DEFAULT_MAX_FORM_ATTRIBUTE_SIZE)
+                );
+
+            this.compressionSupported(
+                    environment.getProperty(prefix + ".compressionSupported", Boolean.class, DEFAULT_COMPRESSION_SUPPORTED)
                 );
             this.websocketEnabled(environment.getProperty(prefix + ".websocket.enabled", Boolean.class, DEFAULT_WEBSOCKET_ENABLED));
             this.websocketSubProtocols(environment.getProperty(prefix + ".websocket.subProtocols"));
@@ -188,7 +191,7 @@ public class VertxHttpServerOptions extends VertxServerOptions {
             options.setPerFrameWebSocketCompressionSupported(perFrameWebSocketCompressionSupported);
 
             if (websocketSubProtocols != null) {
-                options.setWebSocketSubProtocols(new ArrayList<>(Arrays.asList(websocketSubProtocols.split("\\s*,\\s*"))));
+                options.setWebSocketSubProtocols(Arrays.stream(websocketSubProtocols.split(",")).map(String::trim).toList());
             }
         } else {
             // For performance considerations, disable websocket compression if websocket is disabled.

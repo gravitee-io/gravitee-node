@@ -25,12 +25,11 @@ import io.gravitee.node.vertx.cert.VertxKeyStoreManager;
 import io.gravitee.node.vertx.server.http.VertxHttpServerOptions;
 import io.gravitee.node.vertx.server.tcp.VertxTcpServerOptions;
 import io.vertx.core.http.ClientAuth;
-import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.core.env.Environment;
@@ -58,11 +57,10 @@ public class VertxServerOptions implements ServerOptions {
     public static final String DEFAULT_LISTENING_HOST = "0.0.0.0";
     public static final int DEFAULT_PORT = 8080;
     public static final int TCP_DEFAULT_PORT = 4080;
-    public static final int DEFAULT_IDLE_TIMEOUT = HttpServerOptions.DEFAULT_IDLE_TIMEOUT;
+    public static final int DEFAULT_IDLE_TIMEOUT = TCPSSLOptions.DEFAULT_IDLE_TIMEOUT;
     public static final String DEFAULT_CLIENT_AUTH = ClientAuth.NONE.name();
     public static final boolean DEFAULT_HAPROXY_PROTOCOL = false;
-    public static final long DEFAULT_HAPROXY_PROTOCOL_TIMEOUT = HttpServerOptions.DEFAULT_PROXY_PROTOCOL_TIMEOUT;
-    public static final boolean DEFAULT_COMPRESSION_SUPPORTED = HttpServerOptions.DEFAULT_COMPRESSION_SUPPORTED;
+    public static final long DEFAULT_HAPROXY_PROTOCOL_TIMEOUT = NetServerOptions.DEFAULT_PROXY_PROTOCOL_TIMEOUT;
 
     @Builder.Default
     protected int port = DEFAULT_PORT;
@@ -107,9 +105,6 @@ public class VertxServerOptions implements ServerOptions {
     protected String trustStoreType = DEFAULT_STORE_TYPE;
 
     protected List<String> trustStorePaths;
-
-    @Builder.Default
-    protected boolean compressionSupported = DEFAULT_COMPRESSION_SUPPORTED;
 
     @Builder.Default
     protected String clientAuth = DEFAULT_CLIENT_AUTH;
@@ -227,10 +222,6 @@ public class VertxServerOptions implements ServerOptions {
             this.trustStorePaths(getArrayValues(prefix + ".ssl.truststore.path"));
             this.trustStorePassword(environment.getProperty(prefix + ".ssl.truststore.password"));
 
-            this.compressionSupported(
-                    environment.getProperty(prefix + ".compressionSupported", Boolean.class, DEFAULT_COMPRESSION_SUPPORTED)
-                );
-
             this.haProxyProtocol(environment.getProperty(prefix + ".haproxy.proxyProtocol", Boolean.class, DEFAULT_HAPROXY_PROTOCOL));
             this.haProxyProtocolTimeout(
                     environment.getProperty(prefix + ".haproxy.proxyProtocolTimeout", Long.class, DEFAULT_HAPROXY_PROTOCOL_TIMEOUT)
@@ -300,7 +291,9 @@ public class VertxServerOptions implements ServerOptions {
 
             // TLS protocol support
             if (tlsProtocols != null) {
-                options.setEnabledSecureTransportProtocols(new HashSet<>(Arrays.asList(tlsProtocols.split("\\s*,\\s*"))));
+                options.setEnabledSecureTransportProtocols(
+                    Arrays.stream(tlsProtocols.split(",")).map(String::trim).collect(Collectors.toSet())
+                );
             }
 
             // Restrict the authorized ciphers
