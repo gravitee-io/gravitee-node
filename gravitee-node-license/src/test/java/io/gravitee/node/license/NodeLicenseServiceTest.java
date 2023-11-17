@@ -156,7 +156,8 @@ class NodeLicenseServiceTest {
                 "am-idp-gateway-handler-saml",
                 "am-policy-mfa-challenge",
                 "am-policy-account-linking",
-                "am-resource-sfr"
+                "am-resource-sfr",
+                "alert-engine"
             );
     }
 
