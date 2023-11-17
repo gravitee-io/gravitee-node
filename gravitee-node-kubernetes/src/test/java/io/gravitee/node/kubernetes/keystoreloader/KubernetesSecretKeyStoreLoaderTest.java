@@ -16,7 +16,11 @@
 package io.gravitee.node.kubernetes.keystoreloader;
 
 import static io.gravitee.node.kubernetes.keystoreloader.KubernetesSecretKeyStoreLoader.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.gravitee.common.util.KeyStoreUtils;
 import io.gravitee.kubernetes.client.KubernetesClient;
@@ -25,34 +29,37 @@ import io.gravitee.kubernetes.client.api.WatchQuery;
 import io.gravitee.kubernetes.client.model.v1.ObjectMeta;
 import io.gravitee.kubernetes.client.model.v1.Secret;
 import io.gravitee.kubernetes.client.model.v1.SecretEvent;
-import io.gravitee.node.api.certificate.KeyStoreBundle;
+import io.gravitee.node.api.certificate.KeyStoreEvent;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.KeyStoreException;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.Test;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-@RunWith(MockitoJUnitRunner.class)
-public class KubernetesSecretKeyStoreLoaderTest {
+@ExtendWith(MockitoExtension.class)
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
+class KubernetesSecretKeyStoreLoaderTest {
 
     @Mock
     private KubernetesClient kubernetesClient;
@@ -60,12 +67,12 @@ public class KubernetesSecretKeyStoreLoaderTest {
     private KubernetesSecretKeyStoreLoader cut;
 
     @Test
-    public void shouldLoadTlsSecret() throws IOException, KeyStoreException {
+    void should_load_tls_secret() throws IOException, KeyStoreException {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
-            .withKubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret"))
-            .withWatch(false)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
+            .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret"))
+            .watch(false)
             .build();
 
         cut = new KubernetesSecretKeyStoreLoader(options, kubernetesClient);
@@ -87,24 +94,24 @@ public class KubernetesSecretKeyStoreLoaderTest {
             .when(kubernetesClient.get(ResourceQuery.<Secret>from(options.getKubernetesLocations().get(0)).build()))
             .thenReturn(Maybe.just(secret));
 
-        AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(null);
-        cut.addListener(bundleRef::set);
+        AtomicReference<KeyStoreEvent> bundleRef = new AtomicReference<>(null);
+        cut.setEventHandler(bundleRef::set);
         cut.start();
 
-        final KeyStoreBundle keyStoreBundle = bundleRef.get();
+        final KeyStoreEvent keyStoreEvent = bundleRef.get();
 
-        assertNotNull(keyStoreBundle);
-        assertEquals(1, keyStoreBundle.getKeyStore().size());
+        assertThat(keyStoreEvent).isNotNull();
+        assertThat(((KeyStoreEvent.LoadEvent) keyStoreEvent).keyStore().size()).isEqualTo(1);
     }
 
     @Test
-    public void shouldLoadOpaqueSecret() throws IOException, KeyStoreException {
+    void should_load_opaque_secret() throws IOException, KeyStoreException {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret/keystore"))
-            .withKeyStorePassword("secret")
-            .withWatch(false)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret/keystore"))
+            .password("secret")
+            .watch(false)
             .build();
 
         cut = new KubernetesSecretKeyStoreLoader(options, kubernetesClient);
@@ -124,24 +131,24 @@ public class KubernetesSecretKeyStoreLoaderTest {
 
         Mockito.when(kubernetesClient.get(ResourceQuery.<Secret>from("/gio/secrets/my-tls-secret").build())).thenReturn(Maybe.just(secret));
 
-        AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(null);
-        cut.addListener(bundleRef::set);
+        AtomicReference<KeyStoreEvent> bundleRef = new AtomicReference<>(null);
+        cut.setEventHandler(bundleRef::set);
         cut.start();
 
-        final KeyStoreBundle keyStoreBundle = bundleRef.get();
+        final KeyStoreEvent keyStoreEvent = bundleRef.get();
 
-        assertNotNull(keyStoreBundle);
-        assertEquals(1, keyStoreBundle.getKeyStore().size());
+        assertThat(keyStoreEvent).isNotNull();
+        assertThat(((KeyStoreEvent.LoadEvent) keyStoreEvent).keyStore().size()).isEqualTo(1);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldNotLoadOpaqueSecretPEM() {
+    @Test
+    void should_not_load_opaque_secret_pem() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
-            .withKubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret/pem"))
-            .withKeyStorePassword("secret")
-            .withWatch(false)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
+            .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret/pem"))
+            .password("secret")
+            .watch(false)
             .build();
 
         cut = new KubernetesSecretKeyStoreLoader(options, kubernetesClient);
@@ -151,17 +158,17 @@ public class KubernetesSecretKeyStoreLoaderTest {
 
         Mockito.when(kubernetesClient.get(ResourceQuery.<Secret>from("/gio/secrets/my-tls-secret").build())).thenReturn(Maybe.just(secret));
 
-        cut.start();
+        assertThatCode(() -> cut.start()).isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldNotLoadOpaqueSecretWithNoDataKey() {
+    @Test
+    void should_not_load_opaque_secret_with_no_data_key() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret"))
-            .withKeyStorePassword("secret")
-            .withWatch(false)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret"))
+            .password("secret")
+            .watch(false)
             .build();
 
         cut = new KubernetesSecretKeyStoreLoader(options, kubernetesClient);
@@ -176,17 +183,17 @@ public class KubernetesSecretKeyStoreLoaderTest {
 
         Mockito.when(kubernetesClient.get(ResourceQuery.<Secret>from("/gio/secrets/my-tls-secret").build())).thenReturn(Maybe.just(secret));
 
-        cut.start();
+        assertThatCode(() -> cut.start()).isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldNotLoadWithInvalidSecretType() {
+    @Test
+    void should_not_load_with_invalid_secret_type() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret/invalid-keystore"))
-            .withKeyStorePassword("secret")
-            .withWatch(false)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret/invalid-keystore"))
+            .password("secret")
+            .watch(false)
             .build();
 
         cut = new KubernetesSecretKeyStoreLoader(options, kubernetesClient);
@@ -196,16 +203,16 @@ public class KubernetesSecretKeyStoreLoaderTest {
 
         Mockito.when(kubernetesClient.get(ResourceQuery.<Secret>from("/gio/secrets/my-tls-secret").build())).thenReturn(Maybe.just(secret));
 
-        cut.start();
+        assertThatCode(() -> cut.start()).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void shouldWatchSecret() throws IOException, KeyStoreException, InterruptedException {
+    void should_watch_secret() throws IOException, KeyStoreException, InterruptedException {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
-            .withKubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret"))
-            .withWatch(true)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
+            .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret"))
+            .watch(true)
             .build();
 
         cut = new KubernetesSecretKeyStoreLoader(options, kubernetesClient);
@@ -248,8 +255,8 @@ public class KubernetesSecretKeyStoreLoaderTest {
             .thenReturn(Flowable.just(modifiedSecretEvent));
 
         CountDownLatch latch = new CountDownLatch(2);
-        AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(null);
-        cut.addListener(bundle -> {
+        AtomicReference<KeyStoreEvent> bundleRef = new AtomicReference<>(null);
+        cut.setEventHandler(bundle -> {
             bundleRef.set(bundle);
             latch.countDown();
         });
@@ -258,12 +265,12 @@ public class KubernetesSecretKeyStoreLoaderTest {
 
         // Wait for the event to be processed.
         latch.await(5000, TimeUnit.MILLISECONDS);
-        final KeyStoreBundle keyStoreBundle = bundleRef.get();
+        final KeyStoreEvent keyStoreEvent = bundleRef.get();
 
-        assertNotNull(keyStoreBundle);
-        assertEquals(1, keyStoreBundle.getKeyStore().size());
+        assertThat(keyStoreEvent).isNotNull();
+        assertThat(((KeyStoreEvent.LoadEvent) keyStoreEvent).keyStore().size()).isEqualTo(1);
         // Make sure the keystore has been reloaded by checking the CN.
-        assertTrue(KeyStoreUtils.getCommonNamesByAlias(keyStoreBundle.getKeyStore()).containsKey("localhost2"));
+        assertThat(KeyStoreUtils.getCommonNamesByAlias(((KeyStoreEvent.LoadEvent) keyStoreEvent).keyStore())).containsKey("localhost2");
     }
 
     private String readContent(String resource) throws IOException {

@@ -147,7 +147,6 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
         components.add(NodeHealthCheckService.class);
         components.add(NodeMonitorService.class);
         components.add(ReporterManager.class);
-        components.add(KeyStoreLoaderManager.class);
 
         return components;
     }

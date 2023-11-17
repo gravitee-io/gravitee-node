@@ -56,12 +56,6 @@ class VertxFactoryTest {
     private MockEnvironment environment = new MockEnvironment();
 
     @Mock
-    private SpringVerticleFactory springVerticleFactory;
-
-    @Mock
-    private LazyVertxTracerFactory vertxTracerFactory;
-
-    @Mock
     private Vertx vertx;
 
     @Mock

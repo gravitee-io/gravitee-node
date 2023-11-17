@@ -16,9 +16,14 @@
 package io.gravitee.node.vertx.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
+import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
+import io.gravitee.node.certificates.DefaultKeyStoreLoaderFactoryRegistry;
+import io.gravitee.node.certificates.file.FileTrustStoreLoaderFactory;
+import io.gravitee.node.certificates.selfsigned.SelfSignedKeyStoreLoaderFactory;
 import io.gravitee.node.vertx.server.http.VertxHttpServerOptions;
 import io.gravitee.node.vertx.server.tcp.VertxTcpServerOptions;
 import io.vertx.rxjava3.core.Vertx;
@@ -27,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.env.MockEnvironment;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
@@ -35,6 +41,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class VertxServerFactoryTest {
 
+    String ID = "foo";
+
     @Mock
     Vertx vertx;
 
@@ -42,25 +50,49 @@ class VertxServerFactoryTest {
 
     @BeforeEach
     void init() {
-        cut = new VertxServerFactory<>(vertx);
+        DefaultKeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry = new DefaultKeyStoreLoaderFactoryRegistry<>();
+        keyStoreLoaderFactoryRegistry.registerFactory(new SelfSignedKeyStoreLoaderFactory());
+        DefaultKeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry = new DefaultKeyStoreLoaderFactoryRegistry<>();
+        trustStoreLoaderFactoryRegistry.registerFactory(new FileTrustStoreLoaderFactory());
+        cut = new VertxServerFactory<>(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry);
     }
 
     @Test
-    void should_create_vertx_http_server() {
-        final VertxHttpServerOptions options = VertxHttpServerOptions.builder().build();
+    void should_create_vertx_unsecured_http_server() {
+        final VertxHttpServerOptions options = VertxHttpServerOptions
+            .builder()
+            .prefix(ID)
+            .environment(new MockEnvironment())
+            // forcing ID
+            .id(ID)
+            .keyStoreLoaderOptions(KeyStoreLoaderOptions.builder().build())
+            .trustStoreLoaderOptions(TrustStoreLoaderOptions.builder().build())
+            .build();
         final VertxServer<?, VertxServerOptions> vertxServer = cut.create(options);
 
         assertThat(vertxServer).isNotNull();
+        assertThat(vertxServer.id()).isEqualTo(ID);
         assertThat(vertxServer.options()).isEqualTo(options);
         assertThat(vertxServer.instances()).isEmpty();
     }
 
     @Test
     void should_create_vertx_net_server() {
-        final VertxTcpServerOptions options = VertxTcpServerOptions.builder().build();
+        final VertxTcpServerOptions options = VertxTcpServerOptions
+            .builder()
+            .prefix(ID)
+            .environment(new MockEnvironment())
+            // forcing ID
+            .id(ID)
+            .secured(true)
+            .sni(true)
+            .keyStoreLoaderOptions(KeyStoreLoaderOptions.builder().build())
+            .trustStoreLoaderOptions(TrustStoreLoaderOptions.builder().build())
+            .build();
         final VertxServer<?, VertxServerOptions> vertxServer = cut.create(options);
 
         assertThat(vertxServer).isNotNull();
+        assertThat(vertxServer.id()).isEqualTo(ID);
         assertThat(vertxServer.options()).isEqualTo(options);
         assertThat(vertxServer.instances()).isEmpty();
     }

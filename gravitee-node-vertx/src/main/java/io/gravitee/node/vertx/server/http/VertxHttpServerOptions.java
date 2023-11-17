@@ -15,13 +15,15 @@
  */
 package io.gravitee.node.vertx.server.http;
 
+import io.gravitee.node.vertx.cert.VertxKeyCertOptions;
+import io.gravitee.node.vertx.cert.VertxTrustOptions;
 import io.gravitee.node.vertx.server.VertxServerOptions;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.net.KeyCertOptions;
+import io.vertx.core.net.TrustOptions;
 import io.vertx.core.tracing.TracingPolicy;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
@@ -109,6 +111,9 @@ public class VertxHttpServerOptions extends VertxServerOptions {
             this.handle100Continue(environment.getProperty(prefix + ".handle100Continue", Boolean.class, DEFAULT_HANDLE_100_CONTINUE));
             this.maxHeaderSize(environment.getProperty(prefix + ".maxHeaderSize", Integer.class, DEFAULT_MAX_HEADER_SIZE));
             this.maxChunkSize(environment.getProperty(prefix + ".maxChunkSize", Integer.class, DEFAULT_MAX_CHUNK_SIZE));
+            this.compressionSupported(
+                    environment.getProperty(prefix + ".compressionSupported", Boolean.class, DEFAULT_COMPRESSION_SUPPORTED)
+                );
             this.maxInitialLineLength(
                     environment.getProperty(prefix + ".maxInitialLineLength", Integer.class, DEFAULT_MAX_INITIAL_LINE_LENGTH)
                 );
@@ -150,7 +155,7 @@ public class VertxHttpServerOptions extends VertxServerOptions {
         }
     }
 
-    public HttpServerOptions createHttpServerOptions() {
+    public HttpServerOptions createHttpServerOptions(KeyCertOptions vertxKeyCertOptions, TrustOptions vertxTrustOptions) {
         final HttpServerOptions options = new HttpServerOptions();
 
         if (this.tracingPolicy != null) {
@@ -161,7 +166,7 @@ public class VertxHttpServerOptions extends VertxServerOptions {
         options.setPort(this.port);
         options.setHost(this.host);
 
-        setupTcp(options);
+        setupTcp(options, vertxKeyCertOptions, vertxTrustOptions);
 
         if (this.secured) {
             options.setUseAlpn(alpn);

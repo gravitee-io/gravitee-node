@@ -15,23 +15,19 @@
  */
 package io.gravitee.node.vertx.spring;
 
-import static io.gravitee.node.vertx.server.http.VertxHttpServerOptions.HTTP_PREFIX;
-
-import io.gravitee.node.api.server.DefaultServerManager;
-import io.gravitee.node.api.server.ServerManager;
-import io.gravitee.node.certificates.KeyStoreLoaderManager;
+import io.gravitee.node.api.certificate.KeyStoreLoaderFactoryRegistry;
+import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
 import io.gravitee.node.tracing.spring.TracingConfiguration;
 import io.gravitee.node.vertx.VertxFactory;
 import io.gravitee.node.vertx.server.VertxServer;
 import io.gravitee.node.vertx.server.VertxServerFactory;
 import io.gravitee.node.vertx.server.VertxServerOptions;
-import io.gravitee.node.vertx.server.http.VertxHttpServerOptions;
 import io.gravitee.node.vertx.verticle.factory.SpringVerticleFactory;
 import io.vertx.rxjava3.core.Vertx;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -59,7 +55,11 @@ public class VertxConfiguration {
     }
 
     @Bean
-    public VertxServerFactory<VertxServer<?, VertxServerOptions>, VertxServerOptions> serverFactory(Vertx vertx) {
-        return new VertxServerFactory<>(vertx);
+    public <T> VertxServerFactory<VertxServer<T, VertxServerOptions>, VertxServerOptions> serverFactory(
+        Vertx vertx,
+        KeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry,
+        KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry
+    ) {
+        return new VertxServerFactory<>(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry);
     }
 }

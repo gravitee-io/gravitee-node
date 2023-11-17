@@ -17,7 +17,6 @@ package io.gravitee.node.vertx.cert;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.net.KeyCertOptions;
-import java.util.function.Function;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.X509KeyManager;
 
@@ -25,9 +24,8 @@ import javax.net.ssl.X509KeyManager;
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-class VertxKeyCertOptions implements KeyCertOptions {
+public class VertxKeyCertOptions implements KeyCertOptions {
 
-    public static final Function<String, X509KeyManager> NULL_MAPPER_FUNCTION = s -> null;
     private final KeyManagerFactory keyManagerFactory;
 
     VertxKeyCertOptions(KeyManagerFactory keyManagerFactory) {
@@ -37,7 +35,7 @@ class VertxKeyCertOptions implements KeyCertOptions {
         this.keyManagerFactory = keyManagerFactory;
     }
 
-    VertxKeyCertOptions(X509KeyManager keyManager) {
+    public VertxKeyCertOptions(X509KeyManager keyManager) {
         this(new VertxKeyManagerFactory(keyManager));
     }
 
@@ -53,12 +51,5 @@ class VertxKeyCertOptions implements KeyCertOptions {
     @Override
     public KeyManagerFactory getKeyManagerFactory(Vertx vertx) {
         return keyManagerFactory;
-    }
-
-    @Override
-    public Function<String, X509KeyManager> keyManagerMapper(Vertx vertx) {
-        // Return a mapper function to always return null. This force vertx to directly rely on our own KeyManagerFactory instead of recreating a new one for each server name.
-        // This is mandatory since recent changes occurring internally in vertx SSLHelper (see https://github.com/eclipse-vertx/vert.x/pull/4468/files#diff-349d956034aca2f682714a50163bc83e32b0e5fa5f473840f2bca2d4049539deR344-R351)
-        return NULL_MAPPER_FUNCTION;
     }
 }

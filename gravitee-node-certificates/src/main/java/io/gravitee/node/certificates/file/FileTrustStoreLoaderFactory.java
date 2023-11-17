@@ -13,42 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.certificates;
+package io.gravitee.node.certificates.file;
 
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderFactory;
-import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
-import java.util.Arrays;
+import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
+ * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class FileKeyStoreLoaderFactory implements KeyStoreLoaderFactory {
+public class FileTrustStoreLoaderFactory implements KeyStoreLoaderFactory<TrustStoreLoaderOptions> {
 
-    private static final List<String> SUPPORTED_TYPES = Arrays.asList(
+    private static final List<String> SUPPORTED_TYPES = List.of(
         KeyStoreLoader.CERTIFICATE_FORMAT_JKS.toLowerCase(),
         KeyStoreLoader.CERTIFICATE_FORMAT_PEM.toLowerCase(),
         KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12.toLowerCase()
     );
 
     @Override
-    public boolean canHandle(KeyStoreLoaderOptions options) {
+    public boolean canHandle(TrustStoreLoaderOptions options) {
         return (
-            options.getKeyStoreType() != null &&
-            SUPPORTED_TYPES.contains(options.getKeyStoreType().toLowerCase()) &&
-            (
-                (options.getKeyStorePath() != null && !options.getKeyStorePath().isEmpty()) ||
-                (options.getKeyStoreCertificates() != null && !options.getKeyStoreCertificates().isEmpty())
-            )
+            options.getType() != null &&
+            SUPPORTED_TYPES.contains(options.getType().toLowerCase()) &&
+            options.getPaths() != null &&
+            !options.getPaths().isEmpty()
         );
     }
 
     @Override
-    public KeyStoreLoader create(KeyStoreLoaderOptions options) {
-        return new FileKeyStoreLoader(options);
+    public KeyStoreLoader create(TrustStoreLoaderOptions options) {
+        return new FileTrustStoreLoader(options);
     }
 }

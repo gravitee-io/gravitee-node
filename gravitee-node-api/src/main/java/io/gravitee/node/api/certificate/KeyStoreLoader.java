@@ -20,17 +20,34 @@ import java.util.function.Consumer;
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
+ *
+ * Common inferface that marks objects able to read keystore or truststore and provide it to following managers. They must notifiy of their discovery and  might support internally refreshing keystore based on file/network watch.
+ * They mostly are created using {@link KeyStoreLoaderFactory} espcially for platform keystores.
+ *
+ * To be effective a KeyStore must be resgistered to be started and stoped using a KeyStoreManager of TrustStoreManager
  */
-public interface KeyStoreLoader {
+public interface KeyStoreLoader extends IdProvider {
     String CERTIFICATE_FORMAT_JKS = "JKS";
     String CERTIFICATE_FORMAT_PEM = "PEM";
     String CERTIFICATE_FORMAT_PKCS12 = "PKCS12";
     String CERTIFICATE_FORMAT_SELF_SIGNED = "SELF-SIGNED";
+    String CERTIFICATE_FORMAT_PEM_FOLDER = "PEM-FOLDER";
     String CERTIFICATE_FORMAT_PEM_REGISTRY = "KUBERNETES-PEM-REGISTRY";
 
+    /**
+     * Must be called after creation, this method is responsible to load keystore and may start watching for updates. Eventually it will call event handler set by {@link #setEventHandler(Consumer)}
+     */
     void start();
 
+    /**
+     * stop all keystore activities (watch espially and free resources if need be)
+     */
     void stop();
 
-    void addListener(Consumer<KeyStoreBundle> listener);
+    /**
+     * KeyStoreManager or TrustStoreManager must set a handler that will be call after the keystore is loaded.
+     * Most of the time first call to that handler is done during start and is synchronous, but it might later be called asynchronously.
+     * @param handler {@link KeyStoreEvent} handler, must not be null
+     */
+    void setEventHandler(Consumer<KeyStoreEvent> handler);
 }

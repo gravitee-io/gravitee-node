@@ -29,4 +29,6 @@ public interface ServerManager {
     List<Server<?>> servers();
 
     <T extends Server<?>> List<T> servers(Class<T> serverClazz);
+
+    Server<?> server(String id);
 }

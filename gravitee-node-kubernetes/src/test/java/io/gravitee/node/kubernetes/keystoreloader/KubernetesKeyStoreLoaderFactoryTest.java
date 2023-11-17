@@ -15,120 +15,124 @@
  */
 package io.gravitee.node.kubernetes.keystoreloader;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 import io.gravitee.kubernetes.client.KubernetesClient;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import java.util.Collections;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-@RunWith(MockitoJUnitRunner.class)
-public class KubernetesKeyStoreLoaderFactoryTest {
+@ExtendWith(MockitoExtension.class)
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
+class KubernetesKeyStoreLoaderFactoryTest {
 
     @Mock
     private KubernetesClient kubernetesClient;
 
     private KubernetesKeyStoreLoaderFactory cut;
 
-    @Before
+    @BeforeEach
     public void before() {
         cut = new KubernetesKeyStoreLoaderFactory(kubernetesClient);
     }
 
     @Test
-    public void shouldHandleOptionsWithConfigMap() {
+    void should_handle_options_with_config_map() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .kubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
             .build();
 
-        assertTrue(cut.canHandle(options));
+        assertThat(cut.canHandle(options)).isTrue();
     }
 
     @Test
-    public void shouldNotHandleOptionsWithConfigMapAndPEMFormat() {
+    void should_not_handle_options_with_config_map_and_pemformat() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
-            .withKubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
+            .kubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
             .build();
 
-        assertFalse(cut.canHandle(options));
+        assertThat(cut.canHandle(options)).isFalse();
     }
 
     @Test
-    public void shouldHandleOptionsWithTlsSecret() {
+    void should_handle_options_with_tls_secret() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
-            .withKubernetesLocations(Collections.singletonList("/gio/secrets/my-secret"))
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
+            .kubernetesLocations(Collections.singletonList("/gio/secrets/my-secret"))
             .build();
 
-        assertTrue(cut.canHandle(options));
+        assertThat(cut.canHandle(options)).isTrue();
     }
 
     @Test
-    public void shouldHandleOptionsWithOpaqueSecret() {
+    void should_handle_options_with_opaque_secret() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKubernetesLocations(Collections.singletonList("/gio/secrets/my-secret/keystore"))
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .kubernetesLocations(Collections.singletonList("/gio/secrets/my-secret/keystore"))
             .build();
 
-        assertTrue(cut.canHandle(options));
+        assertThat(cut.canHandle(options)).isTrue();
     }
 
     @Test
-    public void shouldCreateConfigMapLoader() {
+    void should_create_config_map_loader() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .kubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
             .build();
 
-        assertEquals(KubernetesConfigMapKeyStoreLoader.class, cut.create(options).getClass());
+        assertThat(cut.create(options).getClass()).isEqualTo(KubernetesConfigMapKeyStoreLoader.class);
     }
 
     @Test
-    public void shouldCreateSecretLoader() {
+    void should_create_secret_loader() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
-            .withKubernetesLocations(Collections.singletonList("/gio/secrets/my-secret"))
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
+            .kubernetesLocations(Collections.singletonList("/gio/secrets/my-secret"))
             .build();
 
-        assertEquals(KubernetesSecretKeyStoreLoader.class, cut.create(options).getClass());
+        assertThat(cut.create(options).getClass()).isEqualTo(KubernetesSecretKeyStoreLoader.class);
     }
 
     @Test
-    public void shouldNotHandleOptionsWithoutKubernetesLocations() {
+    void should_not_handle_options_without_kubernetes_locations() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKubernetesLocations(Collections.emptyList())
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .kubernetesLocations(Collections.emptyList())
             .build();
 
-        assertFalse(cut.canHandle(options));
+        assertThat(cut.canHandle(options)).isFalse();
     }
 
     @Test
-    public void shouldNotHandleOptionsWithoutUnsupportedLocation() {
+    void should_not_handle_options_without_unsupported_location() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKubernetesLocations(Collections.singletonList("/gio/unknown"))
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .kubernetesLocations(Collections.singletonList("/gio/unknown"))
             .build();
 
-        assertFalse(cut.canHandle(options));
+        assertThat(cut.canHandle(options)).isFalse();
     }
 }

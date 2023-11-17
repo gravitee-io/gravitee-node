@@ -50,6 +50,9 @@ The Gravitee Node Monitoring module is in charge of detecting and registering al
 === Services
 The Gravitee Node Services module provides different services such as upgrader and initializer services. They are particularly useful to ensure data migration during product upgrades or data initialization during the startup phase.
 
+=== Secrets
+The Gravitee Node Secrets module is about accessing secret managers. It is able to resolve secret and certificates/private_key. It handles the `secret-provider` plugins lifecycle and bundle a service to access secret using URL-like syntax: `secret://kubernetes...` used in gravitee.yml or equivalent environment variable.
+
 === Tracing
 The Gravitee Node Services module gives an easy and common way to set up tracing (aka open telemetry) on a given product. It is able to automatically load and configure tracing plugin.
 
@@ -82,6 +85,7 @@ The following has been implemented on v4.0.x
  * Add support for multi-servers
  * Move cluster concept into plugins
  * Move cache concept into plugins
+ * Add support for Secret Managers via new secret-provider plugin type
 
 ==== Vertx Http Server migration
 The readme provides all details regarding the usage of the VertxServerFactory. Here are some highlights of the main changes:
@@ -154,3 +158,49 @@ Following changes have been introduced:
 
  * Ability to define the scope of the cache (local or distributed) by using new `CacheConfiguration#distributed` attribute
  * Replace Guava Cache by Caffeine
+
+
+==== Support for Secret Managers
+
+Secret Mangers can be used in Gravitee Gateways using gravitee-node.
+Secret providers plugins can pull or watch secrets from Secret Managers (eg. Kubernetes, HC Vault...) using associated plugins.
+
+`gravitee.yml` contains configuration to set up secret managers, note that they can be configured using env variables.
+This is an example with community bundle plugin `kubernetes-secret-provider`:
+
+[source,YAML]
+----
+secrets:
+  kubernetes:
+    enabled: true
+    namespace: my-app
+
+# then you can use it to fetch secrets
+ratelimit:
+  type: redis
+  redis:
+    password: secret://kubernetes/redis-secret:password
+    # ...
+----
+`GRAVITEEIO_SECRETS_KUBERNETES_ENABLED=true` would be enough to resolve secrets within the same namespace where gravitee is deployed.
+
+You can also use a secret provider to configure another secret provider:
+
+[source,YAML]
+----
+secrets:
+  loadFirst: kubernetes
+  kubernetes:
+    enabled: true
+  vault:
+    enabled: true
+    # [...]
+    auth:
+      method: token
+      config:
+        token: secret://kubernetes/vault-creds:token?namespace=vault-ns
+----
+
+You can refer to Gravitee documentation for more examples and in-depth configuration tutorials on Secret Managers.
+
+Note that usage of `kubernetes://secrets` is discouraged as it will be deprecated in future versions.

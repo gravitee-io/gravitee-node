@@ -15,34 +15,49 @@
  */
 package io.gravitee.node.vertx.server.http;
 
+import io.gravitee.node.certificates.KeyStoreLoaderManager;
+import io.gravitee.node.certificates.TrustStoreLoaderManager;
+import io.gravitee.node.vertx.cert.VertxKeyCertOptions;
+import io.gravitee.node.vertx.cert.VertxTrustOptions;
 import io.gravitee.node.vertx.server.VertxServer;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.http.HttpServer;
 import java.util.Collections;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Slf4j
 public class VertxHttpServer extends VertxServer<HttpServer, VertxHttpServerOptions> {
 
-    public static final String TYPE = "http";
+    public static final String KIND = "http";
 
-    public VertxHttpServer(String id, Vertx vertx, VertxHttpServerOptions options) {
-        super(id, vertx, options);
+    public VertxHttpServer(
+        Vertx vertx,
+        VertxHttpServerOptions options,
+        KeyStoreLoaderManager keyStoreLoaderManager,
+        TrustStoreLoaderManager trustStoreLoaderManager
+    ) {
+        super(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager);
     }
 
     @Override
     public String type() {
-        return TYPE;
+        return KIND;
     }
 
     @Override
     public HttpServer newInstance() {
-        final HttpServer httpServer = vertx.createHttpServer(options.createHttpServerOptions());
+        startKeyStoreManagers();
+        final HttpServer httpServer = vertx.createHttpServer(
+            options.createHttpServerOptions(
+                new VertxKeyCertOptions(keyStoreLoaderManager.getKeyManager()),
+                new VertxTrustOptions(trustStoreLoaderManager.getCertificateManager())
+            )
+        );
         delegates.add(httpServer);
         return httpServer;
     }

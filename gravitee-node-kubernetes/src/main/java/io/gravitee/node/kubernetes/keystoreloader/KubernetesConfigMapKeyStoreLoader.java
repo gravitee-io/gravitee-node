@@ -73,7 +73,7 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
         return (
             kubernetesLocations != null &&
             !kubernetesLocations.isEmpty() &&
-            SUPPORTED_TYPES.contains(options.getKeyStoreType().toLowerCase()) &&
+            SUPPORTED_TYPES.contains(options.getType().toLowerCase()) &&
             kubernetesLocations.stream().allMatch(location -> CONFIGMAP_PATTERN.matcher(location).matches())
         );
     }
@@ -85,7 +85,7 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
             .flatMapCompletable(location ->
                 kubernetesClient.get(ResourceQuery.<ConfigMap>from(location).build()).flatMapCompletable(this::loadKeyStore)
             )
-            .andThen(Completable.fromRunnable(this::refreshKeyStoreBundle));
+            .andThen(Completable.fromRunnable(this::emitKeyStoreEvent));
     }
 
     @Override
@@ -119,13 +119,7 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
                 throw new IllegalArgumentException("Unable to load keystore: unknown configmap.");
             }
 
-            Map<String, String> data = configMap.getBinaryData() == null ? configMap.getData() : configMap.getBinaryData();
-
-            if (configMap.getBinaryData() != null) {
-                data = configMap.getBinaryData();
-            } else if (configMap.getData() != null) {
-                data = configMap.getData();
-            }
+            Map<String, String> data = getConfigMapData(configMap);
 
             final String dataKey = optResource.get().getResourceKey();
             if (data == null || data.get(dataKey) == null) {
@@ -134,13 +128,20 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
                 );
             }
 
-            final KeyStore keyStore = KeyStoreUtils.initFromContent(
-                options.getKeyStoreType(),
-                data.get(dataKey),
-                options.getKeyStorePassword()
-            );
+            final KeyStore keyStore = KeyStoreUtils.initFromContent(this.options.getType(), data.get(dataKey), getPassword());
 
             keyStoresByLocation.put(configMap.getMetadata().getUid(), keyStore);
         });
+    }
+
+    private static Map<String, String> getConfigMapData(ConfigMap configMap) {
+        Map<String, String> data = configMap.getBinaryData() == null ? configMap.getData() : configMap.getBinaryData();
+
+        if (configMap.getBinaryData() != null) {
+            data = configMap.getBinaryData();
+        } else if (configMap.getData() != null) {
+            data = configMap.getData();
+        }
+        return data;
     }
 }

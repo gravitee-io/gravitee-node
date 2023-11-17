@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.certificates;
+package io.gravitee.node.certificates.selfsigned;
 
 import static org.junit.Assert.*;
 
@@ -39,39 +39,31 @@ public class SelfSignedKeyStoreLoaderFactoryTest {
     public void shouldHandleOptionsWithSelfSigned() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED)
-            .withKeyStorePath(null)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED)
+            .paths(null)
             .build();
 
         assertTrue(cut.canHandle(options));
+        assertNotNull(cut.create(options));
     }
 
     @Test
     public void shouldNotHandleOptionsWithPKCS12() {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .build();
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder().type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12).build();
 
         assertFalse(cut.canHandle(options));
     }
 
     @Test
     public void shouldNotHandleOptionsWithJKS() {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
-            .build();
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder().type(KeyStoreLoader.CERTIFICATE_FORMAT_JKS).build();
 
         assertFalse(cut.canHandle(options));
     }
 
     @Test
     public void shouldNotHandleOptionsWithPEM() {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
-            .build();
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder().type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM).build();
 
         assertFalse(cut.canHandle(options));
     }
