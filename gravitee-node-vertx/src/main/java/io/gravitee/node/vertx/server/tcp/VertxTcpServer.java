@@ -15,6 +15,10 @@
  */
 package io.gravitee.node.vertx.server.tcp;
 
+import io.gravitee.node.certificates.KeyStoreLoaderManager;
+import io.gravitee.node.certificates.TrustStoreLoaderManager;
+import io.gravitee.node.vertx.cert.VertxKeyCertOptions;
+import io.gravitee.node.vertx.cert.VertxTrustOptions;
 import io.gravitee.node.vertx.server.VertxServer;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.net.NetServer;
@@ -29,8 +33,13 @@ public class VertxTcpServer extends VertxServer<NetServer, VertxTcpServerOptions
 
     public static final String KIND = "tcp";
 
-    public VertxTcpServer(String id, Vertx vertx, VertxTcpServerOptions options) {
-        super(id, vertx, options);
+    public VertxTcpServer(
+        Vertx vertx,
+        VertxTcpServerOptions options,
+        KeyStoreLoaderManager keyStoreLoaderManager,
+        TrustStoreLoaderManager trustStoreLoaderManager
+    ) {
+        super(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager);
     }
 
     @Override
@@ -40,7 +49,13 @@ public class VertxTcpServer extends VertxServer<NetServer, VertxTcpServerOptions
 
     @Override
     public NetServer newInstance() {
-        final NetServer netServer = vertx.createNetServer(options.createNetServerOptions());
+        startKeyStoreManagers();
+        final NetServer netServer = vertx.createNetServer(
+            options.createNetServerOptions(
+                new VertxKeyCertOptions(keyStoreLoaderManager.getKeyManager()),
+                new VertxTrustOptions(trustStoreLoaderManager.getCertificateManager())
+            )
+        );
         delegates.add(netServer);
         return netServer;
     }

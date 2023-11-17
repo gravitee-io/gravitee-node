@@ -9,7 +9,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class SecretProviderKeyStoreLoaderFactory implements KeyStoreLoaderFactory {
+public class SecretProviderKeyStoreLoaderFactory implements KeyStoreLoaderFactory<KeyStoreLoaderOptions> {
 
     private static final List<String> SUPPORTED_TYPES = Arrays.asList(
         KeyStoreLoader.CERTIFICATE_FORMAT_PEM,
@@ -24,8 +24,8 @@ public class SecretProviderKeyStoreLoaderFactory implements KeyStoreLoaderFactor
         final String secretLocation = options.getSecretLocation();
         return (
             secretLocation != null &&
-            options.getKeyStoreType() != null &&
-            SUPPORTED_TYPES.contains(options.getKeyStoreType().toUpperCase()) &&
+            options.getType() != null &&
+            SUPPORTED_TYPES.contains(options.getType().toUpperCase()) &&
             secretResolverDispatcher.canHandle(secretLocation)
         );
     }

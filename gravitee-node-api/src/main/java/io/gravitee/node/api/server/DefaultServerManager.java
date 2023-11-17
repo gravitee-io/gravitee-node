@@ -15,10 +15,9 @@
  */
 package io.gravitee.node.api.server;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
@@ -26,29 +25,30 @@ import java.util.stream.Collectors;
  */
 public class DefaultServerManager implements ServerManager {
 
-    private final List<Server<?>> servers = new ArrayList<>();
+    private final Map<String, Server<?>> servers = new LinkedHashMap<>();
 
     @Override
     public void register(Server<?> server) {
-        servers.add(server);
+        servers.put(server.id(), server);
     }
 
     @Override
     public void unregister(Server<?> server) {
-        servers.remove(server);
+        servers.remove(server.id());
     }
 
     @Override
     public List<Server<?>> servers() {
-        return Collections.unmodifiableList(servers);
+        return List.copyOf(servers.values());
     }
 
     @Override
     public <T extends Server<?>> List<T> servers(Class<T> serverClazz) {
-        return servers
-            .stream()
-            .filter(server -> serverClazz.isAssignableFrom(server.getClass()))
-            .map(serverClazz::cast)
-            .collect(Collectors.toList());
+        return servers.values().stream().filter(server -> serverClazz.isAssignableFrom(server.getClass())).map(serverClazz::cast).toList();
+    }
+
+    @Override
+    public Server<?> server(String id) {
+        return servers.get(id);
     }
 }

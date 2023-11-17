@@ -27,15 +27,10 @@ import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.security.KeyStore;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
@@ -79,7 +74,7 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
         return (
             kubernetesLocations != null &&
             !kubernetesLocations.isEmpty() &&
-            SUPPORTED_TYPES.contains(options.getKeyStoreType().toLowerCase()) &&
+            SUPPORTED_TYPES.contains(options.getType().toLowerCase()) &&
             kubernetesLocations.stream().allMatch(location -> SECRET_PATTERN.matcher(location).matches())
         );
     }
@@ -90,9 +85,9 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
             .keySet()
             .stream()
             .map(location -> kubernetesClient.get(ResourceQuery.<Secret>from(location).build()).flatMapCompletable(this::loadKeyStore))
-            .collect(Collectors.toList());
+            .toList();
 
-        return Completable.merge(locationObs).andThen(Completable.fromRunnable(this::refreshKeyStoreBundle));
+        return Completable.merge(locationObs).andThen(Completable.fromRunnable(this::emitKeyStoreEvent));
     }
 
     @Override
@@ -107,7 +102,7 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
                     .repeat()
                     .retryWhen(errors -> errors.delay(RETRY_DELAY_MILLIS, TimeUnit.MILLISECONDS))
             )
-            .collect(Collectors.toList());
+            .toList();
 
         return Flowable.merge(toWatch).filter(event -> event.getType().equalsIgnoreCase("MODIFIED")).map(Event::getObject);
     }
@@ -122,11 +117,11 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
                 KeyStoreUtils.initFromPem(
                     new String(Base64.getDecoder().decode(data.get(KUBERNETES_TLS_CRT))),
                     new String(Base64.getDecoder().decode(data.get(KUBERNETES_TLS_KEY))),
-                    options.getKeyStorePassword(),
+                    getPassword(),
                     secret.getMetadata().getName()
                 );
         } else if (secret.getType().equals(KUBERNETES_OPAQUE_SECRET)) {
-            if (options.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)) {
+            if (this.options.getType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)) {
                 return Completable.error(
                     new IllegalArgumentException("Pem format is not supported with opaque secret, use kubernetes tls secret instead.")
                 );
@@ -155,11 +150,7 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
                 }
 
                 keyStore =
-                    KeyStoreUtils.initFromContent(
-                        options.getKeyStoreType(),
-                        data.get(optResource.get().getResourceKey()),
-                        options.getKeyStorePassword()
-                    );
+                    KeyStoreUtils.initFromContent(this.options.getType(), data.get(optResource.get().getResourceKey()), getPassword());
             }
         } else {
             return Completable.error(new IllegalArgumentException(String.format("Invalid secret type [%s]", secret.getType())));

@@ -3,15 +3,14 @@ package io.gravitee.node.kubernetes.keystoreloader;
 import static io.gravitee.node.api.certificate.KeyStoreLoader.CERTIFICATE_FORMAT_PEM_REGISTRY;
 import static io.gravitee.node.kubernetes.keystoreloader.KubernetesPemRegistryKeyStoreLoader.GRAVITEEIO_PEM_REGISTRY_LABEL;
 import static io.gravitee.node.kubernetes.keystoreloader.KubernetesSecretKeyStoreLoader.*;
-import static io.gravitee.node.kubernetes.keystoreloader.KubernetesSecretKeyStoreLoader.KUBERNETES_TLS_KEY;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.gravitee.kubernetes.client.KubernetesClient;
 import io.gravitee.kubernetes.client.api.LabelSelector;
 import io.gravitee.kubernetes.client.api.ResourceQuery;
 import io.gravitee.kubernetes.client.config.KubernetesConfig;
 import io.gravitee.kubernetes.client.model.v1.*;
-import io.gravitee.node.api.certificate.KeyStoreBundle;
+import io.gravitee.node.api.certificate.KeyStoreEvent;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.reactivex.rxjava3.core.Maybe;
@@ -23,18 +22,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
-@RunWith(MockitoJUnitRunner.class)
-public class KubernetesPemRegistryKeyStoreLoaderTest {
+@ExtendWith(MockitoExtension.class)
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
+class KubernetesPemRegistryKeyStoreLoaderTest {
 
     @Mock
     private KubernetesClient kubernetesClient;
@@ -42,7 +44,7 @@ public class KubernetesPemRegistryKeyStoreLoaderTest {
     private KubernetesPemRegistryKeyStoreLoader cut;
 
     @Test
-    public void shouldLoadGraviteePemRegistry() throws IOException, KeyStoreException {
+    void shouldLoadGraviteePemRegistry() throws IOException, KeyStoreException {
         KubernetesConfig.getInstance().setCurrentNamespace("test");
         final ConfigMap pemRegistry = new ConfigMap();
 
@@ -102,21 +104,21 @@ public class KubernetesPemRegistryKeyStoreLoaderTest {
 
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM_REGISTRY)
-            .withKeyStorePassword("secret")
-            .withWatch(false)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM_REGISTRY)
+            .password("secret")
+            .watch(false)
             .build();
 
         cut = new KubernetesPemRegistryKeyStoreLoader(options, kubernetesClient);
 
-        AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(null);
-        cut.addListener(bundleRef::set);
+        AtomicReference<KeyStoreEvent> bundleRef = new AtomicReference<>(null);
+        cut.setEventHandler(bundleRef::set);
         cut.start();
 
-        final KeyStoreBundle keyStoreBundle = bundleRef.get();
+        final KeyStoreEvent event = bundleRef.get();
 
-        assertNotNull(keyStoreBundle);
-        assertEquals(2, keyStoreBundle.getKeyStore().size());
+        assertThat(event).isInstanceOf(KeyStoreEvent.LoadEvent.class);
+        assertThat(((KeyStoreEvent.LoadEvent) event).keyStore().size()).isEqualTo(2);
     }
 
     private String readContent(String resource) throws IOException {

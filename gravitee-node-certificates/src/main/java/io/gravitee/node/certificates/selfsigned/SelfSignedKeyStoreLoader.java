@@ -13,17 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.certificates;
+package io.gravitee.node.certificates.selfsigned;
 
 import io.gravitee.common.util.KeyStoreUtils;
-import io.gravitee.node.api.certificate.KeyStoreBundle;
-import io.gravitee.node.api.certificate.KeyStoreLoader;
+import io.gravitee.node.api.certificate.KeyStoreEvent;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import io.gravitee.node.certificates.AbstractKeyStoreLoader;
 import java.security.KeyStore;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,38 +27,24 @@ import org.slf4j.LoggerFactory;
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class SelfSignedKeyStoreLoader implements KeyStoreLoader {
+public class SelfSignedKeyStoreLoader extends AbstractKeyStoreLoader<KeyStoreLoaderOptions> {
 
     private static final Logger logger = LoggerFactory.getLogger(SelfSignedKeyStoreLoader.class);
 
-    private final List<Consumer<KeyStoreBundle>> listeners;
-    private final KeyStoreLoaderOptions options;
-    private KeyStoreBundle keyStoreBundle;
-
-    public SelfSignedKeyStoreLoader(KeyStoreLoaderOptions options) {
-        this.options = options;
-        this.listeners = new ArrayList<>();
+    public SelfSignedKeyStoreLoader() {
+        super(KeyStoreLoaderOptions.builder().build());
     }
 
     @Override
     public void start() {
         logger.debug("Initializing self-signed keystore certificate.");
-        final String password = UUID.randomUUID().toString();
-        final KeyStore keyStore = KeyStoreUtils.initSelfSigned("localhost", password);
-        this.keyStoreBundle = new KeyStoreBundle(keyStore, password, options.getDefaultAlias());
-
-        notifyListeners();
+        final KeyStore keyStore = KeyStoreUtils.initSelfSigned("localhost", getPassword());
+        String loaderId = id();
+        onEvent(new KeyStoreEvent.LoadEvent(loaderId, keyStore, getPassword()));
     }
 
     @Override
-    public void stop() {}
-
-    @Override
-    public void addListener(Consumer<KeyStoreBundle> listener) {
-        listeners.add(listener);
-    }
-
-    private void notifyListeners() {
-        listeners.forEach(consumer -> consumer.accept(keyStoreBundle));
+    public void stop() {
+        // nothing to stop
     }
 }

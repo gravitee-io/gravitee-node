@@ -15,23 +15,33 @@
  */
 package io.gravitee.node.vertx.server.http;
 
+import io.gravitee.node.api.certificate.KeyStoreLoaderFactoryRegistry;
+import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
 import io.gravitee.node.api.server.ServerFactory;
+import io.gravitee.node.certificates.KeyStoreLoaderManager;
+import io.gravitee.node.certificates.TrustStoreLoaderManager;
+import io.gravitee.node.vertx.server.AbstractVertxServerFactory;
 import io.vertx.rxjava3.core.Vertx;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class VertxHttpServerFactory implements ServerFactory<VertxHttpServer, VertxHttpServerOptions> {
+public class VertxHttpServerFactory extends AbstractVertxServerFactory implements ServerFactory<VertxHttpServer, VertxHttpServerOptions> {
 
-    private final Vertx vertx;
-
-    public VertxHttpServerFactory(Vertx vertx) {
-        this.vertx = vertx;
+    public VertxHttpServerFactory(
+        Vertx vertx,
+        KeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry,
+        KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry
+    ) {
+        super(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry);
     }
 
     @Override
     public VertxHttpServer create(VertxHttpServerOptions options) {
-        return new VertxHttpServer(options.getId(), vertx, options);
+        KeyStoreLoaderManager keyStoreLoaderManager = createKeyManager(options);
+        TrustStoreLoaderManager trustStoreLoaderManager = createCertificateManager(options);
+        return new VertxHttpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager);
     }
 }

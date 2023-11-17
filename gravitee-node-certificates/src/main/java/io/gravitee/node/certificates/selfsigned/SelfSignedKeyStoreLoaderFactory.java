@@ -13,30 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.vertx.cert;
+package io.gravitee.node.certificates.selfsigned;
 
-import io.gravitee.node.certificates.BaseKeyStoreManager;
-import io.vertx.core.net.KeyCertOptions;
+import io.gravitee.node.api.certificate.KeyStoreLoader;
+import io.gravitee.node.api.certificate.KeyStoreLoaderFactory;
+import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class VertxKeyStoreManager extends BaseKeyStoreManager {
+public class SelfSignedKeyStoreLoaderFactory implements KeyStoreLoaderFactory<KeyStoreLoaderOptions> {
 
-    private final KeyCertOptions keyCertOptions;
-
-    public VertxKeyStoreManager(boolean enableSni) {
-        super(enableSni);
-        this.keyCertOptions = new VertxKeyCertOptions(keyManager);
+    @Override
+    public boolean canHandle(KeyStoreLoaderOptions options) {
+        return (options.getType() != null && options.getType().equalsIgnoreCase(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED));
     }
 
-    /**
-     * Get the corresponding {@link KeyCertOptions} that can be used to configure a vertx server.
-     *
-     * @return a {@link KeyCertOptions}.
-     */
-    public KeyCertOptions getKeyCertOptions() {
-        return keyCertOptions;
+    @Override
+    public KeyStoreLoader create(KeyStoreLoaderOptions options) {
+        return new SelfSignedKeyStoreLoader();
     }
 }

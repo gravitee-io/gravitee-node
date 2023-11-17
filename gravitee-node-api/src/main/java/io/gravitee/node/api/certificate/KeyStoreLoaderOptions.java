@@ -16,140 +16,19 @@
 package io.gravitee.node.api.certificate;
 
 import java.util.List;
+import lombok.Getter;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class KeyStoreLoaderOptions {
+@Getter
+@SuperBuilder
+@ToString
+public class KeyStoreLoaderOptions extends AbstractStoreLoaderOptions {
 
-    private String keyStorePath;
-    private String keyStorePassword;
-    private String keyStoreType;
-    private List<String> kubernetesLocations;
-    private String secretLocation;
-    private List<CertificateOptions> keyStoreCertificates;
-    private boolean watch = true;
-    private String defaultAlias = null;
-
-    public String getKeyStorePath() {
-        return keyStorePath;
-    }
-
-    public void setKeyStorePath(String keyStorePath) {
-        this.keyStorePath = keyStorePath;
-    }
-
-    public String getKeyStorePassword() {
-        return keyStorePassword;
-    }
-
-    public void setKeyStorePassword(String keyStorePassword) {
-        this.keyStorePassword = keyStorePassword;
-    }
-
-    public String getKeyStoreType() {
-        return keyStoreType;
-    }
-
-    public void setKeyStoreType(String keyStoreType) {
-        this.keyStoreType = keyStoreType;
-    }
-
-    public List<CertificateOptions> getKeyStoreCertificates() {
-        return keyStoreCertificates;
-    }
-
-    public void setKeyStoreCertificates(List<CertificateOptions> keyStoreCertificates) {
-        this.keyStoreCertificates = keyStoreCertificates;
-    }
-
-    public List<String> getKubernetesLocations() {
-        return kubernetesLocations;
-    }
-
-    public void setKubernetesLocations(List<String> kubernetesLocations) {
-        this.kubernetesLocations = kubernetesLocations;
-    }
-
-    public String getSecretLocation() {
-        return secretLocation;
-    }
-
-    public void setSecretLocation(String secretLocation) {
-        this.secretLocation = secretLocation;
-    }
-
-    public boolean isWatch() {
-        return watch;
-    }
-
-    public void setWatch(boolean watch) {
-        this.watch = watch;
-    }
-
-    public String getDefaultAlias() {
-        return defaultAlias;
-    }
-
-    public void setDefaultAlias(String defaultAlias) {
-        this.defaultAlias = defaultAlias;
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static final class Builder {
-
-        private KeyStoreLoaderOptions keyStoreLoaderOptions;
-
-        private Builder() {
-            keyStoreLoaderOptions = new KeyStoreLoaderOptions();
-        }
-
-        public Builder withKeyStorePath(String keyStorePath) {
-            keyStoreLoaderOptions.setKeyStorePath(keyStorePath);
-            return this;
-        }
-
-        public Builder withKeyStorePassword(String keyStorePassword) {
-            keyStoreLoaderOptions.setKeyStorePassword(keyStorePassword);
-            return this;
-        }
-
-        public Builder withKeyStoreType(String keyStoreType) {
-            keyStoreLoaderOptions.setKeyStoreType(keyStoreType);
-            return this;
-        }
-
-        public Builder withKubernetesLocations(List<String> kubernetesLocations) {
-            keyStoreLoaderOptions.setKubernetesLocations(kubernetesLocations);
-            return this;
-        }
-
-        public Builder withSecretLocation(String secretLocation) {
-            keyStoreLoaderOptions.setSecretLocation(secretLocation);
-            return this;
-        }
-
-        public Builder withKeyStoreCertificates(List<CertificateOptions> keyStoreCertificates) {
-            keyStoreLoaderOptions.setKeyStoreCertificates(keyStoreCertificates);
-            return this;
-        }
-
-        public Builder withWatch(boolean watch) {
-            keyStoreLoaderOptions.setWatch(watch);
-            return this;
-        }
-
-        public Builder withDefaultAlias(String defaultAlias) {
-            keyStoreLoaderOptions.setDefaultAlias(defaultAlias);
-            return this;
-        }
-
-        public KeyStoreLoaderOptions build() {
-            return keyStoreLoaderOptions;
-        }
-    }
+    private final List<CertificateOptions> certificates;
+    private final String defaultAlias;
 }

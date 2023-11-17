@@ -16,27 +16,20 @@
 package io.gravitee.node.vertx.spring;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
-import io.gravitee.node.api.server.ServerManager;
-import io.gravitee.node.certificates.KeyStoreLoaderManager;
+import io.gravitee.node.certificates.DefaultKeyStoreLoaderFactoryRegistry;
 import io.gravitee.node.vertx.server.VertxServer;
 import io.gravitee.node.vertx.server.VertxServerFactory;
 import io.gravitee.node.vertx.server.VertxServerOptions;
 import io.vertx.rxjava3.core.Vertx;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.env.MockEnvironment;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-@ExtendWith(MockitoExtension.class)
+
 class VertxConfigurationTest {
 
     @Mock
@@ -46,7 +39,11 @@ class VertxConfigurationTest {
 
     @Test
     void should_create_vertx_server_factory() {
-        final VertxServerFactory<VertxServer<?, VertxServerOptions>, VertxServerOptions> serverFactory = cut.serverFactory(vertx);
+        final VertxServerFactory<VertxServer<Object, VertxServerOptions>, VertxServerOptions> serverFactory = cut.serverFactory(
+            vertx,
+            new DefaultKeyStoreLoaderFactoryRegistry<>(),
+            new DefaultKeyStoreLoaderFactoryRegistry<>()
+        );
 
         assertThat(serverFactory).isNotNull();
     }

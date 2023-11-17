@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.certificates;
+package io.gravitee.node.certificates.selfsigned;
 
 import static io.gravitee.common.util.KeyStoreUtils.DEFAULT_ALIAS;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
 
-import io.gravitee.node.api.certificate.KeyStoreBundle;
-import io.gravitee.node.api.certificate.KeyStoreLoader;
-import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import io.gravitee.node.api.certificate.KeyStoreEvent;
 import java.security.KeyStoreException;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,25 +35,22 @@ public class SelfSignedKeyStoreLoaderTest {
 
     @Before
     public void before() {
-        cut =
-            new SelfSignedKeyStoreLoader(
-                KeyStoreLoaderOptions.builder().withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED).build()
-            );
+        cut = new SelfSignedKeyStoreLoader();
     }
 
     @Test
     public void shouldGenerateSelfSignedCertificate() throws KeyStoreException {
-        final AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(null);
+        final AtomicReference<KeyStoreEvent> bundleRef = new AtomicReference<>(null);
 
-        cut.addListener(bundleRef::set);
-
+        cut.setEventHandler(bundleRef::set);
         cut.start();
 
-        final KeyStoreBundle bundle = bundleRef.get();
-
-        assertNotNull(bundle);
-        assertNotNull(bundle.getKeyStore());
-        assertEquals(1, bundle.getKeyStore().size());
-        assertNotNull(bundle.getKeyStore().getCertificate(DEFAULT_ALIAS));
+        final KeyStoreEvent event = bundleRef.get();
+        assertNotNull(event);
+        KeyStoreEvent.LoadEvent loadEvent = (KeyStoreEvent.LoadEvent) event;
+        assertThat(event.loaderId()).isNotBlank();
+        assertNotNull(loadEvent.keyStore());
+        assertThat(loadEvent.keyStore().size()).isEqualTo(1);
+        assertThat(loadEvent.keyStore().getCertificate(DEFAULT_ALIAS)).isNotNull();
     }
 }

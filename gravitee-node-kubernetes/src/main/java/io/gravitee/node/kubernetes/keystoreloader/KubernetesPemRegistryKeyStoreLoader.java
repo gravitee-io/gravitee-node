@@ -33,6 +33,7 @@ import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -56,13 +57,13 @@ public class KubernetesPemRegistryKeyStoreLoader extends AbstractKubernetesKeySt
     }
 
     private void prepareLocations() {
-        if (options.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM_REGISTRY)) {
+        if (options.getType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM_REGISTRY)) {
             this.resources.put(CERTIFICATE_FORMAT_PEM_REGISTRY, null);
         }
     }
 
     public static boolean canHandle(KeyStoreLoaderOptions options) {
-        return options.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM_REGISTRY);
+        return options.getType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM_REGISTRY);
     }
 
     @Override
@@ -100,9 +101,9 @@ public class KubernetesPemRegistryKeyStoreLoader extends AbstractKubernetesKeySt
                         .doOnComplete(() -> resources.remove(CERTIFICATE_FORMAT_PEM_REGISTRY));
                 }
 
-                return Completable.error(new RuntimeException(String.format("unsupported keystore locations %s", location)));
+                return Completable.error(new IllegalArgumentException(String.format("unsupported keystore locations %s", location)));
             })
-            .andThen(Completable.fromRunnable(this::refreshKeyStoreBundle));
+            .andThen(Completable.fromRunnable(this::emitKeyStoreEvent));
     }
 
     @Override
@@ -122,7 +123,7 @@ public class KubernetesPemRegistryKeyStoreLoader extends AbstractKubernetesKeySt
 
     @Override
     protected Completable loadKeyStore(ConfigMap configMap) {
-        if (options.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM_REGISTRY)) {
+        if (options.getType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM_REGISTRY)) {
             if (
                 configMap.getMetadata().getLabels() != null &&
                 CERTIFICATE_FORMAT_PEM_REGISTRY.equalsIgnoreCase(configMap.getMetadata().getLabels().get(GRAVITEEIO_PEM_REGISTRY_LABEL)) &&
@@ -136,7 +137,7 @@ public class KubernetesPemRegistryKeyStoreLoader extends AbstractKubernetesKeySt
             }
         }
 
-        return Completable.error(new RuntimeException(String.format("unsupported keystore type %s", options.getKeyStoreType())));
+        return Completable.error(new RuntimeException(String.format("unsupported keystore type %s", options.getType())));
     }
 
     private Completable generateKeystoreFromPemRegistry(ConfigMap configMap) {
@@ -156,7 +157,7 @@ public class KubernetesPemRegistryKeyStoreLoader extends AbstractKubernetesKeySt
                 return kubernetesClient.get(ResourceQuery.secret(namespaceName[0], namespaceName[1]).build()).map(this::secretToKeyStore);
             })
             .toList()
-            .map(keyStoreList -> KeyStoreUtils.merge(keyStoreList, options.getKeyStorePassword()))
+            .map(keyStoreList -> KeyStoreUtils.merge(keyStoreList, getPassword()))
             .doOnSuccess(keyStore -> keyStoresByLocation.put(GRAVITEEIO_PEM_REGISTRY_LABEL, keyStore))
             .ignoreElement();
     }
@@ -164,10 +165,10 @@ public class KubernetesPemRegistryKeyStoreLoader extends AbstractKubernetesKeySt
     private KeyStore initKeyStore() {
         try {
             KeyStore keyStore = KeyStore.getInstance(KeyStoreUtils.DEFAULT_KEYSTORE_TYPE);
-            keyStore.load(null, KeyStoreUtils.passwordToCharArray(options.getKeyStorePassword()));
+            keyStore.load(null, KeyStoreUtils.passwordToCharArray(getPassword()));
             return keyStore;
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Unable to reset the %s keystore", GRAVITEEIO_PEM_REGISTRY_LABEL), e);
+            throw new IllegalStateException(String.format("Unable to reset the %s keystore", GRAVITEEIO_PEM_REGISTRY_LABEL), e);
         }
     }
 
@@ -175,13 +176,13 @@ public class KubernetesPemRegistryKeyStoreLoader extends AbstractKubernetesKeySt
         final Map<String, String> data = secret.getData();
 
         if (data == null || data.isEmpty()) {
-            throw new RuntimeException(String.format("No data has been found in the secret %s", secret.getMetadata().getName()));
+            throw new IllegalStateException(String.format("No data has been found in the secret %s", secret.getMetadata().getName()));
         }
 
         return KeyStoreUtils.initFromPem(
-            new String(Base64.getDecoder().decode(data.get(KubernetesSecretKeyStoreLoader.KUBERNETES_TLS_CRT))),
-            new String(Base64.getDecoder().decode(data.get(KubernetesSecretKeyStoreLoader.KUBERNETES_TLS_KEY))),
-            options.getKeyStorePassword(),
+            new String(Base64.getDecoder().decode(data.get(KubernetesSecretKeyStoreLoader.KUBERNETES_TLS_CRT)), StandardCharsets.UTF_8),
+            new String(Base64.getDecoder().decode(data.get(KubernetesSecretKeyStoreLoader.KUBERNETES_TLS_KEY)), StandardCharsets.UTF_8),
+            getPassword(),
             secret.getMetadata().getName()
         );
     }

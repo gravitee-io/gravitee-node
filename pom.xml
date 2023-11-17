@@ -66,6 +66,7 @@
         <hazelcast.version>5.2.3</hazelcast.version>
         <gravitee-alert-api.version>1.8.0</gravitee-alert-api.version>
         <jmockit.version>1.49</jmockit.version>
+        <awaitability.version>4.2.0</awaitability.version>
 
         <!-- WARNING: the next two dependencies versions must be kept in sync regarding vertx-micrometer-metrics -->
         <micrometer-registry-prometheus.version>1.10.7</micrometer-registry-prometheus.version>
@@ -263,6 +264,12 @@
                 <groupId>org.jmockit</groupId>
                 <artifactId>jmockit</artifactId>
                 <version>${jmockit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>${awaitability.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

@@ -18,9 +18,22 @@ package io.gravitee.node.api.certificate;
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
+ *
+ * This class is resposible to create KeyStore when the configuration is
+ * @param <O> the concrete iplementation of options used to accept and create the {@link KeyStoreLoader}
  */
-public interface KeyStoreLoaderFactory {
-    boolean canHandle(KeyStoreLoaderOptions options);
+public interface KeyStoreLoaderFactory<O extends AbstractStoreLoaderOptions> {
+    /**
+     * Test if options matches requirement to create a keystore
+     * @param options the option to make the test
+     * @return true is the create() method can be called
+     */
+    boolean canHandle(O options);
 
-    KeyStoreLoader create(KeyStoreLoaderOptions options);
+    /**
+     * Called after {@link #canHandle(AbstractStoreLoaderOptions)} returns true
+     * @param options options used to create the {@link KeyStoreLoader}
+     * @return
+     */
+    KeyStoreLoader create(O options);
 }

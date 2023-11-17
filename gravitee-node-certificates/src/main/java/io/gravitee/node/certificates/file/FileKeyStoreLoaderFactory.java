@@ -13,27 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.certificates;
+package io.gravitee.node.certificates.file;
 
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderFactory;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class SelfSignedKeyStoreLoaderFactory implements KeyStoreLoaderFactory {
+public class FileKeyStoreLoaderFactory implements KeyStoreLoaderFactory<KeyStoreLoaderOptions> {
+
+    private static final List<String> SUPPORTED_TYPES = Arrays.asList(
+        KeyStoreLoader.CERTIFICATE_FORMAT_JKS.toLowerCase(),
+        KeyStoreLoader.CERTIFICATE_FORMAT_PEM.toLowerCase(),
+        KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12.toLowerCase()
+    );
 
     @Override
     public boolean canHandle(KeyStoreLoaderOptions options) {
         return (
-            options.getKeyStoreType() != null && options.getKeyStoreType().equalsIgnoreCase(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED)
+            options.getType() != null &&
+            SUPPORTED_TYPES.contains(options.getType().toLowerCase()) &&
+            (
+                (options.getPaths() != null && !options.getPaths().isEmpty()) ||
+                (options.getCertificates() != null && !options.getCertificates().isEmpty())
+            )
         );
     }
 
     @Override
     public KeyStoreLoader create(KeyStoreLoaderOptions options) {
-        return new SelfSignedKeyStoreLoader(options);
+        return new FileKeyStoreLoader(options);
     }
 }

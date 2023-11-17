@@ -15,10 +15,20 @@
  */
 package io.gravitee.node.api.certificate;
 
+import lombok.Getter;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
+
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface KeyStoreManager {
-    void registerLoader(KeyStoreLoader loader);
+@Getter
+@SuperBuilder
+@ToString
+public class TrustStoreLoaderOptions extends AbstractStoreLoaderOptions {
+
+    public boolean isConfigured() {
+        return getType() != null && getPaths() != null && !getPaths().isEmpty();
+    }
 }

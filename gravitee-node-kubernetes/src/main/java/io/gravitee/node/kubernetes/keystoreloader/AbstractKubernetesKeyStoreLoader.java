@@ -18,20 +18,16 @@ package io.gravitee.node.kubernetes.keystoreloader;
 import io.gravitee.common.util.KeyStoreUtils;
 import io.gravitee.kubernetes.client.KubernetesClient;
 import io.gravitee.kubernetes.client.api.ResourceQuery;
-import io.gravitee.node.api.certificate.KeyStoreBundle;
-import io.gravitee.node.api.certificate.KeyStoreLoader;
+import io.gravitee.node.api.certificate.KeyStoreEvent;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import io.gravitee.node.certificates.AbstractKeyStoreLoader;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.security.KeyStore;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,24 +35,19 @@ import org.slf4j.LoggerFactory;
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public abstract class AbstractKubernetesKeyStoreLoader<T> implements KeyStoreLoader {
+public abstract class AbstractKubernetesKeyStoreLoader<T> extends AbstractKeyStoreLoader<KeyStoreLoaderOptions> {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractKubernetesKeyStoreLoader.class);
     protected static final int RETRY_DELAY_MILLIS = 10000;
 
-    protected final KeyStoreLoaderOptions options;
     protected final KubernetesClient kubernetesClient;
-    protected final List<Consumer<KeyStoreBundle>> listeners;
     protected final Map<String, KeyStore> keyStoresByLocation;
     protected final Map<String, ResourceQuery<T>> resources = new HashMap<>();
-    protected KeyStoreBundle keyStoreBundle;
-
     private Disposable disposable;
 
-    public AbstractKubernetesKeyStoreLoader(KeyStoreLoaderOptions options, KubernetesClient kubernetesClient) {
-        this.options = options;
+    protected AbstractKubernetesKeyStoreLoader(KeyStoreLoaderOptions options, KubernetesClient kubernetesClient) {
+        super(options);
         this.kubernetesClient = kubernetesClient;
-        this.listeners = new ArrayList<>();
         this.keyStoresByLocation = new ConcurrentHashMap<>();
     }
 
@@ -70,7 +61,7 @@ public abstract class AbstractKubernetesKeyStoreLoader<T> implements KeyStoreLoa
                     }
                 })
                 .blockingAwait();
-        } catch (Throwable throwable) {
+        } catch (Exception throwable) {
             throw new IllegalArgumentException("An error occurred when trying to init certificates.", throwable);
         }
     }
@@ -79,7 +70,7 @@ public abstract class AbstractKubernetesKeyStoreLoader<T> implements KeyStoreLoa
         this.disposable =
             watch()
                 .observeOn(Schedulers.computation())
-                .flatMapCompletable(t -> loadKeyStore(t).andThen(Completable.fromRunnable(this::refreshKeyStoreBundle)))
+                .flatMapCompletable(t -> loadKeyStore(t).andThen(Completable.fromRunnable(this::emitKeyStoreEvent)))
                 .doOnError(throwable -> logger.error("An error occurred during keystore refresh. Restarting watch.", throwable))
                 .retry()
                 .subscribe();
@@ -98,18 +89,9 @@ public abstract class AbstractKubernetesKeyStoreLoader<T> implements KeyStoreLoa
 
     protected abstract Completable loadKeyStore(T elt);
 
-    @Override
-    public void addListener(Consumer<KeyStoreBundle> listener) {
-        listeners.add(listener);
-    }
-
-    protected void refreshKeyStoreBundle() {
-        final KeyStore keyStore = KeyStoreUtils.merge(new ArrayList<>(keyStoresByLocation.values()), options.getKeyStorePassword());
-        this.keyStoreBundle = new KeyStoreBundle(keyStore, options.getKeyStorePassword(), options.getDefaultAlias());
-        this.notifyListeners();
-    }
-
-    protected void notifyListeners() {
-        listeners.forEach(consumer -> consumer.accept(keyStoreBundle));
+    protected void emitKeyStoreEvent() {
+        final KeyStore keyStore = KeyStoreUtils.merge(new ArrayList<>(keyStoresByLocation.values()), getPassword());
+        String loaderId = id();
+        this.onEvent(new KeyStoreEvent.LoadEvent(loaderId, keyStore, getPassword()));
     }
 }

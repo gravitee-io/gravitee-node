@@ -31,9 +31,6 @@
     <name>Gravitee.io - Node - Cache</name>
     <packaging>pom</packaging>
 
-    <properties>
-        <awaitility.version>4.2.0</awaitility.version>
-    </properties>
     <modules>
         <module>gravitee-node-cache-common</module>
         <module>gravitee-node-cache-plugin-handler</module>
@@ -44,7 +41,6 @@
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
-            <version>${awaitility.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
