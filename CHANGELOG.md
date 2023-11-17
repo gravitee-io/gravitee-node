@@ -1,3 +1,10 @@
+# [4.5.0](https://github.com/gravitee-io/gravitee-node/compare/4.4.0...4.5.0) (2023-11-17)
+
+
+### Features
+
+* allow AE as an enterprise feature ([476165c](https://github.com/gravitee-io/gravitee-node/commit/476165c2e40a83a2cf33f4f7c811b50aeb2487d4))
+
 # [4.4.0](https://github.com/gravitee-io/gravitee-node/compare/4.3.1...4.4.0) (2023-11-09)
 
 
