@@ -19,9 +19,7 @@ import io.gravitee.node.vertx.server.VertxServerOptions;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.tracing.TracingPolicy;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
@@ -53,6 +51,7 @@ public class VertxHttpServerOptions extends VertxServerOptions {
         HttpServerOptions.DEFAULT_PER_FRAME_WEBSOCKET_COMPRESSION_SUPPORTED;
     public static final int DEFAULT_MAX_WEBSOCKET_MESSAGE_SIZE = HttpServerOptions.DEFAULT_MAX_WEBSOCKET_MESSAGE_SIZE;
     public static final int DEFAULT_MAX_WEBSOCKET_FRAME_SIZE = HttpServerOptions.DEFAULT_MAX_WEBSOCKET_FRAME_SIZE;
+    public static final boolean DEFAULT_COMPRESSION_SUPPORTED = HttpServerOptions.DEFAULT_COMPRESSION_SUPPORTED;
 
     @Builder.Default
     protected boolean alpn = DEFAULT_ALPN;
@@ -80,6 +79,9 @@ public class VertxHttpServerOptions extends VertxServerOptions {
 
     @Builder.Default
     private boolean websocketEnabled = DEFAULT_WEBSOCKET_ENABLED;
+
+    @Builder.Default
+    private boolean compressionSupported = DEFAULT_COMPRESSION_SUPPORTED;
 
     private String websocketSubProtocols;
 
@@ -109,6 +111,9 @@ public class VertxHttpServerOptions extends VertxServerOptions {
             this.handle100Continue(environment.getProperty(prefix + ".handle100Continue", Boolean.class, DEFAULT_HANDLE_100_CONTINUE));
             this.maxHeaderSize(environment.getProperty(prefix + ".maxHeaderSize", Integer.class, DEFAULT_MAX_HEADER_SIZE));
             this.maxChunkSize(environment.getProperty(prefix + ".maxChunkSize", Integer.class, DEFAULT_MAX_CHUNK_SIZE));
+            this.compressionSupported(
+                    environment.getProperty(prefix + ".compressionSupported", Boolean.class, DEFAULT_COMPRESSION_SUPPORTED)
+                );
             this.maxInitialLineLength(
                     environment.getProperty(prefix + ".maxInitialLineLength", Integer.class, DEFAULT_MAX_INITIAL_LINE_LENGTH)
                 );

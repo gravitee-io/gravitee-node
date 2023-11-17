@@ -36,7 +36,7 @@ public class KubernetesKeyStoreLoaderFactory implements KeyStoreLoaderFactory {
         return (KubernetesConfigMapKeyStoreLoader.canHandle(options) || KubernetesSecretKeyStoreLoader.canHandle(options));
     }
 
-    public KeyStoreLoader create(KeyStoreLoaderOptions options) {
+    public KeyStoreLoader create(KeyStoreLoaderOptions options, String serverId) {
         if (KubernetesConfigMapKeyStoreLoader.canHandle(options)) {
             return new KubernetesConfigMapKeyStoreLoader(options, client);
         } else if (KubernetesSecretKeyStoreLoader.canHandle(options)) {

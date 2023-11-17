@@ -52,7 +52,7 @@ public class ReloadableKeyManagerTest {
 
     @Before
     public void before() {
-        cut = new ReloadableKeyManager();
+        cut = new ReloadableKeyManager("http");
     }
 
     @Test(expected = IllegalArgumentException.class)

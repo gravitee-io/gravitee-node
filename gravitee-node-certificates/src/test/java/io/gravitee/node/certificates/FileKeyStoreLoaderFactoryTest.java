@@ -15,7 +15,8 @@
  */
 package io.gravitee.node.certificates;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
@@ -39,8 +40,8 @@ public class FileKeyStoreLoaderFactoryTest {
     public void shouldHandleOptionsWithPKCS12() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKeyStorePath(getPath("localhost.p12"))
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .keyStorePath(getPath("localhost.p12"))
             .build();
 
         assertTrue(cut.canHandle(options));
@@ -50,8 +51,8 @@ public class FileKeyStoreLoaderFactoryTest {
     public void shouldNotHandleOptionsWithPKCS12WithoutPath() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKeyStorePath(null)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .keyStorePath(null)
             .build();
 
         assertFalse(cut.canHandle(options));
@@ -61,8 +62,8 @@ public class FileKeyStoreLoaderFactoryTest {
     public void shouldHandleOptionsWithJKS() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
-            .withKeyStorePath(getPath("localhost.jks"))
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
+            .keyStorePath(getPath("localhost.jks"))
             .build();
 
         assertTrue(cut.canHandle(options));
@@ -72,8 +73,8 @@ public class FileKeyStoreLoaderFactoryTest {
     public void shouldNotHandleOptionsWithJKSWithoutPath() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
-            .withKeyStorePath(null)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
+            .keyStorePath(null)
             .build();
 
         assertFalse(cut.canHandle(options));
@@ -83,8 +84,8 @@ public class FileKeyStoreLoaderFactoryTest {
     public void shouldHandleOptionsWithPEM() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
-            .withKeyStorePath(getPath("localhost.jks"))
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
+            .keyStorePath(getPath("localhost.jks"))
             .build();
 
         assertTrue(cut.canHandle(options));
@@ -94,8 +95,8 @@ public class FileKeyStoreLoaderFactoryTest {
     public void shouldNotHandleOptionsWithSelfSigned() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED)
-            .withKeyStorePath(null)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED)
+            .keyStorePath(null)
             .build();
 
         assertFalse(cut.canHandle(options));

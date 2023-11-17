@@ -25,13 +25,14 @@ import lombok.experimental.SuperBuilder;
  */
 @Getter
 @SuperBuilder
-public class KeyStoreLoaderOptions extends AbstractStoreLoaderOptions {
+public class TrustStoreLoaderOptions extends AbstractStoreLoaderOptions {
 
-    private final String keyStorePath;
-    private final String keyStorePassword;
-    private final String keyStoreType;
-    private final List<String> kubernetesLocations;
-    private final String secretLocation;
-    private final List<CertificateOptions> keyStoreCertificates;
-    private final String defaultAlias;
+    private final List<String> trustStorePaths;
+    private final String trustStoreType;
+    private final String trustStorePassword;
+    private final String trustStoreSecret;
+
+    public boolean isConfigured() {
+        return trustStoreType != null && trustStorePaths != null && !trustStorePaths.isEmpty();
+    }
 }

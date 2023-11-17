@@ -16,50 +16,49 @@
 package io.gravitee.node.certificates;
 
 import io.gravitee.common.service.AbstractService;
-import io.gravitee.node.api.certificate.KeyStoreLoader;
-import io.gravitee.node.api.certificate.KeyStoreLoaderFactory;
-import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import io.gravitee.node.api.certificate.TrustStoreLoader;
+import io.gravitee.node.api.certificate.TrustStoreLoaderFactory;
+import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
+ * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class KeyStoreLoaderManager extends AbstractService<KeyStoreLoaderManager> {
+public class TrustStoreLoaderManager extends AbstractService<TrustStoreLoaderManager> {
 
-    private final Set<KeyStoreLoaderFactory> loaderFactories;
-    private final Set<KeyStoreLoader> loaders;
+    private final Set<TrustStoreLoaderFactory> loaderFactories;
+    private final Set<TrustStoreLoader> loaders;
 
-    public KeyStoreLoaderManager() {
+    public TrustStoreLoaderManager() {
         this.loaderFactories = new HashSet<>();
         this.loaders = new HashSet<>();
 
         // Automatically register the file keystore nd self-signed loader factories.
-        this.registerFactory(new FileKeyStoreLoaderFactory());
-        this.registerFactory(new SelfSignedKeyStoreLoaderFactory());
+        this.registerFactory(new FileTrustStoreLoaderFactory());
     }
 
     @Override
-    public KeyStoreLoaderManager preStop() throws Exception {
-        loaders.forEach(KeyStoreLoader::stop);
+    public TrustStoreLoaderManager preStop() throws Exception {
+        loaders.forEach(TrustStoreLoader::stop);
         return this;
     }
 
-    public void registerFactory(KeyStoreLoaderFactory keyStoreLoaderFactory) {
+    public void registerFactory(TrustStoreLoaderFactory keyStoreLoaderFactory) {
         loaderFactories.add(keyStoreLoaderFactory);
     }
 
-    public Set<KeyStoreLoaderFactory> getLoaderFactories() {
+    public Set<TrustStoreLoaderFactory> getLoaderFactories() {
         return loaderFactories;
     }
 
-    public KeyStoreLoader create(KeyStoreLoaderOptions options, String serverId) {
+    public TrustStoreLoader create(TrustStoreLoaderOptions options, String serverId) {
         return getLoaderFactories()
             .stream()
-            .filter(keyStoreLoaderFactory -> keyStoreLoaderFactory.canHandle(options))
+            .filter(factory -> factory.canHandle(options))
             .findFirst()
-            .map(keyStoreLoaderFactory -> keyStoreLoaderFactory.create(options, serverId))
+            .map(factory -> factory.create(options, serverId))
             .orElse(null);
     }
 }

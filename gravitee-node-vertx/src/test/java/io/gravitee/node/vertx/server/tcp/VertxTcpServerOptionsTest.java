@@ -291,7 +291,7 @@ class VertxTcpServerOptionsTest {
             .keyStoreLoaderManager(keyStoreLoaderManager)
             .build();
 
-        when(keyStoreLoaderManager.create(any(KeyStoreLoaderOptions.class))).thenReturn(mock(KeyStoreLoader.class));
+        when(keyStoreLoaderManager.create(any(KeyStoreLoaderOptions.class), any())).thenReturn(mock(KeyStoreLoader.class));
 
         final NetServerOptions netServerOptions = options.createNetServerOptions();
 
@@ -360,7 +360,7 @@ class VertxTcpServerOptionsTest {
         environment.setProperty("servers[0].ssl.truststore.path[0]", "cert1.pem");
         environment.setProperty("servers[0].ssl.truststore.path[1]", "cert2.pem");
 
-        when(keyStoreLoaderManager.create(any(KeyStoreLoaderOptions.class))).thenReturn(mock(KeyStoreLoader.class));
+        when(keyStoreLoaderManager.create(any(KeyStoreLoaderOptions.class), any())).thenReturn(mock(KeyStoreLoader.class));
 
         final VertxTcpServerOptions options = VertxTcpServerOptions
             .builder()
@@ -380,7 +380,7 @@ class VertxTcpServerOptionsTest {
         environment.setProperty("servers[0].ssl.truststore.type", "pkcs12");
         environment.setProperty("servers[0].ssl.truststore.path", "truststore.p12");
 
-        when(keyStoreLoaderManager.create(any(KeyStoreLoaderOptions.class))).thenReturn(mock(KeyStoreLoader.class));
+        when(keyStoreLoaderManager.create(any(KeyStoreLoaderOptions.class), any())).thenReturn(mock(KeyStoreLoader.class));
 
         final VertxTcpServerOptions options = VertxTcpServerOptions
             .builder()

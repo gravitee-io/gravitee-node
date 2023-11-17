@@ -15,13 +15,15 @@
  */
 package io.gravitee.node.vertx.server;
 
+import static io.vertx.core.http.HttpServerOptions.DEFAULT_COMPRESSION_SUPPORTED;
+
 import io.gravitee.common.utils.UUID;
-import io.gravitee.node.api.certificate.CertificateOptions;
-import io.gravitee.node.api.certificate.KeyStoreLoader;
-import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import io.gravitee.node.api.certificate.*;
 import io.gravitee.node.api.server.ServerOptions;
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
+import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import io.gravitee.node.vertx.cert.VertxKeyStoreManager;
+import io.gravitee.node.vertx.cert.VertxTrustStoreManager;
 import io.gravitee.node.vertx.server.http.VertxHttpServerOptions;
 import io.gravitee.node.vertx.server.tcp.VertxTcpServerOptions;
 import io.vertx.core.http.ClientAuth;
@@ -53,7 +55,8 @@ public class VertxServerOptions implements ServerOptions {
     public static final String CERTIFICATE_FORMAT_PKCS12 = "PKCS12";
     public static final String CERTIFICATE_FORMAT_SELF_SIGNED = "SELF-SIGNED";
     public static final String DEFAULT_STORE_TYPE = CERTIFICATE_FORMAT_JKS;
-    public static final boolean DEFAULT_STORE_WATCH = true;
+    public static final boolean DEFAULT_KEYSTORE_WATCH = true;
+    public static final boolean DEFAULT_TRUSTSTORE_WATCH = true;
     public static final String DEFAULT_LISTENING_HOST = "0.0.0.0";
     public static final int DEFAULT_PORT = 8080;
     public static final int TCP_DEFAULT_PORT = 4080;
@@ -96,10 +99,14 @@ public class VertxServerOptions implements ServerOptions {
     protected List<CertificateOptions> keyStoreCertificates;
 
     @Builder.Default
-    protected boolean keyStoreWatch = DEFAULT_STORE_WATCH;
+    protected boolean keyStoreWatch = DEFAULT_KEYSTORE_WATCH;
 
     protected String trustStorePath;
     protected String trustStorePassword;
+    protected String trustStoreSecret;
+
+    @Builder.Default
+    protected boolean trustStoreWatch = DEFAULT_TRUSTSTORE_WATCH;
 
     @Builder.Default
     protected String trustStoreType = DEFAULT_STORE_TYPE;
@@ -111,6 +118,7 @@ public class VertxServerOptions implements ServerOptions {
 
     protected List<String> authorizedTlsCipherSuites;
     protected KeyStoreLoaderManager keyStoreLoaderManager;
+    protected TrustStoreLoaderManager trustStoreLoaderManager;
 
     @Builder.Default
     protected boolean haProxyProtocol = DEFAULT_HAPROXY_PROTOCOL;
@@ -129,16 +137,23 @@ public class VertxServerOptions implements ServerOptions {
     public static VertxServerOptionsBuilder<?, ?> builder(
         Environment environment,
         String prefix,
-        KeyStoreLoaderManager keyStoreLoaderManager
+        KeyStoreLoaderManager keyStoreLoaderManager,
+        TrustStoreLoaderManager trustStoreLoaderManager
     ) {
         final String type = environment.getProperty(prefix + ".type");
         if (type == null || "http".equals(type)) {
-            return VertxHttpServerOptions.builder().prefix(prefix).environment(environment).keyStoreLoaderManager(keyStoreLoaderManager);
+            return VertxHttpServerOptions
+                .builder()
+                .prefix(prefix)
+                .environment(environment)
+                .trustStoreLoaderManager(trustStoreLoaderManager)
+                .keyStoreLoaderManager(keyStoreLoaderManager);
         } else if ("tcp".equals(type)) {
             return VertxTcpServerOptions
                 .builder()
                 .prefix(prefix)
                 .environment(environment)
+                .trustStoreLoaderManager(trustStoreLoaderManager)
                 .keyStoreLoaderManager(keyStoreLoaderManager)
                 .defaultPort(TCP_DEFAULT_PORT);
         } else {
@@ -215,12 +230,14 @@ public class VertxServerOptions implements ServerOptions {
             this.keyStoreSecret(environment.getProperty(prefix + ".ssl.keystore.secret"));
             this.keyStoreDefaultAlias(environment.getProperty(prefix + ".ssl.keystore.defaultAlias"));
             this.keyStorePassword(environment.getProperty(prefix + ".ssl.keystore.password"));
-            this.keyStoreWatch(environment.getProperty(prefix + ".ssl.keystore.watch", Boolean.class, DEFAULT_STORE_WATCH));
+            this.keyStoreWatch(environment.getProperty(prefix + ".ssl.keystore.watch", Boolean.class, DEFAULT_TRUSTSTORE_WATCH));
 
             this.trustStoreType(environment.getProperty(prefix + ".ssl.truststore.type", DEFAULT_STORE_TYPE));
             this.trustStorePath(environment.getProperty(prefix + ".ssl.truststore.path"));
             this.trustStorePaths(getArrayValues(prefix + ".ssl.truststore.path"));
             this.trustStorePassword(environment.getProperty(prefix + ".ssl.truststore.password"));
+            this.trustStoreWatch(environment.getProperty(prefix + ".ssl.truststore.watch", Boolean.class, DEFAULT_TRUSTSTORE_WATCH));
+            this.trustStoreSecret(environment.getProperty(prefix + ".ssl.truststore.secret"));
 
             this.haProxyProtocol(environment.getProperty(prefix + ".haproxy.proxyProtocol", Boolean.class, DEFAULT_HAPROXY_PROTOCOL));
             this.haProxyProtocolTimeout(
@@ -282,7 +299,9 @@ public class VertxServerOptions implements ServerOptions {
             if (keyStoreLoaderManager == null) {
                 throw new IllegalArgumentException("You must provide a KeyStoreLoaderManager when 'secured' is enabled.");
             }
-
+            if (trustStoreLoaderManager == null) {
+                throw new IllegalArgumentException("You must provide a TrustStoreLoaderManager when 'secured' is enabled.");
+            }
             if (openssl) {
                 options.setSslEngineOptions(new OpenSSLEngineOptions());
             }
@@ -301,34 +320,38 @@ public class VertxServerOptions implements ServerOptions {
                 authorizedTlsCipherSuites.stream().map(String::trim).forEach(options::addEnabledCipherSuite);
             }
 
-            if (trustStorePaths != null && !trustStorePaths.isEmpty()) {
-                if (trustStoreType == null || trustStoreType.isEmpty() || trustStoreType.equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)) {
-                    options.setTrustStoreOptions(new JksOptions().setPath(trustStorePaths.get(0)).setPassword(trustStorePassword));
-                } else if (trustStoreType.equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)) {
-                    final PemTrustOptions pemTrustOptions = new PemTrustOptions();
-                    trustStorePaths.forEach(pemTrustOptions::addCertPath);
-                    options.setPemTrustOptions(pemTrustOptions);
-                } else if (trustStoreType.equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)) {
-                    options.setPfxTrustOptions(new PfxOptions().setPath(trustStorePaths.get(0)).setPassword(trustStorePassword));
-                }
-            }
-
             final KeyStoreLoaderOptions keyStoreLoaderOptions = KeyStoreLoaderOptions
                 .builder()
-                .withKeyStorePath(keyStorePath)
-                .withKeyStorePassword(keyStorePassword)
-                .withKeyStoreType(keyStoreType)
-                .withKeyStoreCertificates(keyStoreCertificates)
-                .withKubernetesLocations(keyStoreKubernetes)
-                .withSecretLocation(keyStoreSecret)
-                .withWatch(keyStoreWatch)
-                .withDefaultAlias(keyStoreDefaultAlias)
+                .keyStorePath(keyStorePath)
+                .keyStorePassword(keyStorePassword)
+                .keyStoreType(keyStoreType)
+                .keyStoreCertificates(keyStoreCertificates)
+                .kubernetesLocations(keyStoreKubernetes)
+                .secretLocation(keyStoreSecret)
+                .watch(keyStoreWatch)
+                .defaultAlias(keyStoreDefaultAlias)
                 .build();
 
-            final VertxKeyStoreManager keyStoreManager = new VertxKeyStoreManager(sni);
-            final KeyStoreLoader keyStoreLoader = keyStoreLoaderManager.create(keyStoreLoaderOptions);
-            keyStoreManager.registerLoader(keyStoreLoader);
+            TrustStoreLoaderOptions trustStoreLoaderOptions = TrustStoreLoaderOptions
+                .builder()
+                .trustStorePaths(trustStorePaths)
+                .trustStoreType(trustStoreType)
+                .trustStorePassword(trustStorePassword)
+                .trustStoreSecret(trustStoreSecret)
+                .watch(trustStoreWatch)
+                .build();
+
+            final KeyStoreLoader keyStoreLoader = keyStoreLoaderManager.create(keyStoreLoaderOptions, getId());
+            final VertxKeyStoreManager keyStoreManager = new VertxKeyStoreManager(getId(), sni);
+            keyStoreManager.registerLoader(keyStoreLoader, getId());
             options.setKeyCertOptions(keyStoreManager.getKeyCertOptions());
+
+            if (trustStoreLoaderOptions.isConfigured()) {
+                final VertxTrustStoreManager trustStoreManager = new VertxTrustStoreManager(getId());
+                final TrustStoreLoader trustStoreLoader = trustStoreLoaderManager.create(trustStoreLoaderOptions, getId());
+                trustStoreManager.registerLoader(trustStoreLoader, getId());
+                options.setTrustOptions(trustStoreManager.getTrustOptions());
+            }
         }
 
         // Customizable configuration

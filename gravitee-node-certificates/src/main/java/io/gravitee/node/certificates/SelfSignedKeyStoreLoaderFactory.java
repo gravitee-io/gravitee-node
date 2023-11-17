@@ -18,12 +18,16 @@ package io.gravitee.node.certificates;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderFactory;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
 public class SelfSignedKeyStoreLoaderFactory implements KeyStoreLoaderFactory {
+
+    Map<String, KeyStoreLoader> keyStoreLoaderByServerId = new ConcurrentHashMap<>();
 
     @Override
     public boolean canHandle(KeyStoreLoaderOptions options) {
@@ -33,7 +37,7 @@ public class SelfSignedKeyStoreLoaderFactory implements KeyStoreLoaderFactory {
     }
 
     @Override
-    public KeyStoreLoader create(KeyStoreLoaderOptions options) {
-        return new SelfSignedKeyStoreLoader(options);
+    public KeyStoreLoader create(KeyStoreLoaderOptions options, String serverId) {
+        return keyStoreLoaderByServerId.computeIfAbsent(serverId, ignore -> new SelfSignedKeyStoreLoader(options));
     }
 }

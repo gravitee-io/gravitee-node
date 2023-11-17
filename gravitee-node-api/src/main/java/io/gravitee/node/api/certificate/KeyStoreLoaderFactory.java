@@ -22,5 +22,5 @@ package io.gravitee.node.api.certificate;
 public interface KeyStoreLoaderFactory {
     boolean canHandle(KeyStoreLoaderOptions options);
 
-    KeyStoreLoader create(KeyStoreLoaderOptions options);
+    KeyStoreLoader create(KeyStoreLoaderOptions options, String serverId);
 }

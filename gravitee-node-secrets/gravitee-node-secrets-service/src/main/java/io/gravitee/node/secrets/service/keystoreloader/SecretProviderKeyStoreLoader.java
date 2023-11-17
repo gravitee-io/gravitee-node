@@ -4,6 +4,7 @@ import io.gravitee.common.util.KeyStoreUtils;
 import io.gravitee.node.api.certificate.KeyStoreBundle;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import io.gravitee.node.api.certificate.SecuredStoreLoader;
 import io.gravitee.node.api.secrets.model.Secret;
 import io.gravitee.node.api.secrets.model.SecretEvent;
 import io.gravitee.node.api.secrets.model.SecretMap;
@@ -50,7 +51,7 @@ public class SecretProviderKeyStoreLoader implements KeyStoreLoader {
 
     private void createBundleAndNotify(SecretMap secretMap, SecretMount secretMount) {
         switch (options.getKeyStoreType().toUpperCase()) {
-            case KeyStoreLoader.CERTIFICATE_FORMAT_PEM -> notifyListeners(
+            case SecuredStoreLoader.CERTIFICATE_FORMAT_PEM -> notifyListeners(
                 new KeyStoreBundle(
                     KeyStoreUtils.initFromPem(
                         secretMap
@@ -76,7 +77,7 @@ public class SecretProviderKeyStoreLoader implements KeyStoreLoader {
                     options.getDefaultAlias()
                 )
             );
-            case KeyStoreLoader.CERTIFICATE_FORMAT_JKS, KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12 -> notifyListeners(
+            case SecuredStoreLoader.CERTIFICATE_FORMAT_JKS, SecuredStoreLoader.CERTIFICATE_FORMAT_PKCS12 -> notifyListeners(
                 new KeyStoreBundle(
                     KeyStoreUtils.initFromContent(
                         options.getKeyStoreType(),

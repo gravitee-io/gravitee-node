@@ -26,6 +26,7 @@ import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.net.ssl.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,12 +40,17 @@ public class ReloadableKeyManager extends X509ExtendedKeyManager {
     private static final Logger logger = LoggerFactory.getLogger(ReloadableKeyManager.class);
 
     static final int MAX_SNI_DOMAINS = 10000;
+    private final String serverId;
 
     private String defaultAlias;
 
     private Map<String, String> sniDomainAliases;
-    private volatile X509ExtendedKeyManager delegate;
+    private final AtomicReference<X509ExtendedKeyManager> delegate = new AtomicReference<>();
     private boolean enableSni;
+
+    public ReloadableKeyManager(String serverId) {
+        this.serverId = serverId;
+    }
 
     public void load(String defaultAlias, KeyStore keyStore, String password, boolean enableSni) {
         try {
@@ -55,7 +61,10 @@ public class ReloadableKeyManager extends X509ExtendedKeyManager {
                 defaultAlias = KeyStoreUtils.getDefaultAlias(keyStore);
             } else if (!keyStore.containsAlias(defaultAlias)) {
                 throw new IllegalArgumentException(
-                    String.format("Unable to load keystore, default alias [%s] not present in the keystore.", defaultAlias)
+                    "Unable to load keystore, default alias [%s] not present in the keystore. server id: %s".formatted(
+                            defaultAlias,
+                            serverId
+                        )
                 );
             }
 
@@ -68,11 +77,11 @@ public class ReloadableKeyManager extends X509ExtendedKeyManager {
                 // Try to pre-construct a list of domain -> alias to use for SNI.
                 this.sniDomainAliases = new ConcurrentHashMap<>(KeyStoreUtils.getCommonNamesByAlias(keyStore));
             }
-            this.delegate = (X509ExtendedKeyManager) keyManagerFactory.getKeyManagers()[0];
+            this.delegate.set((X509ExtendedKeyManager) keyManagerFactory.getKeyManagers()[0]);
 
-            logger.info("Key store has been (re)loaded with {} entries.", keyStore.size());
+            logger.info("Key store has been (re)loaded with {} entries for server id: {}", keyStore.size(), serverId);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Unable to load keystore", e);
+            throw new IllegalArgumentException("Unable to initialize key manager keystore", e);
         }
     }
 
@@ -131,32 +140,32 @@ public class ReloadableKeyManager extends X509ExtendedKeyManager {
 
     @Override
     public String[] getServerAliases(String keyType, Principal[] issuers) {
-        return delegate != null ? delegate.getServerAliases(keyType, issuers) : null;
+        return delegate.get() != null ? delegate.get().getServerAliases(keyType, issuers) : null;
     }
 
     @Override
     public X509Certificate[] getCertificateChain(String alias) {
-        return delegate != null ? delegate.getCertificateChain(alias) : null;
+        return delegate.get() != null ? delegate.get().getCertificateChain(alias) : null;
     }
 
     @Override
     public PrivateKey getPrivateKey(String alias) {
-        return delegate != null ? delegate.getPrivateKey(alias) : null;
+        return delegate.get() != null ? delegate.get().getPrivateKey(alias) : null;
     }
 
     @Override
     public String[] getClientAliases(String keyType, Principal[] issuers) {
-        return delegate != null ? delegate.getClientAliases(keyType, issuers) : null;
+        return delegate.get() != null ? delegate.get().getClientAliases(keyType, issuers) : null;
     }
 
     @Override
     public String chooseClientAlias(String[] aliases, Principal[] issuers, Socket socket) {
-        return delegate != null ? delegate.chooseClientAlias(aliases, issuers, socket) : null;
+        return delegate.get() != null ? delegate.get().chooseClientAlias(aliases, issuers, socket) : null;
     }
 
     @Override
     public String chooseServerAlias(String alias, Principal[] issuers, Socket socket) {
-        return delegate != null ? delegate.chooseServerAlias(alias, issuers, socket) : null;
+        return delegate.get() != null ? delegate.get().chooseServerAlias(alias, issuers, socket) : null;
     }
 
     Map<String, String> getSniDomainAliases() {

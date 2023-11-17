@@ -17,9 +17,8 @@ package io.gravitee.node.certificates;
 
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreManager;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import io.gravitee.node.api.certificate.TrustStoreLoader;
+import java.util.*;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
@@ -29,26 +28,51 @@ public class BaseKeyStoreManager implements KeyStoreManager {
 
     protected boolean enableSni;
     protected final ReloadableKeyManager keyManager;
-    protected final List<KeyStoreLoader> keyStoreLoaders;
+    protected final ReloadableCertificateManager certManager;
+    protected final Set<String> keyStoreServerIds;
+    protected final Set<String> trustStoreServerIds;
 
-    public BaseKeyStoreManager(boolean enableSni) {
+    public BaseKeyStoreManager(String serverId, boolean enableSni) {
         this.enableSni = enableSni;
-        this.keyManager = new ReloadableKeyManager();
-        this.keyStoreLoaders = new ArrayList<>();
+        this.keyManager = new ReloadableKeyManager(serverId);
+        this.certManager = new ReloadableCertificateManager(serverId);
+        keyStoreServerIds = Collections.synchronizedSet(new HashSet<>());
+        trustStoreServerIds = Collections.synchronizedSet(new HashSet<>());
     }
 
     @Override
-    public void registerLoader(KeyStoreLoader keyStoreLoader) {
+    public void registerLoader(KeyStoreLoader keyStoreLoader, String serverId) {
         Objects.requireNonNull(keyStoreLoader, "KeyStoreLoader cannot be null");
-        this.keyStoreLoaders.add(keyStoreLoader);
-        keyStoreLoader.addListener(keyStoreBundle -> {
-            try {
-                keyManager.load(keyStoreBundle.getDefaultAlias(), keyStoreBundle.getKeyStore(), keyStoreBundle.getPassword(), enableSni);
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Unable to load the keystore", e);
-            }
-        });
+        if (this.keyStoreServerIds.add(serverId)) {
+            keyStoreLoader.addListener(keyStoreBundle -> {
+                try {
+                    keyManager.load(
+                        keyStoreBundle.getDefaultAlias(),
+                        keyStoreBundle.getKeyStore(),
+                        keyStoreBundle.getPassword(),
+                        enableSni
+                    );
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Unable to load the keystore", e);
+                }
+            });
+            keyStoreLoader.start();
+        }
+    }
 
-        keyStoreLoader.start();
+    @Override
+    public void registerLoader(TrustStoreLoader trustStoreLoader, String serverId) {
+        Objects.requireNonNull(trustStoreLoader, "TrustStoreLoader cannot be null");
+        if (this.trustStoreServerIds.add(serverId)) {
+            trustStoreLoader.addListener(trustStore -> {
+                try {
+                    certManager.load(trustStore);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Unable to load the keystore", e);
+                }
+            });
+
+            trustStoreLoader.start();
+        }
     }
 }

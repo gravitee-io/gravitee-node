@@ -15,7 +15,8 @@
  */
 package io.gravitee.node.certificates;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -64,10 +65,10 @@ public class KeyStoreLoaderManagerTest {
         final KeyStoreLoader keyStoreLoader = mock(KeyStoreLoader.class);
 
         when(loaderFactory.canHandle(any(KeyStoreLoaderOptions.class))).thenReturn(true);
-        when(loaderFactory.create(any(KeyStoreLoaderOptions.class))).thenReturn(keyStoreLoader);
+        when(loaderFactory.create(any(KeyStoreLoaderOptions.class), any())).thenReturn(keyStoreLoader);
 
         cut.registerFactory(loaderFactory);
-        final KeyStoreLoader createdLoader = cut.create(KeyStoreLoaderOptions.builder().build());
+        final KeyStoreLoader createdLoader = cut.create(KeyStoreLoaderOptions.builder().build(), any());
 
         assertEquals(keyStoreLoader, createdLoader);
     }

@@ -63,9 +63,9 @@ public class KubernetesSecretKeyStoreLoaderTest {
     public void shouldLoadTlsSecret() throws IOException, KeyStoreException {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
-            .withKubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret"))
-            .withWatch(false)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
+            .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret"))
+            .watch(false)
             .build();
 
         cut = new KubernetesSecretKeyStoreLoader(options, kubernetesClient);
@@ -101,10 +101,10 @@ public class KubernetesSecretKeyStoreLoaderTest {
     public void shouldLoadOpaqueSecret() throws IOException, KeyStoreException {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret/keystore"))
-            .withKeyStorePassword("secret")
-            .withWatch(false)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret/keystore"))
+            .keyStorePassword("secret")
+            .watch(false)
             .build();
 
         cut = new KubernetesSecretKeyStoreLoader(options, kubernetesClient);
@@ -138,10 +138,10 @@ public class KubernetesSecretKeyStoreLoaderTest {
     public void shouldNotLoadOpaqueSecretPEM() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
-            .withKubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret/pem"))
-            .withKeyStorePassword("secret")
-            .withWatch(false)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
+            .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret/pem"))
+            .keyStorePassword("secret")
+            .watch(false)
             .build();
 
         cut = new KubernetesSecretKeyStoreLoader(options, kubernetesClient);
@@ -158,10 +158,10 @@ public class KubernetesSecretKeyStoreLoaderTest {
     public void shouldNotLoadOpaqueSecretWithNoDataKey() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret"))
-            .withKeyStorePassword("secret")
-            .withWatch(false)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret"))
+            .keyStorePassword("secret")
+            .watch(false)
             .build();
 
         cut = new KubernetesSecretKeyStoreLoader(options, kubernetesClient);
@@ -183,10 +183,10 @@ public class KubernetesSecretKeyStoreLoaderTest {
     public void shouldNotLoadWithInvalidSecretType() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret/invalid-keystore"))
-            .withKeyStorePassword("secret")
-            .withWatch(false)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret/invalid-keystore"))
+            .keyStorePassword("secret")
+            .watch(false)
             .build();
 
         cut = new KubernetesSecretKeyStoreLoader(options, kubernetesClient);
@@ -203,9 +203,9 @@ public class KubernetesSecretKeyStoreLoaderTest {
     public void shouldWatchSecret() throws IOException, KeyStoreException, InterruptedException {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
-            .withKubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret"))
-            .withWatch(true)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
+            .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret"))
+            .watch(true)
             .build();
 
         cut = new KubernetesSecretKeyStoreLoader(options, kubernetesClient);

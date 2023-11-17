@@ -15,43 +15,40 @@
  */
 package io.gravitee.node.certificates;
 
-import io.gravitee.node.api.certificate.KeyStoreLoader;
-import io.gravitee.node.api.certificate.KeyStoreLoaderFactory;
-import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.api.certificate.SecuredStoreLoader;
-import java.util.Arrays;
+import io.gravitee.node.api.certificate.TrustStoreLoader;
+import io.gravitee.node.api.certificate.TrustStoreLoaderFactory;
+import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
+ * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class FileKeyStoreLoaderFactory implements KeyStoreLoaderFactory {
+public class FileTrustStoreLoaderFactory implements TrustStoreLoaderFactory {
 
-    final Map<String, KeyStoreLoader> keyStoreLoaderByServerId = new ConcurrentHashMap<>();
+    final Map<String, FileTrustStoreLoader> trustStoreLoaderByServerId = new ConcurrentHashMap<>();
 
-    private static final List<String> SUPPORTED_TYPES = Arrays.asList(
+    private static final List<String> SUPPORTED_TYPES = List.of(
         SecuredStoreLoader.CERTIFICATE_FORMAT_JKS.toLowerCase(),
         SecuredStoreLoader.CERTIFICATE_FORMAT_PEM.toLowerCase(),
         SecuredStoreLoader.CERTIFICATE_FORMAT_PKCS12.toLowerCase()
     );
 
     @Override
-    public boolean canHandle(KeyStoreLoaderOptions options) {
+    public boolean canHandle(TrustStoreLoaderOptions options) {
         return (
-            options.getKeyStoreType() != null &&
-            SUPPORTED_TYPES.contains(options.getKeyStoreType().toLowerCase()) &&
-            (
-                (options.getKeyStorePath() != null && !options.getKeyStorePath().isEmpty()) ||
-                (options.getKeyStoreCertificates() != null && !options.getKeyStoreCertificates().isEmpty())
-            )
+            options.getTrustStoreType() != null &&
+            SUPPORTED_TYPES.contains(options.getTrustStoreType().toLowerCase()) &&
+            options.getTrustStorePaths() != null &&
+            !options.getTrustStorePaths().isEmpty()
         );
     }
 
     @Override
-    public KeyStoreLoader create(KeyStoreLoaderOptions options, String serverId) {
-        return keyStoreLoaderByServerId.computeIfAbsent(serverId, ignore -> new FileKeyStoreLoader(options));
+    public TrustStoreLoader create(TrustStoreLoaderOptions options, String serverId) {
+        return trustStoreLoaderByServerId.computeIfAbsent(serverId, ignore -> new FileTrustStoreLoader(options));
     }
 }

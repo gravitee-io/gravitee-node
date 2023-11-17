@@ -12,7 +12,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.*;
 import org.springframework.mock.env.MockEnvironment;
 
@@ -141,11 +140,11 @@ class SecretProviderKeyStoreLoaderTest {
     void should_resolve_pem_pair_and_notify_of_bundle() {
         KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType("pem")
-            .withWatch(false)
-            .withSecretLocation("secret://test/test?keymap=certificate:tlscert&keymap=private_key:tlskey")
+            .keyStoreType("pem")
+            .watch(false)
+            .secretLocation("secret://test/test?keymap=certificate:tlscert&keymap=private_key:tlskey")
             .build();
-        this.cut = (SecretProviderKeyStoreLoader) factory.create(options);
+        this.cut = (SecretProviderKeyStoreLoader) factory.create(options, null);
         this.cut.addListener(keyStores::add);
         this.cut.start();
 
@@ -157,12 +156,12 @@ class SecretProviderKeyStoreLoaderTest {
     void should_resolve_keystore_and_notify_of_bundle() {
         KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withWatch(false)
-            .withKeyStoreType("jks")
-            .withKeyStorePassword("123456")
-            .withSecretLocation("secret://test/test:jkskeystore")
+            .watch(false)
+            .keyStoreType("jks")
+            .keyStorePassword("123456")
+            .secretLocation("secret://test/test:jkskeystore")
             .build();
-        this.cut = (SecretProviderKeyStoreLoader) factory.create(options);
+        this.cut = (SecretProviderKeyStoreLoader) factory.create(options, null);
         this.cut.addListener(keyStores::add);
         this.cut.start();
 
@@ -174,10 +173,10 @@ class SecretProviderKeyStoreLoaderTest {
     void should_watch_pem_pair_and_notify_of_bundle() {
         KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType("pem")
-            .withSecretLocation("secret://test/test?keymap=certificate:tlscert&keymap=private_key:tlskey")
+            .keyStoreType("pem")
+            .secretLocation("secret://test/test?keymap=certificate:tlscert&keymap=private_key:tlskey")
             .build();
-        this.cut = (SecretProviderKeyStoreLoader) factory.create(options);
+        this.cut = (SecretProviderKeyStoreLoader) factory.create(options, null);
         this.cut.addListener(keyStores::add);
         this.cut.start();
         await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> assertThat(keyStores).hasSize(2));
@@ -187,11 +186,11 @@ class SecretProviderKeyStoreLoaderTest {
     void should_watch_keystore_and_notify_of_bundle() {
         KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType("jks")
-            .withKeyStorePassword("123456")
-            .withSecretLocation("secret://test/test:jkskeystore")
+            .keyStoreType("jks")
+            .keyStorePassword("123456")
+            .secretLocation("secret://test/test:jkskeystore")
             .build();
-        this.cut = (SecretProviderKeyStoreLoader) factory.create(options);
+        this.cut = (SecretProviderKeyStoreLoader) factory.create(options, null);
         this.cut.addListener(keyStores::add);
         this.cut.start();
         await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> assertThat(keyStores).hasSize(2));

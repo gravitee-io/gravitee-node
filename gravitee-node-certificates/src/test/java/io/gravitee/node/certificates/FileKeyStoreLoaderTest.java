@@ -51,11 +51,11 @@ public class FileKeyStoreLoaderTest {
         // Make sure an exception is thrown in case of missing file.
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKeyStorePath("/path-to-unknown.p12")
-            .withKeyStorePassword("secret")
-            .withDefaultAlias("localhost")
-            .withWatch(false)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .keyStorePath("/path-to-unknown.p12")
+            .keyStorePassword("secret")
+            .defaultAlias("localhost")
+            .watch(false)
             .build();
 
         cut = new FileKeyStoreLoader(options);
@@ -70,11 +70,11 @@ public class FileKeyStoreLoaderTest {
 
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKeyStorePath(tempKeyStore.getAbsolutePath())
-            .withKeyStorePassword("secret")
-            .withDefaultAlias("localhost")
-            .withWatch(false)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .keyStorePath(tempKeyStore.getAbsolutePath())
+            .keyStorePassword("secret")
+            .defaultAlias("localhost")
+            .watch(false)
             .build();
 
         cut = new FileKeyStoreLoader(options);
@@ -85,11 +85,11 @@ public class FileKeyStoreLoaderTest {
     public void shouldLoadPKCS12() throws KeyStoreException {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKeyStorePath(getPath("all-in-one.p12"))
-            .withKeyStorePassword("secret")
-            .withDefaultAlias("localhost")
-            .withWatch(false)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .keyStorePath(getPath("all-in-one.p12"))
+            .keyStorePassword("secret")
+            .defaultAlias("localhost")
+            .watch(false)
             .build();
 
         cut = new FileKeyStoreLoader(options);
@@ -113,11 +113,11 @@ public class FileKeyStoreLoaderTest {
     public void shouldLoadJKS() throws KeyStoreException {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
-            .withKeyStorePath(getPath("all-in-one.jks"))
-            .withKeyStorePassword("secret")
-            .withDefaultAlias("localhost")
-            .withWatch(false)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
+            .keyStorePath(getPath("all-in-one.jks"))
+            .keyStorePassword("secret")
+            .defaultAlias("localhost")
+            .watch(false)
             .build();
 
         cut = new FileKeyStoreLoader(options);
@@ -146,11 +146,11 @@ public class FileKeyStoreLoaderTest {
 
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
-            .withKeyStoreCertificates(certificates)
-            .withKeyStorePassword("secret")
-            .withDefaultAlias("localhost")
-            .withWatch(false)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
+            .keyStoreCertificates(certificates)
+            .keyStorePassword("secret")
+            .defaultAlias("localhost")
+            .watch(false)
             .build();
 
         cut = new FileKeyStoreLoader(options);
@@ -175,10 +175,10 @@ public class FileKeyStoreLoaderTest {
 
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
-            .withKeyStorePath(tempKeyStore.getAbsolutePath())
-            .withKeyStorePassword("secret")
-            .withWatch(true)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
+            .keyStorePath(tempKeyStore.getAbsolutePath())
+            .keyStorePassword("secret")
+            .watch(true)
             .build();
 
         cut = new FileKeyStoreLoader(options);

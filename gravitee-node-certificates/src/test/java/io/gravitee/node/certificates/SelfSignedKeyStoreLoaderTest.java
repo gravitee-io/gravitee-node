@@ -16,14 +16,14 @@
 package io.gravitee.node.certificates;
 
 import static io.gravitee.common.util.KeyStoreUtils.DEFAULT_ALIAS;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import io.gravitee.node.api.certificate.KeyStoreBundle;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import java.security.KeyStoreException;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,7 +39,7 @@ public class SelfSignedKeyStoreLoaderTest {
     public void before() {
         cut =
             new SelfSignedKeyStoreLoader(
-                KeyStoreLoaderOptions.builder().withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED).build()
+                KeyStoreLoaderOptions.builder().keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED).build()
             );
     }
 

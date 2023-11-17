@@ -15,7 +15,8 @@
  */
 package io.gravitee.node.certificates;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
@@ -39,8 +40,8 @@ public class SelfSignedKeyStoreLoaderFactoryTest {
     public void shouldHandleOptionsWithSelfSigned() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED)
-            .withKeyStorePath(null)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED)
+            .keyStorePath(null)
             .build();
 
         assertTrue(cut.canHandle(options));
@@ -50,7 +51,7 @@ public class SelfSignedKeyStoreLoaderFactoryTest {
     public void shouldNotHandleOptionsWithPKCS12() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .build();
 
         assertFalse(cut.canHandle(options));
@@ -58,20 +59,14 @@ public class SelfSignedKeyStoreLoaderFactoryTest {
 
     @Test
     public void shouldNotHandleOptionsWithJKS() {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
-            .build();
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder().keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_JKS).build();
 
         assertFalse(cut.canHandle(options));
     }
 
     @Test
     public void shouldNotHandleOptionsWithPEM() {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
-            .build();
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder().keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM).build();
 
         assertFalse(cut.canHandle(options));
     }

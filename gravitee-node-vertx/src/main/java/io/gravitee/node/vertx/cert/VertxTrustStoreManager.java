@@ -17,18 +17,19 @@ package io.gravitee.node.vertx.cert;
 
 import io.gravitee.node.certificates.BaseKeyStoreManager;
 import io.vertx.core.net.KeyCertOptions;
+import io.vertx.core.net.TrustOptions;
 
 /**
- * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
+ * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class VertxKeyStoreManager extends BaseKeyStoreManager {
+public class VertxTrustStoreManager extends BaseKeyStoreManager {
 
-    private final KeyCertOptions keyCertOptions;
+    private final TrustOptions trustOptions;
 
-    public VertxKeyStoreManager(String serverId, boolean enableSni) {
-        super(serverId, enableSni);
-        this.keyCertOptions = new VertxKeyCertOptions(keyManager);
+    public VertxTrustStoreManager(String serverId) {
+        super(serverId, false);
+        this.trustOptions = new VertxTrustOptions(certManager);
     }
 
     /**
@@ -36,7 +37,7 @@ public class VertxKeyStoreManager extends BaseKeyStoreManager {
      *
      * @return a {@link KeyCertOptions}.
      */
-    public KeyCertOptions getKeyCertOptions() {
-        return keyCertOptions;
+    public TrustOptions getTrustOptions() {
+        return trustOptions;
     }
 }

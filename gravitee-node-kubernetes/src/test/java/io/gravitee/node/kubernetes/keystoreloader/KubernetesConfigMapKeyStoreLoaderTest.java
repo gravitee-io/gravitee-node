@@ -32,7 +32,6 @@ import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.reactivex.rxjava3.core.Maybe;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.KeyStoreException;
 import java.util.Base64;
@@ -61,10 +60,10 @@ public class KubernetesConfigMapKeyStoreLoaderTest {
     public void shouldLoadConfigMap() throws IOException, KeyStoreException {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
-            .withKeyStorePassword("secret")
-            .withWatch(false)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .kubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
+            .keyStorePassword("secret")
+            .watch(false)
             .build();
 
         cut = new KubernetesConfigMapKeyStoreLoader(options, kubernetesClient);
@@ -99,10 +98,10 @@ public class KubernetesConfigMapKeyStoreLoaderTest {
     public void shouldLoadConfigMapFromData() throws IOException, KeyStoreException {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-            .withKubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
-            .withKeyStorePassword("secret")
-            .withWatch(false)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .kubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
+            .keyStorePassword("secret")
+            .watch(false)
             .build();
 
         cut = new KubernetesConfigMapKeyStoreLoader(options, kubernetesClient);
@@ -137,10 +136,10 @@ public class KubernetesConfigMapKeyStoreLoaderTest {
     public void shouldLoadGraviteePemRegistry() throws IOException, KeyStoreException {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .withKeyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM_REGISTRY)
-            .withKubernetesLocations(Collections.singletonList("/gio/configmaps/" + KeyStoreLoader.GRAVITEEIO_PEM_REGISTRY))
-            .withKeyStorePassword("secret")
-            .withWatch(false)
+            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM_REGISTRY)
+            .kubernetesLocations(Collections.singletonList("/gio/configmaps/" + KeyStoreLoader.GRAVITEEIO_PEM_REGISTRY))
+            .keyStoreType("secret")
+            .watch(false)
             .build();
 
         cut = new KubernetesConfigMapKeyStoreLoader(options, kubernetesClient);

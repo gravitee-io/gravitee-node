@@ -15,23 +15,12 @@
  */
 package io.gravitee.node.api.certificate;
 
-import java.util.List;
-import lombok.Getter;
-import lombok.experimental.SuperBuilder;
-
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Getter
-@SuperBuilder
-public class KeyStoreLoaderOptions extends AbstractStoreLoaderOptions {
+public interface TrustStoreLoaderFactory {
+    boolean canHandle(TrustStoreLoaderOptions options);
 
-    private final String keyStorePath;
-    private final String keyStorePassword;
-    private final String keyStoreType;
-    private final List<String> kubernetesLocations;
-    private final String secretLocation;
-    private final List<CertificateOptions> keyStoreCertificates;
-    private final String defaultAlias;
+    TrustStoreLoader create(TrustStoreLoaderOptions options, String serverId);
 }

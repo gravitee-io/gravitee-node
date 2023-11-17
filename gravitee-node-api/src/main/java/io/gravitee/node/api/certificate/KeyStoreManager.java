@@ -20,5 +20,6 @@ package io.gravitee.node.api.certificate;
  * @author GraviteeSource Team
  */
 public interface KeyStoreManager {
-    void registerLoader(KeyStoreLoader loader);
+    void registerLoader(KeyStoreLoader loader, String serverId);
+    void registerLoader(TrustStoreLoader loader, String serverId);
 }

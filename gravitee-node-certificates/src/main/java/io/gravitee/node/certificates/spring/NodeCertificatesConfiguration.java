@@ -16,6 +16,7 @@
 package io.gravitee.node.certificates.spring;
 
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
+import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -29,5 +30,10 @@ public class NodeCertificatesConfiguration {
     @Bean
     public KeyStoreLoaderManager keyStoreLoaderFactoryManager() {
         return new KeyStoreLoaderManager();
+    }
+
+    @Bean
+    public TrustStoreLoaderManager trustStoreLoaderManager() {
+        return new TrustStoreLoaderManager();
     }
 }
