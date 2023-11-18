@@ -51,7 +51,6 @@ public class VertxHttpServerOptions extends VertxServerOptions {
         HttpServerOptions.DEFAULT_PER_FRAME_WEBSOCKET_COMPRESSION_SUPPORTED;
     public static final int DEFAULT_MAX_WEBSOCKET_MESSAGE_SIZE = HttpServerOptions.DEFAULT_MAX_WEBSOCKET_MESSAGE_SIZE;
     public static final int DEFAULT_MAX_WEBSOCKET_FRAME_SIZE = HttpServerOptions.DEFAULT_MAX_WEBSOCKET_FRAME_SIZE;
-    public static final boolean DEFAULT_COMPRESSION_SUPPORTED = HttpServerOptions.DEFAULT_COMPRESSION_SUPPORTED;
 
     @Builder.Default
     protected boolean alpn = DEFAULT_ALPN;
@@ -79,9 +78,6 @@ public class VertxHttpServerOptions extends VertxServerOptions {
 
     @Builder.Default
     private boolean websocketEnabled = DEFAULT_WEBSOCKET_ENABLED;
-
-    @Builder.Default
-    private boolean compressionSupported = DEFAULT_COMPRESSION_SUPPORTED;
 
     private String websocketSubProtocols;
 
