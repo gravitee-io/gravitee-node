@@ -1,3 +1,10 @@
+# [4.6.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/4.6.0-alpha.1...4.6.0-alpha.2) (2023-11-20)
+
+
+### Bug Fixes
+
+* update k8s client version to 3.0.2 ([130d5e2](https://github.com/gravitee-io/gravitee-node/commit/130d5e2d3c4870c9fc398c3097b9efc4073516be))
+
 # [4.6.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/4.5.0...4.6.0-alpha.1) (2023-11-20)
 
 
