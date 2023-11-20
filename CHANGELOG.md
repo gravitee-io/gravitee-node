@@ -1,3 +1,18 @@
+# [4.6.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/4.5.0...4.6.0-alpha.1) (2023-11-20)
+
+
+### Bug Fixes
+
+* clean license file ([2185607](https://github.com/gravitee-io/gravitee-node/commit/2185607244f25337f8a8ce63e5d12849df7475c2))
+* reshuffle options in the right place, fix sonar issues ([0c946f5](https://github.com/gravitee-io/gravitee-node/commit/0c946f5ca949f12a6e38ca6407e0e71b66b0e68d))
+* update kubernetes client to version 3.0.0 ([0014210](https://github.com/gravitee-io/gravitee-node/commit/0014210f2cd54007939c1dcb7550dfd3840b586e))
+
+
+### Features
+
+* archi-222 secret provider plugin handling and configuration service ([#244](https://github.com/gravitee-io/gravitee-node/issues/244)) ([8deffbb](https://github.com/gravitee-io/gravitee-node/commit/8deffbb29e113f25a206bee81cf9a5abf8972c7b))
+* TCP proxy server factory and options ([85f0123](https://github.com/gravitee-io/gravitee-node/commit/85f0123b667fb5ea0a6259b3d5336d11dde44eec))
+
 # [4.6.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/4.4.0-alpha.5...4.4.0-alpha.6) (2023-11-13)
 
 ### Bug Fixes
