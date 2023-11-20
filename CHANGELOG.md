@@ -1,30 +1,17 @@
-# [4.4.0-alpha.6](https://github.com/gravitee-io/gravitee-node/compare/4.4.0-alpha.5...4.4.0-alpha.6) (2023-11-13)
-
+# [4.6.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/4.4.0-alpha.5...4.4.0-alpha.6) (2023-11-13)
 
 ### Bug Fixes
 
 * reshuffle options in the right place, fix sonar issues ([0e17162](https://github.com/gravitee-io/gravitee-node/commit/0e1716256bcfdbda658c05552033ebdbb049e457))
 
-# [4.4.0-alpha.5](https://github.com/gravitee-io/gravitee-node/compare/4.4.0-alpha.4...4.4.0-alpha.5) (2023-11-09)
-
+* clean license file ([a4e25a1](https://github.com/gravitee-io/gravitee-node/commit/a4e25a1750aa14004b9cb37103b684ab54598bd0))
 
 ### Features
 
 * add support for Gravitee Pem Registry ([a892edb](https://github.com/gravitee-io/gravitee-node/commit/a892edb5d0ab6e02d7bc855f0349966fe0eb55d6))
 
-# [4.4.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/4.4.0-alpha.3...4.4.0-alpha.4) (2023-11-07)
-
-
-### Features
-
 * TCP proxy server factory and options ([ee48796](https://github.com/gravitee-io/gravitee-node/commit/ee487963b1fe1e5e16c533a3984bb0586e0abf3f))
 
-# [4.4.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/4.4.0-alpha.2...4.4.0-alpha.3) (2023-10-12)
-
-
-### Bug Fixes
-
-* clean license file ([a4e25a1](https://github.com/gravitee-io/gravitee-node/commit/a4e25a1750aa14004b9cb37103b684ab54598bd0))
 
 # [4.5.0](https://github.com/gravitee-io/gravitee-node/compare/4.4.0...4.5.0) (2023-11-17)
 
