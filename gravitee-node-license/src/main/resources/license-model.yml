@@ -11,7 +11,6 @@ packs:
             - gravitee-risk-assessment
             - risk-assessment # for removal
             - apim-bridge-gateway
-            - alert-engine
     enterprise-legacy-upgrade:
         features:
             - apim-policy-xslt
@@ -77,6 +76,9 @@ packs:
     enterprise-secret-manager:
         features:
             - gravitee-en-secretprovider-vault
+    enterprise-alert-engine:
+        features:
+            - alert-engine
 
 tiers:
     planet:
@@ -91,6 +93,7 @@ tiers:
             - enterprise-identity-provider
             - observability
             - enterprise-policy
+            - enterprise-alert-engine
     universe:
         packs:
             - enterprise-features
@@ -101,3 +104,4 @@ tiers:
             - event-native
             - enterprise-mfa-factor
             - enterprise-secret-manager
+            - enterprise-alert-engine
