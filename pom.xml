@@ -61,7 +61,7 @@
         <gravitee-plugin.version>2.1.0-alpha.1</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.25.0</gravitee-reporter-api.version>
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
-        <gravitee-kubernetes.version>3.0.1</gravitee-kubernetes.version>
+        <gravitee-kubernetes.version>3.0.2</gravitee-kubernetes.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <hazelcast.version>5.2.3</hazelcast.version>
         <gravitee-alert-api.version>1.8.0</gravitee-alert-api.version>
