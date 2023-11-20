@@ -88,7 +88,8 @@ class NodeLicenseServiceTest {
                 "observability",
                 "event-native",
                 "enterprise-policy",
-                "enterprise-secret-manager"
+                "enterprise-secret-manager",
+                "enterprise-alert-engine"
             );
     }
 
