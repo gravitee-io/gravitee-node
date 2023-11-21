@@ -1,3 +1,10 @@
+# [4.6.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/4.6.0-alpha.2...4.6.0-alpha.3) (2023-11-21)
+
+
+### Bug Fixes
+
+* create a pack for alert-engine to avoid planet tiers to embed it by accident ([7299d22](https://github.com/gravitee-io/gravitee-node/commit/7299d227f0cf81d096d40d01f73ea3cecd872fa6))
+
 # [4.6.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/4.6.0-alpha.1...4.6.0-alpha.2) (2023-11-20)
 
 
