@@ -1,3 +1,21 @@
+# [4.6.0](https://github.com/gravitee-io/gravitee-node/compare/4.5.0...4.6.0) (2023-11-24)
+
+
+### Bug Fixes
+
+* bump `gravitee-plugin` to 2.2.0 ([f0349cc](https://github.com/gravitee-io/gravitee-node/commit/f0349ccc2f204aba43740843a311a58413bf08e7))
+* clean license file ([55de7ea](https://github.com/gravitee-io/gravitee-node/commit/55de7ea4699cf74b25826c2fd1b5d890e54da9d6))
+* create a pack for alert-engine to avoid planet tiers to embed it by accident ([265b9b2](https://github.com/gravitee-io/gravitee-node/commit/265b9b2d099611cc3af118b591682ee6e959d831))
+* reshuffle options in the right place, fix sonar issues ([2dbbb08](https://github.com/gravitee-io/gravitee-node/commit/2dbbb082e75672f26e813a9c5ca88c77b174a943))
+* update k8s client version to 3.0.2 ([354ce10](https://github.com/gravitee-io/gravitee-node/commit/354ce10d0d6e20eaa46912a425bea1740e024562))
+* update kubernetes client to version 3.0.0 ([28a7e26](https://github.com/gravitee-io/gravitee-node/commit/28a7e26d73e7deacdd9b59c7f46f7cf41eb84998))
+
+
+### Features
+
+* archi-222 secret provider plugin handling and configuration service ([#244](https://github.com/gravitee-io/gravitee-node/issues/244)) ([8c0fd34](https://github.com/gravitee-io/gravitee-node/commit/8c0fd347af091fee505520b2bf7794a2424cdf96))
+* TCP proxy server factory and options ([161ee27](https://github.com/gravitee-io/gravitee-node/commit/161ee274a5c73c8709e2856a2293eff14fb29902))
+
 # [4.6.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/4.6.0-alpha.2...4.6.0-alpha.3) (2023-11-21)
 
 
