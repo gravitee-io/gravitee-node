@@ -5,6 +5,7 @@ target/
 .idea/
 .DS_Store
 *.iml
+**/pom.xml.versionsBackup
 
 *.class
 
