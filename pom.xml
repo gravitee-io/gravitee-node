@@ -168,6 +168,11 @@
                 <artifactId>gravitee-node-secrets-plugin-handler</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-notifier</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- Gravitee.io -->
             <dependency>
                 <groupId>io.gravitee.common</groupId>

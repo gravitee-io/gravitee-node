@@ -19,14 +19,17 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import io.gravitee.node.api.Node;
+import io.gravitee.node.api.configuration.Configuration;
 import io.gravitee.node.api.upgrader.UpgradeRecord;
 import io.gravitee.node.api.upgrader.Upgrader;
 import io.gravitee.node.api.upgrader.UpgraderRepository;
 import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Single;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import mockit.MockUp;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -50,8 +53,15 @@ public class UpgraderServiceImplTest {
     @Mock
     private Node node;
 
-    @InjectMocks
+    @Mock
+    private Configuration configuration;
+
     private UpgraderServiceImpl cut;
+
+    @Before
+    public void init() {
+        cut = new UpgraderServiceImpl(configuration, repository);
+    }
 
     @Test
     public void shouldUpgrade() throws Exception {
@@ -60,9 +70,11 @@ public class UpgraderServiceImplTest {
         beans.put(mockUpgrader.getClass().getName(), mockUpgrader);
         cut.setApplicationContext(applicationContext);
 
+        when(configuration.getProperty("upgrade.mode", Boolean.class, false)).thenReturn(false);
         when(applicationContext.getBeansOfType(Upgrader.class)).thenReturn(beans);
         when(mockUpgrader.upgrade()).thenReturn(true);
         when(repository.findById(mockUpgrader.getClass().getName())).thenReturn(Maybe.empty());
+        when(repository.create(any())).thenAnswer(i -> Single.just(i.getArgument(0)));
 
         cut.start();
 
@@ -99,6 +111,7 @@ public class UpgraderServiceImplTest {
 
         cut.setApplicationContext(applicationContext);
 
+        when(configuration.getProperty("upgrade.mode", Boolean.class, false)).thenReturn(true);
         when(applicationContext.getBean(Node.class)).thenReturn(node);
         when(applicationContext.getBeansOfType(Upgrader.class)).thenReturn(beans);
         when(mockUpgrader1.upgrade()).thenReturn(true);
@@ -131,6 +144,7 @@ public class UpgraderServiceImplTest {
         beans.put(mockUpgrader.getClass().getName(), mockUpgrader);
         cut.setApplicationContext(applicationContext);
 
+        when(configuration.getProperty("upgrade.mode", Boolean.class, false)).thenReturn(false);
         when(applicationContext.getBeansOfType(Upgrader.class)).thenReturn(beans);
         when(repository.findById(mockUpgrader.getClass().getName()))
             .thenReturn(Maybe.just(new UpgradeRecord(mockUpgrader.getClass().getName(), new Date())));

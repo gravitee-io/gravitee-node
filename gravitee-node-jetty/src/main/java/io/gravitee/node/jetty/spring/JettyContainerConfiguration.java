@@ -29,8 +29,8 @@ import org.springframework.context.annotation.Configuration;
 public class JettyContainerConfiguration {
 
     @Bean
-    public JettyHttpConfiguration jettyConfiguration() {
-        return new JettyHttpConfiguration();
+    public JettyHttpConfiguration jettyConfiguration(io.gravitee.node.api.configuration.Configuration configuration) {
+        return new JettyHttpConfiguration(configuration);
     }
 
     @Bean

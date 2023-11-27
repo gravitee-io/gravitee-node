@@ -27,6 +27,7 @@ import io.vertx.core.net.PemTrustOptions;
 import io.vertx.core.net.PfxOptions;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.web.Router;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
@@ -53,16 +54,19 @@ public class HttpServerSpringConfiguration {
     }
 
     @Bean("managementHttpServer")
-    public HttpServer httpServer(Vertx vertx) {
+    public HttpServer httpServer(
+        Vertx vertx,
+        @Qualifier("managementHttpServerConfiguration") HttpServerConfiguration httpServerConfiguration
+    ) {
         HttpServerOptions options = new HttpServerOptions()
-            .setPort(httpServerConfiguration().getPort())
-            .setHost(httpServerConfiguration().getHost());
+            .setPort(httpServerConfiguration.getPort())
+            .setHost(httpServerConfiguration.getHost());
 
-        if (httpServerConfiguration().isSecured()) {
-            options.setSsl(httpServerConfiguration().isSecured());
-            options.setUseAlpn(httpServerConfiguration().isAlpn());
+        if (httpServerConfiguration.isSecured()) {
+            options.setSsl(httpServerConfiguration.isSecured());
+            options.setUseAlpn(httpServerConfiguration.isAlpn());
 
-            String clientAuth = httpServerConfiguration().getClientAuth();
+            String clientAuth = httpServerConfiguration.getClientAuth();
             if (!StringUtils.isEmpty(clientAuth)) {
                 if (clientAuth.equalsIgnoreCase(Boolean.TRUE.toString())) {
                     options.setClientAuth(ClientAuth.REQUIRED);
@@ -73,51 +77,51 @@ public class HttpServerSpringConfiguration {
                 options.setClientAuth(ClientAuth.REQUEST);
             }
 
-            if (httpServerConfiguration().getTrustStorePath() != null) {
+            if (httpServerConfiguration.getTrustStorePath() != null) {
                 if (
-                    httpServerConfiguration().getTrustStoreType() == null ||
-                    httpServerConfiguration().getTrustStoreType().isEmpty() ||
-                    httpServerConfiguration().getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)
+                    httpServerConfiguration.getTrustStoreType() == null ||
+                    httpServerConfiguration.getTrustStoreType().isEmpty() ||
+                    httpServerConfiguration.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)
                 ) {
                     options.setTrustStoreOptions(
                         new JksOptions()
-                            .setPath(httpServerConfiguration().getTrustStorePath())
-                            .setPassword(httpServerConfiguration().getTrustStorePassword())
+                            .setPath(httpServerConfiguration.getTrustStorePath())
+                            .setPassword(httpServerConfiguration.getTrustStorePassword())
                     );
-                } else if (httpServerConfiguration().getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)) {
-                    options.setPemTrustOptions(new PemTrustOptions().addCertPath(httpServerConfiguration().getTrustStorePath()));
-                } else if (httpServerConfiguration().getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)) {
+                } else if (httpServerConfiguration.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)) {
+                    options.setPemTrustOptions(new PemTrustOptions().addCertPath(httpServerConfiguration.getTrustStorePath()));
+                } else if (httpServerConfiguration.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)) {
                     options.setPfxTrustOptions(
                         new PfxOptions()
-                            .setPath(httpServerConfiguration().getTrustStorePath())
-                            .setPassword(httpServerConfiguration().getTrustStorePassword())
+                            .setPath(httpServerConfiguration.getTrustStorePath())
+                            .setPassword(httpServerConfiguration.getTrustStorePassword())
                     );
                 }
             }
 
-            if (httpServerConfiguration().getKeyStorePath() != null) {
+            if (httpServerConfiguration.getKeyStorePath() != null) {
                 if (
-                    httpServerConfiguration().getKeyStoreType() == null ||
-                    httpServerConfiguration().getKeyStoreType().isEmpty() ||
-                    httpServerConfiguration().getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)
+                    httpServerConfiguration.getKeyStoreType() == null ||
+                    httpServerConfiguration.getKeyStoreType().isEmpty() ||
+                    httpServerConfiguration.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)
                 ) {
                     options.setKeyStoreOptions(
                         new JksOptions()
-                            .setPath(httpServerConfiguration().getKeyStorePath())
-                            .setPassword(httpServerConfiguration().getKeyStorePassword())
+                            .setPath(httpServerConfiguration.getKeyStorePath())
+                            .setPassword(httpServerConfiguration.getKeyStorePassword())
                     );
-                } else if (httpServerConfiguration().getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)) {
-                    options.setPemKeyCertOptions(new PemKeyCertOptions().addCertPath(httpServerConfiguration().getKeyStorePath()));
-                } else if (httpServerConfiguration().getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)) {
+                } else if (httpServerConfiguration.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)) {
+                    options.setPemKeyCertOptions(new PemKeyCertOptions().addCertPath(httpServerConfiguration.getKeyStorePath()));
+                } else if (httpServerConfiguration.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)) {
                     options.setPfxKeyCertOptions(
                         new PfxOptions()
-                            .setPath(httpServerConfiguration().getKeyStorePath())
-                            .setPassword(httpServerConfiguration().getKeyStorePassword())
+                            .setPath(httpServerConfiguration.getKeyStorePath())
+                            .setPassword(httpServerConfiguration.getKeyStorePassword())
                     );
                 }
             }
         }
-        options.setIdleTimeout(httpServerConfiguration().getIdleTimeout());
+        options.setIdleTimeout(httpServerConfiguration.getIdleTimeout());
 
         return vertx.createHttpServer(options);
     }
@@ -128,7 +132,7 @@ public class HttpServerSpringConfiguration {
     }
 
     @Bean("managementHttpServerConfiguration")
-    public HttpServerConfiguration httpServerConfiguration() {
-        return new HttpServerConfiguration();
+    public HttpServerConfiguration httpServerConfiguration(io.gravitee.node.api.configuration.Configuration configuration) {
+        return new HttpServerConfiguration(configuration);
     }
 }

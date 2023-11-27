@@ -19,24 +19,16 @@ import static io.gravitee.node.notifier.NotifierUtils.buildNotificationId;
 import static io.gravitee.node.notifier.NotifierUtils.buildResourceKey;
 
 import com.google.common.collect.Maps;
-import io.gravitee.node.api.notifier.NotificationAcknowledgeRepository;
-import io.gravitee.node.api.notifier.NotificationCondition;
-import io.gravitee.node.api.notifier.NotificationDefinition;
-import io.gravitee.node.api.notifier.NotifierService;
-import io.gravitee.node.api.notifier.ResendNotificationCondition;
+import io.gravitee.node.api.configuration.Configuration;
+import io.gravitee.node.api.notifier.*;
 import io.gravitee.node.notifier.plugin.NotifierPluginFactory;
 import io.gravitee.node.notifier.trigger.NotificationTrigger;
 import io.reactivex.rxjava3.core.Completable;
 import io.vertx.core.Vertx;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -49,12 +41,6 @@ public class NotifierServiceImpl implements NotifierService {
 
     private final Logger logger = LoggerFactory.getLogger(NotifierServiceImpl.class);
 
-    @Value("${services.notifier.enabled:false}")
-    private boolean enabled;
-
-    @Value("${services.notifier.tryAvoidDuplicateNotification:false}")
-    private boolean tryAvoidDuplicateNotification;
-
     @Autowired
     private Vertx vertx;
 
@@ -65,12 +51,16 @@ public class NotifierServiceImpl implements NotifierService {
     @Lazy
     private NotificationAcknowledgeRepository notificationAcknowledgeRepository;
 
-    private Map<String, NotificationTrigger> triggers = Maps.newConcurrentMap();
-    private Map<String, List<NotificationDefinition>> definitions = Maps.newConcurrentMap();
+    @Autowired
+    private Configuration configuration;
+
+    private final Map<String, NotificationTrigger> triggers = Maps.newConcurrentMap();
+
+    private final Map<String, List<NotificationDefinition>> definitions = Maps.newConcurrentMap();
 
     @Override
     public void register(NotificationDefinition definition, NotificationCondition condition, ResendNotificationCondition resendCondition) {
-        if (enabled) {
+        if (enabled()) {
             final var notificationTrigger = getTrigger(definition, condition, resendCondition);
             final String id = buildNotificationId(
                 definition.getResourceId(),
@@ -151,8 +141,16 @@ public class NotifierServiceImpl implements NotifierService {
             definition,
             condition,
             resendCondition,
-            this.tryAvoidDuplicateNotification
+            this.tryAvoidDuplicateNotification()
         );
         return trigger;
+    }
+
+    private boolean enabled() {
+        return configuration.getProperty("services.notifier.enabled", Boolean.class, false);
+    }
+
+    private boolean tryAvoidDuplicateNotification() {
+        return configuration.getProperty("services.notifier.tryAvoidDuplicateNotification", Boolean.class, false);
     }
 }

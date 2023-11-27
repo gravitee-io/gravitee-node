@@ -15,11 +15,12 @@
  */
 package io.gravitee.node.monitoring.healthcheck.probe;
 
+import io.gravitee.node.api.configuration.Configuration;
 import io.gravitee.node.api.healthcheck.Probe;
 import io.gravitee.node.api.healthcheck.Result;
 import io.gravitee.node.monitoring.monitor.probe.ProcessProbe;
 import java.util.concurrent.CompletableFuture;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -27,8 +28,8 @@ import org.springframework.beans.factory.annotation.Value;
  */
 public class CPUProbe implements Probe {
 
-    @Value("${services.health.threshold.cpu:80}")
-    private int threshold;
+    @Autowired
+    private Configuration configuration;
 
     @Override
     public String id() {
@@ -44,12 +45,16 @@ public class CPUProbe implements Probe {
     public CompletableFuture<Result> check() {
         try {
             return CompletableFuture.supplyAsync(() ->
-                ProcessProbe.getInstance().getProcessCpuPercent() < threshold
+                ProcessProbe.getInstance().getProcessCpuPercent() < threshold()
                     ? Result.healthy()
-                    : Result.unhealthy(String.format("CPU percent is over the threshold of %d %%", threshold))
+                    : Result.unhealthy(String.format("CPU percent is over the threshold of %d %%", threshold()))
             );
         } catch (Exception ex) {
             return CompletableFuture.completedFuture(Result.unhealthy(ex));
         }
+    }
+
+    private int threshold() {
+        return configuration.getProperty("services.health.threshold.cpu", Integer.class, 80);
     }
 }

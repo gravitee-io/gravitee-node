@@ -37,6 +37,8 @@ public abstract class JettyHttpServer extends AbstractLifecycleComponent<JettyHt
     private final Logger logger = LoggerFactory.getLogger(JettyHttpServer.class);
 
     @Autowired
+    protected JettyHttpServerFactory serverFactory;
+
     protected Server server;
 
     /**
@@ -46,6 +48,8 @@ public abstract class JettyHttpServer extends AbstractLifecycleComponent<JettyHt
 
     @Override
     protected void doStart() throws Exception {
+        server = serverFactory.getObject();
+
         // This part is needed to avoid WARN while starting container.
         this.attachNoContentHandler();
 
@@ -69,7 +73,9 @@ public abstract class JettyHttpServer extends AbstractLifecycleComponent<JettyHt
 
     @Override
     protected void doStop() throws Exception {
-        server.stop();
+        if (server != null) {
+            server.stop();
+        }
     }
 
     private void attachNoContentHandler() {
