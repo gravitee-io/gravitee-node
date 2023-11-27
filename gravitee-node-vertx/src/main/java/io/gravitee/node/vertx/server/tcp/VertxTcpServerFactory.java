@@ -15,23 +15,35 @@
  */
 package io.gravitee.node.vertx.server.tcp;
 
+import io.gravitee.node.api.certificate.KeyStoreLoaderFactoryRegistry;
+import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
 import io.gravitee.node.api.server.ServerFactory;
+import io.gravitee.node.certificates.KeyStoreLoaderManager;
+import io.gravitee.node.certificates.TrustStoreLoaderManager;
+import io.gravitee.node.vertx.cert.VertxTLSOptionsRegistry;
+import io.gravitee.node.vertx.server.AbstractVertxServerFactory;
 import io.vertx.rxjava3.core.Vertx;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class VertxTcpServerFactory implements ServerFactory<VertxTcpServer, VertxTcpServerOptions> {
+public class VertxTcpServerFactory extends AbstractVertxServerFactory implements ServerFactory<VertxTcpServer, VertxTcpServerOptions> {
 
-    private final Vertx vertx;
-
-    public VertxTcpServerFactory(Vertx vertx) {
-        this.vertx = vertx;
+    public VertxTcpServerFactory(
+        Vertx vertx,
+        VertxTLSOptionsRegistry tlsOptionsRegistry,
+        KeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry,
+        KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry
+    ) {
+        super(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry, tlsOptionsRegistry);
     }
 
     @Override
     public VertxTcpServer create(VertxTcpServerOptions options) {
-        return new VertxTcpServer(options.getId(), vertx, options);
+        KeyStoreLoaderManager keyStoreLoaderManager = createAndStartKeyManager(options);
+        TrustStoreLoaderManager trustStoreLoaderManager = createAnsStartCertificateManager(options);
+        return new VertxTcpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager);
     }
 }

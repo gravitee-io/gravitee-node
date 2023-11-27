@@ -47,15 +47,15 @@ class SecretProviderKeyStoreLoaderFactoryTest {
         }
     )
     void should_assess_if_can_handle_url(String type, String url, boolean canHandle) {
-        KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder().keyStoreType(type).secretLocation(url).build();
+        KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder().type(type).secretLocation(url).build();
         assertThat(cut.canHandle(options)).isEqualTo(canHandle);
     }
 
     @Test
     void should_create_KeyStoreLoader() {
-        KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder().keyStoreType("pem").secretLocation("secret://test/test").build();
+        KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder().type("pem").secretLocation("secret://test/test").build();
 
-        KeyStoreLoader keyStoreLoader = cut.create(options, null);
+        KeyStoreLoader keyStoreLoader = cut.create(options);
         assertThat(keyStoreLoader).isInstanceOf(SecretProviderKeyStoreLoader.class);
     }
 }

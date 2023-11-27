@@ -26,7 +26,7 @@ import javax.net.ssl.X509TrustManager;
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-class VertxTrustOptions implements TrustOptions {
+public class VertxTrustOptions implements TrustOptions {
 
     public static final Function<String, TrustManager[]> NULL_MAPPER_FUNCTION = s -> null;
     private final TrustManagerFactory trustManagerFactory;
@@ -42,7 +42,7 @@ class VertxTrustOptions implements TrustOptions {
         this.trustManagerFactory = trustManagerFactory;
     }
 
-    VertxTrustOptions(X509TrustManager trustManager) {
+    public VertxTrustOptions(X509TrustManager trustManager) {
         this(new VertxTrustManagerFactory(trustManager));
     }
 

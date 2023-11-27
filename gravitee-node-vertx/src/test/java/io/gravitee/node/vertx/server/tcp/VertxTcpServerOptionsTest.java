@@ -18,21 +18,22 @@ package io.gravitee.node.vertx.server.tcp;
 import static io.gravitee.node.vertx.server.VertxServerOptions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.gravitee.node.api.certificate.CertificateOptions;
-import io.gravitee.node.api.certificate.KeyStoreLoader;
-import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
-import io.gravitee.node.certificates.KeyStoreLoaderManager;
+import io.gravitee.node.vertx.cert.VertxTLSOptionsRegistry;
 import io.vertx.core.http.ClientAuth;
+import io.vertx.core.net.KeyCertOptions;
 import io.vertx.core.net.NetServerOptions;
-import java.util.*;
+import io.vertx.core.net.TrustOptions;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.env.PropertySource;
 import org.springframework.mock.env.MockEnvironment;
@@ -53,7 +54,8 @@ class VertxTcpServerOptionsTest {
     public static final String PORT = "7890";
     public static final String CLIENT_AUTH = "request";
     public static final String TLS_PROTOCOLS = "TLSv1.3";
-    public static final String TLS_CIPHERS = "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA";
+    public static final String TLS_CIPHER = "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA";
+    public static final List<String> TLS_CIPHERS = List.of(TLS_CIPHER);
     public static final String KEYSTORE_TYPE = "pkcs12";
     public static final String TRUSTSTORE_TYPE = "jks";
     public static final String KEYSTORE_PATH = "/server.p12";
@@ -65,13 +67,13 @@ class VertxTcpServerOptionsTest {
     public static final String HAPROXY_PROTOCOL = "true";
     public static final String HAPROXY_PROTOCOL_TIMEOUT = "12000";
 
-    @Mock
-    private KeyStoreLoaderManager keyStoreLoaderManager;
+    private VertxTLSOptionsRegistry tlsOptionsRegistry;
 
     private MockEnvironment environment;
 
     @BeforeEach
     void init() {
+        tlsOptionsRegistry = new VertxTLSOptionsRegistry();
         environment = new MockEnvironment();
         environment
             .withProperty("servers[0].id", SERVER_ID)
@@ -83,7 +85,7 @@ class VertxTcpServerOptionsTest {
             .withProperty("servers[0].secured", SECURED)
             .withProperty("servers[0].ssl.clientAuth", CLIENT_AUTH)
             .withProperty("servers[0].ssl.tlsProtocols", TLS_PROTOCOLS)
-            .withProperty("servers[0].ssl.tlsCiphers", TLS_CIPHERS)
+            .withProperty("servers[0].ssl.tlsCiphers", TLS_CIPHER)
             .withProperty("servers[0].ssl.keystore.type", KEYSTORE_TYPE)
             .withProperty("servers[0].ssl.keystore.path", KEYSTORE_PATH)
             .withProperty("servers[0].ssl.keystore.password", KEYSTORE_PASSWORD)
@@ -108,17 +110,20 @@ class VertxTcpServerOptionsTest {
         assertThat(options.isSecured()).isEqualTo(Boolean.valueOf(SECURED));
         assertThat(options.getClientAuth()).isEqualToIgnoringCase(CLIENT_AUTH);
         assertThat(options.getTlsProtocols()).isEqualTo(TLS_PROTOCOLS);
-        assertThat(options.getAuthorizedTlsCipherSuites()).isEqualTo(Arrays.asList(TLS_CIPHERS.split(",\\s?")));
-        assertThat(options.getKeyStoreType()).isEqualToIgnoringCase(KEYSTORE_TYPE);
-        assertThat(options.getKeyStorePath()).isEqualTo(KEYSTORE_PATH);
-        assertThat(options.getKeyStorePassword()).isEqualTo(KEYSTORE_PASSWORD);
-        assertThat(options.getTrustStoreType()).isEqualToIgnoringCase(TRUSTSTORE_TYPE);
-        assertThat(options.getTrustStorePath()).isEqualTo(TRUSTSTORE_PATH);
-        assertThat(options.getTrustStorePassword()).isEqualTo(TRUSTSTORE_PASSWORD);
+        assertThat(options.getAuthorizedTlsCipherSuites()).containsExactlyElementsOf(TLS_CIPHERS);
         assertThat(options.isSni()).isEqualTo(Boolean.valueOf(SNI));
         assertThat(options.isOpenssl()).isEqualTo(Boolean.valueOf(OPENSSL));
         assertThat(options.isHaProxyProtocol()).isEqualTo(Boolean.valueOf(HAPROXY_PROTOCOL));
         assertThat(options.getHaProxyProtocolTimeout()).isEqualTo(Long.valueOf(HAPROXY_PROTOCOL_TIMEOUT));
+        assertThat(options.getKeyStoreLoaderOptions().isWatch()).isEqualTo(DEFAULT_KEYSTORE_WATCH);
+        assertThat(options.getKeyStoreLoaderOptions().getPaths()).containsExactly(KEYSTORE_PATH);
+        assertThat(options.getKeyStoreLoaderOptions().getPassword()).isEqualTo(KEYSTORE_PASSWORD);
+        assertThat(options.getKeyStoreLoaderOptions().getType()).isEqualTo(KEYSTORE_TYPE);
+        assertThat(options.getTrustStoreLoaderOptions().isConfigured()).isTrue();
+        assertThat(options.getTrustStoreLoaderOptions().getPassword()).isEqualTo(TRUSTSTORE_PASSWORD);
+        assertThat(options.getTrustStoreLoaderOptions().getPaths()).containsExactly(TRUSTSTORE_PATH);
+        assertThat(options.getTrustStoreLoaderOptions().getType()).isEqualTo(TRUSTSTORE_TYPE);
+        assertThat(options.getTrustStoreLoaderOptions().isWatch()).isEqualTo(DEFAULT_TRUSTSTORE_WATCH);
     }
 
     @Test
@@ -134,12 +139,12 @@ class VertxTcpServerOptionsTest {
         assertThat(options.getClientAuth()).isEqualToIgnoringCase(DEFAULT_CLIENT_AUTH);
         assertThat(options.getTlsProtocols()).isNull();
         assertThat(options.getAuthorizedTlsCipherSuites()).isNull();
-        assertThat(options.getKeyStoreType()).isEqualToIgnoringCase(DEFAULT_STORE_TYPE);
-        assertThat(options.getKeyStorePath()).isNull();
-        assertThat(options.getKeyStorePassword()).isNull();
-        assertThat(options.getTrustStoreType()).isEqualToIgnoringCase(DEFAULT_STORE_TYPE);
-        assertThat(options.getTrustStorePath()).isNull();
-        assertThat(options.getTrustStorePassword()).isNull();
+        assertThat(options.getKeyStoreLoaderOptions()).isNotNull();
+        assertThat(options.getKeyStoreLoaderOptions().getType()).isEqualTo(DEFAULT_STORE_TYPE);
+        assertThat(options.getKeyStoreLoaderOptions().getPaths()).isEmpty();
+        assertThat(options.getTrustStoreLoaderOptions()).isNotNull();
+        assertThat(options.getTrustStoreLoaderOptions().isConfigured()).isFalse();
+        assertThat(options.getKeyStoreLoaderOptions().getPaths()).isEmpty();
         assertThat(options.isSni()).isEqualTo(DEFAULT_SNI);
         assertThat(options.isOpenssl()).isEqualTo(DEFAULT_OPENSSL);
         assertThat(options.isHaProxyProtocol()).isEqualTo(DEFAULT_HAPROXY_PROTOCOL);
@@ -159,9 +164,42 @@ class VertxTcpServerOptionsTest {
 
         final VertxTcpServerOptions options = VertxTcpServerOptions.builder().prefix("servers[0]").environment(environment).build();
 
-        assertThat(options.getKeyStoreType()).isEqualToIgnoringCase("pem");
-        assertThat(options.getKeyStoreCertificates()).isEqualTo(List.of(certOptions1, certOptions2));
-        assertThat(options.getKeyStorePassword()).isEqualTo(KEYSTORE_PASSWORD);
+        assertThat(options.getKeyStoreLoaderOptions().getType()).isEqualToIgnoringCase("pem");
+        assertThat(options.getKeyStoreLoaderOptions().getCertificates()).isEqualTo(List.of(certOptions1, certOptions2));
+        assertThat(options.getKeyStoreLoaderOptions().getPassword()).isEqualTo(KEYSTORE_PASSWORD);
+    }
+
+    @Test
+    void should_build_from_environment_configuration_with_keystore_and_multiple_paths() {
+        environment
+            .getPropertySources()
+            .stream()
+            .findFirst()
+            .ifPresent(propertySource -> ((PropertySource<Properties>) propertySource).getSource().remove("servers[0].ssl.keystore.path"));
+        environment.setProperty("servers[0].ssl.keystore.path[0]", KEYSTORE_PATH);
+        environment.setProperty("servers[0].ssl.keystore.path[1]", "/alter.p12");
+
+        final VertxTcpServerOptions options = VertxTcpServerOptions.builder().prefix("servers[0]").environment(environment).build();
+
+        assertThat(options.getKeyStoreLoaderOptions().getPaths()).containsExactly(KEYSTORE_PATH, "/alter.p12");
+    }
+
+    @Test
+    void should_build_from_environment_configuration_with_keystore_pem_kubernetes_location_and_multiple_paths() {
+        environment.setProperty("servers[0].ssl.keystore.type", "pem");
+        environment
+            .getPropertySources()
+            .stream()
+            .findFirst()
+            .ifPresent(propertySource -> ((PropertySource<Properties>) propertySource).getSource().remove("servers[0].ssl.keystore.path"));
+        environment.setProperty("servers[0].ssl.keystore.kubernetes[0]", "kubernetes://default/my-secret");
+        environment.setProperty("servers[0].ssl.keystore.kubernetes[1]", "kubernetes://default/my-secret2");
+
+        final VertxTcpServerOptions options = VertxTcpServerOptions.builder().prefix("servers[0]").environment(environment).build();
+
+        assertThat(options.getKeyStoreLoaderOptions().getKubernetesLocations())
+            .containsExactly("kubernetes://default/my-secret", "kubernetes://default/my-secret2");
+        assertThat(options.getKeyStoreLoaderOptions().getPaths()).isEmpty();
     }
 
     @Test
@@ -178,10 +216,9 @@ class VertxTcpServerOptionsTest {
 
         final VertxTcpServerOptions options = VertxTcpServerOptions.builder().prefix("servers[0]").environment(environment).build();
 
-        assertThat(options.getTrustStoreType()).isEqualToIgnoringCase("pem");
-        assertThat(options.getTrustStorePath()).isNull();
-        assertThat(options.getTrustStorePaths()).isEqualTo(List.of("cert1.pem", "cert2.pem"));
-        assertThat(options.getTrustStorePassword()).isEqualTo(TRUSTSTORE_PASSWORD);
+        assertThat(options.getTrustStoreLoaderOptions().getType()).isEqualToIgnoringCase("pem");
+        assertThat(options.getTrustStoreLoaderOptions().getPaths()).containsAnyElementsOf(List.of("cert1.pem", "cert2.pem"));
+        assertThat(options.getTrustStoreLoaderOptions().getPassword()).isEqualTo(TRUSTSTORE_PASSWORD);
     }
 
     @Test
@@ -225,12 +262,8 @@ class VertxTcpServerOptionsTest {
         assertThat(options.getClientAuth()).isEqualToIgnoringCase(DEFAULT_CLIENT_AUTH);
         assertThat(options.getTlsProtocols()).isNull();
         assertThat(options.getAuthorizedTlsCipherSuites()).isNull();
-        assertThat(options.getKeyStoreType()).isEqualToIgnoringCase(DEFAULT_STORE_TYPE);
-        assertThat(options.getKeyStorePath()).isNull();
-        assertThat(options.getKeyStorePassword()).isNull();
-        assertThat(options.getTrustStoreType()).isEqualToIgnoringCase(DEFAULT_STORE_TYPE);
-        assertThat(options.getTrustStorePath()).isNull();
-        assertThat(options.getTrustStorePassword()).isNull();
+        assertThat(options.getKeyStoreLoaderOptions()).isNull();
+        assertThat(options.getTrustStoreLoaderOptions()).isNull();
         assertThat(options.isSni()).isEqualTo(DEFAULT_SNI);
         assertThat(options.isOpenssl()).isEqualTo(DEFAULT_OPENSSL);
         assertThat(options.isHaProxyProtocol()).isEqualTo(DEFAULT_HAPROXY_PROTOCOL);
@@ -288,10 +321,11 @@ class VertxTcpServerOptionsTest {
             .builder()
             .prefix("servers[0]")
             .environment(environment)
-            .keyStoreLoaderManager(keyStoreLoaderManager)
+            .tlsOptionsRegistry(tlsOptionsRegistry)
             .build();
 
-        when(keyStoreLoaderManager.create(any(KeyStoreLoaderOptions.class), any())).thenReturn(mock(KeyStoreLoader.class));
+        tlsOptionsRegistry.registerOptions(options.getId(), mock(KeyCertOptions.class));
+        tlsOptionsRegistry.registerOptions(options.getId(), mock(TrustOptions.class));
 
         final NetServerOptions netServerOptions = options.createNetServerOptions();
 
@@ -302,9 +336,12 @@ class VertxTcpServerOptionsTest {
         assertThat(netServerOptions.getPort()).isEqualTo(Integer.valueOf(PORT));
         assertThat(netServerOptions.getClientAuth()).isEqualTo(ClientAuth.valueOf(CLIENT_AUTH.toUpperCase()));
         assertThat(netServerOptions.getEnabledSecureTransportProtocols()).isEqualTo(Set.of(TLS_PROTOCOLS));
-        assertThat(netServerOptions.getEnabledCipherSuites()).isEqualTo(new HashSet<>(Arrays.asList(TLS_CIPHERS.split(",\\s?"))));
+        assertThat(netServerOptions.getEnabledCipherSuites()).containsExactlyElementsOf(TLS_CIPHERS);
         assertThat(netServerOptions.getKeyCertOptions()).isNotNull();
+        assertThat(netServerOptions.getKeyStoreOptions()).isNull();
         assertThat(netServerOptions.getTrustOptions()).isNotNull();
+        assertThat(netServerOptions.getPfxTrustOptions()).isNull();
+        assertThat(netServerOptions.getTrustStoreOptions()).isNull();
         assertThat(netServerOptions.isSsl()).isEqualTo(Boolean.valueOf(SECURED));
         assertThat(netServerOptions.isSni()).isEqualTo(Boolean.valueOf(SNI));
         assertThat(netServerOptions.getOpenSslEngineOptions()).isNotNull();
@@ -314,10 +351,19 @@ class VertxTcpServerOptionsTest {
 
     @Test
     void should_throw_illegal_argument_exception_when_create_vertx_options_with_secured_enabled_and_no_keystore_loader_manager() {
-        final VertxTcpServerOptions options = VertxTcpServerOptions.builder().prefix("servers[0]").environment(environment).build();
-        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, options::createNetServerOptions);
+        final VertxTcpServerOptions options = VertxTcpServerOptions
+            .builder()
+            .prefix("servers[0]")
+            .tlsOptionsRegistry(tlsOptionsRegistry)
+            .environment(environment)
+            .build();
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, options::createNetServerOptions);
 
-        assertThat(exception.getMessage()).isEqualTo("You must provide a KeyStoreLoaderManager when 'secured' is enabled.");
+        assertThat(exception.getMessage()).startsWith("No X509 Key manager found");
+
+        tlsOptionsRegistry.registerOptions(options.getId(), mock(KeyCertOptions.class));
+        exception = assertThrows(IllegalArgumentException.class, options::createNetServerOptions);
+        assertThat(exception.getMessage()).startsWith("No X509 Certificate manager found");
     }
 
     @Test
@@ -326,7 +372,7 @@ class VertxTcpServerOptionsTest {
         final VertxTcpServerOptions options = VertxTcpServerOptions
             .builder()
             .prefix("servers[0]")
-            .keyStoreLoaderManager(keyStoreLoaderManager)
+            .tlsOptionsRegistry(tlsOptionsRegistry)
             .environment(environment)
             .build();
 
@@ -340,58 +386,11 @@ class VertxTcpServerOptionsTest {
         final VertxTcpServerOptions options = VertxTcpServerOptions
             .builder()
             .prefix("servers[0]")
-            .keyStoreLoaderManager(keyStoreLoaderManager)
+            .tlsOptionsRegistry(tlsOptionsRegistry)
             .environment(environment)
             .build();
 
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, options::createNetServerOptions);
         assertThat(exception.getMessage()).isEqualTo("Cannot start unsecured TCP server or without SNI enabled");
-    }
-
-    @Test
-    void should_create_vertx_options_with_pem_truststore() {
-        environment.setProperty("servers[0].ssl.truststore.type", "pem");
-        environment
-            .getPropertySources()
-            .stream()
-            .findFirst()
-            .ifPresent(propertySource -> ((PropertySource<Properties>) propertySource).getSource().remove("servers[0].ssl.truststore.path")
-            );
-        environment.setProperty("servers[0].ssl.truststore.path[0]", "cert1.pem");
-        environment.setProperty("servers[0].ssl.truststore.path[1]", "cert2.pem");
-
-        when(keyStoreLoaderManager.create(any(KeyStoreLoaderOptions.class), any())).thenReturn(mock(KeyStoreLoader.class));
-
-        final VertxTcpServerOptions options = VertxTcpServerOptions
-            .builder()
-            .prefix("servers[0]")
-            .environment(environment)
-            .keyStoreLoaderManager(keyStoreLoaderManager)
-            .build();
-        final NetServerOptions netServerOptions = options.createNetServerOptions();
-
-        assertThat(netServerOptions).isNotNull();
-        assertThat(netServerOptions.getPemTrustOptions()).isNotNull();
-        assertThat(netServerOptions.getPfxTrustOptions()).isNull();
-    }
-
-    @Test
-    void should_create_vertx_options_with_pkc12_truststore() {
-        environment.setProperty("servers[0].ssl.truststore.type", "pkcs12");
-        environment.setProperty("servers[0].ssl.truststore.path", "truststore.p12");
-
-        when(keyStoreLoaderManager.create(any(KeyStoreLoaderOptions.class), any())).thenReturn(mock(KeyStoreLoader.class));
-
-        final VertxTcpServerOptions options = VertxTcpServerOptions
-            .builder()
-            .prefix("servers[0]")
-            .environment(environment)
-            .keyStoreLoaderManager(keyStoreLoaderManager)
-            .build();
-        final NetServerOptions netServerOptions = options.createNetServerOptions();
-
-        assertThat(netServerOptions).isNotNull();
-        assertThat(netServerOptions.getPemTrustOptions()).isNull();
-        assertThat(netServerOptions.getPfxTrustOptions()).isNotNull();
     }
 }

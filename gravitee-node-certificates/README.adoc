@@ -9,54 +9,103 @@ This project aims to provide out-of-the-box certificate loaders that can be used
 This section presents how to generate the different keystores use by the unit tests.
 
 Generate Certificate Authority
-```bash
+
+[source,bash]
+----
 openssl req -newkey rsa:4096 -keyform PEM -keyout ca.key -x509 -days 36500 -subj "/emailAddress=unit.tests@graviteesource.com/CN=unit-tests/OU=GraviteeSource/O=GraviteeSource/L=Lille/ST=France/C=FR" -passout pass:ca-secret -outform PEM -out ca.pem
 openssl pkcs12 -export -inkey ca.key -in ca.pem -out ca.p12 -passin pass:ca-secret -passout pass:ca-secret -name ca
-```
+----
 
 Generate localhost keystore
-```bash
+
+[source,bash]
+----
 openssl genrsa -out localhost.key 4096
 openssl req -new -key localhost.key -out localhost.csr -sha256 -subj "/emailAddress=unit.tests@graviteesource.com/CN=localhost/OU=GraviteeSource/O=GraviteeSource/L=Lille/ST=France/C=FR"
 openssl x509 -req -in localhost.csr -CA ca.pem -CAkey ca.key -set_serial 100 -extensions server -days 36500 -outform PEM -out localhost.cer -sha256 -passin pass:ca-secret
 openssl pkcs12 -export -inkey localhost.key -in localhost.cer -out localhost.p12 -passout pass:secret -name localhost
 keytool -importkeystore -srckeystore localhost.p12 -destkeystore localhost.jks -srcstoretype PKCS12 -deststoretype JKS -srcstorepass secret -deststorepass secret -v
-```
+----
 
 Generate localhost2 keystore
-```bash
+
+[source,bash]
+----
 openssl genrsa -out localhost2.key 4096
 openssl req -new -key localhost2.key -out localhost2.csr -sha256 -subj "/emailAddress=unit.tests@graviteesource.com/CN=localhost2/OU=GraviteeSource/O=GraviteeSource/L=Lille/ST=France/C=FR"
 openssl x509 -req -in localhost2.csr -CA ca.pem -CAkey ca.key -set_serial 100 -extensions server -days 36500 -outform PEM -out localhost2.cer -sha256 -passin pass:ca-secret
 openssl pkcs12 -export -inkey localhost2.key -in localhost2.cer -out localhost2.p12 -passout pass:secret -name localhost2
 keytool -importkeystore -srckeystore localhost2.p12 -destkeystore localhost2.jks -srcstoretype PKCS12 -deststoretype JKS -srcstorepass secret -deststorepass secret -v
-```
+----
 
 Generate localhost3 keystore with SAN (Subject Alternative Name)
-```bash
+
+[source,bash]
+----
 echo "[ req ]\ndistinguished_name = req_distinguished_name\nreq_extensions = v3_req\nextensions = server\nprompt = no\nO = GraviteeSource\nL = Lille\nST = France\n\n[ v3_req ]\nsubjectAltName = @alt_names\n[alt_names]\nDNS.1 = xyz.localhost.com" > localhost3-san.cnf
 openssl genrsa -out localhost3.key 4096
 openssl req -new -key localhost3.key -out localhost3.csr -sha256 -subj "/emailAddress=unit.tests@graviteesource.com/CN=localhost3/OU=GraviteeSource/O=GraviteeSource/L=Lille/ST=France/C=FR"
 openssl x509 -req -in localhost3.csr -CA ca.pem -CAkey ca.key -set_serial 100 -extensions server -days 36500 -outform PEM -out localhost3.cer -sha256 -passin pass:ca-secret -extensions v3_req -extfile localhost3-san.cnf
 openssl pkcs12 -export -inkey localhost3.key -in localhost3.cer -out localhost3.p12 -passout pass:secret -name localhost3
 keytool -importkeystore -srckeystore localhost3.p12 -destkeystore localhost3.jks -srcstoretype PKCS12 -deststoretype JKS -srcstorepass secret -deststorepass secret -v
-```
+----
 
 Generate wildcard keystore
-```bash
+
+[source,bash]
+----
 openssl genrsa -out wildcard.key 4096
 penssl req -new -key wildcard.key -out wildcard.csr -sha256 -subj "/emailAddress=unit.tests@graviteesource.com/CN=*.localhost.com/OU=GraviteeSource/O=GraviteeSource/L=Lille/ST=France/C=FR"
 openssl x509 -req -in wildcard.csr -CA ca.pem -CAkey ca.key -set_serial 100 -extensions server -days 36500 -outform PEM -out wildcard.cer -sha256 -passin pass:ca-secret
 openssl pkcs12 -export -inkey wildcard.key -in wildcard.cer -out wildcard.p12 -passout pass:secret -name wildcard
 keytool -importkeystore -srckeystore wildcard.p12 -destkeystore wildcard.jks -srcstoretype PKCS12 -deststoretype JKS -srcstorepass secret -deststorepass secret -v
-```
+----
 
 Create an all-in-one keystore
-```bash
+
+[source,bash]
+----
 keytool -importkeystore -srckeystore localhost.p12 -destkeystore all-in-one.p12 -srcstoretype PKCS12 -deststoretype PKCS12 -srcstorepass secret -deststorepass secret -v
 keytool -importkeystore -srckeystore localhost2.p12 -destkeystore all-in-one.p12 -srcstoretype PKCS12 -deststoretype PKCS12 -srcstorepass secret -deststorepass secret -v
 keytool -importkeystore -srckeystore localhost3.p12 -destkeystore all-in-one.p12 -srcstoretype PKCS12 -deststoretype PKCS12 -srcstorepass secret -deststorepass secret -v
 keytool -importkeystore -srckeystore wildcard.p12 -destkeystore all-in-one.p12 -srcstoretype PKCS12 -deststoretype PKCS12 -srcstorepass secret -deststorepass secret -v
 keytool -importkeystore -srckeystore all-in-one.p12 -destkeystore all-in-one.jks -srcstoretype PKCS12 -deststoretype JKS -srcstorepass secret -deststorepass secret -v
-```
+----
 
+
+=== Generate truststores
+
+Create JKS simple truststore
+
+[source,bash]
+----
+openssl genrsa -out client1-key.pem 4096
+openssl req -new -key client1-key.pem -out client1-csr.pem -subj "/emailAddress=unit.tests@graviteesource.com/CN=unit-tests/OU=GraviteeSource/O=GraviteeSource/L=Lille/ST=France/C=FR"
+openssl x509 -req -days 36500 -in client1-csr.pem -CA ../keystores/ca.pem -CAkey ../keystores/ca.key -passin pass:ca-secret -out client1.crt
+keytool -keystore truststore1.jks -alias client1 -importcert -file client1.crt -storepass secret
+----
+
+Create PCKS12 truststore with 2 entries (using the same private key)
+[source,bash]
+----
+openssl genrsa -out client2-key.pem 4096
+openssl req -new -key client2-key.pem -out client2-csr.pem -subj "/emailAddress=unit.tests@graviteesource.com/CN=unit-tests/OU=GraviteeSource/O=GraviteeSource/L=Lille/ST=France/C=FR"
+openssl x509 -req -days 36500 -in client2-csr.pem -CA ../keystores/ca.pem -CAkey ../keystores/ca.key -passin pass:ca-secret -out client2.crt
+
+openssl req -new -key client2-key.pem -out client3-csr.pem -subj "/emailAddress=unit.tests@graviteesource.com/CN=unit-tests/OU=GraviteeSource/O=GraviteeSource/L=Lille/ST=France/C=FR"
+openssl x509 -req -days 36500 -in client3-csr.pem -CA ../keystores/ca.pem -CAkey ../keystores/ca.key -passin pass:ca-secret -out client3.crt
+
+keytool -keystore truststore2.p12 -deststoretype PKCS12 -alias client2 -importcert -file client2.crt -storepass secret
+keytool -keystore truststore2.p12 -deststoretype PKCS12 -alias client3 -importcert -file client3.crt -storepass secret
+
+----
+
+
+Create JKS truststore with 2 entries
+[source,bash]
+----
+
+keytool -keystore truststore2.jks -deststoretype JKS -alias client2 -importcert -file client2.crt -storepass secret
+keytool -keystore truststore2.jks -deststoretype JKS -alias client3 -importcert -file client3.crt -storepass secret
+
+----

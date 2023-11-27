@@ -15,10 +15,12 @@
  */
 package io.gravitee.node.vertx.server.http;
 
-import static io.gravitee.node.vertx.server.http.VertxHttpServer.TYPE;
+import static io.gravitee.node.vertx.server.http.VertxHttpServer.KIND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import io.gravitee.node.certificates.KeyStoreLoaderManager;
+import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.http.HttpServer;
@@ -51,19 +53,20 @@ class VertxHttpServerTest {
 
     private VertxHttpServer cut;
 
+    @Mock
+    private KeyStoreLoaderManager keyStoreLoaderManager;
+
+    @Mock
+    private TrustStoreLoaderManager trustStoreLoaderManager;
+
     @BeforeEach
     void init() {
-        cut = new VertxHttpServer(ID, vertx, options);
-    }
-
-    @Test
-    void should_return_id() {
-        assertThat(cut.id()).isEqualTo(ID);
+        cut = new VertxHttpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager);
     }
 
     @Test
     void should_return_http_type() {
-        assertThat(cut.type()).isEqualTo(TYPE);
+        assertThat(cut.type()).isEqualTo(KIND);
     }
 
     @Test

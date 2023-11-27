@@ -25,12 +25,10 @@ import io.gravitee.kubernetes.client.model.v1.Secret;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.CompletableSource;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -83,7 +81,7 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
         return (
             kubernetesLocations != null &&
             !kubernetesLocations.isEmpty() &&
-            SUPPORTED_TYPES.contains(options.getKeyStoreType().toLowerCase()) &&
+            SUPPORTED_TYPES.contains(options.getType().toLowerCase()) &&
             (
                 kubernetesLocations
                     .stream()
@@ -105,12 +103,12 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
                     .observeOn(Schedulers.computation())
                     .flatMapCompletable(this::loadKeyStore)
             )
-            .collect(Collectors.toList());
+            .toList();
 
         return Completable
             .merge(locationObs)
             .observeOn(Schedulers.computation())
-            .andThen(Completable.fromRunnable(this::refreshKeyStoreBundle));
+            .andThen(Completable.fromRunnable(this::emitKeyStoreEvent));
     }
 
     @Override
@@ -125,7 +123,7 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
                     .repeat()
                     .retryWhen(errors -> errors.delay(RETRY_DELAY_MILLIS, TimeUnit.MILLISECONDS))
             )
-            .collect(Collectors.toList());
+            .toList();
 
         return Flowable.merge(toWatch).filter(event -> event.getType().equalsIgnoreCase("MODIFIED")).map(Event::getObject);
     }
@@ -133,7 +131,7 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
     @Override
     protected Completable loadKeyStore(ConfigMap configMap) {
         KeyStore keyStore = null;
-        if (options.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM_REGISTRY)) {
+        if (this.options.getType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM_REGISTRY)) {
             if (
                 configMap.getMetadata().getAnnotations() != null &&
                 "true".equals(configMap.getMetadata().getAnnotations().get(GRAVITEEIO_PEM_REGISTRY)) &&
@@ -158,13 +156,7 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
                 return Completable.error(new IllegalArgumentException("Unable to load keystore: unknown configmap."));
             }
 
-            Map<String, String> data = configMap.getBinaryData() == null ? configMap.getData() : configMap.getBinaryData();
-
-            if (configMap.getBinaryData() != null) {
-                data = configMap.getBinaryData();
-            } else if (configMap.getData() != null) {
-                data = configMap.getData();
-            }
+            Map<String, String> data = getConfigMapData(configMap);
 
             final String dataKey = optResource.get().getResourceKey();
             if (data == null || data.get(dataKey) == null) {
@@ -175,13 +167,24 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
                 );
             }
 
-            keyStore = KeyStoreUtils.initFromContent(options.getKeyStoreType(), data.get(dataKey), options.getKeyStorePassword());
+            keyStore = KeyStoreUtils.initFromContent(this.options.getType(), data.get(dataKey), getPassword());
         }
 
         if (keyStore != null) {
             keyStoresByLocation.put(configMap.getMetadata().getUid(), keyStore);
         }
         return Completable.complete();
+    }
+
+    private static Map<String, String> getConfigMapData(ConfigMap configMap) {
+        Map<String, String> data = configMap.getBinaryData() == null ? configMap.getData() : configMap.getBinaryData();
+
+        if (configMap.getBinaryData() != null) {
+            data = configMap.getBinaryData();
+        } else if (configMap.getData() != null) {
+            data = configMap.getData();
+        }
+        return data;
     }
 
     private Completable generateKeystoreFromPemRegistry(ConfigMap configMap) {
@@ -200,10 +203,10 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
                             .get(ResourceQuery.secret(configMap.getMetadata().getNamespace(), name).build())
                             .map(this::secretToKeyStore);
                     })
-                    .collect(Collectors.toList())
+                    .toList()
             )
             .toList()
-            .map(keyStoreList -> KeyStoreUtils.merge(keyStoreList, options.getKeyStorePassword()))
+            .map(keyStoreList -> KeyStoreUtils.merge(keyStoreList, getPassword()))
             .doOnSuccess(keyStore -> keyStoresByLocation.put(GRAVITEEIO_PEM_REGISTRY, keyStore))
             .ignoreElement();
     }
@@ -211,7 +214,7 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
     private KeyStore initKeyStore() {
         try {
             KeyStore keyStore = KeyStore.getInstance(KeyStoreUtils.DEFAULT_KEYSTORE_TYPE);
-            keyStore.load(null, KeyStoreUtils.passwordToCharArray(options.getKeyStorePassword()));
+            keyStore.load(null, KeyStoreUtils.passwordToCharArray(getPassword()));
             return keyStore;
         } catch (Exception e) {
             throw new RuntimeException(String.format("Unable to reset the %s keystore", GRAVITEEIO_PEM_REGISTRY), e);
@@ -228,7 +231,7 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
         return KeyStoreUtils.initFromPem(
             new String(Base64.getDecoder().decode(data.get(KubernetesSecretKeyStoreLoader.KUBERNETES_TLS_CRT))),
             new String(Base64.getDecoder().decode(data.get(KubernetesSecretKeyStoreLoader.KUBERNETES_TLS_KEY))),
-            options.getKeyStorePassword(),
+            getPassword(),
             secret.getMetadata().getName()
         );
     }

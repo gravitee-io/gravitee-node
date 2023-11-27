@@ -4,7 +4,7 @@ import static io.gravitee.node.secrets.service.test.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-import io.gravitee.node.api.certificate.KeyStoreBundle;
+import io.gravitee.node.api.certificate.KeyStoreEvent;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderPluginManager;
 import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
@@ -114,7 +114,7 @@ class SecretProviderKeyStoreLoaderTest {
         "yrso+qI7p4o+fDks//OYD5KrcCwQUNGGxw2fW9b1HtnoDzjK8qDV" +
         "STxACAicQ";
 
-    final List<KeyStoreBundle> keyStores = new ArrayList<>();
+    final List<KeyStoreEvent> keyStores = new ArrayList<>();
     SecretProviderKeyStoreLoaderFactory factory;
     SecretProviderKeyStoreLoader cut;
 
@@ -140,16 +140,16 @@ class SecretProviderKeyStoreLoaderTest {
     void should_resolve_pem_pair_and_notify_of_bundle() {
         KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .keyStoreType("pem")
             .watch(false)
+            .type("pem")
             .secretLocation("secret://test/test?keymap=certificate:tlscert&keymap=private_key:tlskey")
             .build();
-        this.cut = (SecretProviderKeyStoreLoader) factory.create(options, null);
-        this.cut.addListener(keyStores::add);
+        this.cut = (SecretProviderKeyStoreLoader) factory.create(options);
+        this.cut.setEventHandler(keyStores::add);
         this.cut.start();
 
         // wait to make sure only one secret is fetched
-        await().pollDelay(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(keyStores).hasSize(1));
+        await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(keyStores).hasSize(1));
     }
 
     @Test
@@ -157,27 +157,28 @@ class SecretProviderKeyStoreLoaderTest {
         KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
             .watch(false)
-            .keyStoreType("jks")
-            .keyStorePassword("123456")
+            .type("jks")
+            .password("123456")
             .secretLocation("secret://test/test:jkskeystore")
             .build();
-        this.cut = (SecretProviderKeyStoreLoader) factory.create(options, null);
-        this.cut.addListener(keyStores::add);
+        this.cut = (SecretProviderKeyStoreLoader) factory.create(options);
+        this.cut.setEventHandler(keyStores::add);
         this.cut.start();
 
         // wait to make sure only one secret is fetched
-        await().pollDelay(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(keyStores).hasSize(1));
+        await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(keyStores).hasSize(1));
     }
 
     @Test
     void should_watch_pem_pair_and_notify_of_bundle() {
         KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .keyStoreType("pem")
+            .type("pem")
+            .watch(true)
             .secretLocation("secret://test/test?keymap=certificate:tlscert&keymap=private_key:tlskey")
             .build();
-        this.cut = (SecretProviderKeyStoreLoader) factory.create(options, null);
-        this.cut.addListener(keyStores::add);
+        this.cut = (SecretProviderKeyStoreLoader) factory.create(options);
+        this.cut.setEventHandler(keyStores::add);
         this.cut.start();
         await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> assertThat(keyStores).hasSize(2));
     }
@@ -186,12 +187,13 @@ class SecretProviderKeyStoreLoaderTest {
     void should_watch_keystore_and_notify_of_bundle() {
         KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .keyStoreType("jks")
-            .keyStorePassword("123456")
+            .type("jks")
+            .password("123456")
+            .watch(true)
             .secretLocation("secret://test/test:jkskeystore")
             .build();
-        this.cut = (SecretProviderKeyStoreLoader) factory.create(options, null);
-        this.cut.addListener(keyStores::add);
+        this.cut = (SecretProviderKeyStoreLoader) factory.create(options);
+        this.cut.setEventHandler(keyStores::add);
         this.cut.start();
         await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> assertThat(keyStores).hasSize(2));
     }

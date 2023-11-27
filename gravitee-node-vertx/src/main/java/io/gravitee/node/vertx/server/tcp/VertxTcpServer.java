@@ -15,6 +15,8 @@
  */
 package io.gravitee.node.vertx.server.tcp;
 
+import io.gravitee.node.certificates.KeyStoreLoaderManager;
+import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import io.gravitee.node.vertx.server.VertxServer;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.net.NetServer;
@@ -29,8 +31,13 @@ public class VertxTcpServer extends VertxServer<NetServer, VertxTcpServerOptions
 
     public static final String KIND = "tcp";
 
-    public VertxTcpServer(String id, Vertx vertx, VertxTcpServerOptions options) {
-        super(id, vertx, options);
+    public VertxTcpServer(
+        Vertx vertx,
+        VertxTcpServerOptions options,
+        KeyStoreLoaderManager keyStoreLoaderManager,
+        TrustStoreLoaderManager trustStoreLoaderManager
+    ) {
+        super(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager);
     }
 
     @Override

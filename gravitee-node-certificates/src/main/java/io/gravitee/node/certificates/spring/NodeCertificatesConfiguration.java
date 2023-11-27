@@ -15,8 +15,12 @@
  */
 package io.gravitee.node.certificates.spring;
 
-import io.gravitee.node.certificates.KeyStoreLoaderManager;
-import io.gravitee.node.certificates.TrustStoreLoaderManager;
+import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
+import io.gravitee.node.certificates.DefaultKeyStoreLoaderFactoryRegistry;
+import io.gravitee.node.certificates.file.FileKeyStoreLoaderFactory;
+import io.gravitee.node.certificates.file.FileTrustStoreLoaderFactory;
+import io.gravitee.node.certificates.selfsigned.SelfSignedKeyStoreLoaderFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -28,12 +32,17 @@ import org.springframework.context.annotation.Configuration;
 public class NodeCertificatesConfiguration {
 
     @Bean
-    public KeyStoreLoaderManager keyStoreLoaderFactoryManager() {
-        return new KeyStoreLoaderManager();
+    public DefaultKeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry() {
+        DefaultKeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> registry = new DefaultKeyStoreLoaderFactoryRegistry<>();
+        registry.registerFactory(new FileKeyStoreLoaderFactory());
+        registry.registerFactory(new SelfSignedKeyStoreLoaderFactory());
+        return registry;
     }
 
     @Bean
-    public TrustStoreLoaderManager trustStoreLoaderManager() {
-        return new TrustStoreLoaderManager();
+    public DefaultKeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry() {
+        DefaultKeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> registry = new DefaultKeyStoreLoaderFactoryRegistry<>();
+        registry.registerFactory(new FileTrustStoreLoaderFactory());
+        return registry;
     }
 }

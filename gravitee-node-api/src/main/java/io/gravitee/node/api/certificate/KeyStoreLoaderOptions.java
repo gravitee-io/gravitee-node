@@ -27,11 +27,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class KeyStoreLoaderOptions extends AbstractStoreLoaderOptions {
 
-    private final String keyStorePath;
-    private final String keyStorePassword;
-    private final String keyStoreType;
-    private final List<String> kubernetesLocations;
-    private final String secretLocation;
-    private final List<CertificateOptions> keyStoreCertificates;
+    private final List<CertificateOptions> certificates;
     private final String defaultAlias;
 }

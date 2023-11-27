@@ -15,8 +15,12 @@
  */
 package io.gravitee.node.vertx.spring;
 
+import io.gravitee.node.api.certificate.KeyStoreLoaderFactoryRegistry;
+import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
 import io.gravitee.node.tracing.spring.TracingConfiguration;
 import io.gravitee.node.vertx.VertxFactory;
+import io.gravitee.node.vertx.cert.VertxTLSOptionsRegistry;
 import io.gravitee.node.vertx.server.VertxServer;
 import io.gravitee.node.vertx.server.VertxServerFactory;
 import io.gravitee.node.vertx.server.VertxServerOptions;
@@ -52,7 +56,17 @@ public class VertxConfiguration {
     }
 
     @Bean
-    public VertxServerFactory<VertxServer<?, VertxServerOptions>, VertxServerOptions> serverFactory(Vertx vertx) {
-        return new VertxServerFactory<>(vertx);
+    public <T> VertxServerFactory<VertxServer<T, VertxServerOptions>, VertxServerOptions> serverFactory(
+        Vertx vertx,
+        VertxTLSOptionsRegistry tlsOptionsRegistry,
+        KeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry,
+        KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry
+    ) {
+        return new VertxServerFactory<>(vertx, tlsOptionsRegistry, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry);
+    }
+
+    @Bean
+    public VertxTLSOptionsRegistry tlsOptionsRegistry() {
+        return new VertxTLSOptionsRegistry();
     }
 }

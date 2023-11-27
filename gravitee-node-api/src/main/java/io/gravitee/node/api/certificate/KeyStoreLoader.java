@@ -15,12 +15,23 @@
  */
 package io.gravitee.node.api.certificate;
 
+import java.util.function.Consumer;
+
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface KeyStoreLoader extends SecuredStoreLoader<KeyStoreBundle> {
+public interface KeyStoreLoader extends IdProvider {
+    String CERTIFICATE_FORMAT_JKS = "JKS";
+    String CERTIFICATE_FORMAT_PEM = "PEM";
+    String CERTIFICATE_FORMAT_PKCS12 = "PKCS12";
     String CERTIFICATE_FORMAT_SELF_SIGNED = "SELF-SIGNED";
     String CERTIFICATE_FORMAT_PEM_REGISTRY = "PEM-REGISTRY";
     String GRAVITEEIO_PEM_REGISTRY = "graviteeio-pem-registry";
+
+    void start();
+
+    void stop();
+
+    void setEventHandler(Consumer<KeyStoreEvent> handler);
 }

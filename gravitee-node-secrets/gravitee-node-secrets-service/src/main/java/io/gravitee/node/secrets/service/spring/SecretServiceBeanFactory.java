@@ -1,6 +1,6 @@
 package io.gravitee.node.secrets.service.spring;
 
-import io.gravitee.node.certificates.KeyStoreLoaderManager;
+import io.gravitee.node.certificates.DefaultKeyStoreLoaderFactoryRegistry;
 import io.gravitee.node.secrets.plugins.SecretProviderPluginManager;
 import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
 import io.gravitee.node.secrets.service.keystoreloader.SecretProviderKeyStoreLoaderFactory;
@@ -25,13 +25,13 @@ public class SecretServiceBeanFactory {
 
     @Bean
     public SecretProviderKeyStoreLoaderFactory secretProviderKeyStoreLoaderFactory(
-        KeyStoreLoaderManager keyStoreLoaderManager,
+        DefaultKeyStoreLoaderFactoryRegistry keyStoreLoaderFactoryRegistry,
         GraviteeConfigurationSecretResolverDispatcher secretResolverDispatcher
     ) {
         final SecretProviderKeyStoreLoaderFactory secretProviderKeyStoreLoaderFactory = new SecretProviderKeyStoreLoaderFactory(
             secretResolverDispatcher
         );
-        keyStoreLoaderManager.registerFactory(secretProviderKeyStoreLoaderFactory);
+        keyStoreLoaderFactoryRegistry.registerFactory(secretProviderKeyStoreLoaderFactory);
         return secretProviderKeyStoreLoaderFactory;
     }
 }

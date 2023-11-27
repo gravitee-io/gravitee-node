@@ -19,8 +19,8 @@ package io.gravitee.node.api.certificate;
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface KeyStoreLoaderFactory {
-    boolean canHandle(KeyStoreLoaderOptions options);
+public interface KeyStoreLoaderFactory<O extends AbstractStoreLoaderOptions> {
+    boolean canHandle(O options);
 
-    KeyStoreLoader create(KeyStoreLoaderOptions options, String serverId);
+    KeyStoreLoader create(O options);
 }

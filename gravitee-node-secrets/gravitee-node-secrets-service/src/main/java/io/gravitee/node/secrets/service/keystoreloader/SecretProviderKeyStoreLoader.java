@@ -1,19 +1,18 @@
 package io.gravitee.node.secrets.service.keystoreloader;
 
 import io.gravitee.common.util.KeyStoreUtils;
-import io.gravitee.node.api.certificate.KeyStoreBundle;
+import io.gravitee.node.api.certificate.KeyStoreEvent;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
-import io.gravitee.node.api.certificate.SecuredStoreLoader;
 import io.gravitee.node.api.secrets.model.Secret;
 import io.gravitee.node.api.secrets.model.SecretEvent;
 import io.gravitee.node.api.secrets.model.SecretMap;
 import io.gravitee.node.api.secrets.model.SecretMount;
+import io.gravitee.node.certificates.AbstractKeyStoreLoader;
 import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
 import io.reactivex.rxjava3.disposables.Disposable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -21,20 +20,17 @@ import lombok.extern.slf4j.Slf4j;
  * @author GraviteeSource Team
  */
 @Slf4j
-public class SecretProviderKeyStoreLoader implements KeyStoreLoader {
-
-    private final List<Consumer<KeyStoreBundle>> listeners = new ArrayList<>();
+public class SecretProviderKeyStoreLoader extends AbstractKeyStoreLoader<KeyStoreLoaderOptions> {
 
     private final GraviteeConfigurationSecretResolverDispatcher secretResolverDispatcher;
-    private final KeyStoreLoaderOptions options;
     private Disposable watch;
 
     public SecretProviderKeyStoreLoader(
         GraviteeConfigurationSecretResolverDispatcher secretResolverDispatcher,
         KeyStoreLoaderOptions options
     ) {
+        super(options);
         this.secretResolverDispatcher = secretResolverDispatcher;
-        this.options = options;
     }
 
     @Override
@@ -50,9 +46,11 @@ public class SecretProviderKeyStoreLoader implements KeyStoreLoader {
     }
 
     private void createBundleAndNotify(SecretMap secretMap, SecretMount secretMount) {
-        switch (options.getKeyStoreType().toUpperCase()) {
-            case SecuredStoreLoader.CERTIFICATE_FORMAT_PEM -> notifyListeners(
-                new KeyStoreBundle(
+        switch (options.getType().toUpperCase()) {
+            case KeyStoreLoader.CERTIFICATE_FORMAT_PEM -> onEvent(
+                new KeyStoreEvent(
+                    KeyStoreEvent.EventType.LOAD,
+                    id(),
                     KeyStoreUtils.initFromPem(
                         secretMap
                             .wellKnown(SecretMap.WellKnownSecretKey.CERTIFICATE)
@@ -70,26 +68,28 @@ public class SecretProviderKeyStoreLoader implements KeyStoreLoader {
                                     "no pem private key found in secret. If a ?keymap has been set make sure it contains ?keymap=private_key:<cert key in secret data>)"
                                 )
                             ),
-                        options.getKeyStorePassword(),
+                        this.getPassword(),
                         options.getDefaultAlias()
                     ),
-                    options.getKeyStorePassword(),
+                    this.getPassword(),
                     options.getDefaultAlias()
                 )
             );
-            case SecuredStoreLoader.CERTIFICATE_FORMAT_JKS, SecuredStoreLoader.CERTIFICATE_FORMAT_PKCS12 -> notifyListeners(
-                new KeyStoreBundle(
+            case KeyStoreLoader.CERTIFICATE_FORMAT_JKS, KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12 -> onEvent(
+                new KeyStoreEvent(
+                    KeyStoreEvent.EventType.LOAD,
+                    id(),
                     KeyStoreUtils.initFromContent(
-                        options.getKeyStoreType(),
+                        options.getType(),
                         secretMap
                             .getSecret(secretMount)
                             .map(Secret::asString)
                             .orElseThrow(() ->
                                 new IllegalArgumentException("no keystore value found for key '%s'".formatted(secretMount.key()))
                             ),
-                        options.getKeyStorePassword()
+                        this.getPassword()
                     ),
-                    options.getKeyStorePassword(),
+                    this.getPassword(),
                     options.getDefaultAlias()
                 )
             );
@@ -102,14 +102,5 @@ public class SecretProviderKeyStoreLoader implements KeyStoreLoader {
         if (watch != null) {
             watch.dispose();
         }
-    }
-
-    @Override
-    public void addListener(Consumer<KeyStoreBundle> listener) {
-        listeners.add(listener);
-    }
-
-    private void notifyListeners(KeyStoreBundle bundle) {
-        listeners.forEach(c -> c.accept(bundle));
     }
 }

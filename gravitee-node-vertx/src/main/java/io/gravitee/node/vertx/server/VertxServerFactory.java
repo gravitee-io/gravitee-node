@@ -15,7 +15,11 @@
  */
 package io.gravitee.node.vertx.server;
 
+import io.gravitee.node.api.certificate.KeyStoreLoaderFactoryRegistry;
+import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
 import io.gravitee.node.api.server.ServerFactory;
+import io.gravitee.node.vertx.cert.VertxTLSOptionsRegistry;
 import io.gravitee.node.vertx.server.http.VertxHttpServerFactory;
 import io.gravitee.node.vertx.server.http.VertxHttpServerOptions;
 import io.gravitee.node.vertx.server.tcp.VertxTcpServerFactory;
@@ -31,9 +35,16 @@ public class VertxServerFactory<T extends VertxServer<?, C>, C extends VertxServ
     private final VertxHttpServerFactory httpServerFactory;
     private final VertxTcpServerFactory tcpServerFactory;
 
-    public VertxServerFactory(Vertx vertx) {
-        this.httpServerFactory = new VertxHttpServerFactory(vertx);
-        this.tcpServerFactory = new VertxTcpServerFactory(vertx);
+    public VertxServerFactory(
+        Vertx vertx,
+        VertxTLSOptionsRegistry tlsOptionsRegistry,
+        KeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry,
+        KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry
+    ) {
+        this.httpServerFactory =
+            new VertxHttpServerFactory(vertx, tlsOptionsRegistry, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry);
+        this.tcpServerFactory =
+            new VertxTcpServerFactory(vertx, tlsOptionsRegistry, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry);
     }
 
     @Override

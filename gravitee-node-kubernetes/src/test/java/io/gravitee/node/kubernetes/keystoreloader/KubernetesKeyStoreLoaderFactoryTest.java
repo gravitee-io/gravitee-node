@@ -48,7 +48,7 @@ public class KubernetesKeyStoreLoaderFactoryTest {
     public void shouldHandleOptionsWithConfigMap() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .kubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
             .build();
 
@@ -59,7 +59,7 @@ public class KubernetesKeyStoreLoaderFactoryTest {
     public void shouldNotHandleOptionsWithConfigMapAndPEMFormat() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
             .kubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
             .build();
 
@@ -70,7 +70,7 @@ public class KubernetesKeyStoreLoaderFactoryTest {
     public void shouldHandleOptionsWithTlsSecret() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
             .kubernetesLocations(Collections.singletonList("/gio/secrets/my-secret"))
             .build();
 
@@ -81,7 +81,7 @@ public class KubernetesKeyStoreLoaderFactoryTest {
     public void shouldHandleOptionsWithOpaqueSecret() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .kubernetesLocations(Collections.singletonList("/gio/secrets/my-secret/keystore"))
             .build();
 
@@ -92,29 +92,29 @@ public class KubernetesKeyStoreLoaderFactoryTest {
     public void shouldCreateConfigMapLoader() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .kubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
             .build();
 
-        assertEquals(KubernetesConfigMapKeyStoreLoader.class, cut.create(options, null).getClass());
+        assertEquals(KubernetesConfigMapKeyStoreLoader.class, cut.create(options).getClass());
     }
 
     @Test
     public void shouldCreateSecretLoader() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
             .kubernetesLocations(Collections.singletonList("/gio/secrets/my-secret"))
             .build();
 
-        assertEquals(KubernetesSecretKeyStoreLoader.class, cut.create(options, null).getClass());
+        assertEquals(KubernetesSecretKeyStoreLoader.class, cut.create(options).getClass());
     }
 
     @Test
     public void shouldNotHandleOptionsWithoutKubernetesLocations() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .kubernetesLocations(Collections.emptyList())
             .build();
 
@@ -125,7 +125,7 @@ public class KubernetesKeyStoreLoaderFactoryTest {
     public void shouldNotHandleOptionsWithoutUnsupportedLocation() {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .kubernetesLocations(Collections.singletonList("/gio/unknown"))
             .build();
 

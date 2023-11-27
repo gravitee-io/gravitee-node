@@ -17,16 +17,16 @@ package io.gravitee.node.kubernetes.keystoreloader;
 
 import static io.gravitee.node.api.certificate.KeyStoreLoader.GRAVITEEIO_PEM_REGISTRY;
 import static io.gravitee.node.kubernetes.keystoreloader.KubernetesSecretKeyStoreLoader.*;
-import static io.gravitee.node.kubernetes.keystoreloader.KubernetesSecretKeyStoreLoader.KUBERNETES_TLS_KEY;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.gravitee.kubernetes.client.KubernetesClient;
 import io.gravitee.kubernetes.client.api.ResourceQuery;
 import io.gravitee.kubernetes.client.model.v1.ConfigMap;
 import io.gravitee.kubernetes.client.model.v1.ObjectMeta;
 import io.gravitee.kubernetes.client.model.v1.Secret;
-import io.gravitee.node.api.certificate.KeyStoreBundle;
+import io.gravitee.node.api.certificate.KeyStoreEvent;
+import io.gravitee.node.api.certificate.KeyStoreEvent;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.reactivex.rxjava3.core.Maybe;
@@ -34,22 +34,23 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.security.KeyStoreException;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-@RunWith(MockitoJUnitRunner.class)
-public class KubernetesConfigMapKeyStoreLoaderTest {
+@ExtendWith(MockitoExtension.class)
+class KubernetesConfigMapKeyStoreLoaderTest {
 
     @Mock
     private KubernetesClient kubernetesClient;
@@ -57,12 +58,12 @@ public class KubernetesConfigMapKeyStoreLoaderTest {
     private KubernetesConfigMapKeyStoreLoader cut;
 
     @Test
-    public void shouldLoadConfigMap() throws IOException, KeyStoreException {
+    void should_load_config_map() throws IOException, KeyStoreException {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .kubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
-            .keyStorePassword("secret")
+            .password("secret")
             .watch(false)
             .build();
 
@@ -84,23 +85,23 @@ public class KubernetesConfigMapKeyStoreLoaderTest {
             .when(kubernetesClient.get(ResourceQuery.<ConfigMap>from("/gio/configmaps/my-configmap").build()))
             .thenReturn(Maybe.just(configMap));
 
-        AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(null);
-        cut.addListener(bundleRef::set);
+        AtomicReference<KeyStoreEvent> bundleRef = new AtomicReference<>(null);
+        cut.setEventHandler(bundleRef::set);
         cut.start();
 
-        final KeyStoreBundle keyStoreBundle = bundleRef.get();
+        final KeyStoreEvent keyStoreEvent = bundleRef.get();
 
-        assertNotNull(keyStoreBundle);
-        assertEquals(1, keyStoreBundle.getKeyStore().size());
+        assertNotNull(keyStoreEvent);
+        assertEquals(1, keyStoreEvent.keyStore().size());
     }
 
     @Test
-    public void shouldLoadConfigMapFromData() throws IOException, KeyStoreException {
+    void should_load_config_map_from_data() throws IOException, KeyStoreException {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .kubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
-            .keyStorePassword("secret")
+            .password("secret")
             .watch(false)
             .build();
 
@@ -122,23 +123,22 @@ public class KubernetesConfigMapKeyStoreLoaderTest {
             .when(kubernetesClient.get(ResourceQuery.<ConfigMap>from("/gio/configmaps/my-configmap").build()))
             .thenReturn(Maybe.just(configMap));
 
-        AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(null);
-        cut.addListener(bundleRef::set);
+        AtomicReference<KeyStoreEvent> bundleRef = new AtomicReference<>(null);
+        cut.setEventHandler(bundleRef::set);
         cut.start();
 
-        final KeyStoreBundle keyStoreBundle = bundleRef.get();
+        final KeyStoreEvent keyStoreEvent = bundleRef.get();
 
-        assertNotNull(keyStoreBundle);
-        assertEquals(1, keyStoreBundle.getKeyStore().size());
+        assertNotNull(keyStoreEvent);
+        assertEquals(1, keyStoreEvent.keyStore().size());
     }
 
     @Test
-    public void shouldLoadGraviteePemRegistry() throws IOException, KeyStoreException {
+    void should_load_gravitee_pem_registry() throws IOException, KeyStoreException {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
-            .keyStoreType(KeyStoreLoader.CERTIFICATE_FORMAT_PEM_REGISTRY)
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM_REGISTRY)
             .kubernetesLocations(Collections.singletonList("/gio/configmaps/" + KeyStoreLoader.GRAVITEEIO_PEM_REGISTRY))
-            .keyStoreType("secret")
             .watch(false)
             .build();
 
@@ -194,14 +194,14 @@ public class KubernetesConfigMapKeyStoreLoaderTest {
             .when(kubernetesClient.get(ResourceQuery.<Secret>from("/gio/secrets/my-tls-secret2").build()))
             .thenReturn(Maybe.just(secret2));
 
-        AtomicReference<KeyStoreBundle> bundleRef = new AtomicReference<>(null);
-        cut.addListener(bundleRef::set);
+        AtomicReference<KeyStoreEvent> bundleRef = new AtomicReference<>(null);
+        cut.setEventHandler(bundleRef::set);
         cut.start();
 
-        final KeyStoreBundle keyStoreBundle = bundleRef.get();
+        final KeyStoreEvent keyStoreEvent = bundleRef.get();
 
-        assertNotNull(keyStoreBundle);
-        assertEquals(2, keyStoreBundle.getKeyStore().size());
+        assertNotNull(keyStoreEvent);
+        assertEquals(2, keyStoreEvent.keyStore().size());
     }
 
     private String readContent(String resource) throws IOException {

@@ -16,29 +16,51 @@
 package io.gravitee.node.vertx.server;
 
 import io.gravitee.node.api.server.Server;
+import io.gravitee.node.certificates.KeyStoreLoaderManager;
+import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import io.vertx.rxjava3.core.Vertx;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
 @RequiredArgsConstructor
+@Slf4j
 public abstract class VertxServer<T, C extends VertxServerOptions> implements Server<C> {
 
-    protected final String id;
     protected final Vertx vertx;
     protected final C options;
+    protected final KeyStoreLoaderManager keyStoreLoaderManager;
+    protected final TrustStoreLoaderManager trustStoreLoaderManager;
     protected final List<T> delegates = new CopyOnWriteArrayList<>();
 
     @Override
     public String id() {
-        return id;
+        return options.getId();
     }
 
     public abstract T newInstance();
 
     public abstract List<T> instances();
+
+    public void stop() {
+        try {
+            keyStoreLoaderManager.stop();
+            trustStoreLoaderManager.stop();
+        } catch (Exception e) {
+            log.error("error stopping key store managers", e);
+        }
+    }
+
+    public KeyStoreLoaderManager keyStoreLoaderManager() {
+        return keyStoreLoaderManager;
+    }
+
+    public TrustStoreLoaderManager trustStoreLoaderManager() {
+        return trustStoreLoaderManager;
+    }
 }

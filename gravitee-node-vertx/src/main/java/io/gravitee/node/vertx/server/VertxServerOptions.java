@@ -15,15 +15,12 @@
  */
 package io.gravitee.node.vertx.server;
 
-import static io.vertx.core.http.HttpServerOptions.DEFAULT_COMPRESSION_SUPPORTED;
-
 import io.gravitee.common.utils.UUID;
-import io.gravitee.node.api.certificate.*;
+import io.gravitee.node.api.certificate.CertificateOptions;
+import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
 import io.gravitee.node.api.server.ServerOptions;
-import io.gravitee.node.certificates.KeyStoreLoaderManager;
-import io.gravitee.node.certificates.TrustStoreLoaderManager;
-import io.gravitee.node.vertx.cert.VertxKeyStoreManager;
-import io.gravitee.node.vertx.cert.VertxTrustStoreManager;
+import io.gravitee.node.vertx.cert.VertxTLSOptionsRegistry;
 import io.gravitee.node.vertx.server.http.VertxHttpServerOptions;
 import io.gravitee.node.vertx.server.tcp.VertxTcpServerOptions;
 import io.vertx.core.http.ClientAuth;
@@ -31,6 +28,7 @@ import io.vertx.core.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -87,44 +85,21 @@ public class VertxServerOptions implements ServerOptions {
     protected boolean tcpKeepAlive = DEFAULT_TCP_KEEP_ALIVE;
 
     protected String tlsProtocols;
-    protected String keyStorePath;
-    protected List<String> keyStoreKubernetes;
-    protected String keyStoreSecret;
-    protected String keyStoreDefaultAlias;
-    protected String keyStorePassword;
-
-    @Builder.Default
-    protected String keyStoreType = DEFAULT_STORE_TYPE;
-
-    protected List<CertificateOptions> keyStoreCertificates;
-
-    @Builder.Default
-    protected boolean keyStoreWatch = DEFAULT_KEYSTORE_WATCH;
-
-    protected String trustStorePath;
-    protected String trustStorePassword;
-    protected String trustStoreSecret;
-
-    @Builder.Default
-    protected boolean trustStoreWatch = DEFAULT_TRUSTSTORE_WATCH;
-
-    @Builder.Default
-    protected String trustStoreType = DEFAULT_STORE_TYPE;
-
-    protected List<String> trustStorePaths;
 
     @Builder.Default
     protected String clientAuth = DEFAULT_CLIENT_AUTH;
 
     protected List<String> authorizedTlsCipherSuites;
-    protected KeyStoreLoaderManager keyStoreLoaderManager;
-    protected TrustStoreLoaderManager trustStoreLoaderManager;
+    protected VertxTLSOptionsRegistry tlsOptionsRegistry;
 
     @Builder.Default
     protected boolean haProxyProtocol = DEFAULT_HAPROXY_PROTOCOL;
 
     @Builder.Default
     protected long haProxyProtocolTimeout = DEFAULT_HAPROXY_PROTOCOL_TIMEOUT;
+
+    protected KeyStoreLoaderOptions keyStoreLoaderOptions;
+    protected TrustStoreLoaderOptions trustStoreLoaderOptions;
 
     protected String id;
     protected String prefix;
@@ -137,24 +112,17 @@ public class VertxServerOptions implements ServerOptions {
     public static VertxServerOptionsBuilder<?, ?> builder(
         Environment environment,
         String prefix,
-        KeyStoreLoaderManager keyStoreLoaderManager,
-        TrustStoreLoaderManager trustStoreLoaderManager
+        VertxTLSOptionsRegistry tlsOptionsRegistry
     ) {
         final String type = environment.getProperty(prefix + ".type");
         if (type == null || "http".equals(type)) {
-            return VertxHttpServerOptions
-                .builder()
-                .prefix(prefix)
-                .environment(environment)
-                .trustStoreLoaderManager(trustStoreLoaderManager)
-                .keyStoreLoaderManager(keyStoreLoaderManager);
+            return VertxHttpServerOptions.builder().prefix(prefix).environment(environment).tlsOptionsRegistry(tlsOptionsRegistry);
         } else if ("tcp".equals(type)) {
             return VertxTcpServerOptions
                 .builder()
                 .prefix(prefix)
                 .environment(environment)
-                .trustStoreLoaderManager(trustStoreLoaderManager)
-                .keyStoreLoaderManager(keyStoreLoaderManager)
+                .tlsOptionsRegistry(tlsOptionsRegistry)
                 .defaultPort(TCP_DEFAULT_PORT);
         } else {
             throw new IllegalArgumentException("Server type [" + type + "] is not supported");
@@ -223,27 +191,35 @@ public class VertxServerOptions implements ServerOptions {
                 this.clientAuth(ClientAuth.valueOf(clientAuthValue.toUpperCase()).name());
             }
 
-            this.keyStoreType(environment.getProperty(prefix + ".ssl.keystore.type", DEFAULT_STORE_TYPE));
-            this.keyStorePath(environment.getProperty(prefix + ".ssl.keystore.path"));
-            this.keyStoreCertificates(getCertificateValues(prefix + ".ssl.keystore.certificates"));
-            this.keyStoreKubernetes(getArrayValues(prefix + ".ssl.keystore.kubernetes"));
-            this.keyStoreSecret(environment.getProperty(prefix + ".ssl.keystore.secret"));
-            this.keyStoreDefaultAlias(environment.getProperty(prefix + ".ssl.keystore.defaultAlias"));
-            this.keyStorePassword(environment.getProperty(prefix + ".ssl.keystore.password"));
-            this.keyStoreWatch(environment.getProperty(prefix + ".ssl.keystore.watch", Boolean.class, DEFAULT_TRUSTSTORE_WATCH));
-
-            this.trustStoreType(environment.getProperty(prefix + ".ssl.truststore.type", DEFAULT_STORE_TYPE));
-            this.trustStorePath(environment.getProperty(prefix + ".ssl.truststore.path"));
-            this.trustStorePaths(getArrayValues(prefix + ".ssl.truststore.path"));
-            this.trustStorePassword(environment.getProperty(prefix + ".ssl.truststore.password"));
-            this.trustStoreWatch(environment.getProperty(prefix + ".ssl.truststore.watch", Boolean.class, DEFAULT_TRUSTSTORE_WATCH));
-            this.trustStoreSecret(environment.getProperty(prefix + ".ssl.truststore.secret"));
-
             this.haProxyProtocol(environment.getProperty(prefix + ".haproxy.proxyProtocol", Boolean.class, DEFAULT_HAPROXY_PROTOCOL));
             this.haProxyProtocolTimeout(
                     environment.getProperty(prefix + ".haproxy.proxyProtocolTimeout", Long.class, DEFAULT_HAPROXY_PROTOCOL_TIMEOUT)
                 );
 
+            this.keyStoreLoaderOptions(
+                    KeyStoreLoaderOptions
+                        .builder()
+                        .type(environment.getProperty(prefix + ".ssl.keystore.type", DEFAULT_STORE_TYPE))
+                        .paths(getArrayValues(prefix + ".ssl.keystore.path"))
+                        .password(environment.getProperty(prefix + ".ssl.keystore.password"))
+                        .certificates(getCertificateValues(prefix + ".ssl.keystore.certificates"))
+                        .kubernetesLocations(getArrayValues(prefix + ".ssl.keystore.kubernetes"))
+                        .secretLocation(environment.getProperty(prefix + ".ssl.keystore.secret"))
+                        .watch(environment.getProperty(prefix + ".ssl.keystore.watch", Boolean.class, DEFAULT_TRUSTSTORE_WATCH))
+                        .defaultAlias(environment.getProperty(prefix + ".ssl.keystore.defaultAlias"))
+                        .build()
+                );
+
+            this.trustStoreLoaderOptions(
+                    TrustStoreLoaderOptions
+                        .builder()
+                        .type(environment.getProperty(prefix + ".ssl.truststore.type", DEFAULT_STORE_TYPE))
+                        .paths(getArrayValues(prefix + ".ssl.truststore.path"))
+                        .password(environment.getProperty(prefix + ".ssl.truststore.password"))
+                        .secretLocation(environment.getProperty(prefix + ".ssl.truststore.secret"))
+                        .watch(environment.getProperty(prefix + ".ssl.truststore.watch", Boolean.class, DEFAULT_TRUSTSTORE_WATCH))
+                        .build()
+                );
             return self();
         }
 
@@ -296,12 +272,6 @@ public class VertxServerOptions implements ServerOptions {
 
     protected final void setupTcp(TCPSSLOptions options) {
         if (this.secured) {
-            if (keyStoreLoaderManager == null) {
-                throw new IllegalArgumentException("You must provide a KeyStoreLoaderManager when 'secured' is enabled.");
-            }
-            if (trustStoreLoaderManager == null) {
-                throw new IllegalArgumentException("You must provide a TrustStoreLoaderManager when 'secured' is enabled.");
-            }
             if (openssl) {
                 options.setSslEngineOptions(new OpenSSLEngineOptions());
             }
@@ -320,38 +290,17 @@ public class VertxServerOptions implements ServerOptions {
                 authorizedTlsCipherSuites.stream().map(String::trim).forEach(options::addEnabledCipherSuite);
             }
 
-            final KeyStoreLoaderOptions keyStoreLoaderOptions = KeyStoreLoaderOptions
-                .builder()
-                .keyStorePath(keyStorePath)
-                .keyStorePassword(keyStorePassword)
-                .keyStoreType(keyStoreType)
-                .keyStoreCertificates(keyStoreCertificates)
-                .kubernetesLocations(keyStoreKubernetes)
-                .secretLocation(keyStoreSecret)
-                .watch(keyStoreWatch)
-                .defaultAlias(keyStoreDefaultAlias)
-                .build();
-
-            TrustStoreLoaderOptions trustStoreLoaderOptions = TrustStoreLoaderOptions
-                .builder()
-                .trustStorePaths(trustStorePaths)
-                .trustStoreType(trustStoreType)
-                .trustStorePassword(trustStorePassword)
-                .trustStoreSecret(trustStoreSecret)
-                .watch(trustStoreWatch)
-                .build();
-
-            final KeyStoreLoader keyStoreLoader = keyStoreLoaderManager.create(keyStoreLoaderOptions, getId());
-            final VertxKeyStoreManager keyStoreManager = new VertxKeyStoreManager(getId(), sni);
-            keyStoreManager.registerLoader(keyStoreLoader, getId());
-            options.setKeyCertOptions(keyStoreManager.getKeyCertOptions());
-
-            if (trustStoreLoaderOptions.isConfigured()) {
-                final VertxTrustStoreManager trustStoreManager = new VertxTrustStoreManager(getId());
-                final TrustStoreLoader trustStoreLoader = trustStoreLoaderManager.create(trustStoreLoaderOptions, getId());
-                trustStoreManager.registerLoader(trustStoreLoader, getId());
-                options.setTrustOptions(trustStoreManager.getTrustOptions());
+            KeyCertOptions keyCertOptions = tlsOptionsRegistry.lookupKeyCertOptions(id);
+            if (keyCertOptions == null) {
+                throw new IllegalArgumentException("No X509 Key manager found for server id: %s".formatted(id));
             }
+            options.setKeyCertOptions(keyCertOptions);
+
+            TrustOptions trustOptions = tlsOptionsRegistry.lookupTrustOptions(id);
+            if (trustOptions == null) {
+                throw new IllegalArgumentException("No X509 Certificate manager found for server id: %s".formatted(id));
+            }
+            options.setTrustOptions(trustOptions);
         }
 
         // Customizable configuration

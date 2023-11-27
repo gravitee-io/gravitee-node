@@ -15,50 +15,26 @@
  */
 package io.gravitee.node.certificates;
 
-import io.gravitee.common.service.AbstractService;
-import io.gravitee.node.api.certificate.TrustStoreLoader;
-import io.gravitee.node.api.certificate.TrustStoreLoaderFactory;
-import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
-import java.util.HashSet;
-import java.util.Set;
+import io.gravitee.node.api.certificate.KeyStoreLoader;
+import io.gravitee.node.certificates.x509.RefreshableX509TrustManagerDelegator;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class TrustStoreLoaderManager extends AbstractService<TrustStoreLoaderManager> {
+public class TrustStoreLoaderManager extends AbstractKeyStoreLoaderManager {
 
-    private final Set<TrustStoreLoaderFactory> loaderFactories;
-    private final Set<TrustStoreLoader> loaders;
-
-    public TrustStoreLoaderManager() {
-        this.loaderFactories = new HashSet<>();
-        this.loaders = new HashSet<>();
-
-        // Automatically register the file keystore nd self-signed loader factories.
-        this.registerFactory(new FileTrustStoreLoaderFactory());
+    public TrustStoreLoaderManager(String serverId, KeyStoreLoader platformKeyStoreLoader) {
+        super(platformKeyStoreLoader, new RefreshableX509TrustManagerDelegator(serverId));
     }
 
     @Override
-    public TrustStoreLoaderManager preStop() throws Exception {
-        loaders.forEach(TrustStoreLoader::stop);
-        return this;
+    protected boolean requirePassword() {
+        return false;
     }
 
-    public void registerFactory(TrustStoreLoaderFactory keyStoreLoaderFactory) {
-        loaderFactories.add(keyStoreLoaderFactory);
-    }
-
-    public Set<TrustStoreLoaderFactory> getLoaderFactories() {
-        return loaderFactories;
-    }
-
-    public TrustStoreLoader create(TrustStoreLoaderOptions options, String serverId) {
-        return getLoaderFactories()
-            .stream()
-            .filter(factory -> factory.canHandle(options))
-            .findFirst()
-            .map(factory -> factory.create(options, serverId))
-            .orElse(null);
+    public X509TrustManager getCertificateManager() {
+        return (X509TrustManager) refreshableX509Manager;
     }
 }

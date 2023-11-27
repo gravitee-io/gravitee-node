@@ -15,7 +15,6 @@
  */
 package io.gravitee.node.api.certificate;
 
-import java.util.List;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
@@ -27,12 +26,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class TrustStoreLoaderOptions extends AbstractStoreLoaderOptions {
 
-    private final List<String> trustStorePaths;
-    private final String trustStoreType;
-    private final String trustStorePassword;
-    private final String trustStoreSecret;
-
     public boolean isConfigured() {
-        return trustStoreType != null && trustStorePaths != null && !trustStorePaths.isEmpty();
+        return getType() != null && getPaths() != null && !getPaths().isEmpty();
     }
 }

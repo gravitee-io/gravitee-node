@@ -24,7 +24,7 @@ import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class KubernetesKeyStoreLoaderFactory implements KeyStoreLoaderFactory {
+public class KubernetesKeyStoreLoaderFactory implements KeyStoreLoaderFactory<KeyStoreLoaderOptions> {
 
     private final KubernetesClient client;
 
@@ -36,7 +36,8 @@ public class KubernetesKeyStoreLoaderFactory implements KeyStoreLoaderFactory {
         return (KubernetesConfigMapKeyStoreLoader.canHandle(options) || KubernetesSecretKeyStoreLoader.canHandle(options));
     }
 
-    public KeyStoreLoader create(KeyStoreLoaderOptions options, String serverId) {
+    @Override
+    public KeyStoreLoader create(KeyStoreLoaderOptions options) {
         if (KubernetesConfigMapKeyStoreLoader.canHandle(options)) {
             return new KubernetesConfigMapKeyStoreLoader(options, client);
         } else if (KubernetesSecretKeyStoreLoader.canHandle(options)) {

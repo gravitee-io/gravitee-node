@@ -3,6 +3,8 @@ package io.gravitee.node.vertx.server.tcp;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import io.gravitee.node.certificates.KeyStoreLoaderManager;
+import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.net.NetServer;
@@ -38,14 +40,15 @@ class VertxTcpServerTest {
 
     private VertxTcpServer cut;
 
+    @Mock
+    private KeyStoreLoaderManager keyStoreLoaderManager;
+
+    @Mock
+    private TrustStoreLoaderManager trustStoreLoaderManager;
+
     @BeforeEach
     void init() {
-        cut = new VertxTcpServer(ID, vertx, options);
-    }
-
-    @Test
-    void should_return_id() {
-        assertThat(cut.id()).isEqualTo(ID);
+        cut = new VertxTcpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager);
     }
 
     @Test
