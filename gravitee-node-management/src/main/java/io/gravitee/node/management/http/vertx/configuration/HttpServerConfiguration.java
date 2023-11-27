@@ -15,193 +15,85 @@
  */
 package io.gravitee.node.management.http.vertx.configuration;
 
+import io.gravitee.node.api.configuration.Configuration;
 import io.vertx.core.http.HttpServerOptions;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@RequiredArgsConstructor
 public class HttpServerConfiguration {
 
-    @Value("${services.core.http.enabled:true}")
-    private boolean enabled;
+    private final Configuration configuration;
 
-    @Value("${services.core.http.port:18082}")
-    private int port;
+    public boolean isEnabled() {
+        return configuration.getProperty("services.core.http.enabled", Boolean.class, true);
+    }
 
-    @Value("${services.core.http.host:localhost}")
-    private String host;
+    public int getPort() {
+        return configuration.getProperty("services.core.http.port", Integer.class, 18082);
+    }
 
-    @Value("${services.core.http.authentication.type:basic}")
-    private String authenticationType;
+    public String getHost() {
+        return configuration.getProperty("services.core.http.host", "localhost");
+    }
 
-    @Value("${services.core.http.secured:false}")
-    private boolean secured;
+    public String getAuthenticationType() {
+        return configuration.getProperty("services.core.http.authentication.type", "basic");
+    }
 
-    @Value("${services.core.http.alpn:false}")
-    private boolean alpn;
+    public boolean isSecured() {
+        return configuration.getProperty("services.core.http.secured", Boolean.class, false);
+    }
 
-    @Value("${http.ssl.tlsProtocols:#{null}}")
-    private String tlsProtocols;
+    public boolean isAlpn() {
+        return configuration.getProperty("services.core.http.alpn", Boolean.class, false);
+    }
 
-    @Value("${http.ssl.tlsCiphers:#{null}}")
-    private String tlsCiphers;
+    public String getTlsProtocols() {
+        return configuration.getProperty("services.core.http.ssl.tlsProtocols");
+    }
 
-    @Value("${services.core.http.ssl.keystore.path:#{null}}")
-    private String keyStorePath;
+    public String getTlsCiphers() {
+        return configuration.getProperty("services.core.http.ssl.tlsCiphers");
+    }
 
-    @Value("${services.core.http.ssl.keystore.password:#{null}}")
-    private String keyStorePassword;
+    public String getKeyStorePath() {
+        return configuration.getProperty("services.core.http.ssl.keystore.path");
+    }
 
-    @Value("${services.core.http.ssl.keystore.type:#{null}}")
-    private String keyStoreType;
+    public String getKeyStorePassword() {
+        return configuration.getProperty("services.core.http.ssl.keystore.password");
+    }
 
-    @Value("${services.core.http.ssl.truststore.path:#{null}}")
-    private String trustStorePath;
+    public String getKeyStoreType() {
+        return configuration.getProperty("services.core.http.ssl.keystore.type");
+    }
 
-    @Value("${services.core.http.ssl.truststore.password:#{null}}")
-    private String trustStorePassword;
+    public String getTrustStorePath() {
+        return configuration.getProperty("services.core.http.ssl.truststore.path");
+    }
 
-    @Value("${services.core.http.ssl.truststore.type:#{null}}")
-    private String trustStoreType;
+    public String getTrustStorePassword() {
+        return configuration.getProperty("services.core.http.ssl.truststore.password");
+    }
 
-    @Value("${services.core.http.idleTimeout:" + HttpServerOptions.DEFAULT_IDLE_TIMEOUT + "}")
-    private int idleTimeout;
+    public String getTrustStoreType() {
+        return configuration.getProperty("services.core.http.ssl.truststore.type");
+    }
+
+    public int getIdleTimeout() {
+        return configuration.getProperty("services.core.http.idleTimeout", Integer.class, HttpServerOptions.DEFAULT_IDLE_TIMEOUT);
+    }
 
     /**
      * null  : REQUEST
      * true  : REQUIRED
      * false : NONE
      */
-    @Value("${services.core.http.ssl.clientAuth:#{null}}")
-    private String clientAuth;
-
     public String getClientAuth() {
-        return clientAuth;
-    }
-
-    public void setClientAuth(String clientAuth) {
-        this.clientAuth = clientAuth;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public String getAuthenticationType() {
-        return authenticationType;
-    }
-
-    public void setAuthenticationType(String authenticationType) {
-        this.authenticationType = authenticationType;
-    }
-
-    public boolean isSecured() {
-        return secured;
-    }
-
-    public void setSecured(boolean secured) {
-        this.secured = secured;
-    }
-
-    public boolean isAlpn() {
-        return alpn;
-    }
-
-    public void setAlpn(boolean alpn) {
-        this.alpn = alpn;
-    }
-
-    public String getTlsProtocols() {
-        return tlsProtocols;
-    }
-
-    public void setTlsProtocols(String tlsProtocols) {
-        this.tlsProtocols = tlsProtocols;
-    }
-
-    public String getTlsCiphers() {
-        return tlsCiphers;
-    }
-
-    public void setTlsCiphers(String tlsCiphers) {
-        this.tlsCiphers = tlsCiphers;
-    }
-
-    public String getKeyStorePath() {
-        return keyStorePath;
-    }
-
-    public void setKeyStorePath(String keyStorePath) {
-        this.keyStorePath = keyStorePath;
-    }
-
-    public String getKeyStorePassword() {
-        return keyStorePassword;
-    }
-
-    public void setKeyStorePassword(String keyStorePassword) {
-        this.keyStorePassword = keyStorePassword;
-    }
-
-    public String getKeyStoreType() {
-        return keyStoreType;
-    }
-
-    public void setKeyStoreType(String keyStoreType) {
-        this.keyStoreType = keyStoreType;
-    }
-
-    public String getTrustStorePath() {
-        return trustStorePath;
-    }
-
-    public void setTrustStorePath(String trustStorePath) {
-        this.trustStorePath = trustStorePath;
-    }
-
-    public String getTrustStorePassword() {
-        return trustStorePassword;
-    }
-
-    public void setTrustStorePassword(String trustStorePassword) {
-        this.trustStorePassword = trustStorePassword;
-    }
-
-    public String getTrustStoreType() {
-        return trustStoreType;
-    }
-
-    public void setTrustStoreType(String trustStoreType) {
-        this.trustStoreType = trustStoreType;
-    }
-
-    public int getIdleTimeout() {
-        return idleTimeout;
-    }
-
-    public void setIdleTimeout(int idleTimeout) {
-        this.idleTimeout = idleTimeout;
+        return configuration.getProperty("services.core.http.ssl.clientAuth");
     }
 }

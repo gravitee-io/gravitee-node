@@ -22,10 +22,12 @@ import static io.gravitee.node.monitoring.MonitoringConstants.PROPERTY_NODE_APPL
 import static io.gravitee.node.monitoring.MonitoringConstants.PROPERTY_NODE_EVENT;
 import static io.gravitee.node.monitoring.MonitoringConstants.PROPERTY_NODE_HOSTNAME;
 import static io.gravitee.node.monitoring.MonitoringConstants.PROPERTY_NODE_ID;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import io.gravitee.alert.api.event.Event;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.Node;
+import io.gravitee.node.api.configuration.Configuration;
 import io.gravitee.node.api.monitor.Monitor;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.monitoring.eventbus.MonitorCodec;
@@ -54,15 +56,6 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NodeMonitorService.class);
 
-    @Value("${services.monitoring.enabled:true}")
-    private boolean enabled;
-
-    @Value("${services.monitoring.delay:5000}")
-    private int delay;
-
-    @Value("${services.monitoring.unit:MILLISECONDS}")
-    private TimeUnit unit;
-
     private ExecutorService executorService;
 
     @Autowired
@@ -80,11 +73,14 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
     @Autowired
     private Vertx vertx;
 
+    @Autowired
+    private Configuration configuration;
+
     private MessageProducer<Monitor> producer;
 
     @Override
     protected void doStart() throws Exception {
-        if (enabled) {
+        if (enabled()) {
             super.doStart();
 
             executorService = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "node-monitor"));
@@ -115,9 +111,9 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
                     .build()
             );
 
-            LOGGER.info("Node monitoring scheduled with fixed delay {} {} ", delay, unit.name());
+            LOGGER.info("Node monitoring scheduled with fixed delay {} {} ", delay(), unit().name());
 
-            ((ScheduledExecutorService) executorService).scheduleWithFixedDelay(monitorThread, 0, delay, unit);
+            ((ScheduledExecutorService) executorService).scheduleWithFixedDelay(monitorThread, 0, delay(), unit());
 
             managementEndpointManager.register(nodeMonitorManagementEndpoint);
         }
@@ -125,7 +121,7 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
 
     @Override
     public NodeMonitorService preStop() throws Exception {
-        if (enabled) {
+        if (enabled()) {
             // Send an event to notify about the node status
             eventProducer.send(
                 Event
@@ -146,7 +142,7 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
 
     @Override
     protected void doStop() throws Exception {
-        if (enabled) {
+        if (enabled()) {
             if (executorService != null && !executorService.isShutdown()) {
                 LOGGER.info("Stop node monitor");
                 executorService.shutdownNow();
@@ -163,5 +159,17 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
     @Override
     protected String name() {
         return "Node Monitor Service";
+    }
+
+    private boolean enabled() {
+        return configuration.getProperty("services.monitoring.enabled", Boolean.class, true);
+    }
+
+    private int delay() {
+        return configuration.getProperty("services.monitoring.delay", Integer.class, 5000);
+    }
+
+    private TimeUnit unit() {
+        return configuration.getProperty("services.monitoring.unit", TimeUnit.class, MILLISECONDS);
     }
 }

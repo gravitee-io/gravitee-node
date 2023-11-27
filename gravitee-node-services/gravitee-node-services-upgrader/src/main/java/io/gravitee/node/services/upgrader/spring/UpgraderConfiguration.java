@@ -16,11 +16,13 @@
 package io.gravitee.node.services.upgrader.spring;
 
 import io.gravitee.common.component.LifecycleComponent;
+import io.gravitee.node.api.upgrader.UpgraderRepository;
 import io.gravitee.node.services.upgrader.UpgraderServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
@@ -30,8 +32,11 @@ import org.springframework.context.annotation.Configuration;
 public class UpgraderConfiguration {
 
     @Bean
-    public UpgraderServiceImpl upgraderService() {
-        return new UpgraderServiceImpl();
+    public UpgraderServiceImpl upgraderService(
+        io.gravitee.node.api.configuration.Configuration configuration,
+        @Lazy UpgraderRepository upgraderRepository
+    ) {
+        return new UpgraderServiceImpl(configuration, upgraderRepository);
     }
 
     public static List<Class<? extends LifecycleComponent>> getComponents() {

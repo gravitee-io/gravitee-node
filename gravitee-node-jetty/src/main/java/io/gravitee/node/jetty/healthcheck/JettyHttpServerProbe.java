@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.jetty.healthcheck;
 
+import io.gravitee.node.api.configuration.Configuration;
 import io.gravitee.node.api.healthcheck.Probe;
 import io.gravitee.node.api.healthcheck.Result;
 import io.vertx.core.Promise;
@@ -23,7 +24,6 @@ import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import java.util.concurrent.CompletionStage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 /**
  * HTTP Probe used to check the Jetty Http Server is listening.
@@ -34,11 +34,8 @@ import org.springframework.beans.factory.annotation.Value;
  */
 public class JettyHttpServerProbe implements Probe {
 
-    @Value("${jetty.port:8093}")
-    private int port;
-
-    @Value("${jetty.host:localhost}")
-    private String host;
+    @Autowired
+    private Configuration configuration;
 
     @Autowired
     private Vertx vertx;
@@ -56,8 +53,8 @@ public class JettyHttpServerProbe implements Probe {
         NetClient client = vertx.createNetClient(options);
 
         client.connect(
-            port,
-            host,
+            port(),
+            host(),
             res -> {
                 if (res.succeeded()) {
                     promise.complete(Result.healthy());
@@ -70,5 +67,13 @@ public class JettyHttpServerProbe implements Probe {
         );
 
         return promise.future().toCompletionStage();
+    }
+
+    private int port() {
+        return configuration.getProperty("jetty.port", Integer.class, 8093);
+    }
+
+    private String host() {
+        return configuration.getProperty("jetty.host", "localhost");
     }
 }

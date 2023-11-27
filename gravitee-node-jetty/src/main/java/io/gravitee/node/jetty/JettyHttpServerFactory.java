@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class JettyHttpServerFactory implements FactoryBean<Server> {
 
     private static final String KEYSTORE_TYPE_PKCS12 = "pkcs12";
+    private static final String KEYSTORE_TYPE_JKS = "jks";
 
     @Autowired
     private JettyHttpConfiguration jettyHttpConfiguration;
@@ -84,6 +85,8 @@ public class JettyHttpServerFactory implements FactoryBean<Server> {
             if (jettyHttpConfiguration.getKeyStorePath() != null) {
                 sslContextFactory.setKeyStorePath(jettyHttpConfiguration.getKeyStorePath());
                 sslContextFactory.setKeyStorePassword(jettyHttpConfiguration.getKeyStorePassword());
+                // Force default keystore type to jks for backward compatibility (since jetty moved to pkcs12 by default https://github.com/jetty/jetty.project/pull/4489).
+                sslContextFactory.setKeyStoreType(KEYSTORE_TYPE_JKS);
 
                 if (KEYSTORE_TYPE_PKCS12.equalsIgnoreCase(jettyHttpConfiguration.getKeyStoreType())) {
                     sslContextFactory.setKeyStoreType(KEYSTORE_TYPE_PKCS12);
@@ -93,6 +96,8 @@ public class JettyHttpServerFactory implements FactoryBean<Server> {
             if (jettyHttpConfiguration.getTrustStorePath() != null) {
                 sslContextFactory.setTrustStorePath(jettyHttpConfiguration.getTrustStorePath());
                 sslContextFactory.setTrustStorePassword(jettyHttpConfiguration.getTrustStorePassword());
+                // Force default truststore type to jks for backward compatibility (since jetty moved to pkcs12 by default https://github.com/jetty/jetty.project/pull/4489).
+                sslContextFactory.setTrustStoreType(KEYSTORE_TYPE_JKS);
 
                 if (KEYSTORE_TYPE_PKCS12.equalsIgnoreCase(jettyHttpConfiguration.getTrustStoreType())) {
                     sslContextFactory.setTrustStoreType(KEYSTORE_TYPE_PKCS12);

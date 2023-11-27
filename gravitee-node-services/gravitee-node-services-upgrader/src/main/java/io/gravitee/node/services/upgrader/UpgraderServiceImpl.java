@@ -18,6 +18,7 @@ package io.gravitee.node.services.upgrader;
 import io.gravitee.common.component.LifecycleComponent;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.Node;
+import io.gravitee.node.api.configuration.Configuration;
 import io.gravitee.node.api.upgrader.UpgradeRecord;
 import io.gravitee.node.api.upgrader.Upgrader;
 import io.gravitee.node.api.upgrader.UpgraderRepository;
@@ -27,9 +28,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 /**
@@ -39,14 +37,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> implements LifecycleComponent<UpgraderServiceImpl> {
 
-    @Autowired
-    @Lazy
-    private UpgraderRepository upgraderRepository;
-
-    @Value("${upgrade.mode:false}")
-    private boolean upgradeMode;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(UpgraderServiceImpl.class);
+
+    private final Configuration configuration;
+    private final UpgraderRepository upgraderRepository;
+
+    public UpgraderServiceImpl(Configuration configuration, UpgraderRepository upgraderRepository) {
+        this.configuration = configuration;
+        this.upgraderRepository = upgraderRepository;
+    }
 
     @Override
     protected String name() {
@@ -87,7 +86,7 @@ public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> im
         // The UpgraderService is registered to be executed if upgrader.mode property is either null or true
         //    but we only stop the node if upgrade.mode is set explicitly to "true".
         //    This is to keep the backward compatibility. Please look at UpgraderConfiguration for more details
-        if (upgradeMode || stopUpgrade.get()) {
+        if (upgradeMode() || stopUpgrade.get()) {
             Node node = applicationContext.getBean(Node.class);
             node.preStop();
             node.stop();
@@ -99,5 +98,9 @@ public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> im
                 System.exit(0);
             }
         }
+    }
+
+    private boolean upgradeMode() {
+        return configuration.getProperty("upgrade.mode", Boolean.class, false);
     }
 }
