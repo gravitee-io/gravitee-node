@@ -65,17 +65,19 @@ public class AbstractKeyStoreLoaderManager {
         registerLoader(platformKeyStoreLoader);
     }
 
+    public void stop() {
+        loaders.values().forEach(KeyStoreLoader::stop);
+    }
+
     public void registerLoader(final KeyStoreLoader loader) {
         loader.setEventHandler(keyStoreEvent -> {
-            if (keyStoreEvent.type() == KeyStoreEvent.EventType.LOAD) {
-                synchronized (loaders) {
+            synchronized (loaders) {
+                if (keyStoreEvent.type() == KeyStoreEvent.EventType.LOAD) {
                     updateMain(loader, keyStoreEvent);
-                    refreshableX509Manager.refresh(mainKeyStore, this.mainPassword, keyStoreEvent.defaultAlias());
-                }
-            } else if (keyStoreEvent.type() == KeyStoreEvent.EventType.UNLOAD) {
-                synchronized (loaders) {
+                    refreshableX509Manager.refresh(clone(mainKeyStore), this.mainPassword, keyStoreEvent.defaultAlias());
+                } else if (keyStoreEvent.type() == KeyStoreEvent.EventType.UNLOAD) {
                     removeKeyStore(keyStoreEvent.loaderId());
-                    refreshableX509Manager.refresh(mainKeyStore, this.mainPassword, keyStoreEvent.defaultAlias());
+                    refreshableX509Manager.refresh(clone(mainKeyStore), this.mainPassword, keyStoreEvent.defaultAlias());
                 }
             }
         });
@@ -100,6 +102,10 @@ public class AbstractKeyStoreLoaderManager {
         addKeyStore(idProvider, keyStoreEvent);
     }
 
+    private boolean isPlatformAlias(String alias) {
+        return isAliasOwnedByLoader(alias, platformKeyStoreLoaderId);
+    }
+
     private void addKeyStore(IdProvider loader, KeyStoreEvent event) {
         try {
             for (String alias : Collections.list(event.keyStore().aliases())) {
@@ -117,20 +123,12 @@ public class AbstractKeyStoreLoaderManager {
         }
     }
 
-    private void removeKeyStore(String loaderId) {
-        removeKeyStore(alias -> isAliasOwnedByLoader(alias, loaderId), loaderId, true);
-    }
-
-    private boolean isPlatformAlias(String alias) {
-        return isAliasOwnedByLoader(alias, platformKeyStoreLoaderId);
-    }
-
-    private static boolean isAliasOwnedByLoader(String alias, String loaderId) {
-        return alias.startsWith(loaderId);
-    }
-
     private String makeNewAlias(IdProvider idProvider, String currentAlias) {
         return idProvider.id() + ":" + currentAlias;
+    }
+
+    private void removeKeyStore(String loaderId) {
+        removeKeyStore(alias -> isAliasOwnedByLoader(alias, loaderId), loaderId, true);
     }
 
     private void removeKeyStore(Predicate<String> aliasRemovePredicate, String loaderId, boolean removeLoader) {
@@ -149,8 +147,27 @@ public class AbstractKeyStoreLoaderManager {
         }
     }
 
-    public void stop() {
-        loaders.values().forEach(KeyStoreLoader::stop);
+    private static boolean isAliasOwnedByLoader(String alias, String loaderId) {
+        return alias.startsWith(loaderId);
+    }
+
+    private KeyStore clone(KeyStore source) {
+        try {
+            var destination = KeyStore.getInstance(KeyStoreUtils.DEFAULT_KEYSTORE_TYPE);
+            destination.load(null, mainPassword);
+            for (String alias : Collections.list(source.aliases())) {
+                if (requirePassword()) {
+                    final KeyStore.Entry entry = source.getEntry(alias, passwordProtection);
+                    destination.setEntry(alias, entry, passwordProtection);
+                } else {
+                    final KeyStore.Entry entry = source.getEntry(alias, null);
+                    destination.setEntry(alias, entry, null);
+                }
+            }
+            return destination;
+        } catch (CertificateException | IOException | NoSuchAlgorithmException | KeyStoreException | UnrecoverableEntryException e) {
+            throw new IllegalArgumentException("Unable to clone keystore", e);
+        }
     }
 
     @VisibleForTesting
