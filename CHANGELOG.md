@@ -1,3 +1,10 @@
+## [4.6.1](https://github.com/gravitee-io/gravitee-node/compare/4.6.0...4.6.1) (2023-11-28)
+
+
+### Bug Fixes
+
+* defer some sensitive @Value resolution ([9f812f0](https://github.com/gravitee-io/gravitee-node/commit/9f812f068d8ed0c2fec623c594455645281e9263))
+
 # [4.6.0](https://github.com/gravitee-io/gravitee-node/compare/4.5.0...4.6.0) (2023-11-24)
 
 
