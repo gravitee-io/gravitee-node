@@ -16,25 +16,26 @@
 package io.gravitee.node.api.cluster.messaging;
 
 /**
- * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
+ * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
  * @author GraviteeSource Team
  */
-public interface Topic<T> {
+public interface Queue<T> {
     /**
-     * Publish a new event on the current topic
-     * @param event the event to publish
+     * Publish a new message on the current queue
+     * @param item the item to send
+     * @throws IllegalStateException – if the element cannot be added at this time due to capacity restrictions
      */
-    void publish(T event);
+    void add(T item);
 
     /**
-     * Add a new listener on this topic. The given listener will be notified on any new message on the topic.
+     * Add a new listener on this queue. The given listener will be notified on any new message on the queue.
      * @param messageListener the listener to notify
      * @return the subscription identifier. Could be used to remove this listener.
      */
     String addMessageListener(final MessageListener<T> messageListener);
 
     /**
-     * Remove a listener on this topic from its subscription id.
+     * Remove a listener on this queue from its subscription id.
      * @param subscriptionId the subscription id used to remove the listener
      * @return <code>true</code> if any listener has been removed, <code>false</code> otherwise.
      */

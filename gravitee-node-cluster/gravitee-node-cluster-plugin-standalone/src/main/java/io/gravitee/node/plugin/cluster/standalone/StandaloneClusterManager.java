@@ -19,8 +19,10 @@ import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.cluster.ClusterManager;
 import io.gravitee.node.api.cluster.Member;
 import io.gravitee.node.api.cluster.MemberListener;
+import io.gravitee.node.api.cluster.messaging.Queue;
 import io.gravitee.node.api.cluster.messaging.Topic;
 import io.gravitee.node.plugin.cluster.standalone.messaging.StandaloneMessageCodec;
+import io.gravitee.node.plugin.cluster.standalone.messaging.StandaloneQueue;
 import io.gravitee.node.plugin.cluster.standalone.messaging.StandaloneTopic;
 import io.vertx.core.Vertx;
 import java.util.Map;
@@ -37,6 +39,7 @@ public class StandaloneClusterManager extends AbstractService<ClusterManager> im
 
     private static final Member LOCAL_MEMBER = new StandaloneMember();
     private final Map<String, Topic<?>> topicsByName = new ConcurrentHashMap<>();
+    private final Map<String, Queue<?>> queuesByName = new ConcurrentHashMap<>();
     private final Vertx vertx;
 
     @Override
@@ -73,5 +76,10 @@ public class StandaloneClusterManager extends AbstractService<ClusterManager> im
     @Override
     public <T> Topic<T> topic(final String name) {
         return (Topic<T>) topicsByName.computeIfAbsent(name, key -> new StandaloneTopic<>(vertx, name));
+    }
+
+    @Override
+    public <T> Queue<T> queue(final String name) {
+        return (Queue<T>) queuesByName.computeIfAbsent(name, key -> new StandaloneQueue<>(vertx, name));
     }
 }

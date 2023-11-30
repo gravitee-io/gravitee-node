@@ -16,6 +16,7 @@
 package io.gravitee.node.api.cluster;
 
 import io.gravitee.common.service.Service;
+import io.gravitee.node.api.cluster.messaging.Queue;
 import io.gravitee.node.api.cluster.messaging.Topic;
 import java.util.Set;
 
@@ -57,4 +58,12 @@ public interface ClusterManager extends Service<ClusterManager> {
      * @param <T> the type of content that will be published or consumed.
      */
     <T> Topic<T> topic(final String name);
+
+    /**
+     * Return a {@link Queue <T>} used to send or consume messages.
+     * @param name the name used to retrieve the queue
+     * @return a {@link Queue<T>}
+     * @param <T> the type of content that will be published or consumed.
+     */
+    <T> Queue<T> queue(final String name);
 }

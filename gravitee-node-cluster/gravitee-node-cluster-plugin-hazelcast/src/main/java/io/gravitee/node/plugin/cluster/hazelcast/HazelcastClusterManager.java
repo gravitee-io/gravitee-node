@@ -17,13 +17,16 @@ package io.gravitee.node.plugin.cluster.hazelcast;
 
 import com.hazelcast.cluster.MembershipEvent;
 import com.hazelcast.cluster.MembershipListener;
+import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.topic.ITopic;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.cluster.ClusterManager;
 import io.gravitee.node.api.cluster.Member;
 import io.gravitee.node.api.cluster.MemberListener;
+import io.gravitee.node.api.cluster.messaging.Queue;
 import io.gravitee.node.api.cluster.messaging.Topic;
+import io.gravitee.node.plugin.cluster.hazelcast.messaging.HazelcastQueue;
 import io.gravitee.node.plugin.cluster.hazelcast.messaging.HazelcastTopic;
 import java.util.HashSet;
 import java.util.Set;
@@ -90,6 +93,12 @@ public class HazelcastClusterManager extends AbstractService<ClusterManager> imp
     public <T> Topic<T> topic(final String name) {
         ITopic<T> iTopic = hazelcastInstance.getTopic(name);
         return new HazelcastTopic<>(iTopic);
+    }
+
+    @Override
+    public <T> Queue<T> queue(final String name) {
+        IQueue<T> iQueue = hazelcastInstance.getQueue(name);
+        return new HazelcastQueue<>(iQueue);
     }
 
     @Override

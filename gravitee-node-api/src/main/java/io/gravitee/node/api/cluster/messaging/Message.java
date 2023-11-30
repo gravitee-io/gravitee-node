@@ -29,8 +29,14 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 public class Message<T> {
 
+    /**
+     * Could be either a topic or queue name
+     */
     @NonNull
-    private final String topic;
+    private final String destination;
 
+    /**
+     * Actual message content
+     */
     private final T content;
 }
