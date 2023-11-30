@@ -1,3 +1,10 @@
+# [4.7.0](https://github.com/gravitee-io/gravitee-node/compare/4.6.1...4.7.0) (2023-11-30)
+
+
+### Features
+
+* add queue on ClusterManager ([fbd859e](https://github.com/gravitee-io/gravitee-node/commit/fbd859e42ff0a4f8ce30b68ed3bb3bffd9056f73))
+
 ## [4.6.1](https://github.com/gravitee-io/gravitee-node/compare/4.6.0...4.6.1) (2023-11-28)
 
 
