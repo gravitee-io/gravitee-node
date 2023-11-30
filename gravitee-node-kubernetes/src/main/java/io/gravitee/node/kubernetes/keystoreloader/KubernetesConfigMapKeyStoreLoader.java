@@ -25,12 +25,10 @@ import io.gravitee.kubernetes.client.model.v1.Secret;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.CompletableSource;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -99,18 +97,10 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
         final List<Completable> locationObs = resources
             .keySet()
             .stream()
-            .map(location ->
-                kubernetesClient
-                    .get(ResourceQuery.<ConfigMap>from(location).build())
-                    .observeOn(Schedulers.computation())
-                    .flatMapCompletable(this::loadKeyStore)
-            )
+            .map(location -> kubernetesClient.get(ResourceQuery.<ConfigMap>from(location).build()).flatMapCompletable(this::loadKeyStore))
             .collect(Collectors.toList());
 
-        return Completable
-            .merge(locationObs)
-            .observeOn(Schedulers.computation())
-            .andThen(Completable.fromRunnable(this::refreshKeyStoreBundle));
+        return Completable.merge(locationObs).andThen(Completable.fromRunnable(this::refreshKeyStoreBundle));
     }
 
     @Override
