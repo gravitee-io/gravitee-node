@@ -89,18 +89,10 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
         final List<Completable> locationObs = resources
             .keySet()
             .stream()
-            .map(location ->
-                kubernetesClient
-                    .get(ResourceQuery.<Secret>from(location).build())
-                    .observeOn(Schedulers.computation())
-                    .flatMapCompletable(this::loadKeyStore)
-            )
+            .map(location -> kubernetesClient.get(ResourceQuery.<Secret>from(location).build()).flatMapCompletable(this::loadKeyStore))
             .collect(Collectors.toList());
 
-        return Completable
-            .merge(locationObs)
-            .observeOn(Schedulers.computation())
-            .andThen(Completable.fromRunnable(this::refreshKeyStoreBundle));
+        return Completable.merge(locationObs).andThen(Completable.fromRunnable(this::refreshKeyStoreBundle));
     }
 
     @Override
