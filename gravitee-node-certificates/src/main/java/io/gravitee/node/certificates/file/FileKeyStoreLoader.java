@@ -44,7 +44,7 @@ public class FileKeyStoreLoader extends AbstractFileKeyStoreLoader<KeyStoreLoade
 
     public LoadResult loadFromPems() {
         if (options.getCertificates() != null && !options.getCertificates().isEmpty()) {
-            log.info("loading keystore from pem locations: {}", options.getPaths());
+            log.info("loading keystore from pem locations: {}", options.getCertificates());
             final List<Path> paths = new ArrayList<>();
             final List<String> certs = options.getCertificates().stream().map(CertificateOptions::getCertificate).toList();
             final List<String> keys = options.getCertificates().stream().map(CertificateOptions::getPrivateKey).toList();

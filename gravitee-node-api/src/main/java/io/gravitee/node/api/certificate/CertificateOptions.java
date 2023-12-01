@@ -17,9 +17,11 @@ package io.gravitee.node.api.certificate;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Builder
 @EqualsAndHashCode
+@ToString
 public class CertificateOptions {
 
     private final String certificate;
