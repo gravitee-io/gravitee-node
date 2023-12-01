@@ -18,15 +18,15 @@ import io.vertx.rxjava3.core.Vertx;
 public class AbstractVertxServerFactory {
 
     protected final Vertx vertx;
+    private final VertxTLSOptionsRegistry tlsOptionsRegistry;
     private final KeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry;
     private final KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry;
-    private final VertxTLSOptionsRegistry tlsOptionsRegistry;
 
     public AbstractVertxServerFactory(
         Vertx vertx,
+        VertxTLSOptionsRegistry tlsOptionsRegistry,
         KeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry,
-        KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry,
-        VertxTLSOptionsRegistry tlsOptionsRegistry
+        KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry
     ) {
         this.vertx = vertx;
         this.keyStoreLoaderFactoryRegistry = keyStoreLoaderFactoryRegistry;

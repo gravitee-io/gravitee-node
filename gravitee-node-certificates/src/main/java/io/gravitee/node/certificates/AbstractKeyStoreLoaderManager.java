@@ -70,6 +70,7 @@ public class AbstractKeyStoreLoaderManager {
     }
 
     public void registerLoader(final KeyStoreLoader loader) {
+        log.info("Registering and starting new keystore loader of type {} with id: {}", loader.getClass().getName(), loader.id());
         loader.setEventHandler(keyStoreEvent -> {
             synchronized (loaders) {
                 if (keyStoreEvent.type() == KeyStoreEvent.EventType.LOAD) {

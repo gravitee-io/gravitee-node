@@ -37,7 +37,7 @@ public class VertxHttpServerFactory extends AbstractVertxServerFactory implement
         KeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry,
         KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry
     ) {
-        super(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry, tlsOptionsRegistry);
+        super(vertx, tlsOptionsRegistry, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry);
     }
 
     @Override

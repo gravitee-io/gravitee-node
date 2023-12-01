@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +38,9 @@ import org.slf4j.LoggerFactory;
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Slf4j
 public abstract class AbstractFileKeyStoreLoader<O extends AbstractStoreLoaderOptions> extends AbstractKeyStoreLoader<O> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractFileKeyStoreLoader.class);
     private final ExecutorService executor;
 
     private final List<Path> filesToWatch;
@@ -57,7 +58,7 @@ public abstract class AbstractFileKeyStoreLoader<O extends AbstractStoreLoaderOp
     }
 
     public void start() {
-        logger.debug("Initializing file keystore certificates.");
+        log.debug("Initializing file keystore certificates.");
         load();
         started = true;
         if (options.isWatch() && !filesToWatch.isEmpty()) {
@@ -65,7 +66,7 @@ public abstract class AbstractFileKeyStoreLoader<O extends AbstractStoreLoaderOp
                 WatchService watchService = prepareWatch();
                 startWatch(watchService);
             } catch (IOException e) {
-                logger.error("Unable to watch the keystore files.", e);
+                log.error("Unable to watch the keystore files.", e);
             }
         }
     }
@@ -87,7 +88,7 @@ public abstract class AbstractFileKeyStoreLoader<O extends AbstractStoreLoaderOp
         }
 
         if (keyStore != null) {
-            onEvent(new KeyStoreEvent(KeyStoreEvent.EventType.LOAD, id(), keyStore, getPassword(), getDefaultAlias()));
+            onEvent(KeyStoreEvent.loadEvent(id(), keyStore, getPassword(), getDefaultAlias()));
         }
     }
 
@@ -99,6 +100,7 @@ public abstract class AbstractFileKeyStoreLoader<O extends AbstractStoreLoaderOp
 
     protected LoadResult loadFromKeyStore() {
         if (options.getPaths() != null && !options.getPaths().isEmpty()) {
+            log.info("loading keystore from locations: {}", options.getPaths());
             List<Path> paths = options.getPaths().stream().map(FileSystems.getDefault()::getPath).toList();
             final List<KeyStore> localTrustStores = paths
                 .stream()
@@ -143,7 +145,7 @@ public abstract class AbstractFileKeyStoreLoader<O extends AbstractStoreLoaderOp
         executor.execute(() -> {
             try {
                 watching = true;
-
+                log.info("Start watching files in: {}", filesToWatch.stream().map(Path::getParent).distinct().toList());
                 WatchKey watchKey;
                 while (started) {
                     watchKey = watcherService.poll(200, TimeUnit.MILLISECONDS);
@@ -157,7 +159,6 @@ public abstract class AbstractFileKeyStoreLoader<O extends AbstractStoreLoaderOp
 
                         if (optionalPath.isPresent()) {
                             // In case of any changes, just reload the complete keystore.
-
                             load();
                         }
 
@@ -167,7 +168,7 @@ public abstract class AbstractFileKeyStoreLoader<O extends AbstractStoreLoaderOp
                     }
                 }
             } catch (InterruptedException ie) {
-                logger.info("Watch for keystore files has been stopped.");
+                log.info("Watch for keystore files has been stopped.");
             }
         });
     }

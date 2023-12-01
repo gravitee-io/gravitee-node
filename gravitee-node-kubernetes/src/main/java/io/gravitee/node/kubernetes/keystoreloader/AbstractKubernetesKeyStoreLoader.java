@@ -91,6 +91,6 @@ public abstract class AbstractKubernetesKeyStoreLoader<T> extends AbstractKeySto
 
     protected void emitKeyStoreEvent() {
         final KeyStore keyStore = KeyStoreUtils.merge(new ArrayList<>(keyStoresByLocation.values()), getPassword());
-        this.onEvent(new KeyStoreEvent(KeyStoreEvent.EventType.LOAD, id(), keyStore, getPassword(), options.getDefaultAlias()));
+        this.onEvent(KeyStoreEvent.loadEvent(id(), keyStore, getPassword(), options.getDefaultAlias()));
     }
 }

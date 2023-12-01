@@ -24,11 +24,13 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Slf4j
 public class FileKeyStoreLoader extends AbstractFileKeyStoreLoader<KeyStoreLoaderOptions> implements KeyStoreLoader {
 
     public FileKeyStoreLoader(KeyStoreLoaderOptions options) {
@@ -37,11 +39,12 @@ public class FileKeyStoreLoader extends AbstractFileKeyStoreLoader<KeyStoreLoade
 
     @Override
     protected String keyStoreLoadError() {
-        return "JKS/PKCS12 Keystore is required but was not specified. Unable to configure TLS.";
+        return "JKS/PKCS12 Keystore is required but path was not specified. Unable to configure TLS.";
     }
 
     public LoadResult loadFromPems() {
         if (options.getCertificates() != null && !options.getCertificates().isEmpty()) {
+            log.info("loading keystore from pem locations: {}", options.getPaths());
             final List<Path> paths = new ArrayList<>();
             final List<String> certs = options.getCertificates().stream().map(CertificateOptions::getCertificate).toList();
             final List<String> keys = options.getCertificates().stream().map(CertificateOptions::getPrivateKey).toList();
@@ -50,7 +53,7 @@ public class FileKeyStoreLoader extends AbstractFileKeyStoreLoader<KeyStoreLoade
             keys.forEach(key -> paths.add(FileSystems.getDefault().getPath(key)));
             return new LoadResult(keyStore, paths);
         } else {
-            throw new KeyStoreProcessingException("A PEM Keystore is missing. Unable to configure TLS.");
+            throw new KeyStoreProcessingException("PEM files are required but path was not specified. Unable to configure TLS.");
         }
     }
 

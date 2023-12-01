@@ -8,11 +8,13 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Slf4j
 public class FileTrustStoreLoader extends AbstractFileKeyStoreLoader<TrustStoreLoaderOptions> implements KeyStoreLoader {
 
     public FileTrustStoreLoader(TrustStoreLoaderOptions options) {
@@ -21,16 +23,17 @@ public class FileTrustStoreLoader extends AbstractFileKeyStoreLoader<TrustStoreL
 
     public LoadResult loadFromPems() {
         if (options.getPaths() != null) {
+            log.info("loading truststore from pem locations: {}", options.getPaths());
             KeyStore trustStore = KeyStoreUtils.initFromPemCertificateFiles(options.getPaths(), getPassword());
             List<Path> paths = options.getPaths().stream().map(FileSystems.getDefault()::getPath).toList();
             return new LoadResult(trustStore, paths);
         } else {
-            throw new KeyStoreProcessingException("A PEM Keystore is missing. Unable to configure mutual TLS.");
+            throw new KeyStoreProcessingException("PEM files are required but path was not specified. Unable to configure mutual TLS.");
         }
     }
 
     @Override
     protected String keyStoreLoadError() {
-        return "JKS/PKCS12 Keystore is required but was not specified. Unable to configure mutual TLS.";
+        return "JKS/PKCS12 Keystore is required but path was not specified. Unable to configure mutual TLS.";
     }
 }

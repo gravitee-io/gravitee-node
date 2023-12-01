@@ -11,8 +11,6 @@ import io.gravitee.node.api.secrets.model.SecretMount;
 import io.gravitee.node.certificates.AbstractKeyStoreLoader;
 import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
 import io.reactivex.rxjava3.disposables.Disposable;
-import java.util.Optional;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -48,8 +46,7 @@ public class SecretProviderKeyStoreLoader extends AbstractKeyStoreLoader<KeyStor
     private void createBundleAndNotify(SecretMap secretMap, SecretMount secretMount) {
         switch (options.getType().toUpperCase()) {
             case KeyStoreLoader.CERTIFICATE_FORMAT_PEM -> onEvent(
-                new KeyStoreEvent(
-                    KeyStoreEvent.EventType.LOAD,
+                KeyStoreEvent.loadEvent(
                     id(),
                     KeyStoreUtils.initFromPem(
                         secretMap
@@ -76,8 +73,7 @@ public class SecretProviderKeyStoreLoader extends AbstractKeyStoreLoader<KeyStor
                 )
             );
             case KeyStoreLoader.CERTIFICATE_FORMAT_JKS, KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12 -> onEvent(
-                new KeyStoreEvent(
-                    KeyStoreEvent.EventType.LOAD,
+                KeyStoreEvent.loadEvent(
                     id(),
                     KeyStoreUtils.initFromContent(
                         options.getType(),

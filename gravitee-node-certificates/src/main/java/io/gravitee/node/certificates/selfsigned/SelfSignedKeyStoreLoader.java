@@ -39,7 +39,7 @@ public class SelfSignedKeyStoreLoader extends AbstractKeyStoreLoader<KeyStoreLoa
     public void start() {
         logger.debug("Initializing self-signed keystore certificate.");
         final KeyStore keyStore = KeyStoreUtils.initSelfSigned("localhost", getPassword());
-        onEvent(new KeyStoreEvent(KeyStoreEvent.EventType.LOAD, id(), keyStore, getPassword(), null));
+        onEvent(KeyStoreEvent.loadEvent(id(), keyStore, getPassword(), null));
     }
 
     @Override
