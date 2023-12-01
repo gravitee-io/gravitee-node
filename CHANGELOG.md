@@ -1,3 +1,10 @@
+## [4.7.1](https://github.com/gravitee-io/gravitee-node/compare/4.7.0...4.7.1) (2023-12-01)
+
+
+### Bug Fixes
+
+* use local hash map to keep reference to created queue ([6ccc6d9](https://github.com/gravitee-io/gravitee-node/commit/6ccc6d9957b5536b4d71ad5c22df0e913bc17f57))
+
 # [4.7.0](https://github.com/gravitee-io/gravitee-node/compare/4.6.1...4.7.0) (2023-11-30)
 
 
