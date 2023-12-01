@@ -29,7 +29,9 @@ import io.gravitee.node.api.cluster.messaging.Topic;
 import io.gravitee.node.plugin.cluster.hazelcast.messaging.HazelcastQueue;
 import io.gravitee.node.plugin.cluster.hazelcast.messaging.HazelcastTopic;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +47,7 @@ public class HazelcastClusterManager extends AbstractService<ClusterManager> imp
     private final HazelcastInstance hazelcastInstance;
 
     private final Set<MemberListener> memberListeners = new HashSet<>();
+    private final Map<String, Queue<?>> queuesByName = new ConcurrentHashMap<>();
 
     @Override
     protected void doStart() {
@@ -97,8 +100,13 @@ public class HazelcastClusterManager extends AbstractService<ClusterManager> imp
 
     @Override
     public <T> Queue<T> queue(final String name) {
-        IQueue<T> iQueue = hazelcastInstance.getQueue(name);
-        return new HazelcastQueue<>(iQueue);
+        return (Queue<T>) queuesByName.computeIfAbsent(
+            name,
+            key -> {
+                IQueue<T> iQueue = hazelcastInstance.getQueue(key);
+                return new HazelcastQueue<>(iQueue);
+            }
+        );
     }
 
     @Override
