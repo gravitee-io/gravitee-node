@@ -42,8 +42,8 @@ public class VertxHttpServerFactory extends AbstractVertxServerFactory implement
 
     @Override
     public VertxHttpServer create(VertxHttpServerOptions options) {
-        KeyStoreLoaderManager keyStoreLoaderManager = createAndStartKeyManager(options);
-        TrustStoreLoaderManager trustStoreLoaderManager = createAnsStartCertificateManager(options);
+        KeyStoreLoaderManager keyStoreLoaderManager = createKeyManager(options);
+        TrustStoreLoaderManager trustStoreLoaderManager = createCertificateManager(options);
         return new VertxHttpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager);
     }
 }

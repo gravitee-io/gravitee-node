@@ -42,8 +42,8 @@ public class VertxTcpServerFactory extends AbstractVertxServerFactory implements
 
     @Override
     public VertxTcpServer create(VertxTcpServerOptions options) {
-        KeyStoreLoaderManager keyStoreLoaderManager = createAndStartKeyManager(options);
-        TrustStoreLoaderManager trustStoreLoaderManager = createAnsStartCertificateManager(options);
+        KeyStoreLoaderManager keyStoreLoaderManager = createKeyManager(options);
+        TrustStoreLoaderManager trustStoreLoaderManager = createCertificateManager(options);
         return new VertxTcpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager);
     }
 }

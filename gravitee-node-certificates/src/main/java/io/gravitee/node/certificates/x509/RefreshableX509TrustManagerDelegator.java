@@ -58,7 +58,7 @@ public class RefreshableX509TrustManagerDelegator extends X509ExtendedTrustManag
                 this.delegate = (X509ExtendedTrustManager) trustManagerFactory.getTrustManagers()[0];
             }
 
-            logger.info("Trust store has been (re)loaded with {} entries for server id: {}", keyStore.size(), serverId);
+            logger.info("Trust store has been (re)loaded with {} entries for server [{}]", keyStore.size(), serverId);
         } catch (Exception e) {
             throw new IllegalArgumentException("Unable to create trust manager for server is: %s".formatted(serverId), e);
         }

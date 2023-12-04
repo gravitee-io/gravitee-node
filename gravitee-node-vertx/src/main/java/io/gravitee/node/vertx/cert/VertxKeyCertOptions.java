@@ -17,7 +17,6 @@ package io.gravitee.node.vertx.cert;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.net.KeyCertOptions;
-import java.util.function.Function;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.X509KeyManager;
 
@@ -27,7 +26,6 @@ import javax.net.ssl.X509KeyManager;
  */
 public class VertxKeyCertOptions implements KeyCertOptions {
 
-    public static final Function<String, X509KeyManager> NULL_MAPPER_FUNCTION = s -> null;
     private final KeyManagerFactory keyManagerFactory;
 
     VertxKeyCertOptions(KeyManagerFactory keyManagerFactory) {

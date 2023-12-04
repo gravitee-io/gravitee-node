@@ -26,6 +26,7 @@ import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,13 +40,22 @@ public class AbstractKeyStoreLoaderManager {
     private final Map<String, KeyStoreLoader> loaders;
     private final KeyStoreLoader platformKeyStoreLoader;
     protected final RefreshableX509Manager refreshableX509Manager;
+    private final String serverId;
     private char[] mainPassword;
     private KeyStore mainKeyStore;
     private KeyStore.PasswordProtection passwordProtection;
 
     private String platformKeyStoreLoaderId;
 
-    public AbstractKeyStoreLoaderManager(KeyStoreLoader platformKeyStoreLoader, RefreshableX509Manager refreshableX509Manager) {
+    private final AtomicBoolean started = new AtomicBoolean();
+    private final List<KeyStoreLoader> queued = new ArrayList<>();
+
+    public AbstractKeyStoreLoaderManager(
+        String serverId,
+        KeyStoreLoader platformKeyStoreLoader,
+        RefreshableX509Manager refreshableX509Manager
+    ) {
+        this.serverId = serverId;
         this.platformKeyStoreLoader = platformKeyStoreLoader;
         this.loaders = new ConcurrentHashMap<>();
         this.refreshableX509Manager = refreshableX509Manager;
@@ -55,7 +65,10 @@ public class AbstractKeyStoreLoaderManager {
         return true;
     }
 
-    public void start() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
+    public synchronized void start() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
+        if (started.get()) {
+            return;
+        }
         this.mainPassword = KeyStoreUtils.passwordToCharArray(UUID.randomUUID().toString());
         this.mainKeyStore = KeyStore.getInstance(KeyStoreUtils.DEFAULT_KEYSTORE_TYPE);
         this.mainKeyStore.load(null, mainPassword);
@@ -63,6 +76,11 @@ public class AbstractKeyStoreLoaderManager {
         this.platformKeyStoreLoaderId = platformKeyStoreLoader.id();
 
         registerLoader(platformKeyStoreLoader);
+        started.compareAndSet(false, true);
+        if (!queued.isEmpty()) {
+            queued.forEach(this::registerLoader);
+            queued.clear();
+        }
     }
 
     public void stop() {
@@ -70,9 +88,18 @@ public class AbstractKeyStoreLoaderManager {
     }
 
     public void registerLoader(final KeyStoreLoader loader) {
-        log.info("Registering and starting new keystore loader of type {} with id: {}", loader.getClass().getName(), loader.id());
+        if (!started.get()) {
+            queued.add(loader);
+            return;
+        }
+        log.info(
+            "Register and start new keystore loader for server [{}] of type {} with id: {}",
+            serverId,
+            loader.getClass().getSimpleName(),
+            loader.id()
+        );
         loader.setEventHandler(keyStoreEvent -> {
-            synchronized (loaders) {
+            synchronized (refreshableX509Manager) {
                 if (keyStoreEvent.type() == KeyStoreEvent.EventType.LOAD) {
                     updateMain(loader, keyStoreEvent);
                     refreshableX509Manager.refresh(clone(mainKeyStore), this.mainPassword, keyStoreEvent.defaultAlias());

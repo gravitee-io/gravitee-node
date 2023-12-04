@@ -11,7 +11,7 @@ import javax.net.ssl.X509KeyManager;
 public class KeyStoreLoaderManager extends AbstractKeyStoreLoaderManager {
 
     public KeyStoreLoaderManager(String serverId, KeyStoreLoader platformKeyStoreLoader, boolean sniEnabled) {
-        super(platformKeyStoreLoader, new RefreshableX509KeyManagerDelegator(serverId, sniEnabled));
+        super(serverId, platformKeyStoreLoader, new RefreshableX509KeyManagerDelegator(serverId, sniEnabled));
     }
 
     public X509KeyManager getKeyManager() {

@@ -89,7 +89,7 @@ public class RefreshableX509KeyManagerDelegator extends X509ExtendedKeyManager i
                 dataHolder = new KeyManagerDataHolder(sniFallbackAlias, new ConcurrentHashMap<>(newCommonNamesByAlias), keyManager);
             }
 
-            logger.info("Key store has been (re)loaded with {} entries for server id: {}", keyStore.size(), serverId);
+            logger.info("Key store has been (re)loaded with {} entries for server [{}]", keyStore.size(), serverId);
         } catch (Exception e) {
             throw new KeyStoreProcessingException("Unable to initialize key manager keystore", e);
         }

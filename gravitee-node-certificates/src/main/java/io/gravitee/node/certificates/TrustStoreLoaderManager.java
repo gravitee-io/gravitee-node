@@ -26,7 +26,7 @@ import javax.net.ssl.X509TrustManager;
 public class TrustStoreLoaderManager extends AbstractKeyStoreLoaderManager {
 
     public TrustStoreLoaderManager(String serverId, KeyStoreLoader platformKeyStoreLoader) {
-        super(platformKeyStoreLoader, new RefreshableX509TrustManagerDelegator(serverId));
+        super(serverId, platformKeyStoreLoader, new RefreshableX509TrustManagerDelegator(serverId));
     }
 
     @Override

@@ -34,20 +34,15 @@ public class AbstractVertxServerFactory {
         this.tlsOptionsRegistry = tlsOptionsRegistry;
     }
 
-    protected KeyStoreLoaderManager createAndStartKeyManager(VertxServerOptions options) {
+    protected KeyStoreLoaderManager createKeyManager(VertxServerOptions options) {
         String serverId = options.getId();
         KeyStoreLoader platformKeyStoreLoader = keyStoreLoaderFactoryRegistry.createLoader(options.getKeyStoreLoaderOptions(), serverId);
         KeyStoreLoaderManager keyStoreLoaderManager = new KeyStoreLoaderManager(serverId, platformKeyStoreLoader, options.isSni());
-        try {
-            tlsOptionsRegistry.registerOptions(serverId, new VertxKeyCertOptions(keyStoreLoaderManager.getKeyManager()));
-            keyStoreLoaderManager.start();
-        } catch (Exception e) {
-            throw new IllegalStateException("Cannot start KeyStoreManager", e);
-        }
+        tlsOptionsRegistry.registerOptions(serverId, new VertxKeyCertOptions(keyStoreLoaderManager.getKeyManager()));
         return keyStoreLoaderManager;
     }
 
-    protected final TrustStoreLoaderManager createAnsStartCertificateManager(VertxServerOptions options) {
+    protected final TrustStoreLoaderManager createCertificateManager(VertxServerOptions options) {
         String serverId = options.getId();
         KeyStoreLoader platformTrustStoreLoader = trustStoreLoaderFactoryRegistry.createLoader(
             options.getTrustStoreLoaderOptions(),
@@ -55,11 +50,6 @@ public class AbstractVertxServerFactory {
         );
         TrustStoreLoaderManager trustStoreLoaderManager = new TrustStoreLoaderManager(serverId, platformTrustStoreLoader);
         tlsOptionsRegistry.registerOptions(serverId, new VertxTrustOptions(trustStoreLoaderManager.getCertificateManager()));
-        try {
-            trustStoreLoaderManager.start();
-        } catch (Exception e) {
-            throw new IllegalStateException("Cannot start TrustStoreLoaderManager", e);
-        }
         return trustStoreLoaderManager;
     }
 }
