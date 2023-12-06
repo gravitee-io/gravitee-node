@@ -24,18 +24,19 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import lombok.AllArgsConstructor;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import lombok.RequiredArgsConstructor;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class HazelcastCache<K, V> implements Cache<K, V> {
 
-    private IMap<K, V> cache;
-
-    private long timeToLiveInMs = -1;
+    private final IMap<K, V> cache;
+    private final long timeToLiveInMs;
 
     @Override
     public String getName() {
@@ -55,6 +56,11 @@ public class HazelcastCache<K, V> implements Cache<K, V> {
     @Override
     public Collection<V> values() {
         return this.cache.values();
+    }
+
+    @Override
+    public boolean containsKey(final K key) {
+        return this.cache.containsKey(key);
     }
 
     @Override
@@ -83,6 +89,21 @@ public class HazelcastCache<K, V> implements Cache<K, V> {
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
         this.cache.putAll(m);
+    }
+
+    @Override
+    public V computeIfAbsent(final K key, final Function<? super K, ? extends V> mappingFunction) {
+        return this.cache.computeIfAbsent(key, mappingFunction);
+    }
+
+    @Override
+    public V computeIfPresent(final K key, final BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        return this.cache.computeIfPresent(key, remappingFunction);
+    }
+
+    @Override
+    public V compute(final K key, final BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        return this.cache.compute(key, remappingFunction);
     }
 
     @Override
@@ -119,12 +140,12 @@ public class HazelcastCache<K, V> implements Cache<K, V> {
                                 case EXPIRED:
                                     cacheListener.onEntryExpired(event.getKey(), event.getValue());
                                     break;
-                                default:
                                 case EVICT_ALL:
                                 case CLEAR_ALL:
                                 case MERGED:
                                 case INVALIDATION:
                                 case LOADED:
+                                default:
                                     break;
                             }
                         }

@@ -18,6 +18,8 @@ package io.gravitee.node.api.cache;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -32,6 +34,8 @@ public interface Cache<K, V> {
 
     Collection<V> values();
 
+    boolean containsKey(final K key);
+
     V get(final K key);
 
     V put(final K key, final V value);
@@ -39,6 +43,12 @@ public interface Cache<K, V> {
     V put(final K key, final V value, final long ttl, final TimeUnit ttlUnit);
 
     void putAll(final Map<? extends K, ? extends V> m);
+
+    V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction);
+
+    V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction);
+
+    V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction);
 
     V evict(final K key);
 
