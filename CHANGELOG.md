@@ -1,3 +1,10 @@
+# [4.8.0](https://github.com/gravitee-io/gravitee-node/compare/4.7.1...4.8.0) (2023-12-06)
+
+
+### Features
+
+* improve Cache interface ([f2a5c92](https://github.com/gravitee-io/gravitee-node/commit/f2a5c920b9fef856175d0ac1324b45fdd0a78b21))
+
 ## [4.7.1](https://github.com/gravitee-io/gravitee-node/compare/4.7.0...4.7.1) (2023-12-01)
 
 
