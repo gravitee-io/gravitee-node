@@ -26,6 +26,8 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -123,7 +125,12 @@ public class InMemoryCache<K, V> implements Cache<K, V> {
                 return expiringValue.value;
             })
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .toList();
+    }
+
+    @Override
+    public boolean containsKey(final K key) {
+        return get(key) != null;
     }
 
     @Override
@@ -147,36 +154,95 @@ public class InMemoryCache<K, V> implements Cache<K, V> {
 
     @Override
     public V put(K key, V value, long ttl, TimeUnit ttlUnit) {
-        long ttlMillis = TimeUnit.MILLISECONDS.convert(ttl, ttlUnit);
-        if (this.configuration.getTimeToLiveInMs() > 0 && this.configuration.getTimeToLiveInMs() < ttlMillis) {
-            throw new IllegalArgumentException("TTL can't be bigger than ttl defined in the cache configuration");
-        }
+        long ttlMillis = computeTTLMillis(ttl, ttlUnit);
 
         V oldValue = get(key);
-        long expirationTimeMillis = ttlMillis > 0 ? System.currentTimeMillis() + ttlMillis : 0;
+        long expirationTimeMillis = computeExpirationTimeMillis(ttlMillis);
         this.internalCache.put(key, new ExpiringValue<>(value, expirationTimeMillis));
 
-        executorService.execute(() ->
-            cacheListeners.forEach((id, listener) -> {
-                if (oldValue == null) {
-                    listener.onEntryAdded(key, value);
-                } else {
-                    listener.onEntryUpdated(key, oldValue, value);
-                }
-            })
-        );
+        notifyListeners(key, value, oldValue);
 
         return oldValue;
     }
 
     @Override
     public void putAll(final Map<? extends K, ? extends V> values) {
+        Map<K, V> oldValues = new HashMap<>();
+        if (!cacheListeners.isEmpty()) {
+            values
+                .keySet()
+                .forEach(key -> {
+                    V oldValue = this.get(key);
+                    if (oldValue != null) {
+                        oldValues.put(key, oldValue);
+                    }
+                });
+        }
         Map<K, ExpiringValue<V>> expiringValueMap = values
             .entrySet()
             .stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> new ExpiringValue<>(e.getValue(), 0)));
 
         this.internalCache.putAll(expiringValueMap);
+
+        executorService.execute(() ->
+            cacheListeners.forEach((id, listener) ->
+                values.forEach((key, value) -> {
+                    if (!oldValues.containsKey(key)) {
+                        listener.onEntryAdded(key, value);
+                    } else {
+                        listener.onEntryUpdated(key, oldValues.get(key), value);
+                    }
+                })
+            )
+        );
+    }
+
+    @Override
+    public V computeIfAbsent(final K key, final Function<? super K, ? extends V> mappingFunction) {
+        this.internalCache.asMap()
+            .computeIfAbsent(
+                key,
+                k -> {
+                    V applied = mappingFunction.apply(k);
+                    notifyListeners(k, applied, null);
+                    return new ExpiringValue<>(applied, 0);
+                }
+            );
+        return get(key);
+    }
+
+    @Override
+    public V computeIfPresent(final K key, final BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        this.internalCache.asMap()
+            .computeIfPresent(
+                key,
+                (k, v) -> {
+                    V applied = remappingFunction.apply(k, v.value);
+                    notifyListeners(k, applied, v.value);
+                    return new ExpiringValue<>(applied, 0);
+                }
+            );
+        return get(key);
+    }
+
+    @Override
+    public V compute(final K key, final BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        this.internalCache.asMap()
+            .compute(
+                key,
+                (k, v) -> {
+                    V old = null;
+                    V applied;
+                    if (v != null) {
+                        old = v.value;
+                    }
+                    applied = remappingFunction.apply(k, old);
+                    notifyListeners(k, applied, old);
+                    return new ExpiringValue<>(applied, 0);
+                }
+            );
+        return get(key);
     }
 
     @Override
@@ -202,6 +268,30 @@ public class InMemoryCache<K, V> implements Cache<K, V> {
     @Override
     public boolean removeCacheListener(final String listenerCacheId) {
         return cacheListeners.remove(listenerCacheId) != null;
+    }
+
+    private long computeTTLMillis(final long ttl, final TimeUnit ttlUnit) {
+        long ttlMillis = TimeUnit.MILLISECONDS.convert(ttl, ttlUnit);
+        if (this.configuration.getTimeToLiveInMs() > 0 && this.configuration.getTimeToLiveInMs() < ttlMillis) {
+            throw new IllegalArgumentException("TTL can't be bigger than ttl defined in the cache configuration");
+        }
+        return ttlMillis;
+    }
+
+    private long computeExpirationTimeMillis(final long ttlMillis) {
+        return ttlMillis > 0 ? System.currentTimeMillis() + ttlMillis : 0;
+    }
+
+    private void notifyListeners(final K key, final V value, final V oldValue) {
+        executorService.execute(() ->
+            cacheListeners.forEach((id, listener) -> {
+                if (oldValue == null) {
+                    listener.onEntryAdded(key, value);
+                } else {
+                    listener.onEntryUpdated(key, oldValue, value);
+                }
+            })
+        );
     }
 
     @RequiredArgsConstructor

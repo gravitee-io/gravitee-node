@@ -40,6 +40,8 @@ class InMemoryCacheTest {
     private static final String TEST_KEY = "key1";
     private static final String TEST_VALUE = "value1";
     private static final String TEST_VALUE_UPDATED = "value1_updated";
+    private static final String TEST_KEY2 = "key2";
+    private static final String TEST_VALUE2 = "value2";
 
     @Nested
     class GetTest {
@@ -102,18 +104,6 @@ class InMemoryCacheTest {
         }
 
         @Test
-        void should_put_values_to_cache() {
-            CacheConfiguration configuration = CacheConfiguration.builder().build();
-            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
-            cache.putAll(Map.of(TEST_KEY, TEST_VALUE, "key2", "value2"));
-
-            assertThat(cache.get(TEST_KEY)).isNotNull();
-            assertThat(cache.get("key2")).isNotNull();
-            assertThat(cache.values()).hasSize(2);
-            assertThat(cache.values()).containsOnly(TEST_VALUE, "value2");
-        }
-
-        @Test
         void should_put_value_to_cache_and_expired_after_ttl() {
             CacheConfiguration configuration = CacheConfiguration.builder().timeToLiveInMs(200).build();
             Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
@@ -161,6 +151,285 @@ class InMemoryCacheTest {
                 }
             );
             cache.put(TEST_KEY, TEST_VALUE);
+            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+        }
+
+        @Test
+        void should_notify_listener_when_putting_updated_value_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            AtomicBoolean listenerCalled = new AtomicBoolean();
+            cache.addCacheListener(
+                new CacheListener<>() {
+                    @Override
+                    public void onEntryUpdated(final String key, final String oldValue, final String value) {
+                        listenerCalled.set(true);
+                    }
+                }
+            );
+            cache.put(TEST_KEY, TEST_VALUE);
+            cache.put(TEST_KEY, TEST_VALUE_UPDATED);
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertThat(listenerCalled).isTrue();
+                });
+        }
+    }
+
+    @Nested
+    class PutAllTest {
+
+        @Test
+        void should_put_all_values_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            cache.putAll(Map.of(TEST_KEY, TEST_VALUE, TEST_KEY2, TEST_VALUE2));
+
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.get(TEST_KEY2)).isNotNull();
+            assertThat(cache.values()).hasSize(2);
+            assertThat(cache.values()).containsOnly(TEST_VALUE, TEST_VALUE2);
+        }
+
+        @Test
+        void should_put_all_values_to_cache_and_expired_after_ttl() {
+            CacheConfiguration configuration = CacheConfiguration.builder().timeToLiveInMs(200).build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            cache.putAll(Map.of(TEST_KEY, TEST_VALUE, TEST_KEY2, TEST_VALUE2));
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.get(TEST_KEY2)).isNotNull();
+            assertThat(cache.values()).hasSize(2);
+            assertThat(cache.values()).containsOnly(TEST_VALUE, TEST_VALUE2);
+
+            await()
+                .atMost(400, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertThat(cache.get(TEST_KEY)).isNull();
+                    assertThat(cache.get(TEST_KEY2)).isNull();
+                    assertThat(cache.values()).isEmpty();
+                });
+        }
+
+        @Test
+        void should_notify_listener_when_putting_new_values_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            AtomicBoolean listenerCalled = new AtomicBoolean();
+            cache.addCacheListener(
+                new CacheListener<>() {
+                    @Override
+                    public void onEntryAdded(final String key, final String value) {
+                        listenerCalled.set(true);
+                    }
+                }
+            );
+            cache.putAll(Map.of(TEST_KEY, TEST_VALUE, TEST_KEY2, TEST_VALUE2));
+            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+        }
+
+        @Test
+        void should_notify_listener_when_putting_updated_value_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            AtomicBoolean listenerCalled = new AtomicBoolean();
+            cache.addCacheListener(
+                new CacheListener<>() {
+                    @Override
+                    public void onEntryUpdated(final String key, final String oldValue, final String value) {
+                        listenerCalled.set(true);
+                    }
+                }
+            );
+            cache.putAll(Map.of(TEST_KEY, TEST_VALUE, TEST_KEY2, TEST_VALUE2));
+            cache.putAll(Map.of(TEST_KEY, TEST_VALUE_UPDATED));
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertThat(listenerCalled).isTrue();
+                });
+        }
+    }
+
+    @Nested
+    class ComputeIfAbsentTest {
+
+        @Test
+        void should_do_nothing_if_key_already_present_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            cache.put(TEST_KEY, TEST_VALUE);
+            cache.computeIfAbsent(TEST_KEY, k -> "wrong value");
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+        }
+
+        @Test
+        void should_computeIfAbsent_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            cache.computeIfAbsent(TEST_KEY, k -> TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+        }
+
+        @Test
+        void should_computeIfAbsent_to_cache_and_expired_after_ttl() {
+            CacheConfiguration configuration = CacheConfiguration.builder().timeToLiveInMs(200).build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            cache.computeIfAbsent(TEST_KEY, k -> TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+
+            await()
+                .atMost(400, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertThat(cache.get(TEST_KEY)).isNull();
+                    assertThat(cache.values()).isEmpty();
+                });
+        }
+
+        @Test
+        void should_notify_listener_when_computeIfAbsent_value_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            AtomicBoolean listenerCalled = new AtomicBoolean();
+            cache.addCacheListener(
+                new CacheListener<>() {
+                    @Override
+                    public void onEntryAdded(final String key, final String value) {
+                        listenerCalled.set(true);
+                    }
+                }
+            );
+            cache.computeIfAbsent(TEST_KEY, k -> TEST_VALUE);
+            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+        }
+    }
+
+    @Nested
+    class ComputeIfPresentTest {
+
+        @Test
+        void should_do_nothing_if_key_not_present_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            cache.computeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isNull();
+            assertThat(cache.values()).isEmpty();
+        }
+
+        @Test
+        void should_computeIfPresent_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            cache.put(TEST_KEY, "wrong_value");
+            cache.computeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+        }
+
+        @Test
+        void should_computeIfPresent_to_cache_and_expired_after_ttl() {
+            CacheConfiguration configuration = CacheConfiguration.builder().timeToLiveInMs(200).build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            cache.put(TEST_KEY, "wrong_value");
+            cache.computeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+
+            await()
+                .atMost(400, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertThat(cache.get(TEST_KEY)).isNull();
+                    assertThat(cache.values()).isEmpty();
+                });
+        }
+
+        @Test
+        void should_notify_listener_when_computeIfPresent_updated_value_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            AtomicBoolean listenerCalled = new AtomicBoolean();
+            cache.addCacheListener(
+                new CacheListener<>() {
+                    @Override
+                    public void onEntryUpdated(final String key, final String oldValue, final String value) {
+                        listenerCalled.set(true);
+                    }
+                }
+            );
+            cache.put(TEST_KEY, "wrong_value");
+            cache.computeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE);
+            cache.computeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE_UPDATED);
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertThat(listenerCalled).isTrue();
+                });
+        }
+    }
+
+    @Nested
+    class ComputeTest {
+
+        @Test
+        void should_compute_if_no_key_present_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            cache.compute(TEST_KEY, (k, v) -> TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+        }
+
+        @Test
+        void should_compute_if_key_present_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            cache.put(TEST_KEY, "wrong_value");
+            cache.compute(TEST_KEY, (k, v) -> TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+        }
+
+        @Test
+        void should_compute_to_cache_and_expired_after_ttl() {
+            CacheConfiguration configuration = CacheConfiguration.builder().timeToLiveInMs(200).build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            cache.compute(TEST_KEY, (k, v) -> TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+
+            await()
+                .atMost(400, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertThat(cache.get(TEST_KEY)).isNull();
+                    assertThat(cache.values()).isEmpty();
+                });
+        }
+
+        @Test
+        void should_notify_listener_when_compute_value_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = new InMemoryCache<>(CACHE_NAME, configuration);
+            AtomicBoolean listenerCalled = new AtomicBoolean();
+            cache.addCacheListener(
+                new CacheListener<>() {
+                    @Override
+                    public void onEntryAdded(final String key, final String value) {
+                        listenerCalled.set(true);
+                    }
+                }
+            );
+            cache.compute(TEST_KEY, (k, v) -> TEST_VALUE);
             await()
                 .atMost(500, TimeUnit.MILLISECONDS)
                 .untilAsserted(() -> {
@@ -181,8 +450,8 @@ class InMemoryCacheTest {
                     }
                 }
             );
-            cache.put(TEST_KEY, TEST_VALUE);
-            cache.put(TEST_KEY, TEST_VALUE_UPDATED);
+            cache.compute(TEST_KEY, (k, v) -> TEST_VALUE);
+            cache.compute(TEST_KEY, (k, v) -> TEST_VALUE_UPDATED);
             await()
                 .atMost(500, TimeUnit.MILLISECONDS)
                 .untilAsserted(() -> {
