@@ -1,3 +1,10 @@
+## [4.8.1](https://github.com/gravitee-io/gravitee-node/compare/4.8.0...4.8.1) (2023-12-07)
+
+
+### Bug Fixes
+
+* remove dedicated schedulers in kubernetes keystore loader init methods ([32e675f](https://github.com/gravitee-io/gravitee-node/commit/32e675f84567153dca798a28265513e8fc7f34ff))
+
 # [4.8.0](https://github.com/gravitee-io/gravitee-node/compare/4.7.1...4.8.0) (2023-12-06)
 
 
