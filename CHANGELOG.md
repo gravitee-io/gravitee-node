@@ -1,3 +1,15 @@
+# [5.0.0](https://github.com/gravitee-io/gravitee-node/compare/4.8.1...5.0.0) (2023-12-11)
+
+
+### Features
+
+* introduce LicenseManager for organization license ([c307123](https://github.com/gravitee-io/gravitee-node/commit/c30712332bab4a1a18462e7d8be3c18e67f1057c))
+
+
+### BREAKING CHANGES
+
+* Node.license() not longer exists, LicenseManager is mandatory
+
 ## [4.8.1](https://github.com/gravitee-io/gravitee-node/compare/4.8.0...4.8.1) (2023-12-07)
 
 

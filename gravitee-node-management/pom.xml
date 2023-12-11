@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>5.0.0-archi-278-organization-license-support-SNAPSHOT</version>
+        <version>5.0.0</version>
     </parent>
 
     <artifactId>gravitee-node-management</artifactId>
