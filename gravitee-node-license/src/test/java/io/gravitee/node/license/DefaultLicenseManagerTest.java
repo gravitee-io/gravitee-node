@@ -199,9 +199,10 @@ class DefaultLicenseManagerTest {
             calendarStatic.when(Calendar::getInstance).thenReturn(pastDate);
             cut.start();
 
-            verify(license, timeout(1000).times(1)).getExpirationDate();
+            verify(license, timeout(1000)).getExpirationDate();
+
             // Check the listener has been called.
-            verify(licenseExpiredListener).accept(license);
+            verify(licenseExpiredListener, timeout(5000)).accept(license);
         } finally {
             cut.doStop();
         }
@@ -232,7 +233,7 @@ class DefaultLicenseManagerTest {
             verify(license, timeout(1000).times(1)).getExpirationDate();
 
             // Check the listener has been called.
-            verify(licenseExpiredListener).accept(license);
+            verify(licenseExpiredListener, timeout(5000)).accept(license);
         } finally {
             cut.doStop();
         }
