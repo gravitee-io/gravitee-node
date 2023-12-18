@@ -1,3 +1,10 @@
+## [5.0.1](https://github.com/gravitee-io/gravitee-node/compare/5.0.0...5.0.1) (2023-12-18)
+
+
+### Bug Fixes
+
+* add oem pack ([54c6be7](https://github.com/gravitee-io/gravitee-node/commit/54c6be7168d7db1a111bb3b93c2cbe73ca320d5c))
+
 # [5.0.0](https://github.com/gravitee-io/gravitee-node/compare/4.8.1...5.0.0) (2023-12-11)
 
 
