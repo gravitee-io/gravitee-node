@@ -79,6 +79,9 @@ packs:
     enterprise-alert-engine:
         features:
             - alert-engine
+    oem:
+        features:
+            - oem-customization
 
 tiers:
     planet:
