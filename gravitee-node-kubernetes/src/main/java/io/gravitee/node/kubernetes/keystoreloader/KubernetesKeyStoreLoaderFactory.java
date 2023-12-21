@@ -33,7 +33,11 @@ public class KubernetesKeyStoreLoaderFactory implements KeyStoreLoaderFactory {
     }
 
     public boolean canHandle(KeyStoreLoaderOptions options) {
-        return (KubernetesConfigMapKeyStoreLoader.canHandle(options) || KubernetesSecretKeyStoreLoader.canHandle(options));
+        return (
+            KubernetesConfigMapKeyStoreLoader.canHandle(options) ||
+            KubernetesSecretKeyStoreLoader.canHandle(options) ||
+            KubernetesPemRegistryKeyStoreLoader.canHandle(options)
+        );
     }
 
     public KeyStoreLoader create(KeyStoreLoaderOptions options) {
@@ -41,6 +45,8 @@ public class KubernetesKeyStoreLoaderFactory implements KeyStoreLoaderFactory {
             return new KubernetesConfigMapKeyStoreLoader(options, client);
         } else if (KubernetesSecretKeyStoreLoader.canHandle(options)) {
             return new KubernetesSecretKeyStoreLoader(options, client);
+        } else if (KubernetesPemRegistryKeyStoreLoader.canHandle(options)) {
+            return new KubernetesPemRegistryKeyStoreLoader(options, client);
         }
 
         throw new IllegalArgumentException("Cannot found appropriate KubernetesKeyStoreLoaderFactory.");
