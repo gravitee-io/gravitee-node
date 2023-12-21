@@ -1,3 +1,10 @@
+## [5.0.2](https://github.com/gravitee-io/gravitee-node/compare/5.0.1...5.0.2) (2023-12-21)
+
+
+### Bug Fixes
+
+* update PEM registry logic ([b02a700](https://github.com/gravitee-io/gravitee-node/commit/b02a70093c0a704636630c9c41eac2c9157b15d1))
+
 ## [5.0.1](https://github.com/gravitee-io/gravitee-node/compare/5.0.0...5.0.1) (2023-12-18)
 
 
