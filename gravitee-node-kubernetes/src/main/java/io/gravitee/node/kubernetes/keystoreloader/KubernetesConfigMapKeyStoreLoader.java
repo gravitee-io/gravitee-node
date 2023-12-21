@@ -21,20 +21,19 @@ import io.gravitee.kubernetes.client.api.ResourceQuery;
 import io.gravitee.kubernetes.client.api.WatchQuery;
 import io.gravitee.kubernetes.client.model.v1.ConfigMap;
 import io.gravitee.kubernetes.client.model.v1.Event;
-import io.gravitee.kubernetes.client.model.v1.Secret;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.security.KeyStore;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
@@ -44,12 +43,10 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
 
     private static final List<String> SUPPORTED_TYPES = Arrays.asList(
         KeyStoreLoader.CERTIFICATE_FORMAT_JKS.toLowerCase(),
-        KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12.toLowerCase(),
-        KeyStoreLoader.CERTIFICATE_FORMAT_PEM_REGISTRY.toLowerCase()
+        KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12.toLowerCase()
     );
 
     private static final Pattern CONFIGMAP_PATTERN = Pattern.compile("^(.*/configmaps/.*)/.*$");
-    private static final Pattern PEM_REGISTRY_CONFIGMAP_PATTERN = Pattern.compile("^(.*/configmaps)/.*$");
 
     public KubernetesConfigMapKeyStoreLoader(KeyStoreLoaderOptions options, KubernetesClient kubernetesClient) {
         super(options, kubernetesClient);
@@ -60,16 +57,11 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
         this.options.getKubernetesLocations()
             .forEach(location -> {
                 final Matcher matcher = CONFIGMAP_PATTERN.matcher(location);
-                final Matcher pemRegistryMatcher = PEM_REGISTRY_CONFIGMAP_PATTERN.matcher(location);
                 if (matcher.matches()) {
                     this.resources.put(matcher.group(1), ResourceQuery.<ConfigMap>from(location).build());
-                } else if (pemRegistryMatcher.matches()) {
-                    this.resources.put(location, ResourceQuery.<ConfigMap>from(location).build());
                 } else {
                     throw new IllegalArgumentException(
-                        "You must specify a data when using configmap (ex: /my-namespace/configmaps/my-configmap/my-keystore or /my-namespace/configmaps/" +
-                        GRAVITEEIO_PEM_REGISTRY +
-                        ")."
+                        "You must specify a data when using configmap (ex: /my-namespace/configmaps/my-configmap/my-keystore)."
                     );
                 }
             });
@@ -82,59 +74,38 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
             kubernetesLocations != null &&
             !kubernetesLocations.isEmpty() &&
             SUPPORTED_TYPES.contains(options.getKeyStoreType().toLowerCase()) &&
-            (
-                kubernetesLocations
-                    .stream()
-                    .allMatch(location ->
-                        CONFIGMAP_PATTERN.matcher(location).matches() || PEM_REGISTRY_CONFIGMAP_PATTERN.matcher(location).matches()
-                    )
-            )
+            kubernetesLocations.stream().allMatch(location -> CONFIGMAP_PATTERN.matcher(location).matches())
         );
     }
 
     @Override
     protected Completable init() {
-        final List<Completable> locationObs = resources
-            .keySet()
-            .stream()
-            .map(location -> kubernetesClient.get(ResourceQuery.<ConfigMap>from(location).build()).flatMapCompletable(this::loadKeyStore))
-            .collect(Collectors.toList());
-
-        return Completable.merge(locationObs).andThen(Completable.fromRunnable(this::refreshKeyStoreBundle));
+        return Flowable
+            .fromIterable(resources.keySet())
+            .flatMapCompletable(location ->
+                kubernetesClient.get(ResourceQuery.<ConfigMap>from(location).build()).flatMapCompletable(this::loadKeyStore)
+            )
+            .andThen(Completable.fromRunnable(this::refreshKeyStoreBundle));
     }
 
     @Override
     protected Flowable<ConfigMap> watch() {
-        final List<Flowable<Event<ConfigMap>>> toWatch = resources
-            .keySet()
-            .stream()
-            .map(location ->
+        return Flowable
+            .fromIterable(resources.keySet())
+            .flatMap(location ->
                 kubernetesClient
                     .watch(WatchQuery.<ConfigMap>from(location).build())
                     .observeOn(Schedulers.computation())
                     .repeat()
                     .retryWhen(errors -> errors.delay(RETRY_DELAY_MILLIS, TimeUnit.MILLISECONDS))
             )
-            .collect(Collectors.toList());
-
-        return Flowable.merge(toWatch).filter(event -> event.getType().equalsIgnoreCase("MODIFIED")).map(Event::getObject);
+            .filter(event -> event.getType().equalsIgnoreCase("MODIFIED"))
+            .map(Event::getObject);
     }
 
     @Override
     protected Completable loadKeyStore(ConfigMap configMap) {
-        KeyStore keyStore = null;
-        if (options.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM_REGISTRY)) {
-            if (
-                configMap.getMetadata().getAnnotations() != null &&
-                "true".equals(configMap.getMetadata().getAnnotations().get(GRAVITEEIO_PEM_REGISTRY)) &&
-                configMap.getData() != null
-            ) {
-                return generateKeystoreFromPemRegistry(configMap);
-            } else {
-                // make sure there is no keys left from the past
-                keyStoresByLocation.put(GRAVITEEIO_PEM_REGISTRY, initKeyStore());
-            }
-        } else {
+        return Completable.fromRunnable(() -> {
             final Optional<ResourceQuery<ConfigMap>> optResource = resources
                 .values()
                 .stream()
@@ -145,7 +116,7 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
                 .findFirst();
 
             if (optResource.isEmpty()) {
-                return Completable.error(new IllegalArgumentException("Unable to load keystore: unknown configmap."));
+                throw new IllegalArgumentException("Unable to load keystore: unknown configmap.");
             }
 
             Map<String, String> data = configMap.getBinaryData() == null ? configMap.getData() : configMap.getBinaryData();
@@ -158,68 +129,18 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
 
             final String dataKey = optResource.get().getResourceKey();
             if (data == null || data.get(dataKey) == null) {
-                return Completable.error(
-                    new IllegalArgumentException(
-                        String.format("No data has been found in the configmap for the specified key [%s].", dataKey)
-                    )
+                throw new IllegalArgumentException(
+                    String.format("No data has been found in the configmap for the specified key [%s].", dataKey)
                 );
             }
 
-            keyStore = KeyStoreUtils.initFromContent(options.getKeyStoreType(), data.get(dataKey), options.getKeyStorePassword());
-        }
+            final KeyStore keyStore = KeyStoreUtils.initFromContent(
+                options.getKeyStoreType(),
+                data.get(dataKey),
+                options.getKeyStorePassword()
+            );
 
-        if (keyStore != null) {
             keyStoresByLocation.put(configMap.getMetadata().getUid(), keyStore);
-        }
-        return Completable.complete();
-    }
-
-    private Completable generateKeystoreFromPemRegistry(ConfigMap configMap) {
-        return Maybe
-            .merge(
-                configMap
-                    .getData()
-                    .values()
-                    .stream()
-                    .map(name -> {
-                        if (!StringUtils.hasLength(name)) {
-                            return Maybe.<KeyStore>error(new IllegalArgumentException("Wrong or missing TLS secret name"));
-                        }
-
-                        return kubernetesClient
-                            .get(ResourceQuery.secret(configMap.getMetadata().getNamespace(), name).build())
-                            .map(this::secretToKeyStore);
-                    })
-                    .collect(Collectors.toList())
-            )
-            .toList()
-            .map(keyStoreList -> KeyStoreUtils.merge(keyStoreList, options.getKeyStorePassword()))
-            .doOnSuccess(keyStore -> keyStoresByLocation.put(GRAVITEEIO_PEM_REGISTRY, keyStore))
-            .ignoreElement();
-    }
-
-    private KeyStore initKeyStore() {
-        try {
-            KeyStore keyStore = KeyStore.getInstance(KeyStoreUtils.DEFAULT_KEYSTORE_TYPE);
-            keyStore.load(null, KeyStoreUtils.passwordToCharArray(options.getKeyStorePassword()));
-            return keyStore;
-        } catch (Exception e) {
-            throw new RuntimeException(String.format("Unable to reset the %s keystore", GRAVITEEIO_PEM_REGISTRY), e);
-        }
-    }
-
-    private KeyStore secretToKeyStore(Secret secret) {
-        final Map<String, String> data = secret.getData();
-
-        if (data == null || data.isEmpty()) {
-            throw new RuntimeException(String.format("No data has been found in the secret %s", secret.getMetadata().getName()));
-        }
-
-        return KeyStoreUtils.initFromPem(
-            new String(Base64.getDecoder().decode(data.get(KubernetesSecretKeyStoreLoader.KUBERNETES_TLS_CRT))),
-            new String(Base64.getDecoder().decode(data.get(KubernetesSecretKeyStoreLoader.KUBERNETES_TLS_KEY))),
-            options.getKeyStorePassword(),
-            secret.getMetadata().getName()
-        );
+        });
     }
 }
