@@ -67,6 +67,7 @@ The following has been implemented on v5.0.x
 ==== Changelog
 
  * Add support for organization license
+ * Update keystore loading internal and support for truststore hot reload
 
 ==== LicenseManager migration
 
@@ -77,6 +78,16 @@ Framework now offers support for both platform and organization licenses. Here a
  * Any product that needs to support the license at the organization level can implement the repository layer implementing the `LicenseRepository` interface and the appropriate synchronizer.
  * `LicenseService` no longer exists. Loading the platform license is now achieved by `NodeLicenseLoader`. Customers who have changed the log level on `io.gravitee.node.license.LicenseService` to avoid logging license information must adapt their `logback.xml` configuration to use `io.gravitee.node.license.LicenseLoaderService` instead.
  * Technical API allows access to the platform license which previously ended with a 404 if the license key is not specified → OSS License will now be returned instead.
+
+==== Truststore hot reload
+
+Any kind of truststore JKS (deprecated format), PKCS12, pem files and pem-folder (new see below) are now hot-reloadable.
+
+* One keystore/truststore is now per server ID instead of one per Verticle
+* Truststore file can be replaced by simple copy override
+* Same for pem certificates in the list (type: pem with a list file as an array)
+
+New type of truststore: `pem-folder` allow users to specify via `path: /path/to/certs` a directory that will be watched for new pem certificates files. Those certificates will be added to the truststore. Updates and removal are also supported. Note that recursive sub-directory listing will not occur.
 
 === 4.0.x
 The following has been implemented on v4.0.x
