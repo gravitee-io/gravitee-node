@@ -51,7 +51,7 @@ The Gravitee Node Monitoring module is in charge of detecting and registering al
 The Gravitee Node Services module provides different services such as upgrader and initializer services. They are particularly useful to ensure data migration during product upgrades or data initialization during the startup phase.
 
 === Secrets
-The Gravitee Node Secrets module is about accessing secret managers. It is able to resolve secret and certificates/private_key. It handles the `secret-provider` plugins lifecycle and bundle a service to access secret using URL-like syntax: `secret://kubernetes...` used in gravitee.yml or equivalent environment variable.
+The Gravitee Node Secrets module is about accessing secret managers. It is able to resolve secrets and certificates/private key. It use `secret-provider` plugins and manages their lifecycles as well as bundles a service to access secret using URL-like syntax: `secret://kubernetes...` used in gravitee.yml or equivalent environment variable.
 
 === Tracing
 The Gravitee Node Services module gives an easy and common way to set up tracing (aka open telemetry) on a given product. It is able to automatically load and configure tracing plugin.
