@@ -1,3 +1,10 @@
+# [5.1.0](https://github.com/gravitee-io/gravitee-node/compare/5.0.2...5.1.0) (2023-12-22)
+
+
+### Features
+
+* reloadable trust store and one main keystore (re)loaded per server id ([dad0eb9](https://github.com/gravitee-io/gravitee-node/commit/dad0eb9c7f671d4c73150e1e6fece0c4693a37f4))
+
 ## [5.0.2](https://github.com/gravitee-io/gravitee-node/compare/5.0.1...5.0.2) (2023-12-21)
 
 
