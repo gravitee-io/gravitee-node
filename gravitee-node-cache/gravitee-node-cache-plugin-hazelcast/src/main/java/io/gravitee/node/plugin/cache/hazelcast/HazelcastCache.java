@@ -20,6 +20,8 @@ import com.hazelcast.map.IMap;
 import com.hazelcast.map.impl.MapListenerAdapter;
 import io.gravitee.node.api.cache.Cache;
 import io.gravitee.node.api.cache.CacheListener;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Single;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
@@ -69,12 +71,22 @@ public class HazelcastCache<K, V> implements Cache<K, V> {
     }
 
     @Override
+    public Single<V> rxGet(final K key) {
+        return Single.fromCompletionStage(this.cache.getAsync(key));
+    }
+
+    @Override
     public V put(K key, V value) {
         if (timeToLiveInMs > 0) {
             return this.cache.put(key, value, timeToLiveInMs, TimeUnit.MILLISECONDS);
         } else {
             return this.cache.put(key, value);
         }
+    }
+
+    @Override
+    public Single<V> rxPut(final K key, final V value) {
+        return Single.fromCompletionStage(this.cache.putAsync(key, value));
     }
 
     @Override
@@ -89,6 +101,11 @@ public class HazelcastCache<K, V> implements Cache<K, V> {
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
         this.cache.putAll(m);
+    }
+
+    @Override
+    public Completable rxPutAll(final Map<? extends K, ? extends V> m) {
+        return Completable.fromCompletionStage(this.cache.putAllAsync(m));
     }
 
     @Override

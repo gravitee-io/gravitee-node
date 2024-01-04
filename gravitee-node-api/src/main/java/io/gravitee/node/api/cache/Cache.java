@@ -15,6 +15,10 @@
  */
 package io.gravitee.node.api.cache;
 
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -30,31 +34,91 @@ public interface Cache<K, V> {
 
     int size();
 
+    default Single<Integer> rxSize() {
+        return Single.fromCallable(this::size).subscribeOn(Schedulers.io());
+    }
+
     boolean isEmpty();
+
+    default Single<Boolean> rxIsEmpty() {
+        return Single.fromCallable(this::isEmpty).subscribeOn(Schedulers.io());
+    }
 
     Collection<V> values();
 
+    default Flowable<V> rxValues() {
+        return Flowable.fromIterable(this.values()).subscribeOn(Schedulers.io());
+    }
+
     boolean containsKey(final K key);
+
+    default Single<Boolean> rxContainsKey(final K key) {
+        return Single.fromCallable(() -> this.containsKey(key)).subscribeOn(Schedulers.io());
+    }
 
     V get(final K key);
 
+    default Single<V> rxGet(final K key) {
+        return Single.fromCallable(() -> this.get(key)).subscribeOn(Schedulers.io());
+    }
+
     V put(final K key, final V value);
+
+    default Single<V> rxPut(final K key, final V value) {
+        return Single.fromCallable(() -> this.put(key, value)).subscribeOn(Schedulers.io());
+    }
 
     V put(final K key, final V value, final long ttl, final TimeUnit ttlUnit);
 
+    default Single<V> rxPut(final K key, final V value, final long ttl, final TimeUnit ttlUnit) {
+        return Single.fromCallable(() -> this.put(key, value, ttl, ttlUnit)).subscribeOn(Schedulers.io());
+    }
+
     void putAll(final Map<? extends K, ? extends V> m);
+
+    default Completable rxPutAll(final Map<? extends K, ? extends V> m) {
+        return Completable.fromRunnable(() -> this.putAll(m)).subscribeOn(Schedulers.io());
+    }
 
     V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction);
 
+    default Single<V> rxComputeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+        return Single.fromCallable(() -> this.computeIfAbsent(key, mappingFunction)).subscribeOn(Schedulers.io());
+    }
+
     V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction);
+
+    default Single<V> rxComputeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        return Single.fromCallable(() -> this.computeIfPresent(key, remappingFunction)).subscribeOn(Schedulers.io());
+    }
 
     V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction);
 
+    default Single<V> rxCompute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        return Single.fromCallable(() -> this.compute(key, remappingFunction)).subscribeOn(Schedulers.io());
+    }
+
     V evict(final K key);
+
+    default Single<V> rxEvict(final K key) {
+        return Single.fromCallable(() -> this.evict(key)).subscribeOn(Schedulers.io());
+    }
 
     void clear();
 
+    default Completable rxClear() {
+        return Completable.fromRunnable(this::clear).subscribeOn(Schedulers.io());
+    }
+
     String addCacheListener(CacheListener<K, V> listener);
 
+    default Single<String> rxAddCacheListener(CacheListener<K, V> listener) {
+        return Single.fromCallable(() -> this.addCacheListener(listener)).subscribeOn(Schedulers.io());
+    }
+
     boolean removeCacheListener(final String listenerCacheId);
+
+    default Completable rxRemoveCacheListener(final String listenerCacheId) {
+        return Completable.fromRunnable(() -> this.removeCacheListener(listenerCacheId)).subscribeOn(Schedulers.io());
+    }
 }
