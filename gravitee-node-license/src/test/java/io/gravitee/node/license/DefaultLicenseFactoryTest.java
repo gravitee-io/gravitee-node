@@ -240,6 +240,7 @@ class DefaultLicenseFactoryTest {
             "am-policy-account-linking",
             "am-resource-sfr",
             "gravitee-en-secretprovider-vault",
+            "apim-policy-graphql-ratelimit",
         };
         assertThat(license.getFeatures()).containsExactlyInAnyOrder(features);
 
