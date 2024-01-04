@@ -19,6 +19,8 @@ import com.hazelcast.topic.ITopic;
 import io.gravitee.node.api.cluster.messaging.Message;
 import io.gravitee.node.api.cluster.messaging.MessageListener;
 import io.gravitee.node.api.cluster.messaging.Topic;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.util.UUID;
 
 /**
@@ -36,6 +38,11 @@ public class HazelcastTopic<T> implements Topic<T> {
     @Override
     public void publish(T event) {
         iTopic.publish(event);
+    }
+
+    @Override
+    public Completable rxPublish(final T event) {
+        return Completable.fromCompletionStage(iTopic.publishAsync(event)).subscribeOn(Schedulers.io());
     }
 
     @Override
