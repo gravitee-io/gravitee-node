@@ -1,3 +1,10 @@
+# [5.2.0](https://github.com/gravitee-io/gravitee-node/compare/5.1.0...5.2.0) (2024-01-04)
+
+
+### Features
+
+* **license:** add graphql rate limit policy feature ([e1bc497](https://github.com/gravitee-io/gravitee-node/commit/e1bc49700ab0ac43df326a42ace3f314c29ec784))
+
 # [5.1.0](https://github.com/gravitee-io/gravitee-node/compare/5.0.2...5.1.0) (2023-12-22)
 
 
