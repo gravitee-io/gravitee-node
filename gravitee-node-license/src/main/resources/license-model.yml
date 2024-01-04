@@ -25,6 +25,7 @@ packs:
             - apim-policy-transform-avro-json
             - am-policy-mfa-challenge
             - am-policy-account-linking
+            - apim-policy-graphql-ratelimit
     enterprise-identity-provider:
         features:
             - am-idp-salesforce
