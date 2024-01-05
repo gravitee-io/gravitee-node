@@ -34,7 +34,7 @@ public class JettyContainerConfiguration {
     }
 
     @Bean
-    public JettyHttpServerFactory jettyServerFactory() {
-        return new JettyHttpServerFactory();
+    public JettyHttpServerFactory jettyServerFactory(JettyHttpConfiguration jettyHttpConfiguration) {
+        return new JettyHttpServerFactory(jettyHttpConfiguration);
     }
 }

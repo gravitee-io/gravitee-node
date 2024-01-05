@@ -18,9 +18,9 @@ package io.gravitee.node.jetty;
 import io.gravitee.common.component.AbstractLifecycleComponent;
 import io.gravitee.node.jetty.handler.NoContentOutputErrorHandler;
 import io.gravitee.node.jetty.spring.JettyContainerConfiguration;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,10 +79,9 @@ public abstract class JettyHttpServer extends AbstractLifecycleComponent<JettyHt
     }
 
     private void attachNoContentHandler() {
-        AbstractHandler noContentHandler = new NoContentOutputErrorHandler();
+        Request.Handler noContentHandler = new NoContentOutputErrorHandler();
 
         // This part is needed to avoid WARN while starting container.
-        noContentHandler.setServer(server);
-        server.addBean(noContentHandler);
+        server.setErrorHandler(noContentHandler);
     }
 }

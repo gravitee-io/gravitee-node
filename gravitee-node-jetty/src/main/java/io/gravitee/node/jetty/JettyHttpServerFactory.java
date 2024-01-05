@@ -25,7 +25,6 @@ import org.eclipse.jetty.server.handler.StatisticsHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -37,8 +36,11 @@ public class JettyHttpServerFactory implements FactoryBean<Server> {
     private static final String KEYSTORE_TYPE_PKCS12 = "pkcs12";
     private static final String KEYSTORE_TYPE_JKS = "jks";
 
-    @Autowired
-    private JettyHttpConfiguration jettyHttpConfiguration;
+    private final JettyHttpConfiguration jettyHttpConfiguration;
+
+    public JettyHttpServerFactory(JettyHttpConfiguration jettyHttpConfiguration) {
+        this.jettyHttpConfiguration = jettyHttpConfiguration;
+    }
 
     @Override
     public Server getObject() {
