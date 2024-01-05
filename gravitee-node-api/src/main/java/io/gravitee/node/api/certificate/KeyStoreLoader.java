@@ -26,8 +26,7 @@ public interface KeyStoreLoader {
     String CERTIFICATE_FORMAT_PEM = "PEM";
     String CERTIFICATE_FORMAT_PKCS12 = "PKCS12";
     String CERTIFICATE_FORMAT_SELF_SIGNED = "SELF-SIGNED";
-    String CERTIFICATE_FORMAT_PEM_REGISTRY = "PEM-REGISTRY";
-    String GRAVITEEIO_PEM_REGISTRY = "graviteeio-pem-registry";
+    String CERTIFICATE_FORMAT_PEM_REGISTRY = "KUBERNETES-PEM-REGISTRY";
 
     void start();
 
