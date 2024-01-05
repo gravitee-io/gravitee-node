@@ -1,3 +1,10 @@
+## [4.8.2](https://github.com/gravitee-io/gravitee-node/compare/4.8.1...4.8.2) (2024-01-05)
+
+
+### Bug Fixes
+
+* update PEM registry logic ([#278](https://github.com/gravitee-io/gravitee-node/issues/278)) ([a4299c7](https://github.com/gravitee-io/gravitee-node/commit/a4299c7e38e9421b5dfc6fb1cec7144f5c69bb23))
+
 ## [4.8.1](https://github.com/gravitee-io/gravitee-node/compare/4.8.0...4.8.1) (2023-12-07)
 
 
