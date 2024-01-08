@@ -90,11 +90,6 @@ public class LicenseLoaderService extends AbstractService<LicenseLoaderService> 
         }
     }
 
-    @Override
-    protected String name() {
-        return "License service";
-    }
-
     private void loadLicense() {
         final License license = readLicense();
 

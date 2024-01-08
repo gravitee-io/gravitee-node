@@ -26,6 +26,7 @@ import io.gravitee.node.license.DefaultLicenseManager;
 import io.gravitee.node.license.DefaultLicenseModelService;
 import io.gravitee.node.license.LicenseLoaderService;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
+import io.gravitee.node.management.http.vertx.endpoint.DefaultManagementEndpointManager;
 import io.gravitee.plugin.core.api.PluginRegistry;
 import org.springframework.context.annotation.Bean;
 
@@ -64,5 +65,10 @@ public class NodeContainerConfiguration {
         ManagementEndpointManager managementEndpointManager
     ) {
         return new LicenseLoaderService(node, configuration, licenseFactory, licenseManager, managementEndpointManager);
+    }
+
+    @Bean
+    public ManagementEndpointManager managementEndpointManager() {
+        return new DefaultManagementEndpointManager();
     }
 }

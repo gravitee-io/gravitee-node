@@ -61,6 +61,46 @@ The Gravitee Node Vertx module is a common piece of Gravitee products that offer
 
 == Releases
 
+=== 5.3.x
+The following has been implemented on v5.3.x
+
+==== Changelog
+
+* Add support for boot plugins
+
+===== Migrating to node v5.3.0
+
+ * Update `gravitee-node` to 5.3.0 and `gravitee-plugin` to 3.0.0
+ * Remove Spring imports related to the plugin's configuration. Usually, the plugin configuration classes are named `XXXPluginConfiguration`. They are not necessary anymore as they are now directly added by the plugin handler.
+ * `SpringBasedContainer` requires the node implementation class to be passed to the constructor. Ex:
+
+```java
+public class GatewayContainer extends SpringBasedContainer {
+
+    public GatewayContainer() {
+        super(GatewayNode.class);
+    }
+    ...
+}
+```
+
+ * Add `@Lazy` on any application bean required by the Node implementation class. Ex:
+
+```java
+public class GatewayNode extends AbstractNode {
+
+    @Lazy
+    @Autowired
+    private NodeMetadataResolver nodeMetadataResolver;
+    ...
+}
+```
+
+ * Remove `EventManager` bean because it is now created by default.
+ * Remove `ClusterManager` bean because it is now created by default.
+
+IMPORTANT: `gravitee-node` previous behavior was to just log and continue the startup in case of an error during plugin initialization. *The new behavior is to rethrow the error and stop the startup*. It makes it clearer and helps in debugging.
+
 === 5.0.x
 The following has been implemented on v5.0.x
 

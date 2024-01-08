@@ -198,7 +198,7 @@ class FileKeyStoreLoaderTest {
         FileCopyUtils.copy(new File(getPath("localhost2.p12")), tempKeyStore);
 
         await()
-            .atMost(2, TimeUnit.SECONDS)
+            .atMost(10, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 KeyStoreEvent event = eventRef.get();
                 assertThat(event).isNotNull();

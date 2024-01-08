@@ -13,7 +13,7 @@ import org.springframework.core.env.Environment;
  * @author GraviteeSource Team
  */
 @Configuration
-public class SecretServiceBeanFactory {
+public class SecretServiceConfiguration {
 
     @Bean
     public GraviteeConfigurationSecretResolverDispatcher nodeSecretResolverDispatcher(

@@ -16,16 +16,19 @@
 package io.gravitee.node.reporter.plugin;
 
 import io.gravitee.node.reporter.ReporterManager;
+import io.gravitee.node.reporter.spring.ReporterPluginConfiguration;
 import io.gravitee.plugin.core.api.AbstractSpringPluginHandler;
 import io.gravitee.plugin.core.api.Plugin;
 import io.gravitee.plugin.core.api.PluginClassLoaderFactory;
 import io.gravitee.reporter.api.Reporter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Import(ReporterPluginConfiguration.class)
 public class ReporterPluginHandler extends AbstractSpringPluginHandler<Reporter> {
 
     private static final String PLUGIN_TYPE = "reporter";

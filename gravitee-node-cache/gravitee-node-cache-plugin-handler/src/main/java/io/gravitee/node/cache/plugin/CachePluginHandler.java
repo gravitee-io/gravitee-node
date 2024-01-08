@@ -17,21 +17,25 @@ package io.gravitee.node.cache.plugin;
 
 import io.gravitee.node.api.cache.CacheManager;
 import io.gravitee.node.api.configuration.Configuration;
+import io.gravitee.node.cache.spring.NodeCachePluginConfiguration;
 import io.gravitee.plugin.core.api.AbstractPluginHandler;
 import io.gravitee.plugin.core.api.Plugin;
 import io.gravitee.plugin.core.api.PluginClassLoaderFactory;
 import io.gravitee.plugin.core.api.PluginContextFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Import;
 
 /**
  * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
  * @author GraviteeSource Team
  */
 @Slf4j
+@Import(NodeCachePluginConfiguration.class)
 public class CachePluginHandler extends AbstractPluginHandler {
 
     private static final String PLUGIN_TYPE = "cache";
@@ -76,6 +80,8 @@ public class CachePluginHandler extends AbstractPluginHandler {
             } else {
                 log.warn("Cache manager plugin '{}' is not the type configured and won't be installed.", plugin.id());
             }
+        } catch (NoSuchBeanDefinitionException nsbde) {
+            logger.info("No CacheManager instance has been detected. Skipping.");
         } catch (Exception e) {
             logger.error("Unexpected error while registering cache manager {}", plugin.id(), e);
             // Be sure that the context does not exist anymore.

@@ -21,11 +21,7 @@ import io.gravitee.common.service.AbstractService;
 import io.gravitee.common.util.ListReverser;
 import io.gravitee.common.util.Version;
 import io.gravitee.node.api.Node;
-import io.gravitee.node.api.license.LicenseManager;
-import io.gravitee.node.certificates.KeyStoreLoaderManager;
 import io.gravitee.node.cluster.NodeClusterService;
-import io.gravitee.node.license.DefaultLicenseManager;
-import io.gravitee.node.license.LicenseLoaderService;
 import io.gravitee.node.management.http.ManagementService;
 import io.gravitee.node.monitoring.handler.NodeMonitoringEventHandler;
 import io.gravitee.node.monitoring.healthcheck.NodeHealthCheckService;
@@ -43,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
 
@@ -51,6 +48,7 @@ import org.springframework.core.env.Environment;
  * @author GraviteeSource Team
  */
 @Slf4j
+@SuppressWarnings("rawtypes")
 public abstract class AbstractNode extends AbstractService<Node> implements Node, ApplicationContextAware {
 
     private String hostname;
@@ -135,8 +133,6 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
     public List<Class<? extends LifecycleComponent>> components() {
         List<Class<? extends LifecycleComponent>> components = new ArrayList<>();
 
-        components.add(LicenseManager.class);
-        components.add(LicenseLoaderService.class);
         components.add(PluginEventListener.class);
         components.add(PluginRegistry.class);
         components.add(NodeClusterService.class);
@@ -151,38 +147,35 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
         return components;
     }
 
-    private void preStartComponents(Iterable<Class<? extends LifecycleComponent>> components) throws Exception {
+    private void preStartComponents(Iterable<Class<? extends LifecycleComponent>> components) {
         for (Class<? extends LifecycleComponent> componentClass : components) {
             try {
                 log.debug("\tPre-starting component: {}", componentClass.getSimpleName());
                 this.applicationContext.getBean(componentClass).preStart();
             } catch (Exception e) {
-                log.error("An error occurred while pre-starting component {}", componentClass, e);
-                throw e;
+                throw new RuntimeException("An error occurred while pre-starting component " + componentClass, e);
             }
         }
     }
 
-    private void startComponents(Iterable<Class<? extends LifecycleComponent>> components) throws Exception {
+    private void startComponents(Iterable<Class<? extends LifecycleComponent>> components) {
         for (Class<? extends LifecycleComponent> componentClass : components) {
             try {
                 log.info("\tStarting component: {}", componentClass.getSimpleName());
                 this.applicationContext.getBean(componentClass).start();
             } catch (Exception e) {
-                log.error("An error occurred while starting component {}", componentClass, e);
-                throw e;
+                throw new RuntimeException("An error occurred while starting component " + componentClass, e);
             }
         }
     }
 
-    private void postStartComponents(Iterable<Class<? extends LifecycleComponent>> components) throws Exception {
+    private void postStartComponents(Iterable<Class<? extends LifecycleComponent>> components) {
         for (Class<? extends LifecycleComponent> componentClass : components) {
             try {
                 log.debug("\tPost-starting component: {}", componentClass.getSimpleName());
                 this.applicationContext.getBean(componentClass).postStart();
             } catch (Exception e) {
-                log.error("An error occurred while post-starting component {}", componentClass, e);
-                throw e;
+                throw new RuntimeException("An error occurred while post-starting component " + componentClass, e);
             }
         }
     }
@@ -195,6 +188,8 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
                     log.debug("\tPre-stopping component: {}", componentClass.getSimpleName());
                     lifecycleComponent.preStop();
                 }
+            } catch (NoSuchBeanDefinitionException nsbde) {
+                // Ignored. It could be due to an issue during startup.
             } catch (Exception e) {
                 log.error("An error occurred while pre-stopping component {}", componentClass.getSimpleName(), e);
             }
@@ -209,20 +204,23 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
                     log.info("\tStopping component: {}", componentClass.getSimpleName());
                     lifecycleComponent.stop();
                 }
+            } catch (NoSuchBeanDefinitionException nsbde) {
+                // Ignored. It could be due to an issue during startup.
             } catch (Exception e) {
                 log.error("An error occurred while stopping component {}", componentClass.getSimpleName(), e);
             }
         }
     }
 
-    private void postStopComponents(Iterable<Class<? extends LifecycleComponent>> components) throws Exception {
+    private void postStopComponents(Iterable<Class<? extends LifecycleComponent>> components) {
         for (Class<? extends LifecycleComponent> componentClass : components) {
             try {
                 log.debug("\tPost-stopping component: {}", componentClass.getSimpleName());
                 this.applicationContext.getBean(componentClass).postStop();
+            } catch (NoSuchBeanDefinitionException nsbde) {
+                // Ignored. It could be due to an issue during startup.
             } catch (Exception e) {
                 log.error("An error occurred while post-stopping component {}", componentClass, e);
-                throw e;
             }
         }
     }

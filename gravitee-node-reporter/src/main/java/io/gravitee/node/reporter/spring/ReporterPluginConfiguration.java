@@ -13,19 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.cache.spring;
+package io.gravitee.node.reporter.spring;
 
-import io.gravitee.node.cache.NodeCacheService;
+import io.gravitee.node.reporter.ReporterManager;
+import io.gravitee.node.reporter.vertx.ReporterManagerImpl;
+import io.gravitee.node.reporter.vertx.verticle.ReporterVerticle;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
+ * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class NodeCacheConfiguration {
+@Configuration
+public class ReporterPluginConfiguration {
 
     @Bean
-    public NodeCacheService nodeCacheService() {
-        return new NodeCacheService();
+    public ReporterManager reporterManager() {
+        return new ReporterManagerImpl();
+    }
+
+    @Bean
+    public ReporterVerticle reporterVerticle() {
+        return new ReporterVerticle();
     }
 }
