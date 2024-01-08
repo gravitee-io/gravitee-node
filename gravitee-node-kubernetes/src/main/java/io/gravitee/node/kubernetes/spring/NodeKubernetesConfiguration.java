@@ -16,6 +16,7 @@
 package io.gravitee.node.kubernetes.spring;
 
 import io.gravitee.kubernetes.client.KubernetesClient;
+import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.certificates.DefaultKeyStoreLoaderFactoryRegistry;
 import io.gravitee.node.kubernetes.keystoreloader.KubernetesKeyStoreLoaderFactory;
 import org.springframework.context.annotation.Bean;
@@ -31,7 +32,7 @@ public class NodeKubernetesConfiguration {
     @Bean
     public KubernetesKeyStoreLoaderFactory kubernetesKeyStoreLoaderFactory(
         KubernetesClient kubernetesClient,
-        DefaultKeyStoreLoaderFactoryRegistry keyStoreLoaderFactoryRegistry
+        DefaultKeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry
     ) {
         final KubernetesKeyStoreLoaderFactory kubernetesKeyStoreLoaderFactory = new KubernetesKeyStoreLoaderFactory(kubernetesClient);
         keyStoreLoaderFactoryRegistry.registerFactory(kubernetesKeyStoreLoaderFactory);
