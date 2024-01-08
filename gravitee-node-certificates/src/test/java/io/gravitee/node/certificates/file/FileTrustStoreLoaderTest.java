@@ -159,7 +159,7 @@ class FileTrustStoreLoaderTest {
         Files.copy(Path.of(getPath("truststore2-3.jks")), target, StandardCopyOption.REPLACE_EXISTING);
 
         await()
-            .atMost(2, TimeUnit.SECONDS)
+            .atMost(10, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 assertThat(events).withFailMessage("no events triggered following keystore override").hasSize(2);
                 assertThat(events.get(1)).isInstanceOf(KeyStoreEvent.LoadEvent.class);

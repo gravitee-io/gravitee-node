@@ -33,16 +33,15 @@ public abstract class AbstractContainer extends AbstractService<Container> imple
     private static final String GRAVITEE_HOME_PROPERTY = "gravitee.home";
     private static final String GRAVITEE_CONFIGURATION_PROPERTY = "gravitee.conf";
 
+    protected final Class<? extends Node> nodeClass;
     protected boolean stopped = false;
+    protected boolean initialized = false;
 
-    public AbstractContainer() {
-        initialize();
+    public AbstractContainer(Class<? extends Node> nodeClass) {
+        this.nodeClass = nodeClass;
     }
 
-    protected void initialize() {
-        initializeEnvironment();
-        initializeLogging();
-    }
+    public abstract void initialize();
 
     protected void initializeEnvironment() {
         // Set system properties if needed
@@ -78,6 +77,8 @@ public abstract class AbstractContainer extends AbstractService<Container> imple
 
     @Override
     protected void doStart() throws Exception {
+        initialize();
+
         LoggerFactory.getLogger(AbstractContainer.class).info("Starting {}...", name());
 
         try {

@@ -15,10 +15,26 @@
  */
 package io.gravitee.node.management.http.endpoint;
 
+import java.util.function.Consumer;
+
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
 public interface ManagementEndpointManager {
+    /**
+     * Register a listener that will be called each time a management endpoint is registered.
+     * If endpoints are register before the listener, the listener will be notified with all the existing management endpoints.
+     *
+     * @param listener the listener that will be called each time a management endpoint is registered.
+     */
+    void onEndpointRegistered(Consumer<ManagementEndpoint> listener);
+
+    /**
+     * Register a new management endpoint. The endpoint will be immediately propagated to all the registered listeners.
+     *
+     * @param endpoint the endpoint to register
+     */
     void register(ManagementEndpoint endpoint);
 }

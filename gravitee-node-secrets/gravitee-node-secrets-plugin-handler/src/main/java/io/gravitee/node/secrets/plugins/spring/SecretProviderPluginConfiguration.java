@@ -18,6 +18,7 @@ package io.gravitee.node.secrets.plugins.spring;
 import io.gravitee.node.secrets.plugins.SecretProviderClassLoaderFactory;
 import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderClassLoaderFactory;
 import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderPluginManager;
+import io.gravitee.node.secrets.plugins.internal.SecretProviderPluginHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -25,7 +26,7 @@ import org.springframework.context.annotation.Configuration;
  * @author GraviteeSource Team
  */
 @Configuration
-public class SecretProviderBeanFactory {
+public class SecretProviderPluginConfiguration {
 
     @Bean
     public DefaultSecretProviderPluginManager secretProviderPluginManager(

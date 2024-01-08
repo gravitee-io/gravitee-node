@@ -29,7 +29,7 @@
 
     <groupId>io.gravitee.node</groupId>
     <artifactId>gravitee-node</artifactId>
-    <version>5.2.0</version>
+    <version>5.3.0-archi-297-boot-plugin-loading-isolation-SNAPSHOT</version>
 
     <name>Gravitee.io - Node</name>
 
@@ -58,7 +58,7 @@
     <properties>
         <gravitee-bom.version>6.0.6</gravitee-bom.version>
         <gravitee-common.version>3.3.3</gravitee-common.version>
-        <gravitee-plugin.version>2.2.0</gravitee-plugin.version>
+        <gravitee-plugin.version>3.0.0</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.25.0</gravitee-reporter-api.version>
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
         <gravitee-kubernetes.version>3.1.0</gravitee-kubernetes.version>

@@ -17,6 +17,7 @@ package io.gravitee.node.management.http.vertx.verticle;
 
 import io.gravitee.common.http.HttpStatusCode;
 import io.gravitee.node.management.http.configuration.ConfigurationEndpoint;
+import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.management.http.metrics.prometheus.PrometheusEndpoint;
 import io.gravitee.node.management.http.node.NodeEndpoint;
@@ -24,6 +25,7 @@ import io.gravitee.node.management.http.node.heap.HeapDumpEndpoint;
 import io.gravitee.node.management.http.node.thread.ThreadDumpEndpoint;
 import io.gravitee.node.management.http.vertx.configuration.HttpServerConfiguration;
 import io.vertx.core.*;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.web.Router;
@@ -162,6 +164,10 @@ public class ManagementVerticle extends AbstractVerticle {
                     LOGGER.error("HTTP listener for Node Management can not be started properly", event.cause());
                     promise.fail(event.cause());
                 } else {
+                    // Listen to the endpoint manager to set up route when a management endpoint is registered.
+                    managementEndpointManager.onEndpointRegistered(this::setupRoute);
+
+                    // Register some default endpoints.
                     managementEndpointManager.register(nodeEndpoint);
                     managementEndpointManager.register(configurationEndpoint);
 
@@ -192,5 +198,35 @@ public class ManagementVerticle extends AbstractVerticle {
                     promise.complete();
                 }
             });
+    }
+
+    private void setupRoute(ManagementEndpoint endpoint) {
+        LOGGER.info(
+            "Register a new endpoint for Management API: {} {} [{}]",
+            endpoint.method(),
+            endpoint.path(),
+            endpoint.getClass().getName()
+        );
+
+        if (endpoint.isWebhook()) {
+            nodeWebhookRouter.route(convert(endpoint.method()), endpoint.path()).handler(endpoint::handle);
+        } else {
+            nodeRouter.route(convert(endpoint.method()), endpoint.path()).handler(endpoint::handle);
+        }
+    }
+
+    private HttpMethod convert(io.gravitee.common.http.HttpMethod httpMethod) {
+        return switch (httpMethod) {
+            case CONNECT -> HttpMethod.CONNECT;
+            case DELETE -> HttpMethod.DELETE;
+            case GET -> HttpMethod.GET;
+            case HEAD -> HttpMethod.HEAD;
+            case OPTIONS -> HttpMethod.OPTIONS;
+            case PATCH -> HttpMethod.PATCH;
+            case POST -> HttpMethod.POST;
+            case PUT -> HttpMethod.PUT;
+            case TRACE -> HttpMethod.TRACE;
+            case OTHER -> HttpMethod.valueOf(httpMethod.name());
+        };
     }
 }

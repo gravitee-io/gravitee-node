@@ -15,20 +15,25 @@
  */
 package io.gravitee.node.container.spring;
 
+import io.gravitee.common.component.LifecycleComponent;
 import io.gravitee.kubernetes.client.spring.KubernetesClientConfiguration;
 import io.gravitee.node.api.Node;
-import io.gravitee.node.cache.spring.NodeCacheConfiguration;
-import io.gravitee.node.cluster.spring.NodeClusterConfiguration;
+import io.gravitee.node.api.license.LicenseManager;
+import io.gravitee.node.certificates.spring.NodeCertificatesConfiguration;
 import io.gravitee.node.container.AbstractContainer;
 import io.gravitee.node.container.spring.env.EnvironmentConfiguration;
 import io.gravitee.node.container.spring.env.PropertiesConfiguration;
+import io.gravitee.node.license.LicenseLoaderService;
 import io.gravitee.node.management.http.spring.ManagementConfiguration;
 import io.gravitee.node.monitoring.spring.NodeMonitoringConfiguration;
-import io.gravitee.node.plugins.service.spring.ServiceConfiguration;
-import io.gravitee.node.reporter.spring.ReporterConfiguration;
-import io.gravitee.node.secrets.plugins.spring.SecretProviderBeanFactory;
-import io.gravitee.node.secrets.service.spring.SecretServiceBeanFactory;
+import io.gravitee.node.secrets.service.spring.SecretServiceConfiguration;
+import io.gravitee.node.vertx.spring.VertxConfiguration;
+import io.gravitee.plugin.core.internal.BootPluginEventListener;
+import io.gravitee.plugin.core.internal.PluginRegistryImpl;
+import io.gravitee.plugin.core.spring.BootPluginConfiguration;
+import io.gravitee.plugin.core.spring.BootPluginHandlerBeanRegistryPostProcessor;
 import io.gravitee.plugin.core.spring.PluginConfiguration;
+import io.gravitee.plugin.core.spring.PluginHandlerBeanRegistryPostProcessor;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -45,47 +50,123 @@ public abstract class SpringBasedContainer extends AbstractContainer {
 
     private AnnotationConfigApplicationContext ctx;
 
-    protected SpringBasedContainer() {
-        super();
+    protected SpringBasedContainer(Class<? extends Node> nodeClass) {
+        super(nodeClass);
     }
 
     @Override
-    protected void initialize() {
-        super.initialize();
+    public void initialize() {
+        if (!initialized) {
+            initializeEnvironment();
+            initializeLogging();
+            initializeContext();
+        }
 
-        this.initializeContext();
+        initialized = true;
     }
 
     protected void initializeContext() {
+        log.info("Starting Boot phase.");
+
+        final AnnotationConfigApplicationContext bootCtx = new AnnotationConfigApplicationContext();
+        final List<Class<?>> bootstrapClasses = bootstrapClasses();
+
+        // Register all the bootstrap classes into the boot spring context.
+        bootstrapClasses.forEach(bootCtx::register);
+        bootCtx.refresh();
+        startBootstrapComponents(bootCtx);
+
+        log.info("Boot phase done. Initializing context.");
+
+        // Create an application context and inherit from boot context.
         ctx = new AnnotationConfigApplicationContext();
+        ctx.setEnvironment(bootCtx.getEnvironment());
+        ctx.setParent(bootCtx);
 
         List<Class<?>> classes = annotatedClasses();
         classes.forEach(ctx::register);
 
-        // Finally refresh the context
         ctx.refresh();
+
+        log.info("Context initialized.");
+    }
+
+    protected void startBootstrapComponents(AnnotationConfigApplicationContext ctx) {
+        final List<Class<? extends LifecycleComponent<?>>> componentClasses = bootstrapComponents();
+        final PluginRegistryImpl pluginRegistry = ctx.getBean(PluginRegistryImpl.class);
+        final List<? extends LifecycleComponent<?>> components = componentClasses.stream().map(ctx::getBean).toList();
+
+        try {
+            // Start the components that a required before bootstrapping the plugin registry.
+            for (LifecycleComponent<?> component : components) {
+                component.preStart();
+            }
+
+            for (LifecycleComponent<?> component : components) {
+                component.start();
+            }
+
+            // Bootstrap the plugin registry to load all boot plugins (e.g.: secret providers, ...).
+            pluginRegistry.bootstrap();
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to bootstrap the components.", e);
+        }
+    }
+
+    protected void stopBootstrapComponents(AnnotationConfigApplicationContext ctx) {
+        final List<Class<? extends LifecycleComponent<?>>> componentClasses = bootstrapComponents();
+        final List<? extends LifecycleComponent<?>> components = componentClasses.stream().map(ctx::getBean).toList();
+
+        try {
+            for (LifecycleComponent<?> component : components) {
+                component.preStop();
+            }
+
+            for (LifecycleComponent<?> component : components) {
+                component.stop();
+            }
+        } catch (Exception e) {
+            log.error("Unable to shutdown the components.", e);
+        }
+    }
+
+    protected List<Class<?>> bootstrapClasses() {
+        // These classes represent the minimal list of Spring beans configuration to initialize during the boot phase.
+        final List<Class<?>> bootstrapClasses = new ArrayList<>();
+        bootstrapClasses.add(EnvironmentConfiguration.class);
+        bootstrapClasses.add(PropertiesConfiguration.class);
+        bootstrapClasses.add(NodeContainerConfiguration.class);
+        bootstrapClasses.add(BootPluginConfiguration.class);
+        bootstrapClasses.add(SecretServiceConfiguration.class);
+        bootstrapClasses.add(NodeCertificatesConfiguration.class);
+        bootstrapClasses.add(KubernetesClientConfiguration.class);
+        bootstrapClasses.add(nodeClass);
+
+        // Bean registry post processor needs to be manually registered as it MUST be taken in account before spring context is refreshed.
+        bootstrapClasses.add(BootPluginHandlerBeanRegistryPostProcessor.class);
+
+        return bootstrapClasses;
+    }
+
+    protected List<Class<? extends LifecycleComponent<?>>> bootstrapComponents() {
+        // These classes represent the list of Gravitee component to start during the boot phase (in order).
+        final List<Class<? extends LifecycleComponent<?>>> bootstrapComponentClasses = new ArrayList<>();
+        bootstrapComponentClasses.add(LicenseManager.class);
+        bootstrapComponentClasses.add(LicenseLoaderService.class);
+        bootstrapComponentClasses.add(BootPluginEventListener.class);
+
+        return bootstrapComponentClasses;
     }
 
     protected List<Class<?>> annotatedClasses() {
         List<Class<?>> classes = new ArrayList<>();
-
-        classes.add(EnvironmentConfiguration.class);
-        classes.add(PropertiesConfiguration.class);
-
+        classes.add(VertxConfiguration.class);
         classes.add(PluginConfiguration.class);
-        classes.add(ServiceConfiguration.class);
-
         classes.add(ManagementConfiguration.class);
-        classes.add(ReporterConfiguration.class);
-
-        classes.add(NodeContainerConfiguration.class);
-        classes.add(SecretProviderBeanFactory.class);
-        classes.add(SecretServiceBeanFactory.class);
-        classes.add(NodeClusterConfiguration.class);
-        classes.add(NodeCacheConfiguration.class);
         classes.add(NodeMonitoringConfiguration.class);
-        classes.add(KubernetesClientConfiguration.class);
 
+        // Bean registry post processor needs to be manually registered as it MUST be taken in account before spring context is refreshed.
+        classes.add(PluginHandlerBeanRegistryPostProcessor.class);
         return classes;
     }
 
@@ -96,6 +177,7 @@ public abstract class SpringBasedContainer extends AbstractContainer {
                 log.info("Shutting-down {}...", name());
             }
             try {
+                stopBootstrapComponents(ctx);
                 node().stop();
             } catch (Exception ex) {
                 LoggerFactory.getLogger(this.getClass()).error("Unexpected error", ex);

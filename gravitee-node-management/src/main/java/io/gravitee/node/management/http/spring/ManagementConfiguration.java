@@ -22,7 +22,7 @@ import io.gravitee.node.management.http.metrics.prometheus.PrometheusEndpoint;
 import io.gravitee.node.management.http.node.NodeEndpoint;
 import io.gravitee.node.management.http.node.heap.HeapDumpEndpoint;
 import io.gravitee.node.management.http.node.thread.ThreadDumpEndpoint;
-import io.gravitee.node.management.http.vertx.endpoint.ManagementEndpointManagerImpl;
+import io.gravitee.node.management.http.vertx.endpoint.DefaultManagementEndpointManager;
 import io.gravitee.node.management.http.vertx.spring.HttpServerSpringConfiguration;
 import io.gravitee.node.management.http.vertx.verticle.ManagementVerticle;
 import org.springframework.context.annotation.Bean;
@@ -45,11 +45,6 @@ public class ManagementConfiguration {
     @Bean
     public ManagementVerticle managementVerticle() {
         return new ManagementVerticle();
-    }
-
-    @Bean
-    public ManagementEndpointManager managementEndpointManager() {
-        return new ManagementEndpointManagerImpl();
     }
 
     @Bean

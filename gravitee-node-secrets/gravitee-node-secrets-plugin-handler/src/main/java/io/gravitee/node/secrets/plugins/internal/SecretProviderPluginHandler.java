@@ -18,23 +18,25 @@ package io.gravitee.node.secrets.plugins.internal;
 import io.gravitee.node.api.secrets.SecretManagerConfiguration;
 import io.gravitee.node.api.secrets.SecretProvider;
 import io.gravitee.node.secrets.plugins.SecretProviderPlugin;
+import io.gravitee.node.secrets.plugins.spring.SecretProviderPluginConfiguration;
 import io.gravitee.plugin.core.api.AbstractSimplePluginHandler;
+import io.gravitee.plugin.core.api.BootPluginHandler;
 import io.gravitee.plugin.core.api.Plugin;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 
 /**
  * @author GraviteeSource Team
  */
-@NoArgsConstructor
-public class SecretProviderPluginHandler extends AbstractSimplePluginHandler<SecretProviderPlugin<?, ?>> {
+@Import(SecretProviderPluginConfiguration.class)
+public class SecretProviderPluginHandler extends AbstractSimplePluginHandler<SecretProviderPlugin<?, ?>> implements BootPluginHandler {
 
-    @Autowired
-    private DefaultSecretProviderPluginManager secretProviderPluginManager;
+    private final DefaultSecretProviderPluginManager secretProviderPluginManager;
 
-    SecretProviderPluginHandler(DefaultSecretProviderPluginManager secretProviderPluginManager) {
+    public SecretProviderPluginHandler(DefaultSecretProviderPluginManager secretProviderPluginManager) {
         this.secretProviderPluginManager = secretProviderPluginManager;
     }
 

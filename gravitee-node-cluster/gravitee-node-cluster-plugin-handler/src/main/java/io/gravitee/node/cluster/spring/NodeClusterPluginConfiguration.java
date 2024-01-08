@@ -13,22 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.plugins.service.spring;
+package io.gravitee.node.cluster.spring;
 
-import io.gravitee.node.plugins.service.ServiceManager;
-import io.gravitee.node.plugins.service.impl.ServiceManagerImpl;
+import io.gravitee.node.cluster.NodeClusterService;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Configuration
-public class ServiceConfiguration {
+public class NodeClusterPluginConfiguration {
 
     @Bean
-    public ServiceManager serviceManager() {
-        return new ServiceManagerImpl();
+    public NodeClusterService nodeClusterService() {
+        return new NodeClusterService();
     }
 }

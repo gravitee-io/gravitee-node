@@ -17,15 +17,18 @@ package io.gravitee.node.plugins.service.handler;
 
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.plugins.service.ServiceManager;
+import io.gravitee.node.plugins.service.spring.ServicePluginConfiguration;
 import io.gravitee.plugin.core.api.AbstractSpringPluginHandler;
 import io.gravitee.plugin.core.api.Plugin;
 import io.gravitee.plugin.core.api.PluginClassLoaderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Import(ServicePluginConfiguration.class)
 public class ServicePluginHandler extends AbstractSpringPluginHandler<AbstractService> {
 
     private static final String PLUGIN_TYPE = "service";
