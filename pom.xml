@@ -56,7 +56,7 @@
     </modules>
 
     <properties>
-        <gravitee-bom.version>6.0.24</gravitee-bom.version>
+        <gravitee-bom.version>7.0.0-archi-296-upgrade-bom-SNAPSHOT</gravitee-bom.version>
         <gravitee-common.version>3.3.3</gravitee-common.version>
         <gravitee-plugin.version>3.0.0</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.25.0</gravitee-reporter-api.version>
