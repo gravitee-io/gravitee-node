@@ -1,3 +1,10 @@
+# [5.3.0](https://github.com/gravitee-io/gravitee-node/compare/5.2.0...5.3.0) (2024-01-16)
+
+
+### Features
+
+* load boot plugins ([94a290f](https://github.com/gravitee-io/gravitee-node/commit/94a290f9832145f24371f6ac880cf7f382dd1f32))
+
 # [5.2.0](https://github.com/gravitee-io/gravitee-node/compare/5.1.0...5.2.0) (2024-01-04)
 
 
