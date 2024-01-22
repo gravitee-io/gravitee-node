@@ -33,13 +33,10 @@ public abstract class AbstractContainer extends AbstractService<Container> imple
     private static final String GRAVITEE_HOME_PROPERTY = "gravitee.home";
     private static final String GRAVITEE_CONFIGURATION_PROPERTY = "gravitee.conf";
 
-    protected final Class<? extends Node> nodeClass;
     protected boolean stopped = false;
     protected boolean initialized = false;
 
-    public AbstractContainer(Class<? extends Node> nodeClass) {
-        this.nodeClass = nodeClass;
-    }
+    public AbstractContainer() {}
 
     public abstract void initialize();
 

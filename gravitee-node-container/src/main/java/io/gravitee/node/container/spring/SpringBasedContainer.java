@@ -39,6 +39,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
@@ -49,10 +50,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public abstract class SpringBasedContainer extends AbstractContainer {
 
     private AnnotationConfigApplicationContext ctx;
-
-    protected SpringBasedContainer(Class<? extends Node> nodeClass) {
-        super(nodeClass);
-    }
 
     @Override
     public void initialize() {
@@ -140,7 +137,6 @@ public abstract class SpringBasedContainer extends AbstractContainer {
         bootstrapClasses.add(SecretServiceConfiguration.class);
         bootstrapClasses.add(NodeCertificatesConfiguration.class);
         bootstrapClasses.add(KubernetesClientConfiguration.class);
-        bootstrapClasses.add(nodeClass);
 
         // Bean registry post processor needs to be manually registered as it MUST be taken in account before spring context is refreshed.
         bootstrapClasses.add(BootPluginHandlerBeanRegistryPostProcessor.class);
