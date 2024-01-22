@@ -1,3 +1,10 @@
+## [5.3.1](https://github.com/gravitee-io/gravitee-node/compare/5.3.0...5.3.1) (2024-01-22)
+
+
+### Bug Fixes
+
+* defer node bean instantiation ([21650b4](https://github.com/gravitee-io/gravitee-node/commit/21650b4d56710eeb899515e552b515331da805f7))
+
 # [5.3.0](https://github.com/gravitee-io/gravitee-node/compare/5.2.0...5.3.0) (2024-01-16)
 
 
