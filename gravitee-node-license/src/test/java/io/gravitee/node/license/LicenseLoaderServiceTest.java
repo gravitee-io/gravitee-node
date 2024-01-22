@@ -36,9 +36,6 @@ import org.mockito.stubbing.Answer;
 class LicenseLoaderServiceTest {
 
     @Mock
-    private Node node;
-
-    @Mock
     private Configuration configuration;
 
     @Mock
@@ -54,7 +51,7 @@ class LicenseLoaderServiceTest {
 
     @BeforeEach
     public void init() throws Exception {
-        cut = new LicenseLoaderService(node, configuration, licenseFactory, licenseManager, managementEndpointManager);
+        cut = new LicenseLoaderService(configuration, licenseFactory, licenseManager, managementEndpointManager);
     }
 
     @Test
@@ -64,7 +61,6 @@ class LicenseLoaderServiceTest {
         verify(managementEndpointManager).register(any(NodeLicenseManagementEndpoint.class));
         verify(licenseManager).onLicenseExpires(any(Consumer.class));
         verifyNoMoreInteractions(licenseManager);
-        verifyNoInteractions(node);
     }
 
     @Test
@@ -77,7 +73,6 @@ class LicenseLoaderServiceTest {
         cut.doStart();
 
         verify(licenseManager).registerPlatformLicense(license);
-        verifyNoInteractions(node);
     }
 
     @Test
@@ -95,7 +90,6 @@ class LicenseLoaderServiceTest {
             cut.doStart();
 
             verify(licenseManager).registerPlatformLicense(license);
-            verifyNoInteractions(node);
         } finally {
             System.clearProperty(GRAVITEE_LICENSE_PROPERTY);
         }
@@ -116,28 +110,6 @@ class LicenseLoaderServiceTest {
             cut.doStart();
             verify(licenseManager, never()).registerPlatformLicense(license);
 
-            verify(node).stop();
-            verify(runtime).exit(0);
-        }
-    }
-
-    @Test
-    void should_stop_when_loading_invalid_license_and_node_stop_fails() throws Exception {
-        try (MockedStatic<Runtime> runtimeStatic = Mockito.mockStatic(Runtime.class)) {
-            final Runtime runtime = mock(Runtime.class);
-            runtimeStatic.when(Runtime::getRuntime).thenReturn(runtime);
-
-            final License license = mock(License.class);
-            final byte[] licenseBytes = "invalidBase64LicenseKey".getBytes(StandardCharsets.UTF_8);
-
-            when(configuration.getProperty(GRAVITEE_LICENSE_KEY)).thenReturn(Base64.getEncoder().encodeToString(licenseBytes));
-            when(node.stop()).thenThrow(new Exception("Mock Stop Node Exception"));
-            when(licenseFactory.create(REFERENCE_TYPE_PLATFORM, REFERENCE_ID_PLATFORM, licenseBytes))
-                .thenThrow(new InvalidLicenseException("Mock Invalid License"));
-
-            cut.doStart();
-            verify(licenseManager, never()).registerPlatformLicense(license);
-
             verify(runtime).exit(0);
         }
     }
@@ -152,7 +124,5 @@ class LicenseLoaderServiceTest {
             .thenThrow(new MalformedLicenseException("Mock Malformed License"));
         cut.doStart();
         verify(licenseManager, never()).registerPlatformLicense(license);
-
-        verify(node, never()).stop();
     }
 }

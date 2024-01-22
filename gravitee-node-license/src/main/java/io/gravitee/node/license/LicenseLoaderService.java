@@ -47,7 +47,6 @@ public class LicenseLoaderService extends AbstractService<LicenseLoaderService> 
     static final String GRAVITEE_LICENSE_KEY = "license.key";
     static final String GRAVITEE_LICENSE_PROPERTY = "gravitee.license";
 
-    private final Node node;
     private final Configuration configuration;
     private final LicenseFactory licenseFactory;
     private final LicenseManager licenseManager;
@@ -207,11 +206,6 @@ public class LicenseLoaderService extends AbstractService<LicenseLoaderService> 
     }
 
     private void stopNode() {
-        try {
-            node.stop();
-        } catch (Exception e) {
-            log.warn("Fail to stop node", e);
-        }
         System.exit(0);
     }
 }

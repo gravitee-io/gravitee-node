@@ -58,13 +58,12 @@ public class NodeContainerConfiguration {
 
     @Bean
     public LicenseLoaderService licenseLoaderService(
-        Node node,
         Configuration configuration,
         LicenseFactory licenseFactory,
         LicenseManager licenseManager,
         ManagementEndpointManager managementEndpointManager
     ) {
-        return new LicenseLoaderService(node, configuration, licenseFactory, licenseManager, managementEndpointManager);
+        return new LicenseLoaderService(configuration, licenseFactory, licenseManager, managementEndpointManager);
     }
 
     @Bean
