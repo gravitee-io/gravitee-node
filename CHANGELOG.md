@@ -1,3 +1,15 @@
+# [5.4.0](https://github.com/gravitee-io/gravitee-node/compare/5.3.1...5.4.0) (2024-01-25)
+
+
+### Bug Fixes
+
+* use generic for key-store-loaders factory to help spring ([744b342](https://github.com/gravitee-io/gravitee-node/commit/744b342c6014926c63943fc0d8227fa51bf1a68c))
+
+
+### Features
+
+* upgrade to latest bom version ([93d7cf0](https://github.com/gravitee-io/gravitee-node/commit/93d7cf098bbaec3f596a5a83f172323afcc240fc))
+
 ## [5.3.1](https://github.com/gravitee-io/gravitee-node/compare/5.3.0...5.3.1) (2024-01-22)
 
 
