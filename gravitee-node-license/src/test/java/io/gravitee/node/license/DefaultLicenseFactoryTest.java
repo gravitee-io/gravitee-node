@@ -185,6 +185,8 @@ class DefaultLicenseFactoryTest {
             "apim-en-entrypoint-http-post",
             "http-flow-am-idp",
             "apim-policy-transform-avro-json",
+            "apim-policy-transform-protobuf-json",
+            "apim-policy-transform-avro-protobuf",
             "am-resource-twilio",
             "am-mfa-http",
             "apim-api-designer",
