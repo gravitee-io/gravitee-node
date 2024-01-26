@@ -23,6 +23,8 @@ packs:
             - policy-data-logging-masking # for removal
             - apim-policy-geoip-filtering
             - apim-policy-transform-avro-json
+            - apim-policy-transform-protobuf-json
+            - apim-policy-transform-avro-protobuf
             - am-policy-mfa-challenge
             - am-policy-account-linking
             - apim-policy-graphql-ratelimit
