@@ -1,3 +1,10 @@
+# [5.5.0](https://github.com/gravitee-io/gravitee-node/compare/5.4.0...5.5.0) (2024-02-01)
+
+
+### Features
+
+* add protobuf-json and avro-protobuf features ([b9f0788](https://github.com/gravitee-io/gravitee-node/commit/b9f0788fdedba71972c2a63accec7f9282b577eb))
+
 # [5.4.0](https://github.com/gravitee-io/gravitee-node/compare/5.3.1...5.4.0) (2024-01-25)
 
 
