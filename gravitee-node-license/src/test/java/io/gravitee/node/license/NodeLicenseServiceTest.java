@@ -105,6 +105,8 @@ class NodeLicenseServiceTest {
                 "apim-en-entrypoint-http-post",
                 "http-flow-am-idp",
                 "apim-policy-transform-avro-json",
+                "apim-policy-transform-avro-protobuf",
+                "apim-policy-transform-protobuf-json",
                 "am-resource-twilio",
                 "am-mfa-http",
                 "apim-api-designer",
