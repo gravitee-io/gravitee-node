@@ -192,7 +192,8 @@ public class AbstractKeyStoreLoaderManager {
         try {
             for (String alias : Collections.list(event.keyStore().aliases())) {
                 String newAlias = scopeAlias(loader, alias);
-                if (requirePassword()) {
+                if (requirePassword() && event.keyStore().isKeyEntry(alias)) {
+                    // Only key entries can be password protected.
                     KeyStore.Entry exisingEntry = event.keyStore().getEntry(alias, event.passwordAsProtection());
                     mainKeyStore.setEntry(newAlias, exisingEntry, passwordProtection);
                 } else {
@@ -234,7 +235,8 @@ public class AbstractKeyStoreLoaderManager {
             var destination = KeyStore.getInstance(KeyStoreUtils.DEFAULT_KEYSTORE_TYPE);
             destination.load(null, mainPassword);
             for (String alias : Collections.list(source.aliases())) {
-                if (requirePassword()) {
+                if (requirePassword() && source.isKeyEntry(alias)) {
+                    // Only key entries can be password protected.
                     final KeyStore.Entry entry = source.getEntry(alias, passwordProtection);
                     destination.setEntry(alias, entry, passwordProtection);
                 } else {
