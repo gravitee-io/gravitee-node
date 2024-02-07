@@ -72,6 +72,14 @@ keytool -importkeystore -srckeystore wildcard.p12 -destkeystore all-in-one.p12 -
 keytool -importkeystore -srckeystore all-in-one.p12 -destkeystore all-in-one.jks -srcstoretype PKCS12 -deststoretype JKS -srcstorepass secret -deststorepass secret -v
 ----
 
+Create a keystore containing a mix of private key entries and trusted certificate entries.
+
+[source,bash]
+----
+keytool -importkeystore -srckeystore keystores/all-in-one.p12 -destkeystore keystores/mixed-entries.p12 -srcstoretype PKCS12 -deststoretype PKCS12 -srcstorepass secret -deststorepass secret -v
+keytool -importkeystore -srckeystore truststores/truststore2-3.p12 -destkeystore keystores/mixed-entries.p12 -srcstoretype PKCS12 -deststoretype PKCS12 -srcstorepass secret -deststorepass secret -v
+
+----
 
 === Generate truststores
 

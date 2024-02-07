@@ -128,6 +128,37 @@ class KeyStoreLoaderManagerTest {
     }
 
     @Test
+    void should_update_platform_keystore_with_mix_of_private_keys_and_trusted_entries() throws Exception {
+        underTest.start();
+        assertThat(underTest.aliases()).hasSize(4).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
+
+        AbstractKeyStoreLoader keyStoreLoader = (AbstractKeyStoreLoader) keyStoreLoaderFactory.create(
+            KeyStoreLoaderOptions
+                .builder()
+                .paths(List.of("src/test/resources/keystores/wildcard.jks"))
+                .password("secret")
+                .watch(false)
+                .type(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
+                .build()
+        );
+
+        underTest.registerLoader(keyStoreLoader);
+        assertThat(underTest.aliases()).hasSize(5);
+
+        KeyStore keyStore = KeyStoreUtils.initFromPath(
+            KeyStoreUtils.DEFAULT_KEYSTORE_TYPE,
+            "src/test/resources/keystores/mixed-entries.p12",
+            "secret"
+        );
+        String loaderId = platformKeystoreLoader.id();
+        ((AbstractKeyStoreLoader) platformKeystoreLoader).onEvent(new KeyStoreEvent.LoadEvent(loaderId, keyStore, "secret"));
+        assertThat(underTest.aliases())
+            .hasSize(7)
+            .anyMatch(alias -> alias.startsWith(platformKeystoreLoader.id()))
+            .anyMatch(alias -> alias.startsWith(keyStoreLoader.id()));
+    }
+
+    @Test
     void should_fallback_to_default_alias_when_no_sni_and_find_entry_for_it()
         throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
         platformKeystoreLoader =

@@ -113,7 +113,35 @@ class FileKeyStoreLoaderTest {
     }
 
     @Test
-    void shouldLoadJKS() throws KeyStoreException {
+    void should_load_pkcs12_with_mix_of_private_keys_and_trusted_entries() throws KeyStoreException {
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
+            .builder()
+            .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+            .paths(List.of(getPath("mixed-entries.p12")))
+            .password("secret")
+            .watch(false)
+            .build();
+
+        cut = new FileKeyStoreLoader(options);
+
+        final AtomicReference<KeyStoreEvent> eventRef = new AtomicReference<>(null);
+        cut.setEventHandler(eventRef::set);
+
+        cut.start();
+
+        assertThat(eventRef.get()).isNotNull();
+
+        final KeyStoreEvent event = eventRef.get();
+        assertThat(event).isNotNull();
+        assertThat(event.loaderId()).isEqualTo(cut.id());
+        KeyStoreEvent.LoadEvent loadEvent = (KeyStoreEvent.LoadEvent) event;
+        assertThat(loadEvent.keyStore()).isNotNull();
+        assertThat(loadEvent.keyStore().size()).isEqualTo(6);
+        assertThat(loadEvent.password()).isEqualTo("secret");
+    }
+
+    @Test
+    void should_load_jks() throws KeyStoreException {
         final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
             .builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
