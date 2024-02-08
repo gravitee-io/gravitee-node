@@ -1,3 +1,10 @@
+## [5.5.1](https://github.com/gravitee-io/gravitee-node/compare/5.5.0...5.5.1) (2024-02-08)
+
+
+### Bug Fixes
+
+* support keystore with mix of private key and cert entries ([fcf141d](https://github.com/gravitee-io/gravitee-node/commit/fcf141d403c83c320e3aaa084e23ce367ee8527a))
+
 # [5.5.0](https://github.com/gravitee-io/gravitee-node/compare/5.4.0...5.5.0) (2024-02-01)
 
 
