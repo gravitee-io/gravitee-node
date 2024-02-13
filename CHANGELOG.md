@@ -1,3 +1,10 @@
+## [5.5.2](https://github.com/gravitee-io/gravitee-node/compare/5.5.1...5.5.2) (2024-02-13)
+
+
+### Bug Fixes
+
+* **license:** allow unknown plugins during validation ([58522a4](https://github.com/gravitee-io/gravitee-node/commit/58522a4db878b4b2e1558d949dcc869cfb9efecb))
+
 ## [5.5.1](https://github.com/gravitee-io/gravitee-node/compare/5.5.0...5.5.1) (2024-02-08)
 
 
