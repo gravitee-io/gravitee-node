@@ -116,9 +116,7 @@ public class DefaultLicenseManager extends AbstractService<LicenseManager> imple
     private void validatePluginFeature(License license, Set<ForbiddenFeature> errors, Plugin plugin) {
         final io.gravitee.plugin.core.api.Plugin registryPlugin = pluginRegistry.get(plugin.type(), plugin.id());
 
-        if (registryPlugin == null) {
-            errors.add(new ForbiddenFeature("unknown", plugin.id()));
-        } else if (!license.isFeatureEnabled(registryPlugin.manifest().feature())) {
+        if (Objects.nonNull(registryPlugin) && !license.isFeatureEnabled(registryPlugin.manifest().feature())) {
             errors.add(new ForbiddenFeature(registryPlugin.manifest().feature(), plugin.id()));
         }
     }

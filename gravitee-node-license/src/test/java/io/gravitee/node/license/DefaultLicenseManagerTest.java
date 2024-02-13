@@ -153,7 +153,7 @@ class DefaultLicenseManagerTest {
     }
 
     @Test
-    void should_throw_forbidden_feature_when_validate_plugin_features_with_unknown_plugin() {
+    void should_not_throw_error_on_unknown_plugin() throws Exception {
         mockPluginRegistry();
 
         final License license = mock(License.class);
@@ -167,14 +167,7 @@ class DefaultLicenseManagerTest {
 
         cut.registerOrganizationLicense("orgId", license);
 
-        final ForbiddenFeatureException exception = assertThrows(
-            ForbiddenFeatureException.class,
-            () -> cut.validatePluginFeatures("orgId", List.of(kafkaPlugin, mqtt5Plugin, unknownPlugin))
-        );
-
-        assertThat(exception.getMessage())
-            .isEqualTo("Plugin [other] cannot be loaded because the feature [unknown] is not allowed by the license.");
-        assertThat(exception.getFeatures()).contains(new LicenseManager.ForbiddenFeature("unknown", "other"));
+        assertDoesNotThrow(() -> cut.validatePluginFeatures("orgId", List.of(kafkaPlugin, mqtt5Plugin, unknownPlugin)));
     }
 
     @Test
