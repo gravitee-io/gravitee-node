@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
  */
 class OSSLicenseTest {
 
-    private final OSSLicense cut = new OSSLicense();
+    private final OSSLicense cut = new OSSLicense("PLATFORM", "PLATFORM");
 
     @Test
     void should_return_oss_tier() {

@@ -64,6 +64,11 @@ public class DefaultLicenseFactory implements LicenseFactory {
         }
     }
 
+    @Override
+    public License createOSSOrganization(@Nonnull String referenceId) {
+        return new OSSLicense(referenceId, License.REFERENCE_TYPE_ORGANIZATION);
+    }
+
     private License create(String referenceType, String referenceId, License3J license) throws InvalidLicenseException {
         // First, verify the license is valid.
         license.verify();

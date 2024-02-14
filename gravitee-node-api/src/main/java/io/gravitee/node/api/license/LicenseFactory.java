@@ -37,4 +37,12 @@ public interface LicenseFactory {
      */
     License create(@Nonnull String referenceType, @Nonnull String referenceId, @Nonnull byte[] bytesLicense)
         throws InvalidLicenseException, MalformedLicenseException;
+
+    /**
+     * Create an OSS {@link License} for an organization
+     *
+     * @param referenceId the reference id the license is created for
+     * @return
+     */
+    License createOSSOrganization(@Nonnull String referenceId);
 }

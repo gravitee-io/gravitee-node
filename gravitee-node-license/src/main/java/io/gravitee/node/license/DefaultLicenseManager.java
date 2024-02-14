@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DefaultLicenseManager extends AbstractService<LicenseManager> implements LicenseManager {
 
-    public static final License OSS_LICENSE = new OSSLicense();
+    public static final License OSS_LICENSE = new OSSLicense(License.REFERENCE_ID_PLATFORM, License.REFERENCE_TYPE_PLATFORM);
 
     private static final long DAY_AS_LONG = 24 * 60 * 60 * 1000L;
 

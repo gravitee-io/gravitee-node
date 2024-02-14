@@ -162,6 +162,17 @@ class DefaultLicenseFactoryTest {
         );
     }
 
+    @Test
+    void should_return_oss_organization_license() throws InvalidLicenseException {
+        final License license = cut.createOSSOrganization("orgId");
+
+        assertThat(license.getTier()).isEqualTo("oss");
+        assertThat(license.getReferenceId()).isEqualTo("orgId");
+        assertThat(license.getReferenceType()).isEqualTo("ORGANIZATION");
+        assertThat(license.getPacks()).isEmpty();
+        assertThat(license.getFeatures()).isEmpty();
+    }
+
     private void assertUniverseLicense(License license) {
         assertThat(license.getTier()).isEqualTo("universe");
         assertThat(license.getPacks())

@@ -14,18 +14,25 @@ import java.util.Set;
  */
 class OSSLicense implements License {
 
+    public OSSLicense(String referenceId, String referenceType) {
+        this.referenceId = referenceId;
+        this.referenceType = referenceType;
+    }
+
     private static final String TIER = "oss";
     private static final Map<String, Object> ATTRIBUTES = Map.of("tier", TIER);
     private static final Map<String, String> RAW_ATTRIBUTES = Map.of("tier", TIER);
+    private final String referenceId;
+    private final String referenceType;
 
     @Override
     public @NonNull String getReferenceType() {
-        return REFERENCE_TYPE_PLATFORM;
+        return this.referenceType;
     }
 
     @Override
     public @NonNull String getReferenceId() {
-        return REFERENCE_ID_PLATFORM;
+        return this.referenceId;
     }
 
     @Override
