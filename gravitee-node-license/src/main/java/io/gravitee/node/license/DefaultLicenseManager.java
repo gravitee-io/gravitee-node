@@ -87,8 +87,7 @@ public class DefaultLicenseManager extends AbstractService<LicenseManager> imple
     }
 
     @Override
-    public void validatePluginFeatures(String organizationId, Collection<Plugin> plugins)
-        throws InvalidLicenseException, ForbiddenFeatureException {
+    public void validatePluginFeatures(String organizationId, Collection<Plugin> plugins) throws ForbiddenFeatureException {
         if (plugins == null || plugins.isEmpty()) {
             // There is no plugin feature to validate.
             return;
@@ -96,10 +95,6 @@ public class DefaultLicenseManager extends AbstractService<LicenseManager> imple
 
         final Set<ForbiddenFeature> errors = new HashSet<>();
         final License license = this.getOrganizationLicenseOrPlatform(organizationId);
-
-        if (license.isExpired()) {
-            throw new InvalidLicenseException("The license has expired.");
-        }
 
         plugins.forEach(plugin -> validatePluginFeature(license, errors, plugin));
 

@@ -7,25 +7,32 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
+@NoArgsConstructor
+@AllArgsConstructor
 class OSSLicense implements License {
 
-    private static final String TIER = "oss";
+    static final String TIER = "oss";
     private static final Map<String, Object> ATTRIBUTES = Map.of("tier", TIER);
     private static final Map<String, String> RAW_ATTRIBUTES = Map.of("tier", TIER);
 
+    private String referenceType = REFERENCE_TYPE_PLATFORM;
+    private String referenceId = REFERENCE_ID_PLATFORM;
+
     @Override
     public @NonNull String getReferenceType() {
-        return REFERENCE_TYPE_PLATFORM;
+        return referenceType;
     }
 
     @Override
     public @NonNull String getReferenceId() {
-        return REFERENCE_ID_PLATFORM;
+        return referenceId;
     }
 
     @Override
