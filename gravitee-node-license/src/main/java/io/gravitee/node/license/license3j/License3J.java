@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.license.license3j;
 
+import io.gravitee.node.api.license.ExpiredLicenseException;
 import io.gravitee.node.api.license.InvalidLicenseException;
 import java.util.Map;
 import java.util.Optional;
@@ -76,6 +77,7 @@ public class License3J {
     }
 
     private final javax0.license3j.License license;
+    private Boolean valid;
 
     public License3J(javax0.license3j.License license) {
         this.license = license;
@@ -145,14 +147,24 @@ public class License3J {
     }
 
     public void verify() throws InvalidLicenseException {
-        boolean valid = license.isOK(publicKey());
-
-        if (!valid) {
+        if (!isValid()) {
             throw new InvalidLicenseException("License is not valid. Please contact GraviteeSource to ask for a valid license.");
         }
 
-        if (license.isExpired()) {
-            throw new InvalidLicenseException("License is expired. Please contact GraviteeSource to ask for a renewed license.");
+        if (isExpired()) {
+            throw new ExpiredLicenseException("License is expired. Please contact GraviteeSource to ask for a renewed license.");
         }
+    }
+
+    public boolean isValid() {
+        if (valid == null) {
+            valid = license.isOK(publicKey());
+        }
+
+        return valid;
+    }
+
+    public boolean isExpired() {
+        return license.isExpired();
     }
 }

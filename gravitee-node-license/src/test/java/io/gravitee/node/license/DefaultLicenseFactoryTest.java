@@ -1,7 +1,6 @@
 package io.gravitee.node.license;
 
-import static io.gravitee.node.api.license.License.REFERENCE_ID_PLATFORM;
-import static io.gravitee.node.api.license.License.REFERENCE_TYPE_PLATFORM;
+import static io.gravitee.node.api.license.License.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -38,6 +37,7 @@ class DefaultLicenseFactoryTest {
         "AAAAhAAAADAAAAAlsaWNlbnNlSWSJNcURfozT6Dz/mg0RFEjmAAAAnAAAAAEAAAAQAAAAgGxpY2Vuc2VTaWduYXR1cmWD2AVRDn0G07Yn4fXIx/vz4f8gu3RPNWt" +
         "JlsrGyRpLp+0du2lt7sFea/RJNNTqyNAWrtABljvf5dKcNxa4JIANKINX3t+508k6SejaUs0kOqfcL7Sztv2IbqJddIqCxPRsZInL9Htw7beMBJ9XYAGCgaHIrAN" +
         "VgTPojI4gvmfD2QAAACIAAAACAAAADwAAAAdzaWduYXR1cmVEaWdlc3RTSEEtMjU2AAAAGAAAAAIAAAAEAAAACHRpZXJ1bml2ZXJzZQ==";
+    protected static final String ORG_ID = "orgId";
 
     private static LicenseKeyPair keyPair;
     private final DefaultLicenseFactory cut = new DefaultLicenseFactory(new DefaultLicenseModelService());
@@ -137,12 +137,12 @@ class DefaultLicenseFactoryTest {
     }
 
     @Test
-    void should_throw_invalid_license_when_license_is_invalid() {
+    void should_throw_invalid_license_when_platform_license_is_invalid() {
         assertThrows(InvalidLicenseException.class, () -> cut.create(REFERENCE_TYPE_PLATFORM, REFERENCE_ID_PLATFORM, INVALID_LICENSE));
     }
 
     @Test
-    void should_throw_invalid_license_when_license_is_expired() {
+    void should_throw_invalid_license_when_platform_license_is_expired() {
         assertThrows(
             InvalidLicenseException.class,
             () ->
@@ -155,11 +155,51 @@ class DefaultLicenseFactoryTest {
     }
 
     @Test
-    void should_throw_malformed_license_when_license_is_unreadable() {
+    void should_throw_malformed_license_when_platform_license_is_unreadable() {
         assertThrows(
             MalformedLicenseException.class,
             () -> cut.create(REFERENCE_TYPE_PLATFORM, REFERENCE_ID_PLATFORM, "unreadable license".getBytes(StandardCharsets.UTF_8))
         );
+    }
+
+    @Test
+    @SneakyThrows
+    void should_return_oss_license_when_org_license_is_invalid() {
+        final License license = cut.create(REFERENCE_TYPE_ORGANIZATION, ORG_ID, INVALID_LICENSE);
+
+        assertThat(license.getTier()).isEqualTo(OSSLicense.TIER);
+        assertThat(license.getPacks()).isEmpty();
+        assertThat(license.getFeatures()).isEmpty();
+        assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_ORGANIZATION);
+        assertThat(license.getReferenceId()).isEqualTo(ORG_ID);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_return_expired_license_when_org_license_is_expired() {
+        final License license = cut.create(
+            REFERENCE_TYPE_ORGANIZATION,
+            ORG_ID,
+            generateBytesLicense("universe", null, null, new Date(System.currentTimeMillis() - 3600000))
+        );
+
+        assertThat(license.getTier()).isEqualTo("universe");
+        assertThat(license.getPacks()).isNotEmpty();
+        assertThat(license.getFeatures()).isNotEmpty();
+        assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_ORGANIZATION);
+        assertThat(license.getReferenceId()).isEqualTo(ORG_ID);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_return_oss_license_when_org_license_is_unreadable() {
+        final License license = cut.create(REFERENCE_TYPE_ORGANIZATION, ORG_ID, "unreadable license".getBytes(StandardCharsets.UTF_8));
+
+        assertThat(license.getTier()).isEqualTo(OSSLicense.TIER);
+        assertThat(license.getPacks()).isEmpty();
+        assertThat(license.getFeatures()).isEmpty();
+        assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_ORGANIZATION);
+        assertThat(license.getReferenceId()).isEqualTo(ORG_ID);
     }
 
     private void assertUniverseLicense(License license) {

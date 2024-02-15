@@ -55,8 +55,21 @@ public class DefaultLicenseFactory implements LicenseFactory {
     @Override
     public License create(@Nonnull String referenceType, @Nonnull String referenceId, @Nonnull byte[] bytesLicense)
         throws InvalidLicenseException, MalformedLicenseException {
+        if (referenceType.equals(License.REFERENCE_TYPE_PLATFORM)) {
+            return createPlatformLicense(bytesLicense);
+        } else {
+            return createOrgLicence(referenceId, bytesLicense);
+        }
+    }
+
+    private License createPlatformLicense(@Nonnull byte[] bytesLicense) throws InvalidLicenseException, MalformedLicenseException {
         try (LicenseReader reader = new LicenseReader(new ByteArrayInputStream(bytesLicense))) {
-            return create(referenceType, referenceId, new License3J(reader.read()));
+            final License3J license = new License3J(reader.read());
+
+            // Verify the license is valid and throw an exception in any case.
+            license.verify();
+
+            return create(License.REFERENCE_TYPE_PLATFORM, License.REFERENCE_ID_PLATFORM, license);
         } catch (InvalidLicenseException lie) {
             throw lie;
         } catch (Exception e) {
@@ -64,10 +77,23 @@ public class DefaultLicenseFactory implements LicenseFactory {
         }
     }
 
-    private License create(String referenceType, String referenceId, License3J license) throws InvalidLicenseException {
-        // First, verify the license is valid.
-        license.verify();
+    private License createOrgLicence(@Nonnull String referenceId, @Nonnull byte[] bytesLicense) {
+        try (LicenseReader reader = new LicenseReader(new ByteArrayInputStream(bytesLicense))) {
+            final License3J license = new License3J(reader.read());
 
+            // Check the license is valid. Expiration date is not taken in account
+            if (license.isValid()) {
+                return create(License.REFERENCE_TYPE_ORGANIZATION, referenceId, license);
+            }
+        } catch (Exception e) {
+            log.warn("Organization license cannot be read for [{}].", referenceId, e);
+        }
+
+        // Fallback to OSS in case of invalid organization license
+        return new OSSLicense(License.REFERENCE_TYPE_ORGANIZATION, referenceId);
+    }
+
+    private License create(String referenceType, String referenceId, License3J license) throws InvalidLicenseException {
         final String tier = readTier(license);
         final Set<String> packs = readPacks(license, tier);
         final Set<String> features = readFeatures(license, packs);
@@ -75,7 +101,7 @@ public class DefaultLicenseFactory implements LicenseFactory {
         return DefaultLicense
             .builder()
             .referenceType(referenceType)
-            .referenceId(referenceType)
+            .referenceId(referenceId)
             .tier(tier)
             .packs(packs)
             .features(features)

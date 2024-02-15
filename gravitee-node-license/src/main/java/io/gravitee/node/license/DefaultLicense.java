@@ -48,7 +48,12 @@ class DefaultLicense implements License {
 
     @Override
     public boolean isFeatureEnabled(String feature) {
-        return feature == null || features.contains(feature);
+        if (license3j.isValid() && !license3j.isExpired()) {
+            return feature == null || features.contains(feature);
+        }
+
+        // If the underlying license is not valid or is expired then only plugins not requiring any feature are considered enabled.
+        return feature == null;
     }
 
     @Override

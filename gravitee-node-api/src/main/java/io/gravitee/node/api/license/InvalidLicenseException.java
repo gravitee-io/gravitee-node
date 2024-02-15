@@ -3,7 +3,7 @@ package io.gravitee.node.api.license;
 import java.io.Serial;
 
 /**
- * {@link InvalidLicenseException} allows to identify that a license has an invalid signature or is expire.
+ * {@link InvalidLicenseException} allows to identify that a license has an invalid signature or is expired.
  *
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team

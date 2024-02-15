@@ -9,6 +9,7 @@ import io.gravitee.node.api.license.ForbiddenFeatureException;
 import io.gravitee.node.api.license.InvalidLicenseException;
 import io.gravitee.node.api.license.License;
 import io.gravitee.node.api.license.LicenseManager;
+import io.gravitee.node.license.license3j.License3J;
 import io.gravitee.plugin.core.api.PluginManifest;
 import io.gravitee.plugin.core.api.PluginRegistry;
 import java.util.Calendar;
@@ -101,18 +102,6 @@ class DefaultLicenseManagerTest {
     }
 
     @Test
-    void should_throw_invalid_license_when_license_is_expired() {
-        final License license = mock(License.class);
-
-        when(license.isExpired()).thenReturn(true);
-
-        final LicenseManager.Plugin kafkaPlugin = new LicenseManager.Plugin("endpoint-connector", "kafka");
-
-        cut.registerPlatformLicense(license);
-        assertThrows(InvalidLicenseException.class, () -> cut.validatePluginFeatures("orgId", List.of(kafkaPlugin)));
-    }
-
-    @Test
     void should_validate_plugin_features_when_allowed_by_organization_license() {
         mockPluginRegistry();
         final License license = mock(License.class);
@@ -126,6 +115,47 @@ class DefaultLicenseManagerTest {
 
         cut.registerOrganizationLicense("orgId", license);
         assertDoesNotThrow(() -> cut.validatePluginFeatures("orgId", List.of(kafkaPlugin, mqtt5Plugin)));
+    }
+
+    @Test
+    void should_throw_forbidden_feature_when_license_is_expired() {
+        mockPluginRegistry();
+
+        final License3J license3J = mock(License3J.class);
+        final License license = DefaultLicense
+            .builder()
+            .referenceType(License.REFERENCE_TYPE_PLATFORM)
+            .referenceId(License.REFERENCE_ID_PLATFORM)
+            .license3j(license3J)
+            .build();
+
+        when(license3J.isValid()).thenReturn(true);
+        when(license3J.isExpired()).thenReturn(true);
+
+        final LicenseManager.Plugin kafkaPlugin = new LicenseManager.Plugin("endpoint-connector", "kafka");
+
+        cut.registerPlatformLicense(license);
+        assertThrows(ForbiddenFeatureException.class, () -> cut.validatePluginFeatures("orgId", List.of(kafkaPlugin)));
+    }
+
+    @Test
+    void should_throw_forbidden_feature_when_license_is_not_valid() {
+        mockPluginRegistry();
+
+        final License3J license3J = mock(License3J.class);
+        final License license = DefaultLicense
+            .builder()
+            .referenceType(License.REFERENCE_TYPE_PLATFORM)
+            .referenceId(License.REFERENCE_ID_PLATFORM)
+            .license3j(license3J)
+            .build();
+
+        when(license3J.isValid()).thenReturn(false);
+
+        final LicenseManager.Plugin kafkaPlugin = new LicenseManager.Plugin("endpoint-connector", "kafka");
+
+        cut.registerPlatformLicense(license);
+        assertThrows(ForbiddenFeatureException.class, () -> cut.validatePluginFeatures("orgId", List.of(kafkaPlugin)));
     }
 
     @Test
@@ -296,15 +326,15 @@ class DefaultLicenseManagerTest {
         final io.gravitee.plugin.core.api.Plugin registryKafkaPlugin = mock(io.gravitee.plugin.core.api.Plugin.class);
         final PluginManifest kafkaPluginManifest = mock(PluginManifest.class);
 
-        when(kafkaPluginManifest.feature()).thenReturn("apim-en-endpoint-kafka");
-        when(registryKafkaPlugin.manifest()).thenReturn(kafkaPluginManifest);
-        when(pluginRegistry.get("endpoint-connector", "kafka")).thenReturn(registryKafkaPlugin);
+        lenient().when(kafkaPluginManifest.feature()).thenReturn("apim-en-endpoint-kafka");
+        lenient().when(registryKafkaPlugin.manifest()).thenReturn(kafkaPluginManifest);
+        lenient().when(pluginRegistry.get("endpoint-connector", "kafka")).thenReturn(registryKafkaPlugin);
 
         final io.gravitee.plugin.core.api.Plugin registryMqtt5Plugin = mock(io.gravitee.plugin.core.api.Plugin.class);
         final PluginManifest mqTT5PluginManifest = mock(PluginManifest.class);
 
-        when(mqTT5PluginManifest.feature()).thenReturn("apim-en-endpoint-mqtt5");
-        when(registryMqtt5Plugin.manifest()).thenReturn(mqTT5PluginManifest);
-        when(pluginRegistry.get("endpoint-connector", "mqtt5")).thenReturn(registryMqtt5Plugin);
+        lenient().when(mqTT5PluginManifest.feature()).thenReturn("apim-en-endpoint-mqtt5");
+        lenient().when(registryMqtt5Plugin.manifest()).thenReturn(mqTT5PluginManifest);
+        lenient().when(pluginRegistry.get("endpoint-connector", "mqtt5")).thenReturn(registryMqtt5Plugin);
     }
 }
