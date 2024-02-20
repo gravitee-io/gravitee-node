@@ -1,3 +1,10 @@
+# [5.6.0](https://github.com/gravitee-io/gravitee-node/compare/5.5.2...5.6.0) (2024-02-20)
+
+
+### Features
+
+* add reactive method to Cache, Topic and Queue ([b2d292b](https://github.com/gravitee-io/gravitee-node/commit/b2d292ba6561944cc4316ed1a3a75d312f330653))
+
 ## [5.5.2](https://github.com/gravitee-io/gravitee-node/compare/5.5.1...5.5.2) (2024-02-13)
 
 
