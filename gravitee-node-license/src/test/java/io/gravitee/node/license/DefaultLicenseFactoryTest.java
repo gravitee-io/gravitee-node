@@ -283,6 +283,8 @@ class DefaultLicenseFactoryTest {
             "am-resource-sfr",
             "gravitee-en-secretprovider-vault",
             "apim-policy-graphql-ratelimit",
+            "apim-policy-interops-a-idp",
+            "apim-policy-interops-r-idp",
         };
         assertThat(license.getFeatures()).containsExactlyInAnyOrder(features);
 

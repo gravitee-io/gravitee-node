@@ -28,6 +28,8 @@ packs:
             - am-policy-mfa-challenge
             - am-policy-account-linking
             - apim-policy-graphql-ratelimit
+            - apim-policy-interops-a-idp
+            - apim-policy-interops-r-idp
     enterprise-identity-provider:
         features:
             - am-idp-salesforce
