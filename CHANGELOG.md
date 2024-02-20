@@ -1,3 +1,10 @@
+## [5.6.1](https://github.com/gravitee-io/gravitee-node/compare/5.6.0...5.6.1) (2024-02-20)
+
+
+### Bug Fixes
+
+* support org license expiration ([90598d2](https://github.com/gravitee-io/gravitee-node/commit/90598d2eef2ba9a8402c725fee72f3cd58baada2))
+
 # [5.6.0](https://github.com/gravitee-io/gravitee-node/compare/5.5.2...5.6.0) (2024-02-20)
 
 
