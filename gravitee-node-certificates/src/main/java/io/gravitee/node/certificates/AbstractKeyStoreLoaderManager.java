@@ -74,14 +74,6 @@ public class AbstractKeyStoreLoaderManager {
     }
 
     /**
-     *
-     * @return true the manager requires to use a password to add entries to the keystore. By convention the same password as the keystore is used.
-     */
-    protected boolean requirePassword() {
-        return true;
-    }
-
-    /**
      * <p>Creates the main keystore. And register and starts the platform keystore loader.
      * This that can only be done once, that is why it is synchronized at the method level.
      * </p>
@@ -190,14 +182,15 @@ public class AbstractKeyStoreLoaderManager {
 
     private void addKeyStore(IdProvider loader, KeyStoreEvent.LoadEvent event) {
         try {
-            for (String alias : Collections.list(event.keyStore().aliases())) {
+            final KeyStore source = event.keyStore();
+            for (String alias : Collections.list(source.aliases())) {
                 String newAlias = scopeAlias(loader, alias);
-                if (requirePassword() && event.keyStore().isKeyEntry(alias)) {
+                if (source.isKeyEntry(alias)) {
                     // Only key entries can be password protected.
-                    KeyStore.Entry exisingEntry = event.keyStore().getEntry(alias, event.passwordAsProtection());
+                    KeyStore.Entry exisingEntry = source.getEntry(alias, event.passwordAsProtection());
                     mainKeyStore.setEntry(newAlias, exisingEntry, passwordProtection);
                 } else {
-                    KeyStore.Entry exisingEntry = event.keyStore().getEntry(alias, null);
+                    KeyStore.Entry exisingEntry = source.getEntry(alias, null);
                     mainKeyStore.setEntry(newAlias, exisingEntry, null);
                 }
             }
@@ -235,7 +228,7 @@ public class AbstractKeyStoreLoaderManager {
             var destination = KeyStore.getInstance(KeyStoreUtils.DEFAULT_KEYSTORE_TYPE);
             destination.load(null, mainPassword);
             for (String alias : Collections.list(source.aliases())) {
-                if (requirePassword() && source.isKeyEntry(alias)) {
+                if (source.isKeyEntry(alias)) {
                     // Only key entries can be password protected.
                     final KeyStore.Entry entry = source.getEntry(alias, passwordProtection);
                     destination.setEntry(alias, entry, passwordProtection);
