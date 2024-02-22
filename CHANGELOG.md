@@ -1,3 +1,10 @@
+# [5.8.0](https://github.com/gravitee-io/gravitee-node/compare/5.7.0...5.8.0) (2024-02-22)
+
+
+### Features
+
+* add new cache method ([bb1eabf](https://github.com/gravitee-io/gravitee-node/commit/bb1eabf297c32e2ce3bec406691f819e40e1fcb0))
+
 # [5.7.0](https://github.com/gravitee-io/gravitee-node/compare/5.6.1...5.7.0) (2024-02-22)
 
 
