@@ -19,10 +19,12 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import io.gravitee.node.api.cache.Cache;
 import io.gravitee.node.api.cache.CacheConfiguration;
 import io.gravitee.node.api.cache.CacheListener;
+import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -126,6 +128,29 @@ public class InMemoryCache<K, V> implements Cache<K, V> {
             })
             .filter(Objects::nonNull)
             .toList();
+    }
+
+    @Override
+    public Set<K> keys() {
+        return this.internalCache.asMap().keySet();
+    }
+
+    @Override
+    public Set<Map.Entry<K, V>> entrySet() {
+        return this.internalCache.asMap()
+            .entrySet()
+            .stream()
+            .map(entry -> {
+                K key = entry.getKey();
+                ExpiringValue<V> expiringValue = entry.getValue();
+                if (expiringValue.hasExpired()) {
+                    internalCache.invalidate(key);
+                    return null;
+                }
+                return new AbstractMap.SimpleEntry<>(key, expiringValue.value);
+            })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
     }
 
     @Override

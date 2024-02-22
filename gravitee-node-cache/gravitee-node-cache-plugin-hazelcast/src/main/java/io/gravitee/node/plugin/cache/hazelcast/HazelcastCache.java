@@ -21,9 +21,11 @@ import com.hazelcast.map.impl.MapListenerAdapter;
 import io.gravitee.node.api.cache.Cache;
 import io.gravitee.node.api.cache.CacheListener;
 import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
@@ -61,6 +63,16 @@ public class HazelcastCache<K, V> implements Cache<K, V> {
     }
 
     @Override
+    public Set<K> keys() {
+        return this.cache.keySet();
+    }
+
+    @Override
+    public Set<Map.Entry<K, V>> entrySet() {
+        return this.cache.entrySet();
+    }
+
+    @Override
     public boolean containsKey(final K key) {
         return this.cache.containsKey(key);
     }
@@ -71,8 +83,8 @@ public class HazelcastCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public Single<V> rxGet(final K key) {
-        return Single.fromCompletionStage(this.cache.getAsync(key));
+    public Maybe<V> rxGet(final K key) {
+        return Maybe.fromCompletionStage(this.cache.getAsync(key));
     }
 
     @Override
