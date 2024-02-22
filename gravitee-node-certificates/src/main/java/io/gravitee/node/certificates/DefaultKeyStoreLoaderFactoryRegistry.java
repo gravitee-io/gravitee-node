@@ -19,6 +19,7 @@ import io.gravitee.node.api.certificate.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Default implementation of {@link KeyStoreLoaderFactory} interface, for Javadoc see interface
@@ -28,6 +29,7 @@ import java.util.Set;
  */
 public class DefaultKeyStoreLoaderFactoryRegistry<O extends AbstractStoreLoaderOptions> implements KeyStoreLoaderFactoryRegistry<O> {
 
+    protected static final NoOpKeyStoreLoader NO_OP_KEY_STORE_LOADER = new NoOpKeyStoreLoader();
     private final Set<KeyStoreLoaderFactory<O>> loaderFactories;
 
     public DefaultKeyStoreLoaderFactoryRegistry() {
@@ -62,18 +64,13 @@ public class DefaultKeyStoreLoaderFactoryRegistry<O extends AbstractStoreLoaderO
             .stream()
             .findFirst()
             .map(keyStoreLoaderFactory -> keyStoreLoaderFactory.create(options))
-            .orElse(new NoOpKeyStoreLoader<>(options));
+            .orElse(NO_OP_KEY_STORE_LOADER);
     }
 
     /**
-     * When no factory is found this clas is returned signifying that nothing will be done. This allows to always have a {@link KeyStoreLoader} instead of dealing with null
-     * @param <O>
+     * When no factory is found this class is returned signifying that nothing will be done. This allows to always have a {@link KeyStoreLoader} instead of dealing with null
      */
-    static class NoOpKeyStoreLoader<O extends AbstractStoreLoaderOptions> extends AbstractKeyStoreLoader<O> {
-
-        NoOpKeyStoreLoader(O options) {
-            super(options);
-        }
+    static class NoOpKeyStoreLoader implements KeyStoreLoader {
 
         @Override
         public void start() {
@@ -84,6 +81,9 @@ public class DefaultKeyStoreLoaderFactoryRegistry<O extends AbstractStoreLoaderO
         public void stop() {
             // no op
         }
+
+        @Override
+        public void setEventHandler(Consumer<KeyStoreEvent> handler) {}
 
         @Override
         public String id() {

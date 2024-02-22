@@ -32,11 +32,6 @@ public class TrustStoreLoaderManager extends AbstractKeyStoreLoaderManager {
         super(target, platformKeyStoreLoader, new RefreshableX509TrustManagerDelegator(target));
     }
 
-    @Override
-    protected boolean requirePassword() {
-        return false;
-    }
-
     /**
      *
      * @return JDK {@link javax.net.ssl.TrustManager}

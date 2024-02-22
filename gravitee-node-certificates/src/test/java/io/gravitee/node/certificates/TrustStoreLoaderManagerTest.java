@@ -36,7 +36,7 @@ import org.junit.jupiter.api.*;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class TrustStoreLoaderManagerTest {
 
-    TrustStoreLoaderManager underTest;
+    TrustStoreLoaderManager cut;
     private KeyStoreLoader platformKeystoreLoader;
     private final FileTrustStoreLoaderFactory trustStoreLoaderFactory = new FileTrustStoreLoaderFactory();
 
@@ -51,25 +51,25 @@ class TrustStoreLoaderManagerTest {
                     .password("secret")
                     .build()
             );
-        underTest = new TrustStoreLoaderManager("fake", platformKeystoreLoader);
+        cut = new TrustStoreLoaderManager("fake", platformKeystoreLoader);
     }
 
     @AfterEach
     void end() {
-        underTest.stop();
+        cut.stop();
     }
 
     @Test
     void should_load_platform_key_store() throws Exception {
-        underTest.start();
-        assertThat(underTest.getCertificateManager()).isNotNull();
-        assertThat(underTest.loaders()).containsEntry(platformKeystoreLoader.id(), platformKeystoreLoader);
-        assertThat(underTest.aliases()).hasSize(2).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
+        cut.start();
+        assertThat(cut.getCertificateManager()).isNotNull();
+        assertThat(cut.loaders()).containsEntry(platformKeystoreLoader.id(), platformKeystoreLoader);
+        assertThat(cut.aliases()).hasSize(2).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
     }
 
     @Test
     void should_add_and_remove_keystore_to_main() throws Exception {
-        underTest.start();
+        cut.start();
 
         AbstractKeyStoreLoader keyStoreLoader = (AbstractKeyStoreLoader) trustStoreLoaderFactory.create(
             TrustStoreLoaderOptions
@@ -80,13 +80,13 @@ class TrustStoreLoaderManagerTest {
                 .build()
         );
 
-        underTest.registerLoader(keyStoreLoader);
-        assertThat(underTest.aliases()).hasSize(3).anyMatch(alias -> alias.startsWith(keyStoreLoader.id()));
+        cut.registerLoader(keyStoreLoader);
+        assertThat(cut.aliases()).hasSize(3).anyMatch(alias -> alias.startsWith(keyStoreLoader.id()));
 
         String loaderId = keyStoreLoader.id();
         keyStoreLoader.onEvent(new KeyStoreEvent.UnloadEvent(loaderId));
 
-        assertThat(underTest.aliases()).hasSize(2);
+        assertThat(cut.aliases()).hasSize(2);
     }
 
     @Test
@@ -100,10 +100,10 @@ class TrustStoreLoaderManagerTest {
                     .password("secret")
                     .build()
             );
-        underTest = new TrustStoreLoaderManager("fake", platformKeystoreLoader);
-        underTest.start();
+        cut = new TrustStoreLoaderManager("fake", platformKeystoreLoader);
+        cut.start();
 
-        assertThat(underTest.aliases()).hasSize(1).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
+        assertThat(cut.aliases()).hasSize(1).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
 
         AbstractKeyStoreLoader keyStoreLoader = (AbstractKeyStoreLoader) trustStoreLoaderFactory.create(
             TrustStoreLoaderOptions
@@ -113,19 +113,19 @@ class TrustStoreLoaderManagerTest {
                 .password("secret")
                 .build()
         );
-        underTest.registerLoader(keyStoreLoader);
-        assertThat(underTest.aliases()).hasSize(3).anyMatch(alias -> alias.startsWith(keyStoreLoader.id()));
+        cut.registerLoader(keyStoreLoader);
+        assertThat(cut.aliases()).hasSize(3).anyMatch(alias -> alias.startsWith(keyStoreLoader.id()));
 
         String loaderId = keyStoreLoader.id();
         keyStoreLoader.onEvent(new KeyStoreEvent.UnloadEvent(loaderId));
 
-        assertThat(underTest.aliases()).hasSize(1);
+        assertThat(cut.aliases()).hasSize(1);
     }
 
     @Test
     void should_update_platform_truststore() throws Exception {
-        underTest.start();
-        assertThat(underTest.aliases()).hasSize(2).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
+        cut.start();
+        assertThat(cut.aliases()).hasSize(2).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
 
         AbstractKeyStoreLoader keyStoreLoader = (AbstractKeyStoreLoader) trustStoreLoaderFactory.create(
             TrustStoreLoaderOptions
@@ -135,15 +135,32 @@ class TrustStoreLoaderManagerTest {
                 .password("secret")
                 .build()
         );
-        underTest.registerLoader(keyStoreLoader);
-        assertThat(underTest.aliases()).hasSize(3);
+        cut.registerLoader(keyStoreLoader);
+        assertThat(cut.aliases()).hasSize(3);
 
         KeyStore keyStore = KeyStoreUtils.initFromPath(KeyStoreUtils.TYPE_JKS, "src/test/resources/truststores/truststore1.jks", "secret");
         String loaderId = platformKeystoreLoader.id();
         ((AbstractKeyStoreLoader) platformKeystoreLoader).onEvent(new KeyStoreEvent.LoadEvent(loaderId, keyStore, "secret"));
-        assertThat(underTest.aliases())
+        assertThat(cut.aliases())
             .hasSize(2)
             .anyMatch(alias -> alias.startsWith(platformKeystoreLoader.id()))
             .anyMatch(alias -> alias.startsWith(keyStoreLoader.id()));
+    }
+
+    @Test
+    void should_add_private_ca_in_platform_truststore() throws Exception {
+        platformKeystoreLoader =
+            trustStoreLoaderFactory.create(
+                TrustStoreLoaderOptions
+                    .builder()
+                    .paths(List.of("src/test/resources/keystores/ca.p12"))
+                    .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+                    .password("ca-secret")
+                    .build()
+            );
+        cut = new TrustStoreLoaderManager("fake", platformKeystoreLoader);
+        cut.start();
+
+        assertThat(cut.aliases()).hasSize(1).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
     }
 }
