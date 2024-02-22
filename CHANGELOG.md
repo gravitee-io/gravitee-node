@@ -1,3 +1,10 @@
+# [5.7.0](https://github.com/gravitee-io/gravitee-node/compare/5.6.1...5.7.0) (2024-02-22)
+
+
+### Features
+
+* add interops features ([dae75b5](https://github.com/gravitee-io/gravitee-node/commit/dae75b5f43d4cb8bf84ebfc43d96e233a13f817a))
+
 ## [5.6.1](https://github.com/gravitee-io/gravitee-node/compare/5.6.0...5.6.1) (2024-02-20)
 
 
