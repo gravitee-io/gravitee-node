@@ -17,10 +17,12 @@ package io.gravitee.node.api.cache;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -31,6 +33,24 @@ import java.util.function.Function;
  */
 public interface Cache<K, V> {
     String getName();
+
+    Collection<V> values();
+
+    default Flowable<V> rxValues() {
+        return Flowable.fromIterable(this.values()).subscribeOn(Schedulers.io());
+    }
+
+    Set<K> keys();
+
+    default Flowable<K> rxKeys() {
+        return Flowable.fromIterable(this.keys()).subscribeOn(Schedulers.io());
+    }
+
+    Set<Map.Entry<K, V>> entrySet();
+
+    default Flowable<Map.Entry<K, V>> rxEntrySet() {
+        return Flowable.fromIterable(this.entrySet()).subscribeOn(Schedulers.io());
+    }
 
     int size();
 
@@ -44,12 +64,6 @@ public interface Cache<K, V> {
         return Single.fromCallable(this::isEmpty).subscribeOn(Schedulers.io());
     }
 
-    Collection<V> values();
-
-    default Flowable<V> rxValues() {
-        return Flowable.fromIterable(this.values()).subscribeOn(Schedulers.io());
-    }
-
     boolean containsKey(final K key);
 
     default Single<Boolean> rxContainsKey(final K key) {
@@ -58,8 +72,8 @@ public interface Cache<K, V> {
 
     V get(final K key);
 
-    default Single<V> rxGet(final K key) {
-        return Single.fromCallable(() -> this.get(key)).subscribeOn(Schedulers.io());
+    default Maybe<V> rxGet(final K key) {
+        return Maybe.fromCallable(() -> this.get(key)).subscribeOn(Schedulers.io());
     }
 
     V put(final K key, final V value);
