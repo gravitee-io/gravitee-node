@@ -1,3 +1,10 @@
+## [5.8.1](https://github.com/gravitee-io/gravitee-node/compare/5.8.0...5.8.1) (2024-02-23)
+
+
+### Bug Fixes
+
+* support private ca as truststore ([9613fbc](https://github.com/gravitee-io/gravitee-node/commit/9613fbcb4804cd6a4ce8f13283a1378dea3fe483))
+
 # [5.8.0](https://github.com/gravitee-io/gravitee-node/compare/5.7.0...5.8.0) (2024-02-22)
 
 
