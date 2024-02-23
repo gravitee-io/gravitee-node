@@ -39,7 +39,6 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
@@ -138,7 +137,8 @@ public abstract class SpringBasedContainer extends AbstractContainer {
         bootstrapClasses.add(NodeCertificatesConfiguration.class);
         bootstrapClasses.add(KubernetesClientConfiguration.class);
 
-        // Bean registry post processor needs to be manually registered as it MUST be taken in account before spring context is refreshed.
+        // Bean registry post processors need to be manually registered as it MUST be taken in account before spring context is refreshed.
+        bootstrapClasses.add(ContainerInitializerBeanRegistryPostProcessor.class);
         bootstrapClasses.add(BootPluginHandlerBeanRegistryPostProcessor.class);
 
         return bootstrapClasses;
