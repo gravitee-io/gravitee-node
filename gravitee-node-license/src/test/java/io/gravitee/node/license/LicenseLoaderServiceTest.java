@@ -1,32 +1,20 @@
 package io.gravitee.node.license;
 
-import static io.gravitee.node.api.license.License.REFERENCE_ID_PLATFORM;
-import static io.gravitee.node.api.license.License.REFERENCE_TYPE_PLATFORM;
-import static io.gravitee.node.license.LicenseLoaderService.GRAVITEE_LICENSE_KEY;
-import static io.gravitee.node.license.LicenseLoaderService.GRAVITEE_LICENSE_PROPERTY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import io.gravitee.node.api.Node;
-import io.gravitee.node.api.configuration.Configuration;
 import io.gravitee.node.api.license.*;
 import io.gravitee.node.license.management.NodeLicenseManagementEndpoint;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Base64;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
@@ -36,13 +24,10 @@ import org.mockito.stubbing.Answer;
 class LicenseLoaderServiceTest {
 
     @Mock
-    private Configuration configuration;
-
-    @Mock
-    private LicenseFactory licenseFactory;
-
-    @Mock
     private LicenseManager licenseManager;
+
+    @Mock
+    private LicenseFetcher licenseFetcher;
 
     @Mock
     private ManagementEndpointManager managementEndpointManager;
@@ -51,64 +36,41 @@ class LicenseLoaderServiceTest {
 
     @BeforeEach
     public void init() throws Exception {
-        cut = new LicenseLoaderService(configuration, licenseFactory, licenseManager, managementEndpointManager);
+        cut = new LicenseLoaderService(licenseManager, licenseFetcher, managementEndpointManager);
     }
 
     @Test
     void should_start_without_loading_license_when_no_license_defined() throws Exception {
         cut.doStart();
 
+        verify(licenseFetcher).fetch();
         verify(managementEndpointManager).register(any(NodeLicenseManagementEndpoint.class));
         verify(licenseManager).onLicenseExpires(any(Consumer.class));
         verifyNoMoreInteractions(licenseManager);
     }
 
     @Test
-    void should_start_and_load_license_from_environment() throws Exception {
+    void should_setup_license_when_start() throws Exception {
         final License license = mock(License.class);
-        final byte[] licenseBytes = "base64LicenseKey".getBytes(StandardCharsets.UTF_8);
+        when(licenseFetcher.fetch()).thenReturn(license);
 
-        when(configuration.getProperty(GRAVITEE_LICENSE_KEY)).thenReturn(Base64.getEncoder().encodeToString(licenseBytes));
-        when(licenseFactory.create(REFERENCE_TYPE_PLATFORM, REFERENCE_ID_PLATFORM, licenseBytes)).thenReturn(license);
         cut.doStart();
 
         verify(licenseManager).registerPlatformLicense(license);
+        verify(licenseManager).onLicenseExpires(any(Consumer.class));
+        verify(licenseFetcher).startWatch(any(Consumer.class));
     }
 
     @Test
-    void should_start_and_load_license_from_file() throws Exception {
-        try {
-            final License license = mock(License.class);
-            final byte[] licenseBytes = "base64LicenseKey".getBytes(StandardCharsets.UTF_8);
-            final Path licence = Files.createTempFile("license", ".key");
-
-            Files.write(licence, licenseBytes);
-            licence.toFile().deleteOnExit();
-
-            System.setProperty(GRAVITEE_LICENSE_PROPERTY, licence.toFile().getAbsolutePath());
-            when(licenseFactory.create(REFERENCE_TYPE_PLATFORM, REFERENCE_ID_PLATFORM, licenseBytes)).thenReturn(license);
-            cut.doStart();
-
-            verify(licenseManager).registerPlatformLicense(license);
-        } finally {
-            System.clearProperty(GRAVITEE_LICENSE_PROPERTY);
-        }
-    }
-
-    @Test
-    void should_stop_when_loading_invalid_license() throws Exception {
+    void should_stop_node_when_loading_invalid_license() throws Exception {
         try (MockedStatic<Runtime> runtimeStatic = Mockito.mockStatic(Runtime.class)) {
             final Runtime runtime = mock(Runtime.class);
             runtimeStatic.when(Runtime::getRuntime).thenReturn(runtime);
 
-            final License license = mock(License.class);
-            final byte[] licenseBytes = "invalidBase64LicenseKey".getBytes(StandardCharsets.UTF_8);
-
-            when(configuration.getProperty(GRAVITEE_LICENSE_KEY)).thenReturn(Base64.getEncoder().encodeToString(licenseBytes));
-            when(licenseFactory.create(REFERENCE_TYPE_PLATFORM, REFERENCE_ID_PLATFORM, licenseBytes))
-                .thenThrow(new InvalidLicenseException("Mock Invalid License"));
+            when(licenseFetcher.fetch()).thenThrow(new InvalidLicenseException("Mock Invalid License"));
             cut.doStart();
-            verify(licenseManager, never()).registerPlatformLicense(license);
+
+            verify(licenseManager, never()).registerPlatformLicense(any());
 
             verify(runtime).exit(0);
         }
@@ -116,13 +78,61 @@ class LicenseLoaderServiceTest {
 
     @Test
     void should_not_stop_node_when_loading_malformed_license() throws Exception {
-        final License license = mock(License.class);
-        final byte[] licenseBytes = "malformedBase64LicenseKey".getBytes(StandardCharsets.UTF_8);
-        when(configuration.getProperty(GRAVITEE_LICENSE_KEY)).thenReturn(Base64.getEncoder().encodeToString(licenseBytes));
+        try (MockedStatic<Runtime> runtimeStatic = Mockito.mockStatic(Runtime.class)) {
+            final Runtime runtime = mock(Runtime.class);
+            runtimeStatic.when(Runtime::getRuntime).thenReturn(runtime);
 
-        when(licenseFactory.create(REFERENCE_TYPE_PLATFORM, REFERENCE_ID_PLATFORM, licenseBytes))
-            .thenThrow(new MalformedLicenseException("Mock Malformed License"));
+            when(licenseFetcher.fetch()).thenThrow(new MalformedLicenseException("Mock Malformed License"));
+            cut.doStart();
+
+            verify(licenseManager, never()).registerPlatformLicense(any());
+        }
+    }
+
+    @Test
+    void should_stop_watch_when_stopping_service() throws Exception {
+        cut.doStop();
+
+        verify(licenseFetcher).stopWatch();
+    }
+
+    @Test
+    void should_stop_node_when_license_expires() throws Exception {
+        try (MockedStatic<Runtime> runtimeStatic = Mockito.mockStatic(Runtime.class)) {
+            final Runtime runtime = mock(Runtime.class);
+            runtimeStatic.when(Runtime::getRuntime).thenReturn(runtime);
+
+            final License license = mock(License.class);
+            final ArgumentCaptor<Consumer> consumerArgumentCaptor = ArgumentCaptor.forClass(Consumer.class);
+
+            when(licenseFetcher.fetch()).thenReturn(license);
+            doNothing().when(licenseManager).onLicenseExpires(consumerArgumentCaptor.capture());
+
+            cut.doStart();
+
+            final Consumer<License> onExpired = consumerArgumentCaptor.getValue();
+            onExpired.accept(license);
+
+            verify(runtime).exit(0);
+        }
+    }
+
+    @Test
+    void should_setup_license_when_license_is_updated() throws Exception {
+        final License license = mock(License.class);
+        final License updatedLicense = mock(License.class);
+
+        final ArgumentCaptor<Consumer> consumerArgumentCaptor = ArgumentCaptor.forClass(Consumer.class);
+
+        when(licenseFetcher.fetch()).thenReturn(license);
+        doNothing().when(licenseFetcher).startWatch(consumerArgumentCaptor.capture());
+
         cut.doStart();
-        verify(licenseManager, never()).registerPlatformLicense(license);
+        verify(licenseManager).registerPlatformLicense(license);
+
+        final Consumer<License> onUpdated = consumerArgumentCaptor.getValue();
+        onUpdated.accept(updatedLicense);
+
+        verify(licenseManager).registerPlatformLicense(updatedLicense);
     }
 }
