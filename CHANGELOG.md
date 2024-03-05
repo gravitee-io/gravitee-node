@@ -1,3 +1,10 @@
+## [4.8.3](https://github.com/gravitee-io/gravitee-node/compare/4.8.2...4.8.3) (2024-03-05)
+
+
+### Bug Fixes
+
+* add protobuf-json and avro-protobuf features ([732622b](https://github.com/gravitee-io/gravitee-node/commit/732622b1e35135530907834acd8a5ab814197b50))
+
 ## [4.8.2](https://github.com/gravitee-io/gravitee-node/compare/4.8.1...4.8.2) (2024-01-05)
 
 
