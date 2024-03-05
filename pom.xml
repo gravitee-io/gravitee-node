@@ -71,7 +71,7 @@
         <!-- WARNING: the next two dependencies versions must be kept in sync regarding vertx-micrometer-metrics -->
         <micrometer-registry-prometheus.version>1.10.7</micrometer-registry-prometheus.version>
         <LatencyUtils.version>2.0.3</LatencyUtils.version>
-        <bouncycastle.version>1.70</bouncycastle.version>
+        <bouncycastle.version>1.77</bouncycastle.version>
         <guava.version>32.0.1-jre</guava.version>
         <license3j.version>3.2.0</license3j.version>
         <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
@@ -218,12 +218,12 @@
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk15on</artifactId>
+                <artifactId>bcprov-jdk18on</artifactId>
                 <version>${bouncycastle.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcpkix-jdk15on</artifactId>
+                <artifactId>bcpkix-jdk18on</artifactId>
                 <version>${bouncycastle.version}</version>
             </dependency>
             <dependency>
