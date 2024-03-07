@@ -1,3 +1,10 @@
+## [5.9.1](https://github.com/gravitee-io/gravitee-node/compare/5.9.0...5.9.1) (2024-03-07)
+
+
+### Bug Fixes
+
+* **deps:** update bcprov-jdk15on to bcprov-jdk18on and bcpkix-jdk15on to bcpkix-jdk18on ([81314e4](https://github.com/gravitee-io/gravitee-node/commit/81314e48e4fdf76e16a6a1fc027c0e8efc8b7707))
+
 # [5.9.0](https://github.com/gravitee-io/gravitee-node/compare/5.8.1...5.9.0) (2024-03-07)
 
 
