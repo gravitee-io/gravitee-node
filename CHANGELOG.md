@@ -1,3 +1,11 @@
+# [5.9.0](https://github.com/gravitee-io/gravitee-node/compare/5.8.1...5.9.0) (2024-03-07)
+
+
+### Features
+
+* introduce VertxHttpClientFactory ([676f458](https://github.com/gravitee-io/gravitee-node/commit/676f4583058c207661526a576f161d9a181c2875))
+* introduce VertxTcpClientFactory ([52f7765](https://github.com/gravitee-io/gravitee-node/commit/52f7765dbec338184579ed58e483a27f29fb2293))
+
 ## [5.8.1](https://github.com/gravitee-io/gravitee-node/compare/5.8.0...5.8.1) (2024-02-23)
 
 
