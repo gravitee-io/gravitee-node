@@ -15,16 +15,13 @@
  */
 package io.gravitee.node.container.spring;
 
-import io.gravitee.node.api.Node;
 import io.gravitee.node.api.configuration.Configuration;
 import io.gravitee.node.api.license.LicenseFactory;
+import io.gravitee.node.api.license.LicenseFetcher;
 import io.gravitee.node.api.license.LicenseManager;
 import io.gravitee.node.api.license.LicenseModelService;
 import io.gravitee.node.container.plugin.NodeDeploymentContextFactory;
-import io.gravitee.node.license.DefaultLicenseFactory;
-import io.gravitee.node.license.DefaultLicenseManager;
-import io.gravitee.node.license.DefaultLicenseModelService;
-import io.gravitee.node.license.LicenseLoaderService;
+import io.gravitee.node.license.*;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.management.http.vertx.endpoint.DefaultManagementEndpointManager;
 import io.gravitee.plugin.core.api.PluginRegistry;
@@ -58,12 +55,16 @@ public class NodeContainerConfiguration {
 
     @Bean
     public LicenseLoaderService licenseLoaderService(
-        Configuration configuration,
-        LicenseFactory licenseFactory,
         LicenseManager licenseManager,
+        LicenseFetcher licenseFetcher,
         ManagementEndpointManager managementEndpointManager
     ) {
-        return new LicenseLoaderService(configuration, licenseFactory, licenseManager, managementEndpointManager);
+        return new LicenseLoaderService(licenseManager, licenseFetcher, managementEndpointManager);
+    }
+
+    @Bean
+    public LicenseFetcher licenseFetcher(Configuration configuration, LicenseFactory licenseFactory) {
+        return new DefaultLicenseFetcher(configuration, licenseFactory);
     }
 
     @Bean
