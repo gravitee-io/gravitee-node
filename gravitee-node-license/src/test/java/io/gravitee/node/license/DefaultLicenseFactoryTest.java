@@ -37,6 +37,8 @@ class DefaultLicenseFactoryTest {
         "AAAAhAAAADAAAAAlsaWNlbnNlSWSJNcURfozT6Dz/mg0RFEjmAAAAnAAAAAEAAAAQAAAAgGxpY2Vuc2VTaWduYXR1cmWD2AVRDn0G07Yn4fXIx/vz4f8gu3RPNWt" +
         "JlsrGyRpLp+0du2lt7sFea/RJNNTqyNAWrtABljvf5dKcNxa4JIANKINX3t+508k6SejaUs0kOqfcL7Sztv2IbqJddIqCxPRsZInL9Htw7beMBJ9XYAGCgaHIrAN" +
         "VgTPojI4gvmfD2QAAACIAAAACAAAADwAAAAdzaWduYXR1cmVEaWdlc3RTSEEtMjU2AAAAGAAAAAIAAAAEAAAACHRpZXJ1bml2ZXJzZQ==";
+    private static final String NULL_LICENSE = null;
+    private static final byte[] NULL_BYTES_ARRAY = null;
     protected static final String ORG_ID = "orgId";
 
     private static LicenseKeyPair keyPair;
@@ -199,6 +201,54 @@ class DefaultLicenseFactoryTest {
         assertThat(license.getPacks()).isEmpty();
         assertThat(license.getFeatures()).isEmpty();
         assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_ORGANIZATION);
+        assertThat(license.getReferenceId()).isEqualTo(ORG_ID);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_return_oss_license_when_org_license_is_null() {
+        final License license = cut.create(REFERENCE_TYPE_ORGANIZATION, ORG_ID, NULL_LICENSE);
+
+        assertThat(license.getTier()).isEqualTo(OSSLicense.TIER);
+        assertThat(license.getPacks()).isEmpty();
+        assertThat(license.getFeatures()).isEmpty();
+        assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_ORGANIZATION);
+        assertThat(license.getReferenceId()).isEqualTo(ORG_ID);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_return_oss_license_when_platform_license_is_null() {
+        final License license = cut.create(REFERENCE_TYPE_PLATFORM, ORG_ID, NULL_LICENSE);
+
+        assertThat(license.getTier()).isEqualTo(OSSLicense.TIER);
+        assertThat(license.getPacks()).isEmpty();
+        assertThat(license.getFeatures()).isEmpty();
+        assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_PLATFORM);
+        assertThat(license.getReferenceId()).isEqualTo(ORG_ID);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_return_oss_license_when_org_bytes_array_is_null() {
+        final License license = cut.create(REFERENCE_TYPE_ORGANIZATION, ORG_ID, NULL_BYTES_ARRAY);
+
+        assertThat(license.getTier()).isEqualTo(OSSLicense.TIER);
+        assertThat(license.getPacks()).isEmpty();
+        assertThat(license.getFeatures()).isEmpty();
+        assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_ORGANIZATION);
+        assertThat(license.getReferenceId()).isEqualTo(ORG_ID);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_return_oss_license_when_platform_bytes_array_is_null() {
+        final License license = cut.create(REFERENCE_TYPE_PLATFORM, ORG_ID, NULL_BYTES_ARRAY);
+
+        assertThat(license.getTier()).isEqualTo(OSSLicense.TIER);
+        assertThat(license.getPacks()).isEmpty();
+        assertThat(license.getFeatures()).isEmpty();
+        assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_PLATFORM);
         assertThat(license.getReferenceId()).isEqualTo(ORG_ID);
     }
 

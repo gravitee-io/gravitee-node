@@ -16,11 +16,11 @@ public interface LicenseFactory {
      * @param referenceId the reference id the license is created for.
      * @param base64License a base64 encoded string representing the license data.
      *
-     * @return the created {@link License}.
+     * @return the created {@link License}. An OSS license is returned if base64License is null.
      * @throws InvalidLicenseException thrown if the specified license data is invalid.
      * @throws MalformedLicenseException thrown if the license is malformed.
      */
-    License create(@Nonnull String referenceType, @Nonnull String referenceId, @Nonnull String base64License)
+    License create(@Nonnull String referenceType, @Nonnull String referenceId, String base64License)
         throws InvalidLicenseException, MalformedLicenseException;
 
     /**
@@ -30,11 +30,11 @@ public interface LicenseFactory {
      * @param referenceId the reference id the license is created for.
      *
      * @param bytesLicense a byte array representing the license data.
-     * @return the created {@link License}.
+     * @return the created {@link License}. An OSS license is returned if bytesLicense is null.
      * @throws InvalidLicenseException thrown if the specified license data is invalid.
 
      * @throws MalformedLicenseException thrown if the license is malformed.
      */
-    License create(@Nonnull String referenceType, @Nonnull String referenceId, @Nonnull byte[] bytesLicense)
+    License create(@Nonnull String referenceType, @Nonnull String referenceId, byte[] bytesLicense)
         throws InvalidLicenseException, MalformedLicenseException;
 }
