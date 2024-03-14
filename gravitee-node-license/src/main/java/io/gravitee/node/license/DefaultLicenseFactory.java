@@ -47,15 +47,18 @@ public class DefaultLicenseFactory implements LicenseFactory {
     }
 
     @Override
-    public License create(@Nonnull String referenceType, @Nonnull String referenceId, @Nonnull String base64License)
+    public License create(@Nonnull String referenceType, @Nonnull String referenceId, String base64License)
         throws InvalidLicenseException, MalformedLicenseException {
-        return create(referenceType, referenceId, Base64.getDecoder().decode(base64License));
+        byte[] bytesLicense = Objects.isNull(base64License) ? null : Base64.getDecoder().decode(base64License);
+        return create(referenceType, referenceId, bytesLicense);
     }
 
     @Override
-    public License create(@Nonnull String referenceType, @Nonnull String referenceId, @Nonnull byte[] bytesLicense)
+    public License create(@Nonnull String referenceType, @Nonnull String referenceId, byte[] bytesLicense)
         throws InvalidLicenseException, MalformedLicenseException {
-        if (referenceType.equals(License.REFERENCE_TYPE_PLATFORM)) {
+        if (Objects.isNull(bytesLicense)) {
+            return new OSSLicense(referenceType, referenceId);
+        } else if (referenceType.equals(License.REFERENCE_TYPE_PLATFORM)) {
             return createPlatformLicense(bytesLicense);
         } else {
             return createOrgLicence(referenceId, bytesLicense);
