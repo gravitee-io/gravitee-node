@@ -1,3 +1,10 @@
+# [5.10.0](https://github.com/gravitee-io/gravitee-node/compare/5.9.1...5.10.0) (2024-03-15)
+
+
+### Features
+
+* a null license on create returns an oss license ([7f086e8](https://github.com/gravitee-io/gravitee-node/commit/7f086e8e63563e344e235eb28bd8bdc06487df18))
+
 ## [5.9.1](https://github.com/gravitee-io/gravitee-node/compare/5.9.0...5.9.1) (2024-03-07)
 
 
