@@ -18,7 +18,10 @@ import javax.annotation.Nonnull;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.converter.ConverterFactory;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 
@@ -52,27 +55,20 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
 
     @SuppressWarnings("java:S1604")
     private void setupConverters(ConfigurableEnvironment environment) {
-        // can't use lambdas here or Spring complains because it cannot infer types
         environment
             .getConversionService()
-            .addConverter(
-                new Converter<Secret, String>() {
-                    @Override
-                    public String convert(@Nonnull Secret source) {
-                        return source.asString();
+            .addConverterFactory(
+                new ConverterFactory<Secret, Object>() {
+                    final ConversionService conversionService = DefaultConversionService.getSharedInstance();
+
+                    @Nonnull
+                    public <T> Converter<Secret, T> getConverter(@Nonnull Class<T> targetType) {
+                        return source -> conversionService.convert(source.asString(), targetType);
                     }
                 }
             );
-        environment
-            .getConversionService()
-            .addConverter(
-                new Converter<Secret, byte[]>() {
-                    @Override
-                    public byte[] convert(@Nonnull Secret source) {
-                        return source.asBytes();
-                    }
-                }
-            );
+
+        environment.getConversionService().addConverter(Secret.class, byte[].class, Secret::asBytes);
     }
 
     @Override
