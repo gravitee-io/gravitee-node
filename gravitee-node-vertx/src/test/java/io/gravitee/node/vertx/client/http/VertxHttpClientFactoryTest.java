@@ -398,6 +398,7 @@ class VertxHttpClientFactoryTest {
                       "followRedirects": false,
                       "readTimeout": 10000,
                       "idleTimeout": 60000,
+                      "keepAliveTimeout": 30000,
                       "connectTimeout": 5000,
                       "propagateClientAcceptEncoding": true,
                       "useCompression": false,
