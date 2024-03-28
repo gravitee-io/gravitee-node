@@ -1,3 +1,10 @@
+# [5.11.0](https://github.com/gravitee-io/gravitee-node/compare/5.10.0...5.11.0) (2024-03-28)
+
+
+### Features
+
+* handle keep-alive timeout ([56ac564](https://github.com/gravitee-io/gravitee-node/commit/56ac56483a48f48e1798676323a23d68bff818f0))
+
 # [5.10.0](https://github.com/gravitee-io/gravitee-node/compare/5.9.1...5.10.0) (2024-03-15)
 
 
