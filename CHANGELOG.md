@@ -1,3 +1,10 @@
+# [5.12.0](https://github.com/gravitee-io/gravitee-node/compare/5.11.0...5.12.0) (2024-04-02)
+
+
+### Features
+
+* add ContainerInitializer concept ([00a11db](https://github.com/gravitee-io/gravitee-node/commit/00a11db674ced82f464a14efdc31607ea7dbb37f))
+
 # [5.11.0](https://github.com/gravitee-io/gravitee-node/compare/5.10.0...5.11.0) (2024-03-28)
 
 
