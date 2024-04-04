@@ -1,3 +1,10 @@
+## [5.12.1](https://github.com/gravitee-io/gravitee-node/compare/5.12.0...5.12.1) (2024-04-04)
+
+
+### Bug Fixes
+
+* **deps:** update dependency io.gravitee:gravitee-bom to v7.0.18 ([358cab4](https://github.com/gravitee-io/gravitee-node/commit/358cab4cda9d98bf235d46f4f474cb211c6516d5))
+
 # [5.12.0](https://github.com/gravitee-io/gravitee-node/compare/5.11.0...5.12.0) (2024-04-02)
 
 
