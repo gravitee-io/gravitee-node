@@ -1,3 +1,10 @@
+## [5.12.2](https://github.com/gravitee-io/gravitee-node/compare/5.12.1...5.12.2) (2024-04-04)
+
+
+### Bug Fixes
+
+* **deps:** update dependency io.gravitee.alert:gravitee-alert-api to v1.9.1 ([23f7038](https://github.com/gravitee-io/gravitee-node/commit/23f703850cac115b6e77f794368d4baf4dd93370))
+
 ## [5.12.1](https://github.com/gravitee-io/gravitee-node/compare/5.12.0...5.12.1) (2024-04-04)
 
 
