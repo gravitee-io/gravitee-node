@@ -1,3 +1,10 @@
+## [4.8.4](https://github.com/gravitee-io/gravitee-node/compare/4.8.3...4.8.4) (2024-04-05)
+
+
+### Bug Fixes
+
+* set http2-max-header-list-size option from the provided config ([0ef7082](https://github.com/gravitee-io/gravitee-node/commit/0ef70824ad547a7cbb137677aa4ba5990e25b450))
+
 ## [4.8.3](https://github.com/gravitee-io/gravitee-node/compare/4.8.2...4.8.3) (2024-03-05)
 
 
