@@ -185,6 +185,7 @@ public class VertxHttpServerOptions extends VertxServerOptions {
         options.setCompressionSupported(compressionSupported);
         options.setMaxChunkSize(maxChunkSize);
         options.setMaxHeaderSize(maxHeaderSize);
+        options.getInitialSettings().setMaxHeaderListSize(maxHeaderSize);
         options.setMaxInitialLineLength(maxInitialLineLength);
         options.setMaxFormAttributeSize(maxFormAttributeSize);
 
