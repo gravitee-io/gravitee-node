@@ -30,7 +30,7 @@
     <artifactId>gravitee-node-cache-common</artifactId>
     <name>Gravitee.io - Node - Cache - Common</name>
     <properties>
-        <caffeine.version>3.1.6</caffeine.version>
+        <caffeine.version>3.1.8</caffeine.version>
         <awaitility.version>4.2.0</awaitility.version>
     </properties>
 
