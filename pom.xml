@@ -66,7 +66,7 @@
         <hazelcast.version>5.3.6</hazelcast.version>
         <gravitee-alert-api.version>1.9.1</gravitee-alert-api.version>
         <jmockit.version>1.49</jmockit.version>
-        <awaitability.version>4.2.0</awaitability.version>
+        <awaitability.version>4.2.1</awaitability.version>
 
         <!-- WARNING: the next two dependencies versions must be kept in sync regarding vertx-micrometer-metrics -->
         <micrometer-registry-prometheus.version>1.12.4</micrometer-registry-prometheus.version>
