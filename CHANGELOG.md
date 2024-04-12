@@ -1,3 +1,10 @@
+## [5.12.4](https://github.com/gravitee-io/gravitee-node/compare/5.12.3...5.12.4) (2024-04-12)
+
+
+### Bug Fixes
+
+* **alpn:** configure alpn option even if not secured ([eb54cff](https://github.com/gravitee-io/gravitee-node/commit/eb54cffdac2fd1d6403f3da016517f020e0f92c1))
+
 ## [5.12.3](https://github.com/gravitee-io/gravitee-node/compare/5.12.2...5.12.3) (2024-04-05)
 
 
