@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node-cache</artifactId>
-        <version>4.8.4</version>
+        <version>4.8.5</version>
     </parent>
 
     <artifactId>gravitee-node-cache-plugin-standalone</artifactId>
