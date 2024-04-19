@@ -25,6 +25,7 @@ public class SslOptions implements Serializable {
 
     private boolean trustAll;
     private boolean hostnameVerifier = true;
+    private String hostnameVerificationAlgorithm = "NONE";
     private TrustStore trustStore;
     private KeyStore keyStore;
 
