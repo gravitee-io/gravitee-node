@@ -94,6 +94,13 @@ public class VertxTcpClientFactory {
                 clientOptions.setSslEngineOptions(new OpenSSLEngineOptions());
             }
 
+            String hostnameVerificationAlgorithm = sslOptions.getHostnameVerificationAlgorithm();
+            if ("NONE".equals(hostnameVerificationAlgorithm)) {
+                clientOptions.setHostnameVerificationAlgorithm("");
+            } else {
+                clientOptions.setHostnameVerificationAlgorithm(hostnameVerificationAlgorithm);
+            }
+
             clientOptions.setTrustAll(sslOptions.isTrustAll());
 
             try {
