@@ -1,3 +1,10 @@
+# [5.13.0](https://github.com/gravitee-io/gravitee-node/compare/5.12.4...5.13.0) (2024-04-30)
+
+
+### Features
+
+* add new option for TcpClient to manage hostname verification algorithm ([dc91f93](https://github.com/gravitee-io/gravitee-node/commit/dc91f9379eee8674c2a5f9c87cf7c8e3edd6d26e))
+
 ## [5.12.4](https://github.com/gravitee-io/gravitee-node/compare/5.12.3...5.12.4) (2024-04-12)
 
 
