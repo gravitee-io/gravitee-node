@@ -331,6 +331,7 @@ class DefaultLicenseFactoryTest {
             "am-policy-mfa-challenge",
             "am-policy-account-linking",
             "am-resource-sfr",
+            "am-resource-orange-contact-everyone",
             "gravitee-en-secretprovider-vault",
             "apim-policy-graphql-ratelimit",
             "apim-policy-interops-a-idp",
