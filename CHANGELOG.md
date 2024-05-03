@@ -1,3 +1,10 @@
+## [5.14.1](https://github.com/gravitee-io/gravitee-node/compare/5.14.0...5.14.1) (2024-05-03)
+
+
+### Bug Fixes
+
+* **deps:** upgrade gravitee-bom to 8.x ([016068f](https://github.com/gravitee-io/gravitee-node/commit/016068f03992f232183fec8bc7818545456b78e2))
+
 # [5.14.0](https://github.com/gravitee-io/gravitee-node/compare/5.13.0...5.14.0) (2024-05-02)
 
 
