@@ -1,3 +1,10 @@
+## [5.14.2](https://github.com/gravitee-io/gravitee-node/compare/5.14.1...5.14.2) (2024-05-06)
+
+
+### Bug Fixes
+
+* missing Builder.Default in SslOptions on new property hostnameVerificationAlgorithm ([1aa3177](https://github.com/gravitee-io/gravitee-node/commit/1aa3177b263f27e6811d45c380da6a9c26891108))
+
 ## [5.14.1](https://github.com/gravitee-io/gravitee-node/compare/5.14.0...5.14.1) (2024-05-03)
 
 
