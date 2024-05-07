@@ -159,6 +159,7 @@ class NodeLicenseServiceTest {
                 "am-policy-mfa-challenge",
                 "am-policy-account-linking",
                 "am-resource-sfr",
+                "am-resource-orange-contact-everyone",
                 "gravitee-en-secretprovider-vault",
                 "alert-engine"
             );
