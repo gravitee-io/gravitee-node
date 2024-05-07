@@ -153,7 +153,8 @@ class NodeLicenseServiceTest {
                 "apim-en-entrypoint-sse",
                 "apim-reporter-tcp",
                 "policy-data-logging-masking",
-                "am-idp-gateway-handler-saml"
+                "am-idp-gateway-handler-saml",
+                "am-resource-orange-contact-everyone"
             );
     }
 

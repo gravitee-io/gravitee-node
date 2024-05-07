@@ -51,6 +51,7 @@ packs:
             - am-resource-http-factor
             - am-mfa-sms
             - am-mfa-call
+            - am-resource-orange-contact-everyone
     observability:
         features:
             - apim-reporter-tcp
