@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/gravitee-io/gravitee-node/compare/4.0.0...4.0.1) (2024-05-07)
+
+
+### Bug Fixes
+
+* add orange contact everyone plugin ([0b1b0ff](https://github.com/gravitee-io/gravitee-node/commit/0b1b0ff0fbea67abbb031ed48cba9a01a590e790))
+
 # [4.0.0](https://github.com/gravitee-io/gravitee-node/compare/3.0.9...4.0.0) (2023-07-17)
 
 
