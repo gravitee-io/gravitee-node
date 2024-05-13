@@ -1,3 +1,16 @@
+## [5.14.3](https://github.com/gravitee-io/gravitee-node/compare/5.14.2...5.14.3) (2024-05-13)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.github.ben-manes.caffeine:caffeine to v3.1.8 ([6a7d76a](https://github.com/gravitee-io/gravitee-node/commit/6a7d76ae727c4230f9c1d5e87464fd08eac08d43))
+* pom.xml to reduce vulnerabilities ([489a9c2](https://github.com/gravitee-io/gravitee-node/commit/489a9c24a267ed40d0c02827184f39b25177fac2))
+
+
+### Reverts
+
+* Revert "fix(alpn): configure alpn option even if not secured" ([22e3a9c](https://github.com/gravitee-io/gravitee-node/commit/22e3a9cb299db9e379207593c9cd64bff4086dda))
+
 ## [5.14.2](https://github.com/gravitee-io/gravitee-node/compare/5.14.1...5.14.2) (2024-05-06)
 
 
