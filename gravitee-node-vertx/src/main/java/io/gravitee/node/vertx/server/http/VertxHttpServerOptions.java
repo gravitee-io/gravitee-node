@@ -164,6 +164,7 @@ public class VertxHttpServerOptions extends VertxServerOptions {
         setupTcp(options);
 
         if (this.secured) {
+            options.setUseAlpn(alpn);
             options.setSni(sni);
 
             // Specify client auth (mtls).
@@ -175,7 +176,6 @@ public class VertxHttpServerOptions extends VertxServerOptions {
         }
 
         // Customizable configuration
-        options.setUseAlpn(alpn);
         options.setHandle100ContinueAutomatically(handle100Continue);
         options.setCompressionSupported(compressionSupported);
         options.setMaxChunkSize(maxChunkSize);
