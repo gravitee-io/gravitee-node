@@ -113,8 +113,7 @@ public class VertxHttpClientFactory {
             .setTryUsePerFrameWebSocketCompression(httpOptions.isUseCompression())
             .setTryUsePerMessageWebSocketCompression(httpOptions.isUseCompression())
             .setWebSocketCompressionAllowClientNoContext(httpOptions.isUseCompression())
-            .setWebSocketCompressionRequestServerNoContext(httpOptions.isUseCompression())
-            .setUseAlpn(true);
+            .setWebSocketCompressionRequestServerNoContext(httpOptions.isUseCompression());
 
         if (httpOptions.getVersion() == VertxHttpProtocolVersion.HTTP_2) {
             options
@@ -178,6 +177,8 @@ public class VertxHttpClientFactory {
                 }
             }
         }
+
+        options.setUseAlpn(true);
     }
 
     private void setSystemProxy(final io.vertx.core.http.HttpClientOptions options) {

@@ -64,6 +64,7 @@ public class HttpServerSpringConfiguration {
 
         if (httpServerConfiguration.isSecured()) {
             options.setSsl(httpServerConfiguration.isSecured());
+            options.setUseAlpn(httpServerConfiguration.isAlpn());
 
             String clientAuth = httpServerConfiguration.getClientAuth();
             if (!StringUtils.isEmpty(clientAuth)) {
@@ -121,7 +122,6 @@ public class HttpServerSpringConfiguration {
             }
         }
         options.setIdleTimeout(httpServerConfiguration.getIdleTimeout());
-        options.setUseAlpn(httpServerConfiguration.isAlpn());
 
         return vertx.createHttpServer(options);
     }
