@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node-plugins</artifactId>
-        <version>5.14.3</version>
+        <version>5.14.4</version>
     </parent>
 
     <artifactId>gravitee-node-plugins-service</artifactId>

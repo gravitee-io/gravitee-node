@@ -1,3 +1,10 @@
+## [5.14.4](https://github.com/gravitee-io/gravitee-node/compare/5.14.3...5.14.4) (2024-05-20)
+
+
+### Bug Fixes
+
+* add Interops SP plugins ([58b0389](https://github.com/gravitee-io/gravitee-node/commit/58b0389068da0f3f46825b7276696ae7f93e9f3a))
+
 ## [5.14.3](https://github.com/gravitee-io/gravitee-node/compare/5.14.2...5.14.3) (2024-05-13)
 
 
