@@ -336,6 +336,8 @@ class DefaultLicenseFactoryTest {
             "apim-policy-graphql-ratelimit",
             "apim-policy-interops-a-idp",
             "apim-policy-interops-r-idp",
+            "apim-policy-interops-a-sp",
+            "apim-policy-interops-r-sp",
         };
         assertThat(license.getFeatures()).containsExactlyInAnyOrder(features);
 
