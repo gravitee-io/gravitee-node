@@ -30,6 +30,8 @@ packs:
             - apim-policy-graphql-ratelimit
             - apim-policy-interops-a-idp
             - apim-policy-interops-r-idp
+            - apim-policy-interops-a-sp
+            - apim-policy-interops-r-sp
     enterprise-identity-provider:
         features:
             - am-idp-salesforce
