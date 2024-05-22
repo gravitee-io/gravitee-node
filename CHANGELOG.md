@@ -1,3 +1,10 @@
+## [5.12.6](https://github.com/gravitee-io/gravitee-node/compare/5.12.5...5.12.6) (2024-05-22)
+
+
+### Reverts
+
+* Revert "fix(alpn): configure alpn option even if not secured" ([4cf2ce5](https://github.com/gravitee-io/gravitee-node/commit/4cf2ce5f98520829735229386d97e87707b1938c))
+
 ## [5.12.5](https://github.com/gravitee-io/gravitee-node/compare/5.12.4...5.12.5) (2024-05-20)
 
 
