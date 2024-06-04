@@ -1,3 +1,11 @@
+## [5.14.5](https://github.com/gravitee-io/gravitee-node/compare/5.14.4...5.14.5) (2024-06-04)
+
+
+### Bug Fixes
+
+* **deps:** update dependency io.gravitee:gravitee-bom to v8.0.4 ([35858b3](https://github.com/gravitee-io/gravitee-node/commit/35858b3c3d4024de2d81984d334d4b909813d22f))
+* **deps:** update dependency io.gravitee:gravitee-parent to v22.0.31 ([c5e9167](https://github.com/gravitee-io/gravitee-node/commit/c5e9167fce69da6c45a6705164f849417624d785))
+
 ## [5.14.4](https://github.com/gravitee-io/gravitee-node/compare/5.14.3...5.14.4) (2024-05-20)
 
 
