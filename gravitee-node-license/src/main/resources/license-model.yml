@@ -62,6 +62,7 @@ packs:
             - am-mfa-call
             - am-resource-sfr
             - am-resource-orange-contact-everyone
+            - am-resource-http
     observability:
         features:
             - apim-reporter-tcp
