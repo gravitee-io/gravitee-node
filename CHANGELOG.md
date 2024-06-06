@@ -1,3 +1,10 @@
+## [5.14.6](https://github.com/gravitee-io/gravitee-node/compare/5.14.5...5.14.6) (2024-06-06)
+
+
+### Bug Fixes
+
+* add AM HTTP resource plugin ([35ae431](https://github.com/gravitee-io/gravitee-node/commit/35ae4313ee31564b8b9ec7869f34a760aee72c4b))
+
 ## [5.14.5](https://github.com/gravitee-io/gravitee-node/compare/5.14.4...5.14.5) (2024-06-04)
 
 
