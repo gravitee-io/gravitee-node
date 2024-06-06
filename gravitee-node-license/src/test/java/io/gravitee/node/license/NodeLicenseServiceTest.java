@@ -157,7 +157,8 @@ class NodeLicenseServiceTest {
                 "am-policy-mfa-challenge",
                 "am-policy-account-linking",
                 "am-resource-sfr",
-                "am-resource-orange-contact-everyone"
+                "am-resource-orange-contact-everyone",
+                "am-resource-http"
             );
     }
 
