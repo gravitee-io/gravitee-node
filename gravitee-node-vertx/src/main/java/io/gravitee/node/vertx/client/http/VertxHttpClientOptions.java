@@ -20,9 +20,7 @@ import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /**
  * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
@@ -58,13 +56,6 @@ public class VertxHttpClientOptions implements Serializable {
     private boolean pipelining = DEFAULT_PIPELINING;
     private int maxConcurrentConnections = DEFAULT_MAX_CONCURRENT_CONNECTIONS;
     private boolean useCompression = DEFAULT_USE_COMPRESSION;
-    private boolean propagateClientAcceptEncoding = DEFAULT_PROPAGATE_CLIENT_ACCEPT_ENCODING;
-    private boolean followRedirects = DEFAULT_FOLLOW_REDIRECTS;
     private boolean clearTextUpgrade = DEFAULT_CLEAR_TEXT_UPGRADE;
     private VertxHttpProtocolVersion version = DEFAULT_PROTOCOL_VERSION;
-
-    public boolean isPropagateClientAcceptEncoding() {
-        // Propagate Accept-Encoding can only be made if useCompression is disabled.
-        return !useCompression && propagateClientAcceptEncoding;
-    }
 }
