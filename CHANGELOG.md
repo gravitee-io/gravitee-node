@@ -1,3 +1,10 @@
+## [5.14.7](https://github.com/gravitee-io/gravitee-node/compare/5.14.6...5.14.7) (2024-06-10)
+
+
+### Bug Fixes
+
+* remove misleading options in vertx client factory ([915cd5a](https://github.com/gravitee-io/gravitee-node/commit/915cd5aca07aac9cbe6874a99df9c38697f073b9))
+
 ## [5.14.6](https://github.com/gravitee-io/gravitee-node/compare/5.14.5...5.14.6) (2024-06-06)
 
 
