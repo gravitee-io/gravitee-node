@@ -106,7 +106,8 @@ class DefaultLicenseFactoryTest {
                 "apim-en-message-reactor",
                 "apim-en-endpoint-mqtt5",
                 "apim-en-entrypoint-http-post",
-                "apim-en-endpoint-kafka"
+                "apim-en-endpoint-kafka",
+                "apim-en-endpoint-asb"
             );
         assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_PLATFORM);
         assertThat(license.getReferenceId()).isEqualTo(REFERENCE_ID_PLATFORM);
@@ -311,6 +312,7 @@ class DefaultLicenseFactoryTest {
             "am-mfa-otp-sender",
             "am-mfa-sms",
             "apim-en-endpoint-kafka",
+            "apim-en-endpoint-asb",
             "gravitee-risk-assessment",
             "am-idp-http-flow",
             "apim-policy-assign-metrics",

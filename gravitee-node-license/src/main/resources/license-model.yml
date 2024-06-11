@@ -80,6 +80,7 @@ packs:
             - apim-en-endpoint-rabbitmq
             - apim-en-endpoint-kafka
             - apim-en-endpoint-solace
+            - apim-en-endpoint-asb
             - apim-en-schema-registry-provider
             - apim-connectors-advanced # for removal
     enterprise-secret-manager:
