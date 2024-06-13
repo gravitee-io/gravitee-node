@@ -31,6 +31,10 @@
     <name>Gravitee.io - Node - Cache - Plugin - Hazelcast</name>
     <description>Hazelcast Cache allows to use caches based on Hazelcast instance.</description>
 
+    <properties>
+        <!-- Property used by the publication job in CI-->
+        <publish-folder-path>plugins/node-cache</publish-folder-path>
+    </properties>
 
     <dependencies>
         <dependency>
