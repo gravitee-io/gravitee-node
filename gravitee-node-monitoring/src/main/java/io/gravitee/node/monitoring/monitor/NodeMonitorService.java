@@ -15,22 +15,15 @@
  */
 package io.gravitee.node.monitoring.monitor;
 
-import static io.gravitee.node.monitoring.MonitoringConstants.NODE_EVENT_START;
-import static io.gravitee.node.monitoring.MonitoringConstants.NODE_EVENT_STOP;
-import static io.gravitee.node.monitoring.MonitoringConstants.NODE_LIFECYCLE;
-import static io.gravitee.node.monitoring.MonitoringConstants.PROPERTY_NODE_APPLICATION;
-import static io.gravitee.node.monitoring.MonitoringConstants.PROPERTY_NODE_EVENT;
-import static io.gravitee.node.monitoring.MonitoringConstants.PROPERTY_NODE_HOSTNAME;
-import static io.gravitee.node.monitoring.MonitoringConstants.PROPERTY_NODE_ID;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static io.gravitee.node.monitoring.MonitoringConstants.*;
 
 import io.gravitee.alert.api.event.Event;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.Node;
-import io.gravitee.node.api.configuration.Configuration;
 import io.gravitee.node.api.monitor.Monitor;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.monitoring.eventbus.MonitorCodec;
+import io.gravitee.node.monitoring.spring.MonitoringConfiguration;
 import io.gravitee.plugin.alert.AlertEventProducer;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -40,47 +33,32 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Slf4j
+@RequiredArgsConstructor
 public class NodeMonitorService extends AbstractService<NodeMonitorService> {
 
     public static final String GIO_NODE_MONITOR_BUS = "gio:node:monitor";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NodeMonitorService.class);
-
-    private ExecutorService executorService;
-
-    @Autowired
-    private NodeMonitorManagementEndpoint nodeMonitorManagementEndpoint;
-
-    @Autowired
-    private ManagementEndpointManager managementEndpointManager;
-
-    @Autowired
-    private Node node;
-
-    @Autowired
-    private AlertEventProducer eventProducer;
-
-    @Autowired
-    private Vertx vertx;
-
-    @Autowired
-    private Configuration configuration;
+    private final NodeMonitorManagementEndpoint nodeMonitorManagementEndpoint;
+    private final ManagementEndpointManager managementEndpointManager;
+    private final AlertEventProducer alertEventProducer;
+    private final Node node;
+    private final Vertx vertx;
+    private final MonitoringConfiguration monitoringConfiguration;
 
     private MessageProducer<Monitor> producer;
+    private ExecutorService executorService;
 
     @Override
     protected void doStart() throws Exception {
-        if (enabled()) {
+        if (monitoringConfiguration.enabled()) {
             super.doStart();
 
             executorService = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "node-monitor"));
@@ -94,11 +72,10 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
                         new DeliveryOptions().setTracingPolicy(TracingPolicy.IGNORE).setCodecName(MonitorCodec.CODEC_NAME)
                     );
 
-            NodeMonitorThread monitorThread = new NodeMonitorThread(producer);
-            this.applicationContext.getAutowireCapableBeanFactory().autowireBean(monitorThread);
+            NodeMonitorThread monitorThread = new NodeMonitorThread(producer, node, alertEventProducer);
 
             // Send an event to notify about the node status
-            eventProducer.send(
+            alertEventProducer.send(
                 Event
                     .now()
                     .type(NODE_LIFECYCLE)
@@ -111,9 +88,18 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
                     .build()
             );
 
-            LOGGER.info("Node monitoring scheduled with fixed delay {} {} ", delay(), unit().name());
+            log.info(
+                "Node monitoring scheduled with fixed delay {} {} ",
+                monitoringConfiguration.delay(),
+                monitoringConfiguration.unit().name()
+            );
 
-            ((ScheduledExecutorService) executorService).scheduleWithFixedDelay(monitorThread, 0, delay(), unit());
+            ((ScheduledExecutorService) executorService).scheduleWithFixedDelay(
+                    monitorThread,
+                    0,
+                    monitoringConfiguration.delay(),
+                    monitoringConfiguration.unit()
+                );
 
             managementEndpointManager.register(nodeMonitorManagementEndpoint);
         }
@@ -121,9 +107,9 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
 
     @Override
     public NodeMonitorService preStop() throws Exception {
-        if (enabled()) {
+        if (monitoringConfiguration.enabled()) {
             // Send an event to notify about the node status
-            eventProducer.send(
+            alertEventProducer.send(
                 Event
                     .now()
                     .type(NODE_LIFECYCLE)
@@ -142,34 +128,26 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
 
     @Override
     protected void doStop() throws Exception {
-        if (enabled()) {
+        if (monitoringConfiguration.enabled()) {
             if (executorService != null && !executorService.isShutdown()) {
-                LOGGER.info("Stop node monitor");
+                log.info("Stop node monitor");
                 executorService.shutdownNow();
             } else {
-                LOGGER.info("Node monitor already shutdown");
+                log.info("Node monitor already shutdown");
             }
 
             super.doStop();
 
-            LOGGER.info("Stop node monitor : DONE");
+            log.info("Stop node monitor : DONE");
+
+            if (producer != null) {
+                producer.close();
+            }
         }
     }
 
     @Override
     protected String name() {
         return "Node Monitor Service";
-    }
-
-    private boolean enabled() {
-        return configuration.getProperty("services.monitoring.enabled", Boolean.class, true);
-    }
-
-    private int delay() {
-        return configuration.getProperty("services.monitoring.delay", Integer.class, 5000);
-    }
-
-    private TimeUnit unit() {
-        return configuration.getProperty("services.monitoring.unit", TimeUnit.class, MILLISECONDS);
     }
 }

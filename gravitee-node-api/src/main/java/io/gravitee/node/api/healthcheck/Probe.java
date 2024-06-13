@@ -18,14 +18,40 @@ package io.gravitee.node.api.healthcheck;
 import java.util.concurrent.CompletionStage;
 
 /**
+ * Represents a probe that can be evaluated and used for monitoring purpose.
+ *
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
 public interface Probe {
+    /**
+     * The identifier of the probe (ex: 'cpu', 'memory', ...).
+     * @return
+     */
     String id();
 
+    /**
+     * Evaluate the probe and return a result indicating if it is healthy or not.
+     *
+     * @return a {@link CompletionStage} containing the result of the evaluation.
+     */
     CompletionStage<Result> check();
 
+    /**
+     * Indicates if the probe requests caching to avoid too many evaluations that can have an impact on performances.
+     * Note: the probe itself is not mandatory to implement caching. This is the responsibility of the invoker to implement the caching of the result.
+     *
+     * @return <code>true</code> if the probe requests caching, <code>false</code> otherwise. Default is <code>false</code>.
+     */
+    default boolean isCacheable() {
+        return false;
+    }
+
+    /**
+     * Indicates if the probe should be evaluated and visible by default by the health check.
+     *
+     * @return <code>true</code> if the probe should be visible, <code>false</code> otherwise. Default is <code>true</code>.
+     */
     default boolean isVisibleByDefault() {
         return true;
     }
