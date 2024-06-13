@@ -1,3 +1,10 @@
+# [5.15.0](https://github.com/gravitee-io/gravitee-node/compare/5.14.7...5.15.0) (2024-06-13)
+
+
+### Features
+
+* add azure service bus feature to license ([6a54bba](https://github.com/gravitee-io/gravitee-node/commit/6a54bba6ba6be1c072861bf77fd972630b253393))
+
 ## [5.14.7](https://github.com/gravitee-io/gravitee-node/compare/5.14.6...5.14.7) (2024-06-10)
 
 
