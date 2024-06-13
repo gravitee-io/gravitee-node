@@ -29,20 +29,18 @@ import io.gravitee.node.monitoring.monitor.probe.OsProbe;
 import io.gravitee.node.monitoring.monitor.probe.ProcessProbe;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Slf4j
+@RequiredArgsConstructor
 public class NodeMonitorManagementEndpoint implements ManagementEndpoint {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NodeMonitorManagementEndpoint.class);
-
-    @Autowired
-    private ObjectMapper mapper;
+    private final ObjectMapper mapper;
 
     @Override
     public HttpMethod method() {
@@ -73,7 +71,7 @@ public class NodeMonitorManagementEndpoint implements ManagementEndpoint {
             response.setStatusCode(HttpStatusCode.OK_200);
             response.write(mapper.writeValueAsString(root));
         } catch (JsonProcessingException e) {
-            LOGGER.error("Unexpected error while generating monitoring", e);
+            log.error("Unexpected error while generating monitoring", e);
             response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
         }
 

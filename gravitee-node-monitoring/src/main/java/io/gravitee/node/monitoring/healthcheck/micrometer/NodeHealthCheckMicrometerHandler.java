@@ -17,38 +17,38 @@ package io.gravitee.node.monitoring.healthcheck.micrometer;
 
 import io.gravitee.node.api.healthcheck.Probe;
 import io.gravitee.node.api.healthcheck.Result;
-import io.gravitee.node.monitoring.healthcheck.NodeHealthCheckThread;
+import io.gravitee.node.monitoring.DefaultProbeEvaluator;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import io.micrometer.core.lang.NonNull;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Slf4j
+@RequiredArgsConstructor
 public class NodeHealthCheckMicrometerHandler implements MeterBinder {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NodeHealthCheckMicrometerHandler.class);
-
-    private final NodeHealthCheckThread statusRegistry;
-
-    public NodeHealthCheckMicrometerHandler(NodeHealthCheckThread statusRegistry) {
-        this.statusRegistry = statusRegistry;
-    }
+    private final DefaultProbeEvaluator probeRegistry;
 
     @Override
     public void bindTo(@NonNull MeterRegistry registry) {
-        for (Map.Entry<Probe, Result> entry : statusRegistry.getResults().entrySet()) {
-            Gauge
-                .builder("node", entry, e -> e.getValue().isHealthy() ? 1 : 0)
-                .tag("probe", entry.getKey().id())
-                .description("The health-check probes of the node")
-                .baseUnit("health")
-                .register(registry);
+        try {
+            for (Map.Entry<Probe, Result> entry : probeRegistry.evaluate().get().entrySet()) {
+                Gauge
+                    .builder("node", entry, e -> e.getValue().isHealthy() ? 1d : 0d)
+                    .tag("probe", entry.getKey().id())
+                    .description("The health-check probes of the node")
+                    .baseUnit("health")
+                    .register(registry);
+            }
+        } catch (Exception e) {
+            log.error("An error occurred while bind the health probes to micrometer");
         }
     }
 }

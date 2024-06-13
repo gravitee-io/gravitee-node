@@ -16,11 +16,14 @@
 package io.gravitee.node.monitoring.healthcheck;
 
 import io.gravitee.common.service.AbstractService;
+import io.gravitee.node.api.Node;
 import io.gravitee.node.api.healthcheck.HealthCheck;
-import io.gravitee.node.api.healthcheck.ProbeManager;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
+import io.gravitee.node.monitoring.DefaultProbeEvaluator;
 import io.gravitee.node.monitoring.eventbus.HealthCheckCodec;
 import io.gravitee.node.monitoring.healthcheck.micrometer.NodeHealthCheckMicrometerHandler;
+import io.gravitee.node.monitoring.spring.HealthConfiguration;
+import io.gravitee.plugin.alert.AlertEventProducer;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
@@ -28,61 +31,72 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.MessageProducer;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.micrometer.backends.BackendRegistries;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Slf4j
+@RequiredArgsConstructor
 public class NodeHealthCheckService extends AbstractService {
 
     public static final String GIO_NODE_HEALTHCHECK_BUS = "gio:node:healthcheck";
 
-    @Autowired
-    private ManagementEndpointManager managementEndpointManager;
-
-    @Autowired
-    private ProbeManager probeManager;
-
-    @Autowired
-    private NodeHealthCheckManagementEndpoint healthCheckEndpoint;
-
-    @Autowired
-    private Vertx vertx;
-
-    private long metricsPollerId = -1;
-
-    private static final long NODE_CHECKER_DELAY = 5000;
+    private final ManagementEndpointManager managementEndpointManager;
+    private final DefaultProbeEvaluator probeRegistry;
+    private final NodeHealthCheckManagementEndpoint healthCheckEndpoint;
+    private final AlertEventProducer alertEventProducer;
+    private final Node node;
+    private final Vertx vertx;
+    private final HealthConfiguration healthConfiguration;
 
     private MessageProducer<HealthCheck> producer;
+    private ExecutorService executorService;
 
     @Override
     protected void doStart() throws Exception {
-        super.doStart();
+        if (healthConfiguration.enabled()) {
+            super.doStart();
 
-        producer =
-            vertx
-                .eventBus()
-                .registerCodec(new HealthCheckCodec())
-                .sender(
-                    GIO_NODE_HEALTHCHECK_BUS,
-                    new DeliveryOptions().setTracingPolicy(TracingPolicy.IGNORE).setCodecName(HealthCheckCodec.CODEC_NAME)
+            executorService = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "node-health-check"));
+
+            producer =
+                vertx
+                    .eventBus()
+                    .registerCodec(new HealthCheckCodec())
+                    .sender(
+                        GIO_NODE_HEALTHCHECK_BUS,
+                        new DeliveryOptions().setTracingPolicy(TracingPolicy.IGNORE).setCodecName(HealthCheckCodec.CODEC_NAME)
+                    );
+
+            final NodeHealthCheckThread nodeHealthCheckThread = new NodeHealthCheckThread(
+                probeRegistry,
+                alertEventProducer,
+                producer,
+                node
+            );
+
+            managementEndpointManager.register(healthCheckEndpoint);
+
+            MeterRegistry micrometerRegistry = BackendRegistries.getDefaultNow();
+
+            if (micrometerRegistry instanceof PrometheusMeterRegistry) {
+                new NodeHealthCheckMicrometerHandler(probeRegistry).bindTo(micrometerRegistry);
+            }
+
+            ((ScheduledExecutorService) executorService).scheduleWithFixedDelay(
+                    nodeHealthCheckThread,
+                    0,
+                    healthConfiguration.delay(),
+                    healthConfiguration.unit()
                 );
 
-        // Poll data
-        NodeHealthCheckThread statusRegistry = new NodeHealthCheckThread(probeManager.getProbes(), producer);
-
-        applicationContext.getAutowireCapableBeanFactory().autowireBean(statusRegistry);
-
-        metricsPollerId = vertx.setPeriodic(NODE_CHECKER_DELAY, statusRegistry);
-
-        healthCheckEndpoint.setRegistry(statusRegistry);
-        managementEndpointManager.register(healthCheckEndpoint);
-
-        MeterRegistry registry = BackendRegistries.getDefaultNow();
-
-        if (registry instanceof PrometheusMeterRegistry) {
-            new NodeHealthCheckMicrometerHandler(statusRegistry).bindTo(registry);
+            log.info("Node health check scheduled with fixed delay {} {} ", healthConfiguration.delay(), healthConfiguration.unit().name());
         }
     }
 
@@ -90,8 +104,11 @@ public class NodeHealthCheckService extends AbstractService {
     protected void doStop() throws Exception {
         super.doStop();
 
-        if (metricsPollerId > 0) {
-            vertx.cancelTimer(metricsPollerId);
+        if (executorService != null && !executorService.isShutdown()) {
+            log.info("Stop node health check");
+            executorService.shutdownNow();
+        } else {
+            log.info("Node health check already shutdown");
         }
 
         if (producer != null) {

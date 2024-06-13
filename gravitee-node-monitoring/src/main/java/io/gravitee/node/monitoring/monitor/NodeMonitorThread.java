@@ -30,29 +30,20 @@ import io.gravitee.node.monitoring.monitor.probe.ProcessProbe;
 import io.gravitee.plugin.alert.AlertEventProducer;
 import io.vertx.core.eventbus.MessageProducer;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Slf4j
+@RequiredArgsConstructor
 public class NodeMonitorThread implements Runnable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NodeMonitorThread.class);
-
     private final MessageProducer<Monitor> producer;
-
-    public NodeMonitorThread(final MessageProducer<Monitor> producer) {
-        this.producer = producer;
-    }
-
-    @Autowired
-    private Node node;
-
-    @Autowired
-    private AlertEventProducer eventProducer;
+    private final Node node;
+    private final AlertEventProducer alertEventProducer;
 
     @Override
     public void run() {
@@ -68,7 +59,7 @@ public class NodeMonitorThread implements Runnable {
             // And generate monitoring metrics
             producer.write(monitor);
 
-            if (!eventProducer.isEmpty()) {
+            if (!alertEventProducer.isEmpty()) {
                 DefaultEvent.Builder event = Event.at(monitor.getTimestamp()).type(NODE_HEARTBEAT);
 
                 event.property(PROPERTY_NODE_ID, node.id());
@@ -103,10 +94,10 @@ public class NodeMonitorThread implements Runnable {
                 event.property("jvm.mem.heap.max", jvmInfo.mem.heapMax);
                 event.property("jvm.mem.heap.percent", jvmInfo.mem.getHeapUsedPercent());
 
-                eventProducer.send(event.build());
+                alertEventProducer.send(event.build());
             }
         } catch (Exception ex) {
-            LOGGER.error("Unexpected error occurs while monitoring the node", ex);
+            log.error("Unexpected error occurs while monitoring the node", ex);
         }
     }
 }

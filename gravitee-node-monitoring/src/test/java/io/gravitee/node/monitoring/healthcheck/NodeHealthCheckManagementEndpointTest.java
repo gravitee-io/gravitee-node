@@ -20,8 +20,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.gravitee.common.http.HttpStatusCode;
 import io.gravitee.node.api.healthcheck.Probe;
+import io.gravitee.node.api.healthcheck.ProbeEvaluator;
 import io.gravitee.node.api.healthcheck.Result;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerResponse;
@@ -40,7 +44,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class NodeHealthCheckManagementEndpointTest {
 
     @Mock
-    private NodeHealthCheckThread probeStatusRegistry;
+    private ProbeEvaluator probeEvaluator;
 
     @Mock
     private RoutingContext routingContext;
@@ -55,8 +59,11 @@ public class NodeHealthCheckManagementEndpointTest {
 
     @BeforeEach
     public void beforeEach() {
-        nodeHealthCheckManagementEndpoint = new NodeHealthCheckManagementEndpoint();
-        nodeHealthCheckManagementEndpoint.setRegistry(probeStatusRegistry);
+        nodeHealthCheckManagementEndpoint =
+            new NodeHealthCheckManagementEndpoint(
+                probeEvaluator,
+                new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            );
 
         when(routingContext.response()).thenReturn(httpServerResponse);
     }
@@ -64,7 +71,8 @@ public class NodeHealthCheckManagementEndpointTest {
     @Test
     void should_not_filter_all_healthy() {
         Map<Probe, Result> probeResultMap = fakeProbeResults(true);
-        when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
+
+        when(probeEvaluator.evaluate()).thenReturn(CompletableFuture.completedFuture(probeResultMap));
         when(routingContext.queryParams()).thenReturn(queryParams);
         when(queryParams.contains(any())).thenReturn(false);
 
@@ -96,7 +104,7 @@ public class NodeHealthCheckManagementEndpointTest {
     @Test
     void should_not_filter_one_unhealthy_healthy() {
         Map<Probe, Result> probeResultMap = fakeProbeResults(false);
-        when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
+        when(probeEvaluator.evaluate()).thenReturn(CompletableFuture.completedFuture(probeResultMap));
         when(routingContext.queryParams()).thenReturn(queryParams);
         when(queryParams.contains(any())).thenReturn(false);
 
@@ -128,7 +136,7 @@ public class NodeHealthCheckManagementEndpointTest {
     @Test
     void should_filter_all_healthy() {
         Map<Probe, Result> probeResultMap = fakeProbeResults(true);
-        when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
+        when(probeEvaluator.evaluate()).thenReturn(CompletableFuture.completedFuture(probeResultMap));
         when(routingContext.queryParams()).thenReturn(queryParams);
         when(queryParams.contains(any())).thenReturn(true);
         when(queryParams.get(any())).thenReturn("ratelimit-repository,management-repository");
@@ -158,7 +166,7 @@ public class NodeHealthCheckManagementEndpointTest {
     @Test
     void should_filter_by_probe_id() {
         Map<Probe, Result> probeResultMap = fakeProbeResults(false);
-        when(probeStatusRegistry.getResults()).thenReturn(probeResultMap);
+        when(probeEvaluator.evaluate()).thenReturn(CompletableFuture.completedFuture(probeResultMap));
         when(routingContext.queryParams()).thenReturn(queryParams);
         when(queryParams.contains(any())).thenReturn(true);
         when(queryParams.get(any())).thenReturn("ratelimit-repository,management-repository,cpu");
@@ -200,35 +208,5 @@ public class NodeHealthCheckManagementEndpointTest {
 
     private Result mockResult(boolean isHealthy) {
         return isHealthy ? Result.healthy() : Result.unhealthy((String) null);
-    }
-
-    private static class TestingProbe implements Probe {
-
-        private final String id;
-        private boolean isVisibleByDefault = true;
-
-        public TestingProbe(String id) {
-            this.id = id;
-        }
-
-        public TestingProbe(String id, boolean isVisibleByDefault) {
-            this.id = id;
-            this.isVisibleByDefault = isVisibleByDefault;
-        }
-
-        @Override
-        public String id() {
-            return id;
-        }
-
-        @Override
-        public boolean isVisibleByDefault() {
-            return this.isVisibleByDefault;
-        }
-
-        @Override
-        public CompletableFuture<Result> check() {
-            return null;
-        }
     }
 }

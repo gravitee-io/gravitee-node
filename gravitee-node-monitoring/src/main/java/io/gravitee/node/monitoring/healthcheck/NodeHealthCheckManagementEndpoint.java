@@ -15,42 +15,35 @@
  */
 package io.gravitee.node.monitoring.healthcheck;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.gravitee.common.http.HttpHeaders;
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.common.http.HttpStatusCode;
 import io.gravitee.common.http.MediaType;
 import io.gravitee.node.api.healthcheck.Probe;
+import io.gravitee.node.api.healthcheck.ProbeEvaluator;
 import io.gravitee.node.api.healthcheck.Result;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.RoutingContext;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Slf4j
+@RequiredArgsConstructor
 public class NodeHealthCheckManagementEndpoint implements ManagementEndpoint {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(NodeHealthCheckManagementEndpoint.class);
-
-    private NodeHealthCheckThread registry;
-
-    final ObjectMapper objectMapper;
 
     public static final String PROBE_FILTER = "probes";
 
-    public NodeHealthCheckManagementEndpoint() {
-        objectMapper = DatabindCodec.prettyMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    }
+    private final ProbeEvaluator probeEvaluator;
+    private final ObjectMapper mapper;
 
     @Override
     public HttpMethod method() {
@@ -64,41 +57,39 @@ public class NodeHealthCheckManagementEndpoint implements ManagementEndpoint {
 
     @Override
     public void handle(RoutingContext ctx) {
-        Map<Probe, Result> probes = registry
-            .getResults()
-            .entrySet()
-            .stream()
-            .filter(entry ->
-                ctx.queryParams().contains(PROBE_FILTER)
-                    ? ctx.queryParams().get(PROBE_FILTER).contains(entry.getKey().id())
-                    : entry.getKey().isVisibleByDefault()
-            )
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        probeEvaluator
+            .evaluate()
+            .thenAccept(probeResults -> {
+                final Map<Probe, Result> probes = probeResults
+                    .entrySet()
+                    .stream()
+                    .filter(entry ->
+                        ctx.queryParams().contains(PROBE_FILTER)
+                            ? ctx.queryParams().get(PROBE_FILTER).contains(entry.getKey().id())
+                            : entry.getKey().isVisibleByDefault()
+                    )
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        boolean healthyProbe = probes.values().stream().allMatch(Result::isHealthy);
+                boolean healthyProbe = probes.values().stream().allMatch(Result::isHealthy);
 
-        HttpServerResponse response = ctx.response();
-        response.setStatusCode(healthyProbe ? HttpStatusCode.OK_200 : HttpStatusCode.INTERNAL_SERVER_ERROR_500);
-        response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-        response.setChunked(true);
+                HttpServerResponse response = ctx.response();
+                response.setStatusCode(healthyProbe ? HttpStatusCode.OK_200 : HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+                response.putHeader(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+                response.setChunked(true);
 
-        Map<String, Result> results = probes
-            .entrySet()
-            .stream()
-            .collect(Collectors.toMap(probeResultEntry -> probeResultEntry.getKey().id(), Map.Entry::getValue));
+                Map<String, Result> results = probes
+                    .entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(probeResultEntry -> probeResultEntry.getKey().id(), Map.Entry::getValue));
 
-        try {
-            final ObjectMapper objectMapper = DatabindCodec.prettyMapper();
-            response.write(objectMapper.writeValueAsString(results));
-        } catch (JsonProcessingException e) {
-            LOGGER.warn("Unable to encode health check result into json.", e);
-        }
+                try {
+                    response.write(mapper.writeValueAsString(results));
+                } catch (JsonProcessingException e) {
+                    log.warn("Unable to encode health check result into json.", e);
+                }
 
-        // End the response
-        response.end();
-    }
-
-    public void setRegistry(NodeHealthCheckThread registry) {
-        this.registry = registry;
+                // End the response
+                response.end();
+            });
     }
 }
