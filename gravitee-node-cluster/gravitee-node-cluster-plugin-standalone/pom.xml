@@ -31,6 +31,11 @@
     <name>Gravitee.io - Node - Cluster - Plugin - Standalone</name>
     <description>Standalone Cluster is the default plugin used when clustering is not required.</description>
 
+    <properties>
+        <!-- Property used by the publication job in CI-->
+        <publish-folder-path>plugins/node-cluster</publish-folder-path>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.gravitee.node</groupId>
