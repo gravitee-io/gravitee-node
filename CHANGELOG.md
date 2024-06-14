@@ -1,3 +1,10 @@
+# [5.16.0](https://github.com/gravitee-io/gravitee-node/compare/5.15.0...5.16.0) (2024-06-14)
+
+
+### Features
+
+* reduce pressure on db due to health and monitoring ([e10d8a8](https://github.com/gravitee-io/gravitee-node/commit/e10d8a89488e6f090f47038e46d1b9e662ec81a9))
+
 # [5.15.0](https://github.com/gravitee-io/gravitee-node/compare/5.14.7...5.15.0) (2024-06-13)
 
 
