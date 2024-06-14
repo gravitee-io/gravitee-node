@@ -1,3 +1,10 @@
+## [5.16.1](https://github.com/gravitee-io/gravitee-node/compare/5.16.0...5.16.1) (2024-06-14)
+
+
+### Bug Fixes
+
+* override equals and hashcode for SecretLocation ([401301c](https://github.com/gravitee-io/gravitee-node/commit/401301c0d91491ee0b05b1fad65c53b1ad6f67c5))
+
 # [5.16.0](https://github.com/gravitee-io/gravitee-node/compare/5.15.0...5.16.0) (2024-06-14)
 
 
