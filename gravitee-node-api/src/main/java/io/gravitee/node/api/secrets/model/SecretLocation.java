@@ -44,4 +44,17 @@ public class SecretLocation {
         Objects.requireNonNull(key);
         return (T) properties.getOrDefault(key, defaultValue);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SecretLocation that = (SecretLocation) o;
+        return Objects.equals(properties, that.properties);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(properties);
+    }
 }
