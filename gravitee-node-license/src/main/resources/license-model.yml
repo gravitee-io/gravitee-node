@@ -87,6 +87,7 @@ packs:
     enterprise-secret-manager:
         features:
             - gravitee-en-secretprovider-vault
+            - gravitee-en-secretprovider-aws
     enterprise-alert-engine:
         features:
             - alert-engine
