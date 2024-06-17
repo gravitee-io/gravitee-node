@@ -336,6 +336,7 @@ class DefaultLicenseFactoryTest {
             "am-resource-orange-contact-everyone",
             "am-resource-http",
             "gravitee-en-secretprovider-vault",
+            "gravitee-en-secretprovider-aws",
             "apim-policy-graphql-ratelimit",
             "apim-policy-interops-a-idp",
             "apim-policy-interops-r-idp",
