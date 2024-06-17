@@ -1,3 +1,10 @@
+# [5.17.0](https://github.com/gravitee-io/gravitee-node/compare/5.16.2...5.17.0) (2024-06-17)
+
+
+### Features
+
+* add oas validation policy feature to license ([9a2e3f8](https://github.com/gravitee-io/gravitee-node/commit/9a2e3f82ec65d1907a8a086225abba803d7c6d62))
+
 ## [5.16.2](https://github.com/gravitee-io/gravitee-node/compare/5.16.1...5.16.2) (2024-06-17)
 
 
