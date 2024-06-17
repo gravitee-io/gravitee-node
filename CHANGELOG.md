@@ -1,3 +1,10 @@
+# [5.18.0](https://github.com/gravitee-io/gravitee-node/compare/5.17.0...5.18.0) (2024-06-17)
+
+
+### Features
+
+* add secret provider aws to license model ([e1abcc2](https://github.com/gravitee-io/gravitee-node/commit/e1abcc239015eebf829fc18beaffb2b3002d306b))
+
 # [5.17.0](https://github.com/gravitee-io/gravitee-node/compare/5.16.2...5.17.0) (2024-06-17)
 
 
