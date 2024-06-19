@@ -18,12 +18,16 @@ package io.gravitee.node.container.spring.env;
 import io.gravitee.node.kubernetes.propertyresolver.CloudScheme;
 import io.gravitee.node.kubernetes.propertyresolver.PropertyResolver;
 import io.gravitee.node.kubernetes.propertyresolver.PropertyResolverFactoriesLoader;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.functions.Supplier;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.EnumerablePropertySource;
-import org.springframework.core.env.PropertySource;
 import org.springframework.util.Assert;
 
 /**
@@ -31,6 +35,8 @@ import org.springframework.util.Assert;
  * @author GraviteeSource Team
  */
 public abstract class AbstractGraviteePropertySource extends EnumerablePropertySource<Map<String, Object>> {
+
+    private static final int REPEAT_DELAY_SECONDS = 1;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGraviteePropertySource.class);
     private final PropertyResolverFactoriesLoader propertyResolverLoader;
@@ -89,11 +95,26 @@ public abstract class AbstractGraviteePropertySource extends EnumerablePropertyS
     }
 
     private void watchProperty(PropertyResolver propertyResolver, String name, Object value) {
-        propertyResolver
-            .watch(value.toString())
-            .doOnNext(newValue -> source.put(name, newValue))
-            .doOnError(t -> LOGGER.error("Unable to update property {}", name, t))
-            .doOnComplete(() -> watchProperty(propertyResolver, name, value))
-            .subscribe();
+        new FlowableRepeater(() -> propertyResolver.watch(value.toString()))
+            .repeatFlowable(REPEAT_DELAY_SECONDS)
+            .subscribeOn(Schedulers.io())
+            .subscribe(newValue -> source.put(name, newValue), t -> LOGGER.error("Unable to update property {}", name, t));
+    }
+
+    static class FlowableRepeater<T> {
+
+        private final Supplier<Flowable<T>> flowableSupplier;
+
+        FlowableRepeater(Supplier<Flowable<T>> flowableSupplier) {
+            this.flowableSupplier = flowableSupplier;
+        }
+
+        Flowable<T> repeatFlowable(int recreateDelaySeconds) {
+            return Flowable.defer(flowableSupplier).delay(recreateDelaySeconds, TimeUnit.SECONDS).repeat();
+        }
+
+        Flowable<T> repeatFlowable(int recreateDelaySeconds, Scheduler delayScheduler) {
+            return Flowable.defer(flowableSupplier).delay(recreateDelaySeconds, TimeUnit.SECONDS, delayScheduler).repeat();
+        }
     }
 }
