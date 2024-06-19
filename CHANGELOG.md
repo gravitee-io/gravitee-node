@@ -1,3 +1,10 @@
+## [5.18.1](https://github.com/gravitee-io/gravitee-node/compare/5.18.0...5.18.1) (2024-06-19)
+
+
+### Bug Fixes
+
+* configure repo to release plugins in download website ([0c54f7c](https://github.com/gravitee-io/gravitee-node/commit/0c54f7c3a29b9ea8f0867fd11ff295c98a3fc053))
+
 # [5.18.0](https://github.com/gravitee-io/gravitee-node/compare/5.17.0...5.18.0) (2024-06-17)
 
 
