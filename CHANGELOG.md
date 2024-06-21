@@ -1,3 +1,10 @@
+## [5.18.2](https://github.com/gravitee-io/gravitee-node/compare/5.18.1...5.18.2) (2024-06-21)
+
+
+### Bug Fixes
+
+* added one-second delay before repeat to avoid log flooding ([220d7e0](https://github.com/gravitee-io/gravitee-node/commit/220d7e072768031f945ada016551e641a7ccc8ec))
+
 ## [5.18.1](https://github.com/gravitee-io/gravitee-node/compare/5.18.0...5.18.1) (2024-06-19)
 
 
