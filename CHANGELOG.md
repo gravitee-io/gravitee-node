@@ -1,3 +1,10 @@
+## [4.3.4](https://github.com/gravitee-io/gravitee-node/compare/4.3.3...4.3.4) (2024-06-21)
+
+
+### Bug Fixes
+
+* recursive method call may lead to stack overflow exception ([9ba1bfc](https://github.com/gravitee-io/gravitee-node/commit/9ba1bfce6e42091e3ef32ab85282a98360198aea))
+
 ## [4.3.3](https://github.com/gravitee-io/gravitee-node/compare/4.3.2...4.3.3) (2024-06-07)
 
 
