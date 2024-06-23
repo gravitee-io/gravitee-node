@@ -32,7 +32,6 @@ import mockit.MockUp;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
@@ -66,21 +65,20 @@ public class UpgraderServiceImplTest {
     @Test
     public void shouldUpgrade() throws Exception {
         Map<String, Upgrader> beans = new HashMap<>();
-        Upgrader mockUpgrader = mock(Upgrader.class);
-        beans.put(mockUpgrader.getClass().getName(), mockUpgrader);
+        DummyUpgrader upgrader = new DummyUpgrader(true, "V1", 0);
+        beans.put(upgrader.getClass().getName(), upgrader);
         cut.setApplicationContext(applicationContext);
 
         when(configuration.getProperty("upgrade.mode", Boolean.class, false)).thenReturn(false);
         when(applicationContext.getBeansOfType(Upgrader.class)).thenReturn(beans);
-        when(mockUpgrader.upgrade()).thenReturn(true);
-        when(repository.findById(mockUpgrader.getClass().getName())).thenReturn(Maybe.empty());
+        when(repository.findById(upgrader.getClass().getName() + "_V1")).thenReturn(Maybe.empty());
         when(repository.create(any())).thenAnswer(i -> Single.just(i.getArgument(0)));
 
         cut.start();
 
-        verify(repository, times(1)).findById(mockUpgrader.getClass().getName());
+        verify(repository, times(1)).findById(upgrader.getClass().getName() + "_V1");
         verify(repository, times(1)).create(any(UpgradeRecord.class));
-        verify(mockUpgrader, times(1)).upgrade();
+        assertThat(upgrader.hasBeenUpgraded).isTrue();
         verify(node, times(0)).stop();
     }
 
@@ -94,30 +92,27 @@ public class UpgraderServiceImplTest {
         };
 
         Map<String, Upgrader> beans = new HashMap<>();
-        Upgrader mockUpgrader1 = mock(Upgrader.class);
-        beans.put("mockUpgrader1", mockUpgrader1);
+        DummyUpgrader upgrader1 = new DummyUpgrader(true, null, 0);
+        beans.put("upgrader1", upgrader1);
 
-        Upgrader mockUpgrader2 = mock(Upgrader.class);
-        beans.put("mockUpgrader2", mockUpgrader2);
+        DummyUpgrader upgrader2 = new DummyUpgrader(true, null, 1);
+        beans.put("upgrader2", upgrader2);
 
-        Upgrader mockUpgrader3 = mock(Upgrader.class);
-        beans.put("mockUpgrader3", mockUpgrader3);
+        DummyUpgrader upgrader3 = new DummyUpgrader(false, null, 2);
+        beans.put("upgrader3", upgrader3);
 
-        Upgrader mockUpgrader4 = mock(Upgrader.class);
-        beans.put("mockUpgrader4", mockUpgrader4);
+        DummyUpgrader upgrader4 = new DummyUpgrader(false, null, 3);
+        beans.put("upgrader4", upgrader4);
 
-        Upgrader mockUpgrader5 = mock(Upgrader.class);
-        beans.put("mockUpgrader5", mockUpgrader5);
+        DummyUpgrader upgrader5 = new DummyUpgrader(false, null, 4);
+        beans.put("upgrader5", upgrader5);
 
         cut.setApplicationContext(applicationContext);
 
         when(configuration.getProperty("upgrade.mode", Boolean.class, false)).thenReturn(true);
         when(applicationContext.getBean(Node.class)).thenReturn(node);
         when(applicationContext.getBeansOfType(Upgrader.class)).thenReturn(beans);
-        when(mockUpgrader1.upgrade()).thenReturn(true);
-        when(repository.findById(mockUpgrader1.getClass().getName())).thenReturn(Maybe.empty());
-        when(mockUpgrader2.upgrade()).thenReturn(true);
-        when(mockUpgrader3.upgrade()).thenReturn(false);
+        when(repository.findById(upgrader1.getClass().getName())).thenReturn(Maybe.empty());
 
         try {
             cut.start();
@@ -125,13 +120,13 @@ public class UpgraderServiceImplTest {
             assertThat(e.getMessage()).isEqualTo("1");
         }
 
-        verify(repository, times(3)).findById(mockUpgrader1.getClass().getName());
+        verify(repository, times(3)).findById(upgrader1.getClass().getName());
         verify(repository, times(2)).create(any(UpgradeRecord.class));
-        verify(mockUpgrader1, times(1)).upgrade();
-        verify(mockUpgrader2, times(1)).upgrade();
-        verify(mockUpgrader3, times(1)).upgrade();
-        verify(mockUpgrader4, never()).upgrade();
-        verify(mockUpgrader5, never()).upgrade();
+        assertThat(upgrader1.hasBeenUpgraded).isTrue();
+        assertThat(upgrader2.hasBeenUpgraded).isTrue();
+        assertThat(upgrader3.hasBeenUpgraded).isTrue();
+        assertThat(upgrader4.hasBeenUpgraded).isFalse();
+        assertThat(upgrader5.hasBeenUpgraded).isFalse();
         verify(node, times(1)).preStop();
         verify(node, times(1)).stop();
         verify(node, times(1)).postStop();
@@ -140,20 +135,49 @@ public class UpgraderServiceImplTest {
     @Test
     public void shouldNotUpgrade() throws Exception {
         Map<String, Upgrader> beans = new HashMap<>();
-        Upgrader mockUpgrader = mock(Upgrader.class);
-        beans.put(mockUpgrader.getClass().getName(), mockUpgrader);
+        DummyUpgrader upgrader = new DummyUpgrader(false, null, 0);
+        beans.put(upgrader.getClass().getName(), upgrader);
         cut.setApplicationContext(applicationContext);
 
         when(configuration.getProperty("upgrade.mode", Boolean.class, false)).thenReturn(false);
         when(applicationContext.getBeansOfType(Upgrader.class)).thenReturn(beans);
-        when(repository.findById(mockUpgrader.getClass().getName()))
-            .thenReturn(Maybe.just(new UpgradeRecord(mockUpgrader.getClass().getName(), new Date())));
+        when(repository.findById(upgrader.identifier())).thenReturn(Maybe.just(new UpgradeRecord(upgrader.identifier(), new Date())));
 
         cut.start();
 
         verify(repository, times(1)).findById(anyString());
         verify(repository, times(0)).create(any(UpgradeRecord.class));
-        verify(mockUpgrader, times(0)).upgrade();
+        assertThat(upgrader.hasBeenUpgraded).isFalse();
         verify(node, times(0)).stop();
+    }
+
+    static class DummyUpgrader implements Upgrader {
+
+        public boolean hasBeenUpgraded = false;
+        private final boolean shouldUpgrade;
+        private final String version;
+        private final int order;
+
+        public DummyUpgrader(boolean shouldUpgrade, String version, int order) {
+            this.shouldUpgrade = shouldUpgrade;
+            this.version = version;
+            this.order = order;
+        }
+
+        @Override
+        public boolean upgrade() {
+            hasBeenUpgraded = true;
+            return this.shouldUpgrade;
+        }
+
+        @Override
+        public int getOrder() {
+            return this.order;
+        }
+
+        @Override
+        public String version() {
+            return this.version;
+        }
     }
 }
