@@ -24,4 +24,16 @@ public interface Upgrader {
     boolean upgrade();
 
     int getOrder();
+
+    default String version() {
+        return null;
+    }
+
+    default String identifier() {
+        String className = getClass().getName();
+        if (version() != null) {
+            return className + "_" + version();
+        }
+        return className;
+    }
 }

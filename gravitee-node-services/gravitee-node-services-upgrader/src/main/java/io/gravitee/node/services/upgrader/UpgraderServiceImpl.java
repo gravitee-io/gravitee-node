@@ -67,13 +67,13 @@ public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> im
             .forEach(upgrader -> {
                 String name = upgrader.getClass().getSimpleName();
                 try {
-                    UpgradeRecord upgradeRecord = upgraderRepository.findById(upgrader.getClass().getName()).blockingGet();
+                    UpgradeRecord upgradeRecord = upgraderRepository.findById(upgrader.identifier()).blockingGet();
                     if (upgradeRecord != null) {
                         LOGGER.info("{} is already applied. it will be ignored.", name);
                     } else {
                         LOGGER.info("Apply {} ...", name);
                         if (upgrader.upgrade()) {
-                            upgraderRepository.create(new UpgradeRecord(upgrader.getClass().getName(), new Date())).blockingGet();
+                            upgraderRepository.create(new UpgradeRecord(upgrader.identifier(), new Date())).blockingGet();
                         } else {
                             stopUpgrade.set(true);
                         }
