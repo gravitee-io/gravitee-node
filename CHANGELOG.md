@@ -1,3 +1,10 @@
+## [5.18.3](https://github.com/gravitee-io/gravitee-node/compare/5.18.2...5.18.3) (2024-06-24)
+
+
+### Bug Fixes
+
+* improve upgrade fwk ([a94c147](https://github.com/gravitee-io/gravitee-node/commit/a94c147d01dcd7850be5e10ad23bd5fafd0101fa))
+
 ## [5.18.2](https://github.com/gravitee-io/gravitee-node/compare/5.18.1...5.18.2) (2024-06-21)
 
 
