@@ -337,6 +337,7 @@ class DefaultLicenseFactoryTest {
             "am-resource-http",
             "gravitee-en-secretprovider-vault",
             "gravitee-en-secretprovider-aws",
+            "am-certificate-aws",
             "apim-policy-graphql-ratelimit",
             "apim-policy-interops-a-idp",
             "apim-policy-interops-r-idp",
