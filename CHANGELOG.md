@@ -1,3 +1,10 @@
+# [5.19.0](https://github.com/gravitee-io/gravitee-node/compare/5.18.3...5.19.0) (2024-06-26)
+
+
+### Features
+
+* add AM enterprise certificate AWS plugin ([3ef8d85](https://github.com/gravitee-io/gravitee-node/commit/3ef8d85a08a8205583c0655ef6076b24ecb415c7))
+
 ## [5.18.3](https://github.com/gravitee-io/gravitee-node/compare/5.18.2...5.18.3) (2024-06-24)
 
 
