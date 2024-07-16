@@ -166,6 +166,7 @@ public class ManagementVerticle extends AbstractVerticle {
                 } else {
                     // Listen to the endpoint manager to set up route when a management endpoint is registered.
                     managementEndpointManager.onEndpointRegistered(this::setupRoute);
+                    managementEndpointManager.onEndpointUnregistered(this::removeRoute);
 
                     // Register some default endpoints.
                     managementEndpointManager.register(nodeEndpoint);
@@ -212,6 +213,21 @@ public class ManagementVerticle extends AbstractVerticle {
             nodeWebhookRouter.route(convert(endpoint.method()), endpoint.path()).handler(endpoint::handle);
         } else {
             nodeRouter.route(convert(endpoint.method()), endpoint.path()).handler(endpoint::handle);
+        }
+    }
+
+    private void removeRoute(ManagementEndpoint endpoint) {
+        LOGGER.info(
+            "Unregister an endpoint for Management API: {} {} [{}]",
+            endpoint.method(),
+            endpoint.path(),
+            endpoint.getClass().getName()
+        );
+
+        if (endpoint.isWebhook()) {
+            nodeWebhookRouter.route(convert(endpoint.method()), endpoint.path()).remove();
+        } else {
+            nodeRouter.route(convert(endpoint.method()), endpoint.path()).remove();
         }
     }
 

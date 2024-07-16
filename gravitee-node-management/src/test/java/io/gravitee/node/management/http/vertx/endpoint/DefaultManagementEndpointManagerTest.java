@@ -1,6 +1,5 @@
 package io.gravitee.node.management.http.vertx.endpoint;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -9,6 +8,7 @@ import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
 import io.vertx.ext.web.RoutingContext;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -24,45 +24,65 @@ class DefaultManagementEndpointManagerTest {
         cut = new DefaultManagementEndpointManager();
     }
 
-    @Test
-    void should_notify_listener_when_registering_endpoint() {
-        final FakeListener listener = spy(new FakeListener());
-        final FakeManagementEndpoint managementEndpoint = new FakeManagementEndpoint();
+    @Nested
+    class RegisterEndpoint {
 
-        cut.onEndpointRegistered(listener);
-        cut.register(managementEndpoint);
+        @Test
+        void should_notify_listener_when_registering_endpoint() {
+            final FakeListener listener = spy(new FakeListener());
+            final FakeManagementEndpoint managementEndpoint = new FakeManagementEndpoint();
 
-        verify(listener).accept(managementEndpoint);
+            cut.onEndpointRegistered(listener);
+            cut.register(managementEndpoint);
+
+            verify(listener).accept(managementEndpoint);
+        }
+
+        @Test
+        void should_notify_all_listeners_when_registering_endpoint() {
+            final FakeListener listener1 = spy(new FakeListener());
+            final FakeListener listener2 = spy(new FakeListener());
+            final FakeManagementEndpoint managementEndpoint = new FakeManagementEndpoint();
+
+            cut.onEndpointRegistered(listener1);
+            cut.onEndpointRegistered(listener2);
+            cut.register(managementEndpoint);
+
+            verify(listener1).accept(managementEndpoint);
+            verify(listener2).accept(managementEndpoint);
+        }
+
+        @Test
+        void should_notify_listener_with_all_existing_endpoints_when_listener_subscribes() {
+            final FakeListener listener = spy(new FakeListener());
+            final FakeManagementEndpoint managementEndpoint1 = new FakeManagementEndpoint();
+            final FakeManagementEndpoint managementEndpoint2 = new FakeManagementEndpoint();
+
+            cut.register(managementEndpoint1);
+            cut.register(managementEndpoint2);
+
+            // Listener registered after endpoints have been registered.
+            cut.onEndpointRegistered(listener);
+
+            verify(listener).accept(managementEndpoint1);
+            verify(listener).accept(managementEndpoint2);
+        }
     }
 
-    @Test
-    void should_notify_all_listeners_when_registering_endpoint() {
-        final FakeListener listener1 = spy(new FakeListener());
-        final FakeListener listener2 = spy(new FakeListener());
-        final FakeManagementEndpoint managementEndpoint = new FakeManagementEndpoint();
+    @Nested
+    class UnregisterEndpoint {
 
-        cut.onEndpointRegistered(listener1);
-        cut.onEndpointRegistered(listener2);
-        cut.register(managementEndpoint);
+        @Test
+        void should_notify_listener_when_unregistering_endpoint() {
+            final FakeListener listener = spy(new FakeListener());
+            final FakeManagementEndpoint managementEndpoint = new FakeManagementEndpoint();
 
-        verify(listener1).accept(managementEndpoint);
-        verify(listener2).accept(managementEndpoint);
-    }
+            cut.register(managementEndpoint);
+            cut.onEndpointUnregistered(listener);
+            cut.unregister(managementEndpoint);
 
-    @Test
-    void should_notify_listener__with_all_existing_endpoints_when_listener_subscribes() {
-        final FakeListener listener = spy(new FakeListener());
-        final FakeManagementEndpoint managementEndpoint1 = new FakeManagementEndpoint();
-        final FakeManagementEndpoint managementEndpoint2 = new FakeManagementEndpoint();
-
-        cut.register(managementEndpoint1);
-        cut.register(managementEndpoint2);
-
-        // Listener registered after endpoints have been registered.
-        cut.onEndpointRegistered(listener);
-
-        verify(listener).accept(managementEndpoint1);
-        verify(listener).accept(managementEndpoint2);
+            verify(listener).accept(managementEndpoint);
+        }
     }
 
     private static class FakeManagementEndpoint implements ManagementEndpoint {

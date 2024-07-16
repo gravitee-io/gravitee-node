@@ -20,7 +20,6 @@ import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Default management endpoint manager that holds a reference on all management endpoints that have been registered.
@@ -31,21 +30,30 @@ import lombok.extern.slf4j.Slf4j;
 public class DefaultManagementEndpointManager implements ManagementEndpointManager {
 
     private final List<ManagementEndpoint> managementEndpoints = new CopyOnWriteArrayList<>();
-    private final List<Consumer<ManagementEndpoint>> listeners = new CopyOnWriteArrayList<>();
+    private final List<Consumer<ManagementEndpoint>> onRegisteredlisteners = new CopyOnWriteArrayList<>();
+    private final List<Consumer<ManagementEndpoint>> onUnregisteredlisteners = new CopyOnWriteArrayList<>();
 
     @Override
     public void onEndpointRegistered(Consumer<ManagementEndpoint> listener) {
-        listeners.add(listener);
+        onRegisteredlisteners.add(listener);
         managementEndpoints.forEach(listener);
+    }
+
+    @Override
+    public void onEndpointUnregistered(final Consumer<ManagementEndpoint> listener) {
+        onUnregisteredlisteners.add(listener);
     }
 
     @Override
     public void register(ManagementEndpoint endpoint) {
         managementEndpoints.add(endpoint);
-        notifyListeners(endpoint);
+        onRegisteredlisteners.forEach(l -> l.accept(endpoint));
     }
 
-    private void notifyListeners(ManagementEndpoint managementEndpoint) {
-        listeners.forEach(l -> l.accept(managementEndpoint));
+    @Override
+    public void unregister(final ManagementEndpoint endpoint) {
+        if (managementEndpoints.remove(endpoint)) {
+            onUnregisteredlisteners.forEach(l -> l.accept(endpoint));
+        }
     }
 }
