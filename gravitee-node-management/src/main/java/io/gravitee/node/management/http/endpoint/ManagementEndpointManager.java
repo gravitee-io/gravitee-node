@@ -30,6 +30,13 @@ public interface ManagementEndpointManager {
      * @param listener the listener that will be called each time a management endpoint is registered.
      */
     void onEndpointRegistered(Consumer<ManagementEndpoint> listener);
+    /**
+     * Register a listener that will be called each time a management endpoint is unregistered.
+     * If endpoints are unregister before the listener, the listener won't be notified.
+     *
+     * @param listener the listener that will be called each time a management endpoint is registered.
+     */
+    void onEndpointUnregistered(Consumer<ManagementEndpoint> listener);
 
     /**
      * Register a new management endpoint. The endpoint will be immediately propagated to all the registered listeners.
@@ -37,4 +44,11 @@ public interface ManagementEndpointManager {
      * @param endpoint the endpoint to register
      */
     void register(ManagementEndpoint endpoint);
+
+    /**
+     * Register a new management endpoint. The endpoint will be immediately propagated to all the registered listeners.
+     *
+     * @param endpoint the endpoint to register
+     */
+    void unregister(ManagementEndpoint endpoint);
 }
