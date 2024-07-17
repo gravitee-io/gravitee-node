@@ -1,3 +1,10 @@
+# [5.20.0](https://github.com/gravitee-io/gravitee-node/compare/5.19.0...5.20.0) (2024-07-17)
+
+
+### Features
+
+* allow to unregister a management endpoint ([57facdb](https://github.com/gravitee-io/gravitee-node/commit/57facdb496aaa15e23c83f81c3da72dab6575f5a))
+
 # [5.19.0](https://github.com/gravitee-io/gravitee-node/compare/5.18.3...5.19.0) (2024-06-26)
 
 

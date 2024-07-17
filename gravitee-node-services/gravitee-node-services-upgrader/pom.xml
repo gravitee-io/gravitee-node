@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node.services</groupId>
         <artifactId>gravitee-node-services</artifactId>
-        <version>5.19.0</version>
+        <version>5.20.0</version>
     </parent>
 
     <artifactId>gravitee-node-services-upgrader</artifactId>
