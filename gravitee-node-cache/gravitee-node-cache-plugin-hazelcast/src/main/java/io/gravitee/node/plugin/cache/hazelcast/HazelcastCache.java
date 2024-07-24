@@ -97,8 +97,8 @@ public class HazelcastCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public Single<V> rxPut(final K key, final V value) {
-        return Single.fromCompletionStage(this.cache.putAsync(key, value));
+    public Maybe<V> rxPut(final K key, final V value) {
+        return Maybe.fromCompletionStage(this.cache.putAsync(key, value));
     }
 
     @Override
@@ -121,8 +121,8 @@ public class HazelcastCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public V computeIfAbsent(final K key, final Function<? super K, ? extends V> mappingFunction) {
-        return this.cache.computeIfAbsent(key, mappingFunction);
+    public V computeIfAbsent(final K key, final Function<? super K, ? extends V> remappingFunction) {
+        return this.cache.computeIfAbsent(key, remappingFunction);
     }
 
     @Override

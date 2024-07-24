@@ -119,6 +119,48 @@ public class HazelcastCacheTest {
     }
 
     @Nested
+    class RxGetTest {
+
+        @Test
+        void should_return_null_when_getting_non_existing_key() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            assertThat(cache.rxGet("no_key").blockingGet()).isNull();
+        }
+
+        @Test
+        void should_return_null_when_entry_expired() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            cache.put(TEST_KEY, TEST_VALUE, 1, TimeUnit.SECONDS);
+
+            await()
+                .atMost(2, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    assertThat(cache.rxGet(TEST_KEY).blockingGet()).isNull();
+                    assertThat(cache.rxValues().blockingIterable()).isEmpty();
+                });
+        }
+
+        @Test
+        void should_return_no_values_when_no_entry_in_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            assertThat(cache.rxSize().blockingGet()).isZero();
+            assertThat(cache.rxValues().blockingIterable()).isEmpty();
+        }
+
+        @Test
+        void should_return_no_values_when_entry_expired() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            cache.put(TEST_KEY, TEST_VALUE, 1, TimeUnit.SECONDS);
+
+            await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> assertThat(cache.rxValues().blockingIterable()).isEmpty());
+        }
+    }
+
+    @Nested
     class PutTest {
 
         @Test
@@ -211,6 +253,100 @@ public class HazelcastCacheTest {
     }
 
     @Nested
+    class RxPutTest {
+
+        @Test
+        void should_put_value_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            assertThat(cache.rxPut(TEST_KEY, TEST_VALUE).blockingGet()).isNull();
+
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+        }
+
+        @Test
+        void should_put_value_to_cache_and_expired_after_ttl() {
+            CacheConfiguration configuration = CacheConfiguration.builder().timeToLiveInMs(1000).build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            assertThat(cache.rxPut(TEST_KEY, TEST_VALUE).blockingGet()).isNull();
+
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+
+            await()
+                .atMost(2, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    assertThat(cache.get(TEST_KEY)).isNull();
+                    assertThat(cache.values()).isEmpty();
+                });
+        }
+
+        @Test
+        void should_put_value_to_cache_with_custom_ttl_and_expired_after_ttl() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            assertThat(cache.rxPut(TEST_KEY, TEST_VALUE, 1, TimeUnit.SECONDS).blockingGet()).isNull();
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+
+            await()
+                .atMost(2, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    assertThat(cache.get(TEST_KEY)).isNull();
+                    assertThat(cache.values()).isEmpty();
+                });
+        }
+
+        @Test
+        void should_notify_listener_when_putting_new_value_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            AtomicBoolean listenerCalled = new AtomicBoolean();
+            cache.addCacheListener(
+                new CacheListener<>() {
+                    @Override
+                    public void onEntryAdded(final String key, final String value) {
+                        listenerCalled.set(true);
+                    }
+                }
+            );
+            assertThat(cache.rxPut(TEST_KEY, TEST_VALUE).blockingGet()).isNull();
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertThat(listenerCalled).isTrue();
+                });
+        }
+
+        @Test
+        void should_notify_listener_when_putting_updated_value_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            AtomicBoolean listenerCalled = new AtomicBoolean();
+            cache.addCacheListener(
+                new CacheListener<>() {
+                    @Override
+                    public void onEntryUpdated(final String key, final String oldValue, final String value) {
+                        listenerCalled.set(true);
+                    }
+                }
+            );
+            assertThat(cache.rxPut(TEST_KEY, TEST_VALUE).blockingGet()).isNull();
+            assertThat(cache.rxPut(TEST_KEY, TEST_VALUE_UPDATED).blockingGet()).isEqualTo(TEST_VALUE);
+
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertThat(listenerCalled).isTrue();
+                });
+        }
+    }
+
+    @Nested
     class PutAllTest {
 
         @Test
@@ -285,6 +421,80 @@ public class HazelcastCacheTest {
     }
 
     @Nested
+    class RxPutAllTest {
+
+        @Test
+        void should_put_all_values_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            cache.rxPutAll(Map.of(TEST_KEY, TEST_VALUE, TEST_KEY2, TEST_VALUE2)).blockingAwait();
+
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.get(TEST_KEY2)).isNotNull();
+            assertThat(cache.values()).hasSize(2);
+            assertThat(cache.values()).containsOnly(TEST_VALUE, TEST_VALUE2);
+        }
+
+        @Test
+        void should_put_all_values_to_cache_and_expired_after_ttl() {
+            CacheConfiguration configuration = CacheConfiguration.builder().timeToLiveInMs(1000).build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            cache.rxPutAll(Map.of(TEST_KEY, TEST_VALUE, TEST_KEY2, TEST_VALUE2)).blockingAwait();
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.get(TEST_KEY2)).isNotNull();
+            assertThat(cache.values()).hasSize(2);
+            assertThat(cache.values()).containsOnly(TEST_VALUE, TEST_VALUE2);
+
+            await()
+                .atMost(2, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    assertThat(cache.get(TEST_KEY)).isNull();
+                    assertThat(cache.get(TEST_KEY2)).isNull();
+                    assertThat(cache.values()).isEmpty();
+                });
+        }
+
+        @Test
+        void should_notify_listener_when_putting_new_values_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            AtomicBoolean listenerCalled = new AtomicBoolean();
+            cache.addCacheListener(
+                new CacheListener<>() {
+                    @Override
+                    public void onEntryAdded(final String key, final String value) {
+                        listenerCalled.set(true);
+                    }
+                }
+            );
+            cache.rxPutAll(Map.of(TEST_KEY, TEST_VALUE, TEST_KEY2, TEST_VALUE2)).blockingAwait();
+            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+        }
+
+        @Test
+        void should_notify_listener_when_putting_updated_value_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            AtomicBoolean listenerCalled = new AtomicBoolean();
+            cache.addCacheListener(
+                new CacheListener<>() {
+                    @Override
+                    public void onEntryUpdated(final String key, final String oldValue, final String value) {
+                        listenerCalled.set(true);
+                    }
+                }
+            );
+            cache.rxPutAll(Map.of(TEST_KEY, TEST_VALUE, TEST_KEY2, TEST_VALUE2)).blockingAwait();
+            cache.rxPutAll(Map.of(TEST_KEY, TEST_VALUE_UPDATED)).blockingAwait();
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertThat(listenerCalled).isTrue();
+                });
+        }
+    }
+
+    @Nested
     class ComputeIfAbsentTest {
 
         @Test
@@ -292,18 +502,27 @@ public class HazelcastCacheTest {
             CacheConfiguration configuration = CacheConfiguration.builder().build();
             Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
             cache.put(TEST_KEY, TEST_VALUE);
-            cache.computeIfAbsent(TEST_KEY, k -> "wrong value");
-            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.computeIfAbsent(TEST_KEY, k -> "wrong value")).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
             assertThat(cache.values()).hasSize(1);
             assertThat(cache.values()).containsOnly(TEST_VALUE);
+        }
+
+        @Test
+        void should_do_nothing_if_mapping_returns_null() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            cache.computeIfAbsent(TEST_KEY, k -> null);
+            assertThat(cache.get(TEST_KEY)).isNull();
+            assertThat(cache.values()).isEmpty();
         }
 
         @Test
         void should_computeIfAbsent_to_cache() {
             CacheConfiguration configuration = CacheConfiguration.builder().build();
             Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
-            cache.computeIfAbsent(TEST_KEY, k -> TEST_VALUE);
-            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.computeIfAbsent(TEST_KEY, k -> TEST_VALUE)).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
             assertThat(cache.values()).hasSize(1);
             assertThat(cache.values()).containsOnly(TEST_VALUE);
         }
@@ -312,8 +531,8 @@ public class HazelcastCacheTest {
         void should_computeIfAbsent_to_cache_and_expired_after_ttl() {
             CacheConfiguration configuration = CacheConfiguration.builder().timeToLiveInMs(1000).build();
             Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
-            cache.computeIfAbsent(TEST_KEY, k -> TEST_VALUE);
-            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.computeIfAbsent(TEST_KEY, k -> TEST_VALUE)).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
             assertThat(cache.values()).hasSize(1);
             assertThat(cache.values()).containsOnly(TEST_VALUE);
 
@@ -338,7 +557,75 @@ public class HazelcastCacheTest {
                     }
                 }
             );
-            cache.computeIfAbsent(TEST_KEY, k -> TEST_VALUE);
+            assertThat(cache.computeIfAbsent(TEST_KEY, k -> TEST_VALUE)).isEqualTo(TEST_VALUE);
+            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+        }
+    }
+
+    @Nested
+    class RxComputeIfAbsentTest {
+
+        @Test
+        void should_do_nothing_if_key_already_present_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            cache.put(TEST_KEY, TEST_VALUE);
+            assertThat(cache.rxComputeIfAbsent(TEST_KEY, k -> "wrong value").blockingGet()).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+        }
+
+        @Test
+        void should_do_nothing_if_mapping_returns_null() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            assertThat(cache.rxComputeIfAbsent(TEST_KEY, k -> null).blockingGet()).isNull();
+            assertThat(cache.get(TEST_KEY)).isNull();
+            assertThat(cache.values()).isEmpty();
+        }
+
+        @Test
+        void should_computeIfAbsent_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            assertThat(cache.rxComputeIfAbsent(TEST_KEY, k -> TEST_VALUE).blockingGet()).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+        }
+
+        @Test
+        void should_computeIfAbsent_to_cache_and_expired_after_ttl() {
+            CacheConfiguration configuration = CacheConfiguration.builder().timeToLiveInMs(1000).build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            assertThat(cache.rxComputeIfAbsent(TEST_KEY, k -> TEST_VALUE).blockingGet()).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+
+            await()
+                .atMost(2, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    assertThat(cache.get(TEST_KEY)).isNull();
+                    assertThat(cache.values()).isEmpty();
+                });
+        }
+
+        @Test
+        void should_notify_listener_when_computeIfAbsent_value_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            AtomicBoolean listenerCalled = new AtomicBoolean();
+            cache.addCacheListener(
+                new CacheListener<>() {
+                    @Override
+                    public void onEntryAdded(final String key, final String value) {
+                        listenerCalled.set(true);
+                    }
+                }
+            );
+            assertThat(cache.rxComputeIfAbsent(TEST_KEY, k -> TEST_VALUE).blockingGet()).isEqualTo(TEST_VALUE);
             await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
         }
     }
@@ -350,7 +637,17 @@ public class HazelcastCacheTest {
         void should_do_nothing_if_key_not_present_to_cache() {
             CacheConfiguration configuration = CacheConfiguration.builder().build();
             Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
-            cache.computeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE);
+            assertThat(cache.computeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE)).isNull();
+            assertThat(cache.get(TEST_KEY)).isNull();
+            assertThat(cache.values()).isEmpty();
+        }
+
+        @Test
+        void should_remove_if_mapping_returns_null() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            cache.put(TEST_KEY, "wrong_value");
+            assertThat(cache.computeIfPresent(TEST_KEY, (k, v) -> null)).isNull();
             assertThat(cache.get(TEST_KEY)).isNull();
             assertThat(cache.values()).isEmpty();
         }
@@ -360,8 +657,8 @@ public class HazelcastCacheTest {
             CacheConfiguration configuration = CacheConfiguration.builder().build();
             Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
             cache.put(TEST_KEY, "wrong_value");
-            cache.computeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE);
-            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.computeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE)).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
             assertThat(cache.values()).hasSize(1);
             assertThat(cache.values()).containsOnly(TEST_VALUE);
         }
@@ -371,8 +668,8 @@ public class HazelcastCacheTest {
             CacheConfiguration configuration = CacheConfiguration.builder().timeToLiveInMs(1000).build();
             Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
             cache.put(TEST_KEY, "wrong_value");
-            cache.computeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE);
-            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.computeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE)).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
             assertThat(cache.values()).hasSize(1);
             assertThat(cache.values()).containsOnly(TEST_VALUE);
 
@@ -398,8 +695,84 @@ public class HazelcastCacheTest {
                 }
             );
             cache.put(TEST_KEY, "wrong_value");
-            cache.computeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE);
-            cache.computeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE_UPDATED);
+            assertThat(cache.computeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE)).isEqualTo(TEST_VALUE);
+            assertThat(cache.computeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE_UPDATED)).isEqualTo(TEST_VALUE_UPDATED);
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertThat(listenerCalled).isTrue();
+                });
+        }
+    }
+
+    @Nested
+    class RxComputeIfPresentTest {
+
+        @Test
+        void should_do_nothing_if_key_not_present_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            assertThat(cache.rxComputeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE).blockingGet()).isNull();
+            assertThat(cache.get(TEST_KEY)).isNull();
+            assertThat(cache.values()).isEmpty();
+        }
+
+        @Test
+        void should_remove_if_mapping_returns_null() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            cache.put(TEST_KEY, "wrong_value");
+            assertThat(cache.rxComputeIfPresent(TEST_KEY, (k, v) -> null).blockingGet()).isNull();
+            assertThat(cache.get(TEST_KEY)).isNull();
+            assertThat(cache.values()).isEmpty();
+        }
+
+        @Test
+        void should_computeIfPresent_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            cache.put(TEST_KEY, "wrong_value");
+            assertThat(cache.rxComputeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE).blockingGet()).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+        }
+
+        @Test
+        void should_computeIfPresent_to_cache_and_expired_after_ttl() {
+            CacheConfiguration configuration = CacheConfiguration.builder().timeToLiveInMs(1000).build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            cache.put(TEST_KEY, "wrong_value");
+            assertThat(cache.rxComputeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE).blockingGet()).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+
+            await()
+                .atMost(2, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    assertThat(cache.get(TEST_KEY)).isNull();
+                    assertThat(cache.values()).isEmpty();
+                });
+        }
+
+        @Test
+        void should_notify_listener_when_computeIfPresent_updated_value_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            AtomicBoolean listenerCalled = new AtomicBoolean();
+            cache.addCacheListener(
+                new CacheListener<>() {
+                    @Override
+                    public void onEntryUpdated(final String key, final String oldValue, final String value) {
+                        listenerCalled.set(true);
+                    }
+                }
+            );
+            cache.put(TEST_KEY, "wrong_value");
+            assertThat(cache.rxComputeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE).blockingGet()).isEqualTo(TEST_VALUE);
+            assertThat(cache.rxComputeIfPresent(TEST_KEY, (k, v) -> TEST_VALUE_UPDATED).blockingGet()).isEqualTo(TEST_VALUE_UPDATED);
+
             await()
                 .atMost(500, TimeUnit.MILLISECONDS)
                 .untilAsserted(() -> {
@@ -415,10 +788,20 @@ public class HazelcastCacheTest {
         void should_compute_if_no_key_present_to_cache() {
             CacheConfiguration configuration = CacheConfiguration.builder().build();
             Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
-            cache.compute(TEST_KEY, (k, v) -> TEST_VALUE);
-            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.compute(TEST_KEY, (k, v) -> TEST_VALUE)).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
             assertThat(cache.values()).hasSize(1);
             assertThat(cache.values()).containsOnly(TEST_VALUE);
+        }
+
+        @Test
+        void should_remove_if_mapping_returns_null() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            cache.put(TEST_KEY, "wrong_value");
+            assertThat(cache.compute(TEST_KEY, (k, v) -> null)).isNull();
+            assertThat(cache.get(TEST_KEY)).isNull();
+            assertThat(cache.values()).isEmpty();
         }
 
         @Test
@@ -426,8 +809,8 @@ public class HazelcastCacheTest {
             CacheConfiguration configuration = CacheConfiguration.builder().build();
             Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
             cache.put(TEST_KEY, "wrong_value");
-            cache.compute(TEST_KEY, (k, v) -> TEST_VALUE);
-            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.compute(TEST_KEY, (k, v) -> TEST_VALUE)).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
             assertThat(cache.values()).hasSize(1);
             assertThat(cache.values()).containsOnly(TEST_VALUE);
         }
@@ -436,8 +819,8 @@ public class HazelcastCacheTest {
         void should_compute_to_cache_and_expired_after_ttl() {
             CacheConfiguration configuration = CacheConfiguration.builder().timeToLiveInMs(1000).build();
             Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
-            cache.compute(TEST_KEY, (k, v) -> TEST_VALUE);
-            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.compute(TEST_KEY, (k, v) -> TEST_VALUE)).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
             assertThat(cache.values()).hasSize(1);
             assertThat(cache.values()).containsOnly(TEST_VALUE);
 
@@ -462,7 +845,7 @@ public class HazelcastCacheTest {
                     }
                 }
             );
-            cache.compute(TEST_KEY, (k, v) -> TEST_VALUE);
+            assertThat(cache.compute(TEST_KEY, (k, v) -> TEST_VALUE)).isEqualTo(TEST_VALUE);
             await()
                 .atMost(500, TimeUnit.MILLISECONDS)
                 .untilAsserted(() -> {
@@ -484,7 +867,103 @@ public class HazelcastCacheTest {
                 }
             );
             cache.put(TEST_KEY, TEST_VALUE);
-            cache.compute(TEST_KEY, (k, v) -> TEST_VALUE_UPDATED);
+            assertThat(cache.compute(TEST_KEY, (k, v) -> TEST_VALUE_UPDATED)).isEqualTo(TEST_VALUE_UPDATED);
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertThat(listenerCalled).isTrue();
+                });
+        }
+    }
+
+    @Nested
+    class RxComputeTest {
+
+        @Test
+        void should_compute_if_no_key_present_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            assertThat(cache.rxCompute(TEST_KEY, (k, v) -> TEST_VALUE).blockingGet()).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+        }
+
+        @Test
+        void should_remove_if_mapping_returns_null() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            cache.put(TEST_KEY, "wrong_value");
+            assertThat(cache.rxCompute(TEST_KEY, (k, v) -> null).blockingGet()).isNull();
+            assertThat(cache.get(TEST_KEY)).isNull();
+            assertThat(cache.values()).isEmpty();
+        }
+
+        @Test
+        void should_compute_if_key_present_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            cache.put(TEST_KEY, "wrong_value");
+            assertThat(cache.rxCompute(TEST_KEY, (k, v) -> TEST_VALUE).blockingGet()).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+        }
+
+        @Test
+        void should_compute_to_cache_and_expired_after_ttl() {
+            CacheConfiguration configuration = CacheConfiguration.builder().timeToLiveInMs(1000).build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            assertThat(cache.rxCompute(TEST_KEY, (k, v) -> TEST_VALUE).blockingGet()).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
+            assertThat(cache.values()).hasSize(1);
+            assertThat(cache.values()).containsOnly(TEST_VALUE);
+
+            await()
+                .atMost(2, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    assertThat(cache.get(TEST_KEY)).isNull();
+                    assertThat(cache.values()).isEmpty();
+                });
+        }
+
+        @Test
+        void should_notify_listener_when_compute_value_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            AtomicBoolean listenerCalled = new AtomicBoolean();
+            cache.addCacheListener(
+                new CacheListener<>() {
+                    @Override
+                    public void onEntryAdded(final String key, final String value) {
+                        listenerCalled.set(true);
+                    }
+                }
+            );
+            assertThat(cache.rxCompute(TEST_KEY, (k, v) -> TEST_VALUE).blockingGet()).isEqualTo(TEST_VALUE);
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertThat(listenerCalled).isTrue();
+                });
+        }
+
+        @Test
+        void should_notify_listener_when_putting_updated_value_to_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            AtomicBoolean listenerCalled = new AtomicBoolean();
+            cache.addCacheListener(
+                new CacheListener<>() {
+                    @Override
+                    public void onEntryUpdated(final String key, final String oldValue, final String value) {
+                        listenerCalled.set(true);
+                    }
+                }
+            );
+            cache.put(TEST_KEY, TEST_VALUE);
+            assertThat(cache.rxCompute(TEST_KEY, (k, v) -> TEST_VALUE_UPDATED).blockingGet()).isEqualTo(TEST_VALUE_UPDATED);
+
             await()
                 .atMost(500, TimeUnit.MILLISECONDS)
                 .untilAsserted(() -> {
@@ -529,6 +1008,51 @@ public class HazelcastCacheTest {
             );
             cache.put(TEST_KEY, TEST_VALUE);
             assertThat(cache.evict(TEST_KEY)).isNotNull();
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    assertThat(listenerCalled).isTrue();
+                });
+        }
+    }
+
+    @Nested
+    class rxEvictTest {
+
+        @Test
+        void should_ignore_evicting_not_existing_entry_from_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+
+            assertThat(cache.rxEvict(TEST_KEY).blockingGet()).isNull();
+        }
+
+        @Test
+        void should_evict_existing_entry_from_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+
+            cache.put(TEST_KEY, TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isNotNull();
+            assertThat(cache.rxEvict(TEST_KEY).blockingGet()).isEqualTo(TEST_VALUE);
+        }
+
+        @Test
+        void should_notify_listener_when_evicting_value_from_cache() {
+            CacheConfiguration configuration = CacheConfiguration.builder().build();
+            Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
+            AtomicBoolean listenerCalled = new AtomicBoolean();
+            cache.addCacheListener(
+                new CacheListener<>() {
+                    @Override
+                    public void onEntryEvicted(final String key, final String value) {
+                        listenerCalled.set(true);
+                    }
+                }
+            );
+            cache.put(TEST_KEY, TEST_VALUE);
+            assertThat(cache.rxEvict(TEST_KEY).blockingGet()).isEqualTo(TEST_VALUE);
+
             await()
                 .atMost(500, TimeUnit.MILLISECONDS)
                 .untilAsserted(() -> {

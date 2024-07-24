@@ -224,14 +224,14 @@ public class InMemoryCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public V computeIfAbsent(final K key, final Function<? super K, ? extends V> mappingFunction) {
+    public V computeIfAbsent(final K key, final Function<? super K, ? extends V> remappingFunction) {
         this.internalCache.asMap()
             .computeIfAbsent(
                 key,
                 k -> {
-                    V applied = mappingFunction.apply(k);
+                    V applied = remappingFunction.apply(k);
                     notifyListeners(k, applied, null);
-                    return new ExpiringValue<>(applied, 0);
+                    return buildExpiringValue(applied);
                 }
             );
         return get(key);
@@ -245,7 +245,7 @@ public class InMemoryCache<K, V> implements Cache<K, V> {
                 (k, v) -> {
                     V applied = remappingFunction.apply(k, v.value);
                     notifyListeners(k, applied, v.value);
-                    return new ExpiringValue<>(applied, 0);
+                    return buildExpiringValue(applied);
                 }
             );
         return get(key);
@@ -264,7 +264,7 @@ public class InMemoryCache<K, V> implements Cache<K, V> {
                     }
                     applied = remappingFunction.apply(k, old);
                     notifyListeners(k, applied, old);
-                    return new ExpiringValue<>(applied, 0);
+                    return buildExpiringValue(applied);
                 }
             );
         return get(key);
@@ -323,10 +323,15 @@ public class InMemoryCache<K, V> implements Cache<K, V> {
     private static class ExpiringValue<T> {
 
         private final T value;
+
         private final long expirationTimeMillis;
 
         public boolean hasExpired() {
             return expirationTimeMillis > 0 && expirationTimeMillis <= System.currentTimeMillis();
         }
+    }
+
+    private static <V> ExpiringValue<V> buildExpiringValue(V applied) {
+        return applied == null ? null : new ExpiringValue<>(applied, 0);
     }
 }
