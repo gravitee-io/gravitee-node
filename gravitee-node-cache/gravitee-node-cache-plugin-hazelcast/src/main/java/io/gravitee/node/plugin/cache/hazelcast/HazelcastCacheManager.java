@@ -43,7 +43,8 @@ public class HazelcastCacheManager extends AbstractService<CacheManager> impleme
     private final HazelcastInstance hazelcastInstance;
 
     @Override
-    protected void doStop() {
+    protected void doStop() throws Exception {
+        super.doStop();
         if (hazelcastInstance != null) {
             hazelcastInstance.shutdown();
         }
