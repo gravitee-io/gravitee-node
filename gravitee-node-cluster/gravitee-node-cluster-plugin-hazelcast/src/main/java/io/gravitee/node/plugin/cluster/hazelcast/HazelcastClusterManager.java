@@ -50,12 +50,14 @@ public class HazelcastClusterManager extends AbstractService<ClusterManager> imp
     private final Map<String, Queue<?>> queuesByName = new ConcurrentHashMap<>();
 
     @Override
-    protected void doStart() {
+    protected void doStart() throws Exception {
+        super.doStart();
         hazelcastInstance.getCluster().addMembershipListener(this);
     }
 
     @Override
-    protected void doStop() {
+    protected void doStop() throws Exception {
+        super.doStop();
         if (hazelcastInstance != null) {
             hazelcastInstance.shutdown();
         }
