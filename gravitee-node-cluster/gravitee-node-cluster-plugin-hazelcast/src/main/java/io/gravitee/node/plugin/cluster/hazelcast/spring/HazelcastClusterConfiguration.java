@@ -39,7 +39,7 @@ public class HazelcastClusterConfiguration {
     @Value("${cluster.hazelcast.config-path:${gravitee.home}/config/hazelcast-cluster.xml}")
     private String hazelcastConfigFilePath;
 
-    @Value("${cluster.hazelcast.instance-name:gio-apim-cluster-hz-instance}")
+    @Value("${cluster.hazelcast.instance-name:gio-hz-instance}")
     private String hazelcastInstanceName;
 
     @Autowired
@@ -52,6 +52,9 @@ public class HazelcastClusterConfiguration {
         System.setProperty(ClusterProperty.SHUTDOWNHOOK_ENABLED.getName(), "false");
 
         Config config = fromFilePath(hazelcastConfigFilePath);
+        if (!config.getClusterName().contains("cluster")) {
+            config.setClusterName(config.getClusterName() + "-cluster-manager");
+        }
         config.setProperty(ClusterProperty.HEALTH_MONITORING_LEVEL.getName(), "OFF");
         config.setInstanceName(hazelcastInstanceName);
 

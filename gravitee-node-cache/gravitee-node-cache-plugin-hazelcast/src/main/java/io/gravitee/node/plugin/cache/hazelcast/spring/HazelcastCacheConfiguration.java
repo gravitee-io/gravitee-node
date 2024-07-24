@@ -39,7 +39,7 @@ public class HazelcastCacheConfiguration {
     @Value("${cache.hazelcast.config-path:${gravitee.home}/config/hazelcast-cache.xml}")
     private String hazelcastConfigFilePath;
 
-    @Value("${cache.hazelcast.instance-name:gio-apim-cache-hz}")
+    @Value("${cache.hazelcast.instance-name:gio-hz-instance}")
     private String hazelcastInstanceName;
 
     @Autowired
@@ -52,6 +52,9 @@ public class HazelcastCacheConfiguration {
         System.setProperty(ClusterProperty.SHUTDOWNHOOK_ENABLED.getName(), "false");
 
         Config config = fromFilePath(hazelcastConfigFilePath);
+        if (!config.getClusterName().contains("cache")) {
+            config.setClusterName(config.getClusterName() + "-cache");
+        }
         config.setProperty(ClusterProperty.HEALTH_MONITORING_LEVEL.getName(), "OFF");
         config.setInstanceName(hazelcastInstanceName);
 
