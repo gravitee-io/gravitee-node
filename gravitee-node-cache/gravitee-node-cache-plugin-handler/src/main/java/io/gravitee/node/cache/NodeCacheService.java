@@ -31,9 +31,6 @@ import org.springframework.context.annotation.Lazy;
 public class NodeCacheService extends AbstractService<NodeCacheService> {
 
     @Autowired
-    private Node node;
-
-    @Autowired
     @Lazy
     private CacheManager cacheManager;
 
