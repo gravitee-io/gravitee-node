@@ -18,10 +18,13 @@ package io.gravitee.node.plugin.cluster.hazelcast.spring;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.FileSystemXmlConfig;
 import com.hazelcast.config.FileSystemYamlConfig;
+import com.hazelcast.config.MemberAttributeConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.spi.properties.ClusterProperty;
+import io.gravitee.node.api.Node;
 import java.io.FileNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,6 +42,9 @@ public class HazelcastClusterConfiguration {
     @Value("${cluster.hazelcast.instance-name:gio-apim-cluster-hz-instance}")
     private String hazelcastInstanceName;
 
+    @Autowired
+    private Node node;
+
     @Bean
     public HazelcastInstance clusterHazelcastInstance() throws FileNotFoundException {
         // Force Hazelcast to use SLF4J before loading any HZ classes
@@ -48,6 +54,11 @@ public class HazelcastClusterConfiguration {
         Config config = fromFilePath(hazelcastConfigFilePath);
         config.setProperty(ClusterProperty.HEALTH_MONITORING_LEVEL.getName(), "OFF");
         config.setInstanceName(hazelcastInstanceName);
+
+        MemberAttributeConfig memberAttributeConfig = new MemberAttributeConfig();
+        memberAttributeConfig.setAttribute("gio_node_id", node.id());
+        memberAttributeConfig.setAttribute("gio_node_hostname", node.hostname());
+        config.setMemberAttributeConfig(memberAttributeConfig);
 
         return Hazelcast.newHazelcastInstance(config);
     }
