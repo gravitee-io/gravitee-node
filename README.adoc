@@ -1,67 +1,107 @@
-
 = Gravitee-io - Node
 
-image:https://img.shields.io/badge/License-Apache%202.0-blue.svg["License", link="https://github.com/gravitee-io/graviteeio-node/blob/master/LICENSE.txt"]
-image:https://img.shields.io/badge/semantic--release-conventional%20commits-e10079?logo=semantic-release["Releases", link="https://github.com/gravitee-io/graviteeio-node/releases"]
-image:https://circleci.com/gh/gravitee-io/gravitee-node.svg?style=svg["CircleCI", link="https://circleci.com/gh/gravitee-io/gravitee-node"]
-image:https://f.hubspotusercontent40.net/hubfs/7600448/gravitee-github-button.jpg["Join the community forum", link="https://community.gravitee.io?utm_source=readme", height=20]
-
+image:https://img.shields.io/badge/License-Apache%202.0-blue.svg["License",link="https://github.com/gravitee-io/graviteeio-node/blob/master/LICENSE.txt"]
+image:https://img.shields.io/badge/semantic--release-conventional%20commits-e10079?logo=semantic-release["Releases",link="https://github.com/gravitee-io/graviteeio-node/releases"]
+image:https://circleci.com/gh/gravitee-io/gravitee-node.svg?style=svg["CircleCI",link="https://circleci.com/gh/gravitee-io/gravitee-node"]
+image:https://f.hubspotusercontent40.net/hubfs/7600448/gravitee-github-button.jpg["Join the community forum",link="https://community.gravitee.io?utm_source=readme", height=20]
 
 == Description
-The Gravitee.io node project is the cornerstone of every Gravitee.io product. It offers a piece of functionalities that can be selectively used out-of-the-box in a standard way.
+
+The Gravitee.io node project is the cornerstone of every Gravitee.io product.
+It offers a piece of functionalities that can be selectively used out-of-the-box in a standard way.
 
 == Modules
+
 === Api
+
 The Gravitee Node Api module regroups all the interfaces that are implemented in the other modules.
 
 === Cache
+
 The Gravitee Node Cache module regroups all the classes related to cache management plugins, and two plugins implementations: standalone and hazelcast.
 
 === Certificates
-The Gravitee Node Certificates module defines implementations useful to deal with SSL. For example, it provides based implementations allowing to load keystore from the file system or initialize a keystore with a self-signed certificate. Other node modules depend on it.
+
+The Gravitee Node Certificates module defines implementations useful to deal with SSL.
+For example, it provides based implementations allowing to load keystore from the file system or initialize a keystore with a self-signed certificate.
+Other node modules depend on it.
 
 === Cluster
+
 The Gravitee Node Cluster module regroups all the classes related to cluster management plugins, and two plugins implementations: standalone and hazelcast.
 
 === Jetty
-The Gravitee Node Jetty module gives an easy way to configure and start a Jetty server. Most of the Gravitee products rely on the node jetty module to set up and start an HTTP server and expose a REST api.
+
+The Gravitee Node Jetty module gives an easy way to configure and start a Jetty server.
+Most of the Gravitee products rely on the node jetty module to set up and start an HTTP server and expose a REST api.
 
 === Kubernetes
+
 The Gravitee Node Kubernetes module offers useful implementations that work natively with k8s such as loading a keystore from a Kubernetes secret or resolving configuration entries from configmap.
 
 === License
-The Gravitee Node License module provides an out-of-the-box feature allowing the detection and loading of a license key. It offers common access to license information. Many enterprise plugins are relying on it.
+
+The Gravitee Node License module provides an out-of-the-box feature allowing the detection and loading of a license key.
+It offers common access to license information.
+Many enterprise plugins are relying on it.
 
 === Management
-The Gravitee Node Management module allows exposing a management HTTP server that exposes product information (ex: node info, Prometheus metrics, …). It is also extensible as each product can expose its own set of endpoints.
+
+The Gravitee Node Management module allows exposing a management HTTP server that exposes product information (ex: node info, Prometheus metrics, …).
+It is also extensible as each product can expose its own set of endpoints.
 
 === Monitoring
-The Gravitee Node Monitoring module is responsible to set up a background task to collect monitoring information regularly. It also relies on the management module to expose an health HTTP endpoint that can be used in a common way to detect the unavailability of a node instance.
+
+The Gravitee Node Monitoring module is responsible to set up a background task to collect monitoring information regularly.
+It also relies on the management module to expose an health HTTP endpoint that can be used in a common way to detect the unavailability of a node instance.
 
 === Notifier
-The Gravitee Node Monitoring module offers a notification service that can be used by the different products to build an advanced notification system (ex: notify that a certificate is about to expire). It seamlessly works with any notifier plugin (slack, email, …).
+
+The Gravitee Node Monitoring module offers a notification service that can be used by the different products to build an advanced notification system (ex: notify that a certificate is about to expire).
+It seamlessly works with any notifier plugin (slack, email, …).
 
 === Plugins
+
 The Gravitee Node Plugins module contains internal code used to load and register services during the node startup phase.
 
 === Reporter
-The Gravitee Node Monitoring module is in charge of detecting and registering all reporter plugins. It exposes a reporter service that can be used as a single point-of-report by the Gravitee products. Internally, all events reported are propagated to each registered reporter.
+
+The Gravitee Node Monitoring module is in charge of detecting and registering all reporter plugins.
+It exposes a reporter service that can be used as a single point-of-report by the Gravitee products.
+Internally, all events reported are propagated to each registered reporter.
 
 === Services
-The Gravitee Node Services module provides different services such as upgrader and initializer services. They are particularly useful to ensure data migration during product upgrades or data initialization during the startup phase.
+
+The Gravitee Node Services module provides different services such as upgrader and initializer services.
+They are particularly useful to ensure data migration during product upgrades or data initialization during the startup phase.
 
 === Secrets
-The Gravitee Node Secrets module is about accessing secret managers. It is able to resolve secrets and certificates/private key. It use `secret-provider` plugins and manages their lifecycles as well as bundles a service to access secret using URL-like syntax: `secret://kubernetes...` used in gravitee.yml or equivalent environment variable.
+
+The Gravitee Node Secrets module is about accessing secret managers.
+It is able to resolve secrets and certificates/private key.
+It use `secret-provider` plugins and manages their lifecycles as well as bundles a service to access secret using URL-like syntax: `secret://kubernetes...` used in gravitee.yml or equivalent environment variable.
 
 === Tracing
-The Gravitee Node Services module gives an easy and common way to set up tracing (aka open telemetry) on a given product. It is able to automatically load and configure tracing plugin.
+
+The Gravitee Node Services module gives an easy and common way to set up tracing (aka open telemetry) on a given product.
+It is able to automatically load and configure tracing plugin.
 
 === Vertx
+
 The Gravitee Node Vertx module is a common piece of Gravitee products that offers the capabilities to set up vertx and instantiate vertx http servers easily.
 
 == Releases
 
+=== 6.0.x
+
+The following has been implemented on v6.0.x
+
+==== Changelog
+
+* BREAKING CHANGE: fix switch cache rxPut and rxCompute methods to Maybe instead of Single
+
 === 5.3.x
+
 The following has been implemented on v5.3.x
 
 ==== Changelog
@@ -70,9 +110,12 @@ The following has been implemented on v5.3.x
 
 ===== Migrating to node v5.3.0
 
- * Update `gravitee-node` to 5.3.0 and `gravitee-plugin` to 3.0.0
- * Remove Spring imports related to the plugin's configuration. Usually, the plugin configuration classes are named `XXXPluginConfiguration`. They are not necessary anymore as they are now directly added by the plugin handler.
- * `SpringBasedContainer` requires the node implementation class to be passed to the constructor. Ex:
+* Update `gravitee-node` to 5.3.0 and `gravitee-plugin` to 3.0.0
+* Remove Spring imports related to the plugin's configuration.
+Usually, the plugin configuration classes are named `XXXPluginConfiguration`.
+They are not necessary anymore as they are now directly added by the plugin handler.
+* `SpringBasedContainer` requires the node implementation class to be passed to the constructor.
+Ex:
 
 ```java
 public class GatewayContainer extends SpringBasedContainer {
@@ -84,7 +127,8 @@ public class GatewayContainer extends SpringBasedContainer {
 }
 ```
 
- * Add `@Lazy` on any application bean required by the Node implementation class. Ex:
+* Add `@Lazy` on any application bean required by the Node implementation class.
+Ex:
 
 ```java
 public class GatewayNode extends AbstractNode {
@@ -96,28 +140,34 @@ public class GatewayNode extends AbstractNode {
 }
 ```
 
- * Remove `EventManager` bean because it is now created by default.
- * Remove `ClusterManager` bean because it is now created by default.
+* Remove `EventManager` bean because it is now created by default.
+* Remove `ClusterManager` bean because it is now created by default.
 
-IMPORTANT: `gravitee-node` previous behavior was to just log and continue the startup in case of an error during plugin initialization. *The new behavior is to rethrow the error and stop the startup*. It makes it clearer and helps in debugging.
+IMPORTANT: `gravitee-node` previous behavior was to just log and continue the startup in case of an error during plugin initialization. *The new behavior is to rethrow the error and stop the startup*.
+It makes it clearer and helps in debugging.
 
 === 5.0.x
+
 The following has been implemented on v5.0.x
 
 ==== Changelog
 
- * Add support for organization license
- * Update keystore loading internal and support for truststore hot reload
+* Add support for organization license
+* Update keystore loading internal and support for truststore hot reload
 
 ==== LicenseManager migration
 
-Framework now offers support for both platform and organization licenses. Here are some highlights of the main changes:
+Framework now offers support for both platform and organization licenses.
+Here are some highlights of the main changes:
 
- * No more `Node.license()` → use LicenseManager.getPlatformLicense() instead
- * Platform license is never null. If no license key is specified by the user, an OSS license with no feature and no expiry will be considered.
- * Any product that needs to support the license at the organization level can implement the repository layer implementing the `LicenseRepository` interface and the appropriate synchronizer.
- * `LicenseService` no longer exists. Loading the platform license is now achieved by `NodeLicenseLoader`. Customers who have changed the log level on `io.gravitee.node.license.LicenseService` to avoid logging license information must adapt their `logback.xml` configuration to use `io.gravitee.node.license.LicenseLoaderService` instead.
- * Technical API allows access to the platform license which previously ended with a 404 if the license key is not specified → OSS License will now be returned instead.
+* No more `Node.license()` → use LicenseManager.getPlatformLicense() instead
+* Platform license is never null.
+If no license key is specified by the user, an OSS license with no feature and no expiry will be considered.
+* Any product that needs to support the license at the organization level can implement the repository layer implementing the `LicenseRepository` interface and the appropriate synchronizer.
+* `LicenseService` no longer exists.
+Loading the platform license is now achieved by `NodeLicenseLoader`.
+Customers who have changed the log level on `io.gravitee.node.license.LicenseService` to avoid logging license information must adapt their `logback.xml` configuration to use `io.gravitee.node.license.LicenseLoaderService` instead.
+* Technical API allows access to the platform license which previously ended with a 404 if the license key is not specified → OSS License will now be returned instead.
 
 ==== Truststore hot reload
 
@@ -127,94 +177,108 @@ Any kind of truststore JKS (deprecated format), PKCS12, pem files and pem-folder
 * Truststore file can be replaced by simple copy override
 * Same for pem certificates in the list (type: pem with a list file as an array)
 
-New type of truststore: `pem-folder` allow users to specify via `path: /path/to/certs` a directory that will be watched for new pem certificates files. Those certificates will be added to the truststore. Updates and removal are also supported. Note that recursive sub-directory listing will not occur.
+New type of truststore: `pem-folder` allow users to specify via `path: /path/to/certs` a directory that will be watched for new pem certificates files.
+Those certificates will be added to the truststore.
+Updates and removal are also supported.
+Note that recursive sub-directory listing will not occur.
 
 === 4.0.x
+
 The following has been implemented on v4.0.x
 
 ==== Changelog
- * Add support for multi-servers
- * Move cluster concept into plugins
- * Move cache concept into plugins
- * Add support for Secret Managers via new secret-provider plugin type
+
+* Add support for multi-servers
+* Move cluster concept into plugins
+* Move cache concept into plugins
+* Add support for Secret Managers via new secret-provider plugin type
 
 ==== Vertx Http Server migration
-The readme provides all details regarding the usage of the VertxServerFactory. Here are some highlights of the main changes:
 
- * The package has changed for the `VertxHttpServerFactory` use `io.gravitee.node.vertx.server.http.VertxHttpServerFactory`
- * `HttpServerConfiguration` has been replaced with `io.gravitee.node.vertx.server.http.HttpServerOptions` which now provides a regular `builder()` method allowing configuring the server.
- * `HttpServerOptions` builder can be initialized using the environment configuration. Then, any configuration can be overridden.
+The readme provides all details regarding the usage of the VertxServerFactory.
+Here are some highlights of the main changes:
+
+* The package has changed for the `VertxHttpServerFactory` use `io.gravitee.node.vertx.server.http.VertxHttpServerFactory`
+* `HttpServerConfiguration` has been replaced with `io.gravitee.node.vertx.server.http.HttpServerOptions` which now provides a regular `builder()` method allowing configuring the server.
+* `HttpServerOptions` builder can be initialized using the environment configuration.
+Then, any configuration can be overridden.
 
 ==== New cluster manager migration
-Cluster Managers are now available via plugins. Default distribution contains a Standalone Cluster Manager which was and still is the default one.
+
+Cluster Managers are now available via plugins.
+Default distribution contains a Standalone Cluster Manager which was and still is the default one.
 
 Two plugins are available :
 
- * Standalone Cluster Manager which is the default plugin. This plugin is used when no cluster is configured, i.e. each node is alone in its own cluster.
- * Hazelcast Cluster Manager which has to be added to the distribution and enable by setting `cluster.type` to _hazelcast_.
+* Standalone Cluster Manager which is the default plugin.
+This plugin is used when no cluster is configured, i.e. each node is alone in its own cluster.
+* Hazelcast Cluster Manager which has to be added to the distribution and enable by setting `cluster.type` to _hazelcast_.
 
 Interfaces have slightly changed, here are the details for each:
 
 __ClusterManager__
 
 * Methods changed
-  - `getMembers()` has been renamed to `members()`
-  - `getLocalMember()` has been renamed to `localMember()`
-  - `isMasterNode()` has been renamed to `isPrimaryNode()`
+- `getMembers()` has been renamed to `members()`
+- `getLocalMember()` has been renamed to `localMember()`
+- `isMasterNode()` has been renamed to `isPrimaryNode()`
 * Method added
-  - `removeMemberListener(MemberListener)`  allows to remove a previously registered listener
-  - `topic(String)` replace the old `MessageProducer` bean which has been removed and allows retrieval of a topic from its name
+- `removeMemberListener(MemberListener)`  allows to remove a previously registered listener
+- `topic(String)` replace the old `MessageProducer` bean which has been removed and allows retrieval of a topic from its name
 
 __MemberListener__
 
-  * `memberAdded(Member)` has been renamed to `onMemberAdded(Member)`
-  * `memberRemoved(Member)` has been renamed to `onMemberRemoved(Member)`
-  * `memberChanged(Member)` has been renamed to `onMemberChanged(Member)`
+* `memberAdded(Member)` has been renamed to `onMemberAdded(Member)`
+* `memberRemoved(Member)` has been renamed to `onMemberRemoved(Member)`
+* `memberChanged(Member)` has been renamed to `onMemberChanged(Member)`
 
 __Member__
 
-  * Methods changed
-    - `uuid()` has been renamed to `id()`
-    - `master()` has been renamed to primary()`
-  * Method added
-    - `local` which returns true if the associated member is the local one
+* Methods changed
+- `uuid()` has been renamed to `id()`
+- `master()` has been renamed to primary()`
+* Method added
+- `local` which returns true if the associated member is the local one
 
 __MessageProducer__
 
-  * Has been removed and replaced by topic method in ClusterManager.
+* Has been removed and replaced by topic method in ClusterManager.
 
 __Topic__
 
-  * Has been moved from `io.gravitee.node.api.message to io.gravitee.node.api.cluster.messaging`.
-  * The use of UUID has been replaced by `String`
+* Has been moved from `io.gravitee.node.api.message to io.gravitee.node.api.cluster.messaging`.
+* The use of UUID has been replaced by `String`
 
 __Message__
 
-  * Has been moved from `io.gravitee.node.api.message to io.gravitee.node.api.cluster.messaging`.
+* Has been moved from `io.gravitee.node.api.message to io.gravitee.node.api.cluster.messaging`.
 
 __MessageConsumer__
 
-  * Has been renamed to `MessageListener` and moved to `io.gravitee.node.api.cluster.messaging`.
-
+* Has been renamed to `MessageListener` and moved to `io.gravitee.node.api.cluster.messaging`.
 
 ==== New cache manager migration
-Cache Managers are now available via plugins. Default distribution contains a Standalone Cache Manager which was and still is the default one.
+
+Cache Managers are now available via plugins.
+Default distribution contains a Standalone Cache Manager which was and still is the default one.
 
 Two plugins are available :
 
-* Standalone Cache Manager which is the default plugin. The cache will not be distributed and will always remain local to the node (in-memory).
-* Hazelcast Cache Manager which has to be added to the distribution and enable by setting `cache.type` to `hazelcast`. With this plugin the cache could be either local (in-memory) or distributed (Hazelcast IMap).
+* Standalone Cache Manager which is the default plugin.
+The cache will not be distributed and will always remain local to the node (in-memory).
+* Hazelcast Cache Manager which has to be added to the distribution and enable by setting `cache.type` to `hazelcast`.
+With this plugin the cache could be either local (in-memory) or distributed (Hazelcast IMap).
 
 Following changes have been introduced:
 
- * Ability to define the scope of the cache (local or distributed) by using new `CacheConfiguration#distributed` attribute
- * Replace Guava Cache by Caffeine
-
+* Ability to define the scope of the cache (local or distributed) by using new `CacheConfiguration#distributed` attribute
+* Replace Guava Cache by Caffeine
 
 ==== Support for Secret Managers
 
 Secret Mangers can be used in Gravitee Gateways using gravitee-node.
-Secret providers plugins can pull or watch secrets from Secret Managers (eg. Kubernetes, HC Vault...) using associated plugins.
+Secret providers plugins can pull or watch secrets from Secret Managers (eg.
+Kubernetes, HC Vault...) using associated plugins.
 
 `gravitee.yml` contains configuration to set up secret managers, note that they can be configured using env variables.
 This is an example with community bundle plugin `kubernetes-secret-provider`:
@@ -233,6 +297,7 @@ ratelimit:
     password: secret://kubernetes/redis-secret:password
     # ...
 ----
+
 `GRAVITEEIO_SECRETS_KUBERNETES_ENABLED=true` would be enough to resolve secrets within the same namespace where gravitee is deployed.
 
 You can also use a secret provider to configure another secret provider:
