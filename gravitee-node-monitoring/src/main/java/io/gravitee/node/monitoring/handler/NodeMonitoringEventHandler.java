@@ -166,7 +166,7 @@ public class NodeMonitoringEventHandler extends AbstractService<NodeMonitoringEv
             monitorMessageConsumer.unregister();
         }
 
-        if (clusterManager != null) {
+        if (clusterManager != null && monitorTopic != null) {
             monitorTopic.removeMessageListener(nodeInfoSubscription);
             monitorTopic.removeMessageListener(healthCheckSubscription);
             monitorTopic.removeMessageListener(monitorSubscriptionId);
