@@ -1,3 +1,19 @@
+# [5.21.0](https://github.com/gravitee-io/gravitee-node/compare/5.20.0...5.21.0) (2024-07-24)
+
+
+### Bug Fixes
+
+* add condition on monitoring event handler to avoid npe when cluster is not defined ([9655f7d](https://github.com/gravitee-io/gravitee-node/commit/9655f7df999ade777175d7a0ed2b99b2cf3868dd))
+* add missing node cache service from node components ([7f150a4](https://github.com/gravitee-io/gravitee-node/commit/7f150a41f6e5f00746c1042cef21c8ea07486bae))
+* call super.dostop and dostart no cluster and cache manager ([a01b077](https://github.com/gravitee-io/gravitee-node/commit/a01b0772f6896112e3d522f9faedad6868e40938))
+* implement work around when hazelcast config is shared between cache and cluster plugins ([1a383c2](https://github.com/gravitee-io/gravitee-node/commit/1a383c21380d0b4c6046f9e7ceb5482e68059cd2))
+* remove unnecessary node autowired ([2200561](https://github.com/gravitee-io/gravitee-node/commit/220056177d74d4d372b4bb5800eca97e33e8fde8))
+
+
+### Features
+
+* add node information to hazelcast member attribute ([7e39f06](https://github.com/gravitee-io/gravitee-node/commit/7e39f062a9d1fff68d0571fab515555f1f8f1d73))
+
 # [5.20.0](https://github.com/gravitee-io/gravitee-node/compare/5.19.0...5.20.0) (2024-07-17)
 
 
