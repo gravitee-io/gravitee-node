@@ -1,3 +1,10 @@
+## [6.0.1](https://github.com/gravitee-io/gravitee-node/compare/6.0.0...6.0.1) (2024-07-25)
+
+
+### Bug Fixes
+
+* add default implementation for MemberListener ([b7db7be](https://github.com/gravitee-io/gravitee-node/commit/b7db7bedaa03d9cf981bd756354a55895fdbe28e))
+
 # [6.0.0](https://github.com/gravitee-io/gravitee-node/compare/5.21.1...6.0.0) (2024-07-25)
 
 
