@@ -1,3 +1,11 @@
+## [5.21.1](https://github.com/gravitee-io/gravitee-node/compare/5.21.0...5.21.1) (2024-07-25)
+
+
+### Bug Fixes
+
+* revert back hazelcast new instance on cache plugin ([d3dc47c](https://github.com/gravitee-io/gravitee-node/commit/d3dc47c5cd773ab4e37b46f381c6d164e091fb85))
+* wait for current queue polling to finish when removing listener ([cfd43c1](https://github.com/gravitee-io/gravitee-node/commit/cfd43c1a468582e555cea794d6516f3343932893))
+
 # [5.21.0](https://github.com/gravitee-io/gravitee-node/compare/5.20.0...5.21.0) (2024-07-24)
 
 
