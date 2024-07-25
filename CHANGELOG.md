@@ -1,3 +1,10 @@
+## [6.0.2](https://github.com/gravitee-io/gravitee-node/compare/6.0.1...6.0.2) (2024-07-25)
+
+
+### Bug Fixes
+
+* adding javadoc ([10b1e26](https://github.com/gravitee-io/gravitee-node/commit/10b1e2618ed0cde4405b200dc478f6e36ddfe157))
+
 ## [6.0.1](https://github.com/gravitee-io/gravitee-node/compare/6.0.0...6.0.1) (2024-07-25)
 
 
