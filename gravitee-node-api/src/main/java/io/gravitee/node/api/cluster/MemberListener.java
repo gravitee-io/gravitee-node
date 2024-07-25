@@ -20,7 +20,7 @@ package io.gravitee.node.api.cluster;
  * @author GraviteeSource Team
  */
 public interface MemberListener {
-    void onMemberAdded(final Member member);
+    default void onMemberAdded(final Member member) {}
 
-    void onMemberRemoved(final Member member);
+    default void onMemberRemoved(final Member member) {}
 }
