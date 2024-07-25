@@ -30,14 +30,11 @@ import lombok.extern.slf4j.Slf4j;
  * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
  * @author GraviteeSource Team
  */
+@RequiredArgsConstructor
 public class HazelcastQueue<T> implements Queue<T> {
 
     private final IQueue<T> iQueue;
     private final Map<String, QueuePollingThread<T>> queuePollingThreads = new ConcurrentHashMap<>();
-
-    public HazelcastQueue(IQueue<T> iQueue) {
-        this.iQueue = iQueue;
-    }
 
     @Override
     public void add(T item) {
@@ -83,15 +80,21 @@ public class HazelcastQueue<T> implements Queue<T> {
                     }
                 } catch (HazelcastInstanceNotActiveException e) {
                     log.info("Hazelcast is not active, stop polling queue '{}'.", queue.getName());
-                    terminate();
+                    break;
                 } catch (Exception e) {
-                    log.warn("Polling hazelcast queue encountered an error.", e);
+                    log.warn("Polling hazelcast queue '{}' encountered an error.", queue.getName(), e);
                 }
             }
         }
 
         public void terminate() {
             this.running = false;
+            try {
+                // Make sure current polling is terminated
+                this.join(1_000);
+            } catch (InterruptedException e) {
+                log.warn("Polling hazelcast queue '{}' encountered an error when terminating", queue.getName(), e);
+            }
         }
     }
 }
