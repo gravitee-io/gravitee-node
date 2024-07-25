@@ -63,7 +63,7 @@ public class HazelcastCacheConfiguration {
         memberAttributeConfig.setAttribute("gio_node_hostname", node.hostname());
         config.setMemberAttributeConfig(memberAttributeConfig);
 
-        return Hazelcast.getOrCreateHazelcastInstance(config);
+        return Hazelcast.newHazelcastInstance(config);
     }
 
     private Config fromFilePath(String filePath) throws FileNotFoundException {
