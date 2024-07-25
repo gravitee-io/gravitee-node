@@ -20,7 +20,17 @@ package io.gravitee.node.api.cluster;
  * @author GraviteeSource Team
  */
 public interface MemberListener {
+    /**
+     * Call when a new member has joined the cluster
+     *
+     * @param member the member which joined
+     */
     default void onMemberAdded(final Member member) {}
 
+    /**
+     * Call when a member has left the cluster
+     *
+     * @param member the member which left
+     */
     default void onMemberRemoved(final Member member) {}
 }
