@@ -1,3 +1,18 @@
+# [6.0.0](https://github.com/gravitee-io/gravitee-node/compare/5.21.1...6.0.0) (2024-07-25)
+
+
+### Bug Fixes
+
+* NPE using rxPut and rxCompute ([3bb413a](https://github.com/gravitee-io/gravitee-node/commit/3bb413ab3b8a84e2accdfba9dd6003d87943c7b2))
+
+
+### BREAKING CHANGES
+
+* rxPut and rxCompute method signatures have changed
+ from Single to Maybe. An empty Maybe means 'null' in the blocking world.
+
+https://gravitee.atlassian.net/browse/ARCHI-392
+
 ## [5.21.1](https://github.com/gravitee-io/gravitee-node/compare/5.21.0...5.21.1) (2024-07-25)
 
 
