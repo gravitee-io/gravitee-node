@@ -980,6 +980,7 @@ public class HazelcastCacheTest {
             CacheConfiguration configuration = CacheConfiguration.builder().build();
             Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
 
+            assertThat(cache.get(TEST_KEY)).isNull();
             assertThat(cache.evict(TEST_KEY)).isNull();
         }
 
@@ -991,6 +992,7 @@ public class HazelcastCacheTest {
             cache.put(TEST_KEY, TEST_VALUE);
             assertThat(cache.get(TEST_KEY)).isNotNull();
             assertThat(cache.evict(TEST_KEY)).isNotNull();
+            assertThat(cache.get(TEST_KEY)).isNull();
         }
 
         @Test
@@ -1008,11 +1010,8 @@ public class HazelcastCacheTest {
             );
             cache.put(TEST_KEY, TEST_VALUE);
             assertThat(cache.evict(TEST_KEY)).isNotNull();
-            await()
-                .atMost(500, TimeUnit.MILLISECONDS)
-                .untilAsserted(() -> {
-                    assertThat(listenerCalled).isTrue();
-                });
+            assertThat(cache.get(TEST_KEY)).isNull();
+            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
         }
     }
 
@@ -1024,7 +1023,7 @@ public class HazelcastCacheTest {
             CacheConfiguration configuration = CacheConfiguration.builder().build();
             Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
 
-            assertThat(cache.rxEvict(TEST_KEY).blockingGet()).isNull();
+            cache.rxEvict(TEST_KEY).test().awaitDone(1, TimeUnit.SECONDS).assertNoValues().assertComplete();
         }
 
         @Test
@@ -1033,8 +1032,9 @@ public class HazelcastCacheTest {
             Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
 
             cache.put(TEST_KEY, TEST_VALUE);
-            assertThat(cache.get(TEST_KEY)).isNotNull();
-            assertThat(cache.rxEvict(TEST_KEY).blockingGet()).isEqualTo(TEST_VALUE);
+            assertThat(cache.get(TEST_KEY)).isEqualTo(TEST_VALUE);
+
+            cache.rxEvict(TEST_KEY).test().awaitDone(1, TimeUnit.SECONDS).assertValue(TEST_VALUE);
         }
 
         @Test
@@ -1051,13 +1051,10 @@ public class HazelcastCacheTest {
                 }
             );
             cache.put(TEST_KEY, TEST_VALUE);
-            assertThat(cache.rxEvict(TEST_KEY).blockingGet()).isEqualTo(TEST_VALUE);
 
-            await()
-                .atMost(500, TimeUnit.MILLISECONDS)
-                .untilAsserted(() -> {
-                    assertThat(listenerCalled).isTrue();
-                });
+            cache.rxEvict(TEST_KEY).test().awaitDone(1, TimeUnit.SECONDS).assertValue(TEST_VALUE);
+
+            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
         }
     }
 }
