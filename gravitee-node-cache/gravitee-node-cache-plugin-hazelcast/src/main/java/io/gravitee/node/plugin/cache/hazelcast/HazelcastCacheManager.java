@@ -90,11 +90,10 @@ public class HazelcastCacheManager extends AbstractService<CacheManager> impleme
 
             if (configuration.getMaxSize() > 0) {
                 mapConfig.getEvictionConfig().setSize((int) configuration.getMaxSize());
-            }
-
-            if (mapConfig.getEvictionConfig().getEvictionPolicy().equals(EvictionPolicy.NONE)) {
-                // Set "Least Recently Used" eviction policy if not have eviction configured
-                mapConfig.getEvictionConfig().setEvictionPolicy(EvictionPolicy.LRU);
+                if (mapConfig.getEvictionConfig().getEvictionPolicy().equals(EvictionPolicy.NONE)) {
+                    // Set "Least Recently Used" eviction policy if not have eviction configured
+                    mapConfig.getEvictionConfig().setEvictionPolicy(EvictionPolicy.LRU);
+                }
             }
 
             if (configuration.getTimeToIdleInMs() > 0) {
