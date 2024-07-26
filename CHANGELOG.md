@@ -1,3 +1,10 @@
+## [6.0.3](https://github.com/gravitee-io/gravitee-node/compare/6.0.2...6.0.3) (2024-07-26)
+
+
+### Bug Fixes
+
+* ensure default hazelcast instance names are different ([fe3add1](https://github.com/gravitee-io/gravitee-node/commit/fe3add1fe757f039ca47b720481ce95f44e0b4ee))
+
 ## [6.0.2](https://github.com/gravitee-io/gravitee-node/compare/6.0.1...6.0.2) (2024-07-25)
 
 
