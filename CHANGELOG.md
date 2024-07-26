@@ -1,3 +1,11 @@
+## [6.0.4](https://github.com/gravitee-io/gravitee-node/compare/6.0.3...6.0.4) (2024-07-26)
+
+
+### Bug Fixes
+
+* apply eviction policy only when the limit size is defined ([02ab72f](https://github.com/gravitee-io/gravitee-node/commit/02ab72fbd8a3a17f85380ba4e1069d40216d18c6))
+* properly implement evict method for hazelcast cache ([a0ff2c5](https://github.com/gravitee-io/gravitee-node/commit/a0ff2c52c392826277da136435995b1c5f809389))
+
 ## [6.0.3](https://github.com/gravitee-io/gravitee-node/compare/6.0.2...6.0.3) (2024-07-26)
 
 
