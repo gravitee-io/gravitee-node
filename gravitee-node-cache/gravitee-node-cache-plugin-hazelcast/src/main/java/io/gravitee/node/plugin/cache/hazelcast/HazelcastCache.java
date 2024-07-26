@@ -136,11 +136,13 @@ public class HazelcastCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public V evict(K key) {
-        V v = cache.get(key);
-        cache.remove(key);
+    public Maybe<V> rxEvict(final K key) {
+        return Maybe.fromCompletionStage(this.cache.removeAsync(key));
+    }
 
-        return v;
+    @Override
+    public V evict(K key) {
+        return cache.remove(key);
     }
 
     @Override
