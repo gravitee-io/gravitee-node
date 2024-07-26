@@ -39,7 +39,7 @@ public class HazelcastClusterConfiguration {
     @Value("${cluster.hazelcast.config-path:${gravitee.home}/config/hazelcast-cluster.xml}")
     private String hazelcastConfigFilePath;
 
-    @Value("${cluster.hazelcast.instance-name:gio-hz-instance}")
+    @Value("${cluster.hazelcast.instance-name:gio-cluster-hz-instance}")
     private String hazelcastInstanceName;
 
     @Autowired

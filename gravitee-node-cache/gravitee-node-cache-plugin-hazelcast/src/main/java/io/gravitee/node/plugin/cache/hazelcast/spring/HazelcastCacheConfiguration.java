@@ -39,7 +39,7 @@ public class HazelcastCacheConfiguration {
     @Value("${cache.hazelcast.config-path:${gravitee.home}/config/hazelcast-cache.xml}")
     private String hazelcastConfigFilePath;
 
-    @Value("${cache.hazelcast.instance-name:gio-hz-instance}")
+    @Value("${cache.hazelcast.instance-name:gio-cache-hz-instance}")
     private String hazelcastInstanceName;
 
     @Autowired
