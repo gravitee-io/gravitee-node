@@ -90,30 +90,36 @@ public class VertxTcpClientFactory {
     private void configureSsl(final NetClientOptions clientOptions) {
         clientOptions.setSsl(tcpTarget.isSecured());
         if (sslOptions != null) {
-            if (Boolean.TRUE.equals(nodeConfiguration.getProperty(TCP_SSL_OPENSSL_CONFIGURATION, Boolean.class, false))) {
-                clientOptions.setSslEngineOptions(new OpenSSLEngineOptions());
-            }
-
-            String hostnameVerificationAlgorithm = sslOptions.getHostnameVerificationAlgorithm();
-            if ("NONE".equals(hostnameVerificationAlgorithm)) {
-                clientOptions.setHostnameVerificationAlgorithm("");
-            } else {
-                clientOptions.setHostnameVerificationAlgorithm(hostnameVerificationAlgorithm);
-            }
-
-            clientOptions.setTrustAll(sslOptions.isTrustAll());
-
+            sslOptions.setOpenSsl(Boolean.TRUE.equals(nodeConfiguration.getProperty(TCP_SSL_OPENSSL_CONFIGURATION, Boolean.class, false)));
             try {
-                if (!sslOptions.isTrustAll()) {
-                    // Client truststore configuration (trust server certificate).
-                    sslOptions.trustStore().flatMap(TrustStore::trustOptions).ifPresent(clientOptions::setTrustOptions);
-                }
-
-                // Client keystore configuration (client certificate for mtls).
-                sslOptions.keyStore().flatMap(KeyStore::keyCertOptions).ifPresent(clientOptions::setKeyCertOptions);
+                configureSslClientOption(clientOptions, sslOptions);
             } catch (KeyStore.KeyStoreCertOptionsException | TrustStore.TrustOptionsException e) {
                 throw new IllegalArgumentException(e.getMessage() + " for " + tcpTarget);
             }
         }
+    }
+
+    public static void configureSslClientOption(NetClientOptions clientOptions, SslOptions sslOptions)
+        throws KeyStore.KeyStoreCertOptionsException, TrustStore.TrustOptionsException {
+        if (sslOptions.isOpenSsl()) {
+            clientOptions.setSslEngineOptions(new OpenSSLEngineOptions());
+        }
+
+        String hostnameVerificationAlgorithm = sslOptions.getHostnameVerificationAlgorithm();
+        if ("NONE".equals(hostnameVerificationAlgorithm)) {
+            clientOptions.setHostnameVerificationAlgorithm("");
+        } else {
+            clientOptions.setHostnameVerificationAlgorithm(hostnameVerificationAlgorithm);
+        }
+
+        clientOptions.setTrustAll(sslOptions.isTrustAll());
+
+        if (!sslOptions.isTrustAll()) {
+            // Client truststore configuration (trust server certificate).
+            sslOptions.trustStore().flatMap(TrustStore::trustOptions).ifPresent(clientOptions::setTrustOptions);
+        }
+
+        // Client keystore configuration (client certificate for mtls).
+        sslOptions.keyStore().flatMap(KeyStore::keyCertOptions).ifPresent(clientOptions::setKeyCertOptions);
     }
 }
