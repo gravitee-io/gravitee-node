@@ -24,7 +24,15 @@ import io.gravitee.common.service.Service;
 public interface CacheManager extends Service<CacheManager> {
     <K, V> Cache<K, V> getOrCreateCache(String name);
 
+    default <K, V, MV> Cache<K, V> getOrCreateCache(String name, ValueMapper<V, MV> valueMapper) {
+        return getOrCreateCache(name);
+    }
+
     <K, V> Cache<K, V> getOrCreateCache(String name, CacheConfiguration configuration);
+
+    default <K, V, MV> Cache<K, V> getOrCreateCache(String name, CacheConfiguration configuration, ValueMapper<V, MV> valueMapper) {
+        return getOrCreateCache(name, configuration);
+    }
 
     void destroy(String name);
 }

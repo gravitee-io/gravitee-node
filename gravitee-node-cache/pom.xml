@@ -36,6 +36,7 @@
         <module>gravitee-node-cache-plugin-handler</module>
         <module>gravitee-node-cache-plugin-standalone</module>
         <module>gravitee-node-cache-plugin-hazelcast</module>
+        <module>gravitee-node-cache-plugin-redis</module>
     </modules>
     <dependencies>
         <dependency>

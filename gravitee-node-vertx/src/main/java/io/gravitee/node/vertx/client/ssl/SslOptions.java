@@ -6,9 +6,7 @@ import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /**
  * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
@@ -25,6 +23,8 @@ public class SslOptions implements Serializable {
 
     private boolean trustAll;
     private boolean hostnameVerifier = true;
+
+    private boolean openSsl;
 
     @Builder.Default
     private String hostnameVerificationAlgorithm = "NONE";
