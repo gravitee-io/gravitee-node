@@ -1,0 +1,13 @@
+person:
+    name: Hank
+    age: 42
+    single: false
+    addresses:
+        - street: Venice Beach
+          town: Los Angeles
+        - street: 1st Avenue
+          town: Hollywood
+    emails:
+        - hanky@gmail.com
+creditCards:
+    - visa

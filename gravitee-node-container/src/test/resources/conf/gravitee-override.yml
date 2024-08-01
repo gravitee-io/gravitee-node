@@ -1,0 +1,15 @@
+person:
+    name: Hank Moody
+    addresses:
+        - {}
+        - town: Hollywood, LA
+        - street: 1, Broadway
+          town: NY
+    emails:
+        - hanky@hotmail.com
+vehicle:
+    kind: 911
+    brand: Porsche
+creditCards:
+    - {}
+    - mastercard
