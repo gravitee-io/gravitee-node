@@ -1,3 +1,10 @@
+# [6.1.0](https://github.com/gravitee-io/gravitee-node/compare/6.0.4...6.1.0) (2024-08-01)
+
+
+### Features
+
+* allow merge of several gravitee.yml ([8effe2e](https://github.com/gravitee-io/gravitee-node/commit/8effe2e8f641a21169e09a1b5d741959ef079d65))
+
 ## [6.0.4](https://github.com/gravitee-io/gravitee-node/compare/6.0.3...6.0.4) (2024-07-26)
 
 
