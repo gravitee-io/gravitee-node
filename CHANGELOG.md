@@ -1,3 +1,15 @@
+# [6.2.0](https://github.com/gravitee-io/gravitee-node/compare/6.1.0...6.2.0) (2024-08-02)
+
+
+### Bug Fixes
+
+* update parent pom version in redis cache implementation ([a08026f](https://github.com/gravitee-io/gravitee-node/commit/a08026f2e99ccd83567eb22662d9008f52a11df5))
+
+
+### Features
+
+* addition of Redis as cache implementation ([29964e1](https://github.com/gravitee-io/gravitee-node/commit/29964e1f58debddf01ba462d800bf9bd33c7d37a))
+
 # [6.1.0](https://github.com/gravitee-io/gravitee-node/compare/6.0.4...6.1.0) (2024-08-01)
 
 
