@@ -31,6 +31,10 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class RedisOptionsFactory {
 
+    private RedisOptionsFactory() {
+        // no op
+    }
+
     public static RedisOptions build(RedisConfiguration configuration) {
         return buildRedisOptions(configuration);
     }
@@ -60,7 +64,7 @@ public class RedisOptionsFactory {
             options.setConnectionString(configuration.getHostAndPort().toConnectionString());
         }
 
-        if (configuration.getHostAndPort().isUseSsl()) {
+        if (configuration.getHostAndPort().useSsl()) {
             log.debug("Redis repository configured with ssl enabled");
             SslOptions sslConfiguration = configuration.getSslConfiguration();
             options.getNetClientOptions().setSsl(true);

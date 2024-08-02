@@ -27,8 +27,6 @@ import io.vertx.redis.client.Redis;
 import io.vertx.redis.client.RedisAPI;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import lombok.AccessLevel;
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -39,15 +37,17 @@ public class RedisCacheManager extends AbstractService<CacheManager> implements 
 
     private final ConcurrentMap<String, Cache<?, ?>> caches = new ConcurrentHashMap<>();
 
-    @Autowired
-    @Setter(AccessLevel.PACKAGE)
-    private RedisConfiguration redisConfiguration;
+    private final RedisConfiguration redisConfiguration;
 
-    @Autowired
-    @Setter(AccessLevel.PACKAGE)
-    private Vertx vertx;
+    private final Vertx vertx;
 
     private RedisAPI redisAPI;
+
+    @Autowired
+    public RedisCacheManager(RedisConfiguration redisConfiguration, Vertx vertx) {
+        this.redisConfiguration = redisConfiguration;
+        this.vertx = vertx;
+    }
 
     @Override
     public <K, V> Cache<K, V> getOrCreateCache(final String name) {
@@ -55,7 +55,7 @@ public class RedisCacheManager extends AbstractService<CacheManager> implements 
     }
 
     @Override
-    public <K, V, MV> Cache<K, V> getOrCreateCache(String name, ValueMapper<V, MV> valueMapper) {
+    public <K, V, C> Cache<K, V> getOrCreateCache(String name, ValueMapper<V, C> valueMapper) {
         return getOrCreateCache(name, new CacheConfiguration(), valueMapper);
     }
 
@@ -65,10 +65,10 @@ public class RedisCacheManager extends AbstractService<CacheManager> implements 
     }
 
     @Override
-    public <K, V, MV> Cache<K, V> getOrCreateCache(String name, CacheConfiguration configuration, ValueMapper<V, MV> valueMapper) {
+    public <K, V, C> Cache<K, V> getOrCreateCache(String name, CacheConfiguration configuration, ValueMapper<V, C> valueMapper) {
         return (Cache<K, V>) caches.computeIfAbsent(
             name,
-            s -> new RedisCache<V>(name, configuration, getOrCreateRedisAPI(), (ValueMapper<V, String>) valueMapper)
+            s -> new RedisCache<>(name, getOrCreateRedisAPI(), (ValueMapper<V, String>) valueMapper)
         );
     }
 
@@ -81,7 +81,7 @@ public class RedisCacheManager extends AbstractService<CacheManager> implements 
     }
 
     @Override
-    protected void doStop() throws Exception {
+    protected void doStop() {
         if (redisAPI != null) {
             redisAPI.close();
         }

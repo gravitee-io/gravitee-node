@@ -28,9 +28,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.awaitility.Awaitility;
+import org.junit.jupiter.api.*;
 import redis.embedded.RedisServer;
 
 /**
@@ -38,6 +37,7 @@ import redis.embedded.RedisServer;
  * @author GraviteeSource Team
  */
 @Slf4j
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class RedisCacheTest {
 
     private static RedisServer redisServer;
@@ -51,9 +51,7 @@ public class RedisCacheTest {
         final var redisConfiguration = new RedisConfiguration();
         redisConfiguration.setHostAndPort(HostAndPort.of("localhost", 6379));
 
-        final var cm = new RedisCacheManager();
-        cm.setVertx(Vertx.vertx());
-        cm.setRedisConfiguration(redisConfiguration);
+        final var cm = new RedisCacheManager(redisConfiguration, Vertx.vertx());
         redisCache =
             cm.getOrCreateCache(
                 "test",
@@ -73,7 +71,7 @@ public class RedisCacheTest {
     }
 
     @Test
-    public void should_store_a_key() throws Exception {
+    void should_store_a_key() throws Exception {
         final var key = UUID.randomUUID().toString();
         TestObserver<String> test = redisCache.rxPut(key, "myvalue1").test();
         test.await();
@@ -89,9 +87,9 @@ public class RedisCacheTest {
     }
 
     @Test
-    public void should_store_a_key_with_ttl() throws Exception {
+    void should_store_a_key_with_ttl() throws Exception {
         final var key = UUID.randomUUID().toString();
-        TestObserver<String> test = redisCache.rxPut(key, "myvalue1", 5, TimeUnit.SECONDS).test();
+        TestObserver<String> test = redisCache.rxPut(key, "myvalue1", 3, TimeUnit.SECONDS).test();
         test.await();
         test.assertNoValues(); // when key is missing the put return nothing
 
@@ -99,15 +97,19 @@ public class RedisCacheTest {
         test.await();
         test.assertValue("myvalue1");
 
-        Thread.sleep(6000);
-
-        test = redisCache.rxGet(key).test();
-        test.await();
-        test.assertNoValues();
+        Awaitility
+            .await()
+            .atLeast(2, TimeUnit.SECONDS)
+            .atMost(5, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                var get = redisCache.rxGet(key).test();
+                get.await();
+                get.assertNoValues();
+            });
     }
 
     @Test
-    public void should_store_all_map_entries() throws Exception {
+    void should_store_all_map_entries() throws Exception {
         final var entries = Map.of("key1", UUID.randomUUID().toString(), "key2", UUID.randomUUID().toString());
 
         var testGet = redisCache.rxGet("key1").test();
@@ -124,7 +126,7 @@ public class RedisCacheTest {
     }
 
     @Test
-    public void should_evict_a_key() throws Exception {
+    void should_evict_a_key() throws Exception {
         final var key = UUID.randomUUID().toString();
         TestObserver<String> test = redisCache.rxPut(key, "myvalue1").test();
         test.await();
@@ -144,7 +146,7 @@ public class RedisCacheTest {
     }
 
     @Test
-    public void should_be_able_to_clear_cache() throws Exception {
+    void should_be_able_to_clear_cache() throws Exception {
         // clear cache to remove all data from previous tests
         var testClear = redisCache.rxClear().test();
         testClear.await();
