@@ -23,10 +23,10 @@ package io.gravitee.node.api.cache;
  * expected by the application.
  *
  * @param <V> the value type provided by the application
- * @param <MV> the value type accepted by the caching system
+ * @param <C> the value type accepted by the caching system
  */
-public interface ValueMapper<V, MV> {
-    MV toCachedValue(V value);
+public interface ValueMapper<V, C> {
+    C toCachedValue(V value);
 
-    V toValue(MV cachedValue);
+    V toValue(C cachedValue);
 }

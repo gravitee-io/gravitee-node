@@ -15,40 +15,24 @@
  */
 package io.gravitee.node.plugin.cache.redis.configuration;
 
-import lombok.Getter;
 import org.springframework.util.StringUtils;
 
 /**
  * @author Eric LELEU (eric.leleu at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Getter
-public class HostAndPort {
 
-    private final String host;
-    private final int port;
-    private String password;
-    private boolean useSsl;
-
-    private HostAndPort(String host, int port) {
-        this.host = host;
-        this.port = port;
-    }
-
+public record HostAndPort(String host, int port, String password, boolean useSsl) {
     public static HostAndPort of(String host, int port) {
-        return new HostAndPort(host, port);
+        return new HostAndPort(host, port, null, false);
     }
 
     public HostAndPort withPassword(String password) {
-        this.password = password;
-
-        return this;
+        return new HostAndPort(host, port, password, false);
     }
 
     public HostAndPort withSsl(boolean useSsl) {
-        this.useSsl = useSsl;
-
-        return this;
+        return new HostAndPort(host, port, password, useSsl);
     }
 
     public String toConnectionString() {

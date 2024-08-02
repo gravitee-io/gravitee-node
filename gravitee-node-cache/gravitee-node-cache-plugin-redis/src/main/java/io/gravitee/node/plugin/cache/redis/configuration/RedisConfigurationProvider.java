@@ -40,14 +40,21 @@ import org.springframework.util.StringUtils;
 public class RedisConfigurationProvider {
 
     public static final String SENTINEL_PREFIX = ".sentinel";
+    public static final String HOST_KEY = "host";
+    public static final String PASSWORD_KEY = "password";
+    public static final String PORT_KEY = "port";
+
+    private RedisConfigurationProvider() {
+        // no op
+    }
 
     public static RedisConfiguration from(Environment environment, String propertiesPrefix) {
         RedisConfiguration config = new RedisConfiguration();
 
-        final var host = environment.getProperty(propertiesPrefix + ".host", String.class, "localhost");
-        final var port = environment.getProperty(propertiesPrefix + ".port", Integer.class, 6379);
-        final var password = environment.getProperty(propertiesPrefix + ".password", String.class);
-        final var useSsl = environment.getProperty(propertiesPrefix + ".ssl", Boolean.class, false);
+        final String host = environment.getProperty(propertiesPrefix + "." + HOST_KEY, String.class, "localhost");
+        final Integer port = environment.getProperty(propertiesPrefix + "." + PORT_KEY, Integer.class, 6379);
+        final String password = environment.getProperty(propertiesPrefix + "." + PASSWORD_KEY, String.class);
+        final boolean useSsl = environment.getProperty(propertiesPrefix + ".ssl", boolean.class, false);
 
         final var hostAndPort = HostAndPort.of(host, port).withPassword(password).withSsl(useSsl);
         config.setHostAndPort(hostAndPort);
@@ -58,10 +65,10 @@ public class RedisConfigurationProvider {
             sentinelConfiguration.setMaster(
                 environment.getProperty(propertiesPrefix + SENTINEL_PREFIX + ".master", String.class, "mymaster")
             );
-            sentinelConfiguration.setMaster(environment.getProperty(propertiesPrefix + SENTINEL_PREFIX + ".password", String.class));
+            sentinelConfiguration.setMaster(environment.getProperty(propertiesPrefix + SENTINEL_PREFIX + "." + PASSWORD_KEY, String.class));
 
             List<HostAndPort> sentinelNodes = getSentinelNodes(environment, propertiesPrefix);
-            sentinelNodes.forEach(node -> node.withPassword(hostAndPort.getPassword()).withSsl(hostAndPort.isUseSsl()));
+            sentinelNodes.forEach(node -> node.withPassword(hostAndPort.password()).withSsl(hostAndPort.useSsl()));
             sentinelConfiguration.setNodes(sentinelNodes);
         }
         config.setSentinelConfiguration(sentinelConfiguration);
@@ -90,7 +97,7 @@ public class RedisConfigurationProvider {
     private static KeyStore loadKeyStore(Environment environment, String propertiesPrefix) {
         String path = environment.getProperty(propertiesPrefix + ".path", String.class);
         String type = environment.getProperty(propertiesPrefix + ".type", String.class);
-        String password = environment.getProperty(propertiesPrefix + ".password", String.class);
+        String password = environment.getProperty(propertiesPrefix + "." + PASSWORD_KEY, String.class);
         String keyPassword = environment.getProperty(propertiesPrefix + ".keyPassword", String.class);
         String alias = environment.getProperty(propertiesPrefix + ".alias", String.class);
         String keyPath = environment.getProperty(propertiesPrefix + ".keyPath", String.class);
@@ -130,7 +137,7 @@ public class RedisConfigurationProvider {
     private static TrustStore loadTrustStore(Environment environment, String propertiesPrefix) {
         String path = environment.getProperty(propertiesPrefix + ".path", String.class);
         String type = environment.getProperty(propertiesPrefix + ".type", String.class);
-        String password = environment.getProperty(propertiesPrefix + ".password", String.class);
+        String password = environment.getProperty(propertiesPrefix + "." + PASSWORD_KEY, String.class);
         String alias = environment.getProperty(propertiesPrefix + ".alias", String.class);
 
         if (!StringUtils.hasText(path)) {
@@ -163,20 +170,28 @@ public class RedisConfigurationProvider {
     }
 
     private static boolean isSentinelEnabled(Environment environment, String propertyPrefix) {
-        return StringUtils.hasLength(environment.getProperty(propertyPrefix + SENTINEL_PREFIX + ".nodes[0].host", String.class));
+        return StringUtils.hasLength(
+            environment.getProperty(propertyPrefix + SENTINEL_PREFIX + nodeAtIndex(0) + "." + HOST_KEY, String.class)
+        );
     }
 
     private static List<HostAndPort> getSentinelNodes(Environment environment, String propertyPrefix) {
         final List<HostAndPort> nodes = new ArrayList<>();
         for (
             int idx = 0;
-            StringUtils.hasText(environment.getProperty(propertyPrefix + SENTINEL_PREFIX + ".nodes[" + idx + "].host", String.class));
+            StringUtils.hasText(
+                environment.getProperty(propertyPrefix + SENTINEL_PREFIX + nodeAtIndex(idx) + "." + HOST_KEY, String.class)
+            );
             idx++
         ) {
-            String host = environment.getProperty(propertyPrefix + SENTINEL_PREFIX + ".nodes[" + idx + "].host", String.class);
-            int port = environment.getProperty(propertyPrefix + SENTINEL_PREFIX + ".nodes[" + idx + "].port", int.class);
+            String host = environment.getProperty(propertyPrefix + SENTINEL_PREFIX + nodeAtIndex(idx) + "." + HOST_KEY, String.class);
+            Integer port = environment.getProperty(propertyPrefix + SENTINEL_PREFIX + nodeAtIndex(idx) + "." + PORT_KEY, Integer.class, 0);
             nodes.add(HostAndPort.of(host, port));
         }
         return nodes;
+    }
+
+    private static String nodeAtIndex(int idx) {
+        return ".nodes[" + idx + "]";
     }
 }
