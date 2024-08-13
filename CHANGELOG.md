@@ -1,3 +1,10 @@
+# [6.3.0](https://github.com/gravitee-io/gravitee-node/compare/6.2.0...6.3.0) (2024-08-13)
+
+
+### Features
+
+* add capability to retrieve product name early during startup ([91dc359](https://github.com/gravitee-io/gravitee-node/commit/91dc3599edd1dd04b2179b6b36c7b11a7378f03a))
+
 # [6.2.0](https://github.com/gravitee-io/gravitee-node/compare/6.1.0...6.2.0) (2024-08-02)
 
 
