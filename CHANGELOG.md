@@ -1,3 +1,10 @@
+## [6.0.5](https://github.com/gravitee-io/gravitee-node/compare/6.0.4...6.0.5) (2024-08-21)
+
+
+### Bug Fixes
+
+* **http2:** allows changing http2 multiplexing ([a534285](https://github.com/gravitee-io/gravitee-node/commit/a53428591edb5675ed7c8f3195a10aed1171bcd0))
+
 ## [6.0.4](https://github.com/gravitee-io/gravitee-node/compare/6.0.3...6.0.4) (2024-07-26)
 
 
