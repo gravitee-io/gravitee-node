@@ -55,6 +55,7 @@ class VertxHttpClientFactoryTest {
             .version(HTTP_2)
             .pipelining(false)
             .clearTextUpgrade(true)
+            .http2MultiplexingLimit(-1)
             .build();
         final VertxHttpProxyOptions proxyOptions = VertxHttpProxyOptions
             .builder()
