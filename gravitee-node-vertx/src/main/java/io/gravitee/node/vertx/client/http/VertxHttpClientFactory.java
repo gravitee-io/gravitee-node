@@ -119,7 +119,8 @@ public class VertxHttpClientFactory {
             options
                 .setProtocolVersion(HttpVersion.HTTP_2)
                 .setHttp2ClearTextUpgrade(httpOptions.isClearTextUpgrade())
-                .setHttp2MaxPoolSize(httpOptions.getMaxConcurrentConnections());
+                .setHttp2MaxPoolSize(httpOptions.getMaxConcurrentConnections())
+                .setHttp2MultiplexingLimit(httpOptions.getHttp2MultiplexingLimit());
         }
 
         final URL target = buildUrl(defaultTarget);
