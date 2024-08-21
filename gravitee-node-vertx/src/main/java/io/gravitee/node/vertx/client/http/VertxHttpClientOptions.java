@@ -35,6 +35,7 @@ public class VertxHttpClientOptions implements Serializable {
     @Serial
     private static final long serialVersionUID = -7061411805967594667L;
 
+    public static final int DEFAULT_HTTP2_MULTIPLEXING_LIMIT = -1;
     public static final long DEFAULT_IDLE_TIMEOUT = 60000;
     public static final long DEFAULT_KEEP_ALIVE_TIMEOUT = 30000;
     public static final long DEFAULT_CONNECT_TIMEOUT = 5000;
@@ -48,6 +49,7 @@ public class VertxHttpClientOptions implements Serializable {
     public static final boolean DEFAULT_CLEAR_TEXT_UPGRADE = true;
     public static final VertxHttpProtocolVersion DEFAULT_PROTOCOL_VERSION = VertxHttpProtocolVersion.HTTP_1_1;
 
+    private int http2MultiplexingLimit = DEFAULT_HTTP2_MULTIPLEXING_LIMIT;
     private long idleTimeout = DEFAULT_IDLE_TIMEOUT;
     private long keepAliveTimeout = DEFAULT_KEEP_ALIVE_TIMEOUT;
     private long connectTimeout = DEFAULT_CONNECT_TIMEOUT;
