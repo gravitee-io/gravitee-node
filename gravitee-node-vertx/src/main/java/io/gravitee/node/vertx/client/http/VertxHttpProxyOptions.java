@@ -49,5 +49,6 @@ public class VertxHttpProxyOptions implements Serializable {
 
     private String password;
 
+    @Builder.Default
     private VertxHttpProxyType type = VertxHttpProxyType.HTTP;
 }
