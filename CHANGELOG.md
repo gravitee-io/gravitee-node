@@ -1,3 +1,10 @@
+## [6.0.6](https://github.com/gravitee-io/gravitee-node/compare/6.0.5...6.0.6) (2024-08-22)
+
+
+### Bug Fixes
+
+* missing default builder on http client options ([e2a5af7](https://github.com/gravitee-io/gravitee-node/commit/e2a5af72e5f21ccbfbfecb84d3782881781cc0bb))
+
 ## [6.0.5](https://github.com/gravitee-io/gravitee-node/compare/6.0.4...6.0.5) (2024-08-21)
 
 
