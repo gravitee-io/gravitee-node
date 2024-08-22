@@ -49,15 +49,36 @@ public class VertxHttpClientOptions implements Serializable {
     public static final boolean DEFAULT_CLEAR_TEXT_UPGRADE = true;
     public static final VertxHttpProtocolVersion DEFAULT_PROTOCOL_VERSION = VertxHttpProtocolVersion.HTTP_1_1;
 
+    @Builder.Default
     private int http2MultiplexingLimit = DEFAULT_HTTP2_MULTIPLEXING_LIMIT;
+
+    @Builder.Default
     private long idleTimeout = DEFAULT_IDLE_TIMEOUT;
+
+    @Builder.Default
     private long keepAliveTimeout = DEFAULT_KEEP_ALIVE_TIMEOUT;
+
+    @Builder.Default
     private long connectTimeout = DEFAULT_CONNECT_TIMEOUT;
+
+    @Builder.Default
     private boolean keepAlive = DEFAULT_KEEP_ALIVE;
+
+    @Builder.Default
     private long readTimeout = DEFAULT_READ_TIMEOUT;
+
+    @Builder.Default
     private boolean pipelining = DEFAULT_PIPELINING;
+
+    @Builder.Default
     private int maxConcurrentConnections = DEFAULT_MAX_CONCURRENT_CONNECTIONS;
+
+    @Builder.Default
     private boolean useCompression = DEFAULT_USE_COMPRESSION;
+
+    @Builder.Default
     private boolean clearTextUpgrade = DEFAULT_CLEAR_TEXT_UPGRADE;
+
+    @Builder.Default
     private VertxHttpProtocolVersion version = DEFAULT_PROTOCOL_VERSION;
 }
