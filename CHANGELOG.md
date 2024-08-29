@@ -1,3 +1,12 @@
+## [6.4.1](https://github.com/gravitee-io/gravitee-node/compare/6.4.0...6.4.1) (2024-08-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.hazelcast:hazelcast to v5.5.0 ([309e380](https://github.com/gravitee-io/gravitee-node/commit/309e3802432bb41ac574730e9b927518e113225d))
+* **deps:** update gravitee-plugin.version to v4.1.0 ([893b4d9](https://github.com/gravitee-io/gravitee-node/commit/893b4d9ae95c53491e02732a8364e5db13ca1a79))
+* missing default builder on http client options ([0cbdab7](https://github.com/gravitee-io/gravitee-node/commit/0cbdab7c1b8b6955663bfa3b048c1a1dcd4a79df))
+
 # [6.4.0](https://github.com/gravitee-io/gravitee-node/compare/6.3.0...6.4.0) (2024-08-22)
 
 
