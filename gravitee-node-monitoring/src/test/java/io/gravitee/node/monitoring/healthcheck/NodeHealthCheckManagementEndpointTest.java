@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.monitoring.healthcheck;
 
+import static io.gravitee.node.monitoring.healthcheck.NodeHealthCheckManagementEndpoint.PROBE_FILTER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -31,7 +32,9 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,7 +75,7 @@ public class NodeHealthCheckManagementEndpointTest {
     void should_not_filter_all_healthy() {
         Map<Probe, Result> probeResultMap = fakeProbeResults(true);
 
-        when(probeEvaluator.evaluate()).thenReturn(CompletableFuture.completedFuture(probeResultMap));
+        when(probeEvaluator.evaluate(null)).thenReturn(CompletableFuture.completedFuture(probeResultMap));
         when(routingContext.queryParams()).thenReturn(queryParams);
         when(queryParams.contains(any())).thenReturn(false);
 
@@ -104,7 +107,7 @@ public class NodeHealthCheckManagementEndpointTest {
     @Test
     void should_not_filter_one_unhealthy_healthy() {
         Map<Probe, Result> probeResultMap = fakeProbeResults(false);
-        when(probeEvaluator.evaluate()).thenReturn(CompletableFuture.completedFuture(probeResultMap));
+        when(probeEvaluator.evaluate(null)).thenReturn(CompletableFuture.completedFuture(probeResultMap));
         when(routingContext.queryParams()).thenReturn(queryParams);
         when(queryParams.contains(any())).thenReturn(false);
 
@@ -136,10 +139,11 @@ public class NodeHealthCheckManagementEndpointTest {
     @Test
     void should_filter_all_healthy() {
         Map<Probe, Result> probeResultMap = fakeProbeResults(true);
-        when(probeEvaluator.evaluate()).thenReturn(CompletableFuture.completedFuture(probeResultMap));
+        when(probeEvaluator.evaluate(Set.of("ratelimit-repository", "management-repository")))
+            .thenReturn(CompletableFuture.completedFuture(probeResultMap));
         when(routingContext.queryParams()).thenReturn(queryParams);
-        when(queryParams.contains(any())).thenReturn(true);
-        when(queryParams.get(any())).thenReturn("ratelimit-repository,management-repository");
+        when(queryParams.contains(PROBE_FILTER)).thenReturn(true);
+        when(queryParams.getAll(PROBE_FILTER)).thenReturn(List.of("ratelimit-repository,management-repository"));
 
         ArgumentCaptor<Integer> statusCaptor = ArgumentCaptor.forClass(Integer.class);
         ArgumentCaptor<String> writeCaptor = ArgumentCaptor.forClass(String.class);
@@ -166,10 +170,11 @@ public class NodeHealthCheckManagementEndpointTest {
     @Test
     void should_filter_by_probe_id() {
         Map<Probe, Result> probeResultMap = fakeProbeResults(false);
-        when(probeEvaluator.evaluate()).thenReturn(CompletableFuture.completedFuture(probeResultMap));
+        when(probeEvaluator.evaluate(Set.of("ratelimit-repository", "management-repository", "cpu")))
+            .thenReturn(CompletableFuture.completedFuture(probeResultMap));
         when(routingContext.queryParams()).thenReturn(queryParams);
-        when(queryParams.contains(any())).thenReturn(true);
-        when(queryParams.get(any())).thenReturn("ratelimit-repository,management-repository,cpu");
+        when(queryParams.contains(PROBE_FILTER)).thenReturn(true);
+        when(queryParams.getAll(PROBE_FILTER)).thenReturn(List.of("ratelimit-repository,management-repository,cpu"));
 
         ArgumentCaptor<Integer> statusCaptor = ArgumentCaptor.forClass(Integer.class);
         ArgumentCaptor<String> writeCaptor = ArgumentCaptor.forClass(String.class);
@@ -192,6 +197,66 @@ public class NodeHealthCheckManagementEndpointTest {
             "    \"healthy\" : true\n" +
             "  }\n" +
             "}";
+
+        assertThat(writeCaptor.getValue()).isEqualTo(expected);
+    }
+
+    @Test
+    void should_return_unhealthy_when_filtering_including_unknown_probe_id() {
+        Map<Probe, Result> probeResultMap = fakeProbeResults(true);
+        when(probeEvaluator.evaluate(Set.of("ratelimit-repository", "management-repository", "cpu", "unknown")))
+            .thenReturn(CompletableFuture.completedFuture(probeResultMap));
+        when(routingContext.queryParams()).thenReturn(queryParams);
+        when(queryParams.contains(PROBE_FILTER)).thenReturn(true);
+        when(queryParams.getAll(PROBE_FILTER)).thenReturn(List.of("ratelimit-repository,management-repository,cpu,unknown"));
+
+        ArgumentCaptor<Integer> statusCaptor = ArgumentCaptor.forClass(Integer.class);
+        ArgumentCaptor<String> writeCaptor = ArgumentCaptor.forClass(String.class);
+
+        nodeHealthCheckManagementEndpoint.handle(routingContext);
+
+        verify(httpServerResponse).setStatusCode(statusCaptor.capture());
+        assertThat((int) statusCaptor.getValue()).isEqualTo(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+        verify(httpServerResponse).write(writeCaptor.capture());
+
+        String expected =
+            "{\n" +
+            "  \"ratelimit-repository\" : {\n" +
+            "    \"healthy\" : true\n" +
+            "  },\n" +
+            "  \"management-repository\" : {\n" +
+            "    \"healthy\" : true\n" +
+            "  },\n" +
+            "  \"cpu\" : {\n" +
+            "    \"healthy\" : true\n" +
+            "  },\n" +
+            "  \"unknown\" : {\n" +
+            "    \"healthy\" : false,\n" +
+            "    \"message\" : \"probe not found\"\n" +
+            "  }\n" +
+            "}";
+
+        assertThat(writeCaptor.getValue()).isEqualTo(expected);
+    }
+
+    @Test
+    void should_return_unhealthy_when_filtering_with_only_unknown_probe_id() {
+        when(probeEvaluator.evaluate(Set.of("unknown"))).thenReturn(CompletableFuture.completedFuture(Map.of()));
+        when(routingContext.queryParams()).thenReturn(queryParams);
+        when(queryParams.contains(PROBE_FILTER)).thenReturn(true);
+        when(queryParams.getAll(PROBE_FILTER)).thenReturn(List.of("unknown"));
+
+        ArgumentCaptor<Integer> statusCaptor = ArgumentCaptor.forClass(Integer.class);
+        ArgumentCaptor<String> writeCaptor = ArgumentCaptor.forClass(String.class);
+
+        nodeHealthCheckManagementEndpoint.handle(routingContext);
+
+        verify(httpServerResponse).setStatusCode(statusCaptor.capture());
+        assertThat((int) statusCaptor.getValue()).isEqualTo(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+        verify(httpServerResponse).write(writeCaptor.capture());
+
+        String expected =
+            "{\n" + "  \"unknown\" : {\n" + "    \"healthy\" : false,\n" + "    \"message\" : \"probe not found\"\n" + "  }\n" + "}";
 
         assertThat(writeCaptor.getValue()).isEqualTo(expected);
     }
