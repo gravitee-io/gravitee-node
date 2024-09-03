@@ -22,6 +22,7 @@ import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.management.http.metrics.prometheus.PrometheusEndpoint;
 import io.gravitee.node.management.http.node.NodeEndpoint;
 import io.gravitee.node.management.http.node.heap.HeapDumpEndpoint;
+import io.gravitee.node.management.http.node.log.LoggingEndpoint;
 import io.gravitee.node.management.http.node.thread.ThreadDumpEndpoint;
 import io.gravitee.node.management.http.vertx.configuration.HttpServerConfiguration;
 import io.vertx.core.*;
@@ -31,6 +32,7 @@ import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.AuthenticationHandler;
 import io.vertx.ext.web.handler.BasicAuthHandler;
+import io.vertx.ext.web.handler.BodyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,6 +92,9 @@ public class ManagementVerticle extends AbstractVerticle {
     private PrometheusEndpoint prometheusEndpoint;
 
     @Autowired
+    private LoggingEndpoint loggingEndpoint;
+
+    @Autowired
     private ManagementEndpointManager managementEndpointManager;
 
     @Autowired
@@ -131,8 +136,8 @@ public class ManagementVerticle extends AbstractVerticle {
 
         // Start HTTP server
         Router mainRouter = Router.router(vertx);
-        mainRouter.mountSubRouter(WEBHOOK_PATH, nodeWebhookRouter);
-        mainRouter.mountSubRouter(PATH, nodeRouter);
+        mainRouter.route(WEBHOOK_PATH + "*").subRouter(nodeWebhookRouter);
+        mainRouter.route(PATH + "*").subRouter(nodeRouter);
 
         AuthenticationHandler authHandler = null;
         switch (httpServerConfiguration.getAuthenticationType().toLowerCase()) {
@@ -171,6 +176,7 @@ public class ManagementVerticle extends AbstractVerticle {
                     // Register some default endpoints.
                     managementEndpointManager.register(nodeEndpoint);
                     managementEndpointManager.register(configurationEndpoint);
+                    managementEndpointManager.register(loggingEndpoint);
 
                     // Heapdump endpoint is disabled by default for security reasons. It is up to the platform administrator
                     // to configure correctly authentication (ie. not using default credentials, or disabling authentication)
@@ -204,31 +210,42 @@ public class ManagementVerticle extends AbstractVerticle {
     private void setupRoute(ManagementEndpoint endpoint) {
         LOGGER.info(
             "Register a new endpoint for Management API: {} {} [{}]",
-            endpoint.method(),
+            endpoint.methods(),
             endpoint.path(),
             endpoint.getClass().getName()
         );
 
-        if (endpoint.isWebhook()) {
-            nodeWebhookRouter.route(convert(endpoint.method()), endpoint.path()).handler(endpoint::handle);
-        } else {
-            nodeRouter.route(convert(endpoint.method()), endpoint.path()).handler(endpoint::handle);
-        }
+        endpoint
+            .methods()
+            .forEach(method -> {
+                if (endpoint.isWebhook()) {
+                    nodeWebhookRouter.route(convert(endpoint.method()), endpoint.path()).handler(endpoint::handle);
+                } else {
+                    if (method.equals(io.gravitee.common.http.HttpMethod.POST)) {
+                        nodeRouter.route(convert(method), endpoint.path()).handler(BodyHandler.create()).handler(endpoint::handle);
+                    }
+                    nodeRouter.route(convert(method), endpoint.path()).handler(endpoint::handle);
+                }
+            });
     }
 
     private void removeRoute(ManagementEndpoint endpoint) {
         LOGGER.info(
             "Unregister an endpoint for Management API: {} {} [{}]",
-            endpoint.method(),
+            endpoint.methods(),
             endpoint.path(),
             endpoint.getClass().getName()
         );
 
-        if (endpoint.isWebhook()) {
-            nodeWebhookRouter.route(convert(endpoint.method()), endpoint.path()).remove();
-        } else {
-            nodeRouter.route(convert(endpoint.method()), endpoint.path()).remove();
-        }
+        endpoint
+            .methods()
+            .forEach(method -> {
+                if (endpoint.isWebhook()) {
+                    nodeWebhookRouter.route(convert(endpoint.method()), endpoint.path()).remove();
+                } else {
+                    nodeRouter.route(convert(method), endpoint.path()).remove();
+                }
+            });
     }
 
     private HttpMethod convert(io.gravitee.common.http.HttpMethod httpMethod) {
