@@ -17,14 +17,31 @@ package io.gravitee.node.management.http.endpoint;
 
 import io.gravitee.common.http.HttpMethod;
 import io.vertx.ext.web.RoutingContext;
+import java.util.List;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
 public interface ManagementEndpoint {
+    /**
+     * To use if the endpoint only support one HttpMethod
+     * @return the HttpMethod supported by the endpoint
+     */
     HttpMethod method();
 
+    /**
+     * To use if the endpoint supports multiple HttpMethod (need to manage inside the {@link #handle(RoutingContext context)} implementation)
+     * @return a list of HttpMethod supported by the endpoint
+     */
+    default List<HttpMethod> methods() {
+        return List.of(method());
+    }
+
+    /**
+     * The path of the endpoint
+     * @return a string representation of the endpoint path
+     */
     String path();
 
     void handle(RoutingContext context);

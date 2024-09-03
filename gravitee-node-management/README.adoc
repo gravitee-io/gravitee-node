@@ -1,0 +1,135 @@
+= Gravitee Node Management
+
+== Description
+
+The *Gravitee Node Management* module allows exposing a management HTTP server that exposes product information (ex: node info, Prometheus metrics, …).
+It is also extensible as each product can expose its own set of endpoints.
+
+
+== Configuration
+You need to enable the API as a service in the gravitee.yml file and update any other required configuration.
+
+[source,yaml]
+----
+services:
+  core:
+    http:
+      enabled: true
+      port: 18093
+      host: localhost
+      authentication:
+        type: basic
+        users:
+          admin: adminadmin
+----
+
+* enabled: Whether the service is enabled (default true).
+* port: The port the service listens on (default 18093). You must ensure you use a port which is not already in use by another APIM component.
+* host: The host (default localhost).
+* authentication.type: Authentication type for requests: none if no authentication is required or basic (default basic).
+* authentication.users: A list of user: password combinations. Only required if authentication type is basic.
+
+== Technical endpoints
+
+Node exposes different technical endpoints to provide different kind of services or tools.
+
+
+* **Node**
+** **Path:** /_node
+** **Method:** GET
+** **Description:** Gets generic node information
+** **Enabled:** Yes
+
+.Output example
+[source,json]
+----
+{
+  "id" : "652fa0cb-9794-4586-afa0-cb9794558623",
+  "name" : "Gravitee.io - Rest APIs",
+  "metadata" : {
+    "node.id" : "652fa0cb-9794-4586-afa0-cb9794558623",
+    "installation" : "e711c30d-3d6d-4fad-91c3-0d3d6ddfadfa",
+    "node.hostname" : "YourHostname"
+  },
+  "version" : {
+    "BUILD_ID" : "${env.BUILD_ID}",
+    "BUILD_NUMBER" : "${env.BUILD_NUMBER}",
+    "MAJOR_VERSION" : "4.8.0-SNAPSHOT",
+    "REVISION" : "${env.GIT_COMMIT}"
+  },
+  "license" : null
+}
+----
+
+* **Configuration**
+** **Path:** /_node/configuration
+** **Method:** GET
+** **Description:** Get actual node configuration
+** **Enabled:** Yes
+
+.Truncated output example
+[source,json]
+----
+{
+  "analytics.elasticsearch.endpoints[0]" : "http://localhost:9200",
+  "analytics.type" : "elasticsearch",
+  "api.v2.emulateV4Engine.default" : "true",
+  "cluster_type" : "hazelcast",
+  "documentation.audit.max-content-size" : "-1",
+  "documentation.markdown.sanitize" : "true",
+  "documentation.swagger.validate-safe-content" : "true",
+  "ds.elastic.host" : "localhost",
+  "ds.elastic.port" : "9200",
+  "ds.mongodb.dbname" : "gravitee",
+  "ds.mongodb.host" : "localhost",
+  "ds.mongodb.port" : "27017",
+}
+----
+
+* **Logging**
+** **Path:** /_node/logging
+** **Method:** GET/POST
+** **Description:** Check current logging configuration with GET request and dynamically change the logging level of a specific package with POST request. If you want to reset the logger level, just send the same payload with an empty level or null.
+** **Enabled:** Yes
+
+.Payload example (POST request)
+[source,json]
+----
+{"org.springframework.data.mongodb.core.MongoTemplate": "DEBUG"}
+----
+
+.Output example (GET and POST requests)
+[source,json]
+----
+{
+  "org.eclipse.jetty": "INFO",
+  "ROOT": "WARN",
+  "io.gravitee": "INFO",
+  "io.gravitee.rest.api.service.impl.upgrade": "INFO",
+  "org.springframework.data.mongodb.core.MongoTemplate": "DEBUG"
+}
+----
+
+* **Heap Dump**
+** **Path:** /_node/heapdump
+** **Method:** GET
+** **Description:** Dump the heap of the JVM
+** **Enabled:** No
+** **Configuration:** services.core.endpoints.heapdump.enabled
+
+* **Thread Dump**
+** **Path:** /_node/threaddump
+** **Method:** GET
+** **Description:** Dump the threads of the JVM
+** **Enabled:** No
+** **Configuration:** services.core.endpoints.threaddump.enabled
+
+* **Prometheus**
+** **Path:** /_node/metrics/prometheus
+** **Method:** GET
+** **Description:** Expose metrics
+** **Enabled:** No
+** **Configuration:** services.metrics.prometheus.enabled
+
+
+
