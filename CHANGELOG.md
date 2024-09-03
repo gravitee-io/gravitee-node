@@ -1,3 +1,10 @@
+## [6.4.2](https://github.com/gravitee-io/gravitee-node/compare/6.4.1...6.4.2) (2024-09-03)
+
+
+### Bug Fixes
+
+* return unhealthy result when a filtered prob is not found ([2f585f2](https://github.com/gravitee-io/gravitee-node/commit/2f585f2e3ead2b0ef917bd327193ca68f64e7b62))
+
 ## [6.4.1](https://github.com/gravitee-io/gravitee-node/compare/6.4.0...6.4.1) (2024-08-29)
 
 
