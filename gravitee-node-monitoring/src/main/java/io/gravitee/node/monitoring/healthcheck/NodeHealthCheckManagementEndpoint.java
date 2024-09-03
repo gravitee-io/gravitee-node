@@ -20,14 +20,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.common.http.HttpStatusCode;
 import io.gravitee.common.http.MediaType;
-import io.gravitee.node.api.healthcheck.Probe;
 import io.gravitee.node.api.healthcheck.ProbeEvaluator;
 import io.gravitee.node.api.healthcheck.Result;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,30 +58,34 @@ public class NodeHealthCheckManagementEndpoint implements ManagementEndpoint {
 
     @Override
     public void handle(RoutingContext ctx) {
+        Set<String> probeIds;
+        if (ctx.queryParams().contains(PROBE_FILTER)) {
+            probeIds =
+                ctx.queryParams().getAll(PROBE_FILTER).stream().flatMap(s -> Arrays.stream(s.split(","))).collect(Collectors.toSet());
+        } else {
+            probeIds = null;
+        }
         probeEvaluator
-            .evaluate()
+            .evaluate(probeIds)
             .thenAccept(probeResults -> {
-                final Map<Probe, Result> probes = probeResults
+                final Map<String, Result> results = probeResults
                     .entrySet()
                     .stream()
-                    .filter(entry ->
-                        ctx.queryParams().contains(PROBE_FILTER)
-                            ? ctx.queryParams().get(PROBE_FILTER).contains(entry.getKey().id())
-                            : entry.getKey().isVisibleByDefault()
-                    )
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                    .filter(entry -> probeIds != null ? probeIds.contains(entry.getKey().id()) : entry.getKey().isVisibleByDefault())
+                    .collect(Collectors.toMap(entry -> entry.getKey().id(), Map.Entry::getValue));
 
-                boolean healthyProbe = probes.values().stream().allMatch(Result::isHealthy);
+                if (probeIds != null) {
+                    probeIds
+                        .stream()
+                        .filter(probeId -> !results.containsKey(probeId))
+                        .forEach(probeId -> results.put(probeId, Result.unhealthy("probe not found")));
+                }
 
                 HttpServerResponse response = ctx.response();
+                boolean healthyProbe = results.values().stream().allMatch(Result::isHealthy);
                 response.setStatusCode(healthyProbe ? HttpStatusCode.OK_200 : HttpStatusCode.INTERNAL_SERVER_ERROR_500);
                 response.putHeader(HttpHeaderNames.CONTENT_TYPE, MediaType.APPLICATION_JSON);
                 response.setChunked(true);
-
-                Map<String, Result> results = probes
-                    .entrySet()
-                    .stream()
-                    .collect(Collectors.toMap(probeResultEntry -> probeResultEntry.getKey().id(), Map.Entry::getValue));
 
                 try {
                     response.write(mapper.writeValueAsString(results));

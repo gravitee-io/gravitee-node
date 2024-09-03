@@ -7,6 +7,7 @@ import io.gravitee.node.api.healthcheck.Result;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,11 @@ public class DefaultProbeEvaluator implements ProbeEvaluator {
 
     @Override
     public CompletableFuture<Map<Probe, Result>> evaluate() {
+        return evaluate(Set.of());
+    }
+
+    @Override
+    public CompletableFuture<Map<Probe, Result>> evaluate(final Set<String> probeIds) {
         final long now = Instant.now().toEpochMilli();
         final long elapsedTime = lastEvaluation != null ? now - lastEvaluation : Long.MAX_VALUE;
 
@@ -38,6 +44,7 @@ public class DefaultProbeEvaluator implements ProbeEvaluator {
         final List<CompletableFuture<Void>> collect =
             this.probeManager.getProbes()
                 .stream()
+                .filter(probe -> probeIds == null || probeIds.isEmpty() || probeIds.contains(probe.id()))
                 .map(probe -> {
                     if (probe.isCacheable()) {
                         if (elapsedTime < cacheDurationMs && lastProbeResults.containsKey(probe)) {
