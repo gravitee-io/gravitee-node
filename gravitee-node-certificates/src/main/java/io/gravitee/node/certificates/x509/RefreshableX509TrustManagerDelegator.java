@@ -79,7 +79,10 @@ public class RefreshableX509TrustManagerDelegator extends X509ExtendedTrustManag
     @Override
     public X509Certificate[] getAcceptedIssuers() {
         X509ExtendedTrustManager trustManager = this.delegate;
-        return trustManager != null ? trustManager.getAcceptedIssuers() : null;
+        if (trustManager != null) {
+            return trustManager.getAcceptedIssuers();
+        }
+        return new X509Certificate[] {};
     }
 
     @Override
