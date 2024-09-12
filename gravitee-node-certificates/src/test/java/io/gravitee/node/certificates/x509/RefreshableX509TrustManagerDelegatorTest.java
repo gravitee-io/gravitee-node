@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import io.gravitee.common.util.KeyStoreUtils;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.URL;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -62,11 +63,25 @@ class RefreshableX509TrustManagerDelegatorTest {
     }
 
     @Test
+    void should_not_fail_on_empty_truststore() {
+        assertThatCode(() -> cut.checkServerTrusted(null, null, (Socket) null)).doesNotThrowAnyException();
+        assertThatCode(() -> cut.checkServerTrusted(null, null, (SSLEngine) null)).doesNotThrowAnyException();
+        assertThatCode(() -> cut.checkServerTrusted(null, null)).doesNotThrowAnyException();
+        assertThatCode(() -> cut.checkClientTrusted(null, null, (Socket) null)).doesNotThrowAnyException();
+        assertThatCode(() -> cut.checkClientTrusted(null, null, (SSLEngine) null)).doesNotThrowAnyException();
+        assertThatCode(() -> cut.checkClientTrusted(null, null)).doesNotThrowAnyException();
+        assertThat(cut.getAcceptedIssuers()).isNotNull();
+        assertThat(cut.getAcceptedIssuers()).isEmpty();
+    }
+
+    @Test
     void should_load_truststore_store_and_trust_certs() throws CertificateException, IOException {
         KeyStore trustStore = loadTruststore();
         cut.refresh(trustStore);
         assertThat(cut.getAcceptedIssuers()).hasSize(2);
-        try (var is = this.getClass().getResource("/truststores/client2.crt").openStream();) {
+        URL resource = this.getClass().getResource("/truststores/client2.crt");
+        assertThat(resource).isNotNull();
+        try (var is = resource.openStream()) {
             X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(is);
             assertThat(cut.getAcceptedIssuers()).contains(certificate);
             X509Certificate[] chain = new X509Certificate[] { certificate };
@@ -84,7 +99,9 @@ class RefreshableX509TrustManagerDelegatorTest {
         KeyStore trustStore = loadTruststore();
         cut.refresh(trustStore);
         assertThat(cut.getAcceptedIssuers()).hasSize(2);
-        try (var is = this.getClass().getResource("/truststores/client1.crt").openStream();) {
+        URL resource = this.getClass().getResource("/truststores/client1.crt");
+        assertThat(resource).isNotNull();
+        try (var is = resource.openStream()) {
             X509Certificate untrusted = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(is);
             assertThat(cut.getAcceptedIssuers()).doesNotContain(untrusted);
             X509Certificate[] chain = new X509Certificate[] { untrusted };
@@ -104,10 +121,8 @@ class RefreshableX509TrustManagerDelegatorTest {
     }
 
     private KeyStore loadTruststore() {
-        return KeyStoreUtils.initFromPath(
-            CERTIFICATE_FORMAT_PKCS12,
-            this.getClass().getResource("/truststores/truststore2-3.p12").getPath(),
-            PASSWORD
-        );
+        URL resource = this.getClass().getResource("/truststores/truststore2-3.p12");
+        assertThat(resource).isNotNull();
+        return KeyStoreUtils.initFromPath(CERTIFICATE_FORMAT_PKCS12, resource.getPath(), PASSWORD);
     }
 }
