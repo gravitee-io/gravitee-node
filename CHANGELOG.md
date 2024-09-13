@@ -1,3 +1,10 @@
+## [5.12.9](https://github.com/gravitee-io/gravitee-node/compare/5.12.8...5.12.9) (2024-09-13)
+
+
+### Bug Fixes
+
+* return empty array of accepted issuers in trust manager ([1ca0daa](https://github.com/gravitee-io/gravitee-node/commit/1ca0daac5b9c49156629b232f433682c200a3468))
+
 ## [5.12.8](https://github.com/gravitee-io/gravitee-node/compare/5.12.7...5.12.8) (2024-06-24)
 
 
