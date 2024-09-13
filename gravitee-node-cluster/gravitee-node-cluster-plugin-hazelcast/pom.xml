@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node-cluster</artifactId>
-        <version>5.18.3</version>
+        <version>5.18.4</version>
     </parent>
 
     <artifactId>gravitee-node-cluster-plugin-hazelcast</artifactId>
