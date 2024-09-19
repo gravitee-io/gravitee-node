@@ -80,7 +80,11 @@ public class NodeMonitoringEventHandler extends AbstractService<NodeMonitoringEv
                         .createOrUpdate(convert(message.content()))
                         .ignoreElement()
                         .onErrorResumeNext(throwable -> {
-                            log.error("Unable to process node infos message", throwable);
+                            if (log.isDebugEnabled()) {
+                                log.error("Unable to process node infos message", throwable);
+                            } else {
+                                log.error("Unable to process node infos message, ex={}", throwable.toString());
+                            }
                             return Completable.complete();
                         })
                         .subscribe();
@@ -96,7 +100,11 @@ public class NodeMonitoringEventHandler extends AbstractService<NodeMonitoringEv
                         .createOrUpdate(convert(message.content()))
                         .ignoreElement()
                         .onErrorResumeNext(throwable -> {
-                            log.error("Unable to process health check message", throwable);
+                            if (log.isDebugEnabled()) {
+                                log.error("Unable to process health check message", throwable);
+                            } else {
+                                log.error("Unable to process health check message, ex={}", throwable.toString());
+                            }
                             return Completable.complete();
                         })
                         .subscribe();
@@ -112,7 +120,11 @@ public class NodeMonitoringEventHandler extends AbstractService<NodeMonitoringEv
                         .createOrUpdate(convert(message.content()))
                         .ignoreElement()
                         .onErrorResumeNext(throwable -> {
-                            log.error("Unable to process monitor message", throwable);
+                            if (log.isDebugEnabled()) {
+                                log.error("Unable to process monitor message", throwable);
+                            } else {
+                                log.error("Unable to process monitor message, ex={}", throwable.toString());
+                            }
                             return Completable.complete();
                         })
                         .subscribe();
