@@ -43,6 +43,11 @@ public class RedisConfigurationProvider {
     public static final String HOST_KEY = "host";
     public static final String PASSWORD_KEY = "password";
     public static final String PORT_KEY = "port";
+    public static final String MAX_POOL_SIZE_KEY = "maxPoolSize";
+    public static final String MAX_POOL_WAITING_KEY = "maxPoolWaiting";
+    public static final String POOL_CLEANER_INTERVAL_KEY = "poolCleanerInterval";
+    public static final String POOL_RECYCLE_TIMEOUT_KEY = "poolRecycleTimeout";
+    public static final String MAX_WAITING_HANDLERS_KEY = "maxWaitingHandlers";
 
     private RedisConfigurationProvider() {
         // no op
@@ -90,6 +95,12 @@ public class RedisConfigurationProvider {
             sslConfig.setTrustStore(loadTrustStore(environment, propertiesPrefix + ".truststore"));
             config.setSslConfiguration(sslConfig);
         }
+
+        config.setMaxPoolSize(environment.getProperty(propertiesPrefix + "." + MAX_POOL_SIZE_KEY, Integer.class));
+        config.setMaxPoolWaiting(environment.getProperty(propertiesPrefix + "." + MAX_POOL_WAITING_KEY, Integer.class));
+        config.setPoolCleanerInterval(environment.getProperty(propertiesPrefix + "." + POOL_CLEANER_INTERVAL_KEY, Integer.class));
+        config.setPoolRecycleTimeout(environment.getProperty(propertiesPrefix + "." + POOL_RECYCLE_TIMEOUT_KEY, Integer.class));
+        config.setMaxWaitingHandlers(environment.getProperty(propertiesPrefix + "." + MAX_WAITING_HANDLERS_KEY, Integer.class));
 
         return config;
     }
