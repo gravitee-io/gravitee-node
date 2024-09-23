@@ -28,4 +28,9 @@ public class RedisConfiguration {
     private HostAndPort hostAndPort;
     private SentinelConfiguration sentinelConfiguration;
     private SslOptions sslConfiguration;
+    private Integer maxPoolSize;
+    private Integer maxPoolWaiting;
+    private Integer poolCleanerInterval;
+    private Integer poolRecycleTimeout;
+    private Integer maxWaitingHandlers;
 }

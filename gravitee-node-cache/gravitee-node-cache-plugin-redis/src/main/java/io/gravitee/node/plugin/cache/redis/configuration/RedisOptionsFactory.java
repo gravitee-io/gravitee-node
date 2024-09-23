@@ -15,12 +15,15 @@
  */
 package io.gravitee.node.plugin.cache.redis.configuration;
 
+import static java.util.Optional.ofNullable;
+
 import io.gravitee.node.vertx.client.ssl.SslOptions;
 import io.gravitee.node.vertx.client.tcp.VertxTcpClientFactory;
 import io.vertx.redis.client.RedisClientType;
 import io.vertx.redis.client.RedisOptions;
 import io.vertx.redis.client.RedisRole;
 import java.util.List;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
@@ -71,8 +74,13 @@ public class RedisOptionsFactory {
             VertxTcpClientFactory.configureSslClientOption(options.getNetClientOptions(), sslConfiguration);
         }
 
-        // Set max waiting handlers high enough to manage high throughput since we are not using the pooled mode
-        options.setMaxWaitingHandlers(1024);
+        options.setPoolName("cache-redis-" + UUID.randomUUID());
+        ofNullable(configuration.getMaxPoolSize()).ifPresent(options::setMaxPoolSize);
+        ofNullable(configuration.getMaxPoolWaiting()).ifPresent(options::setMaxPoolWaiting);
+        ofNullable(configuration.getPoolCleanerInterval()).ifPresent(options::setPoolCleanerInterval);
+        ofNullable(configuration.getPoolRecycleTimeout()).ifPresent(options::setPoolRecycleTimeout);
+        ofNullable(configuration.getMaxWaitingHandlers()).ifPresent(options::setMaxWaitingHandlers);
+
         return options;
     }
 }
