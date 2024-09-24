@@ -1,3 +1,11 @@
+## [6.4.4](https://github.com/gravitee-io/gravitee-node/compare/6.4.3...6.4.4) (2024-09-24)
+
+
+### Bug Fixes
+
+* make redis cache pool settings configurable ([5480516](https://github.com/gravitee-io/gravitee-node/commit/5480516936ff2db6414e26d0c66a4ce38ba123af))
+* removed stacktrace from periodic error message ([7633706](https://github.com/gravitee-io/gravitee-node/commit/763370680f277ceb39f9940bc625a678a480381f))
+
 ## [6.4.3](https://github.com/gravitee-io/gravitee-node/compare/6.4.2...6.4.3) (2024-09-12)
 
 
