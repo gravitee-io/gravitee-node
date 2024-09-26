@@ -10,7 +10,7 @@ import com.google.common.base.Strings;
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public record SecretMount(String provider, SecretLocation location, String key, SecretURL secretURL) {
+public record SecretMount(String provider, SecretLocation location, String key, SecretURL secretURL, boolean withRetries) {
     /**
      * Test the presence of a key
      *
@@ -18,5 +18,9 @@ public record SecretMount(String provider, SecretLocation location, String key, 
      */
     public boolean isKeyEmpty() {
         return Strings.isNullOrEmpty(key);
+    }
+
+    public SecretMount withoutRetries() {
+        return new SecretMount(provider, location, key, secretURL, false);
     }
 }

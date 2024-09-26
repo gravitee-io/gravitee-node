@@ -47,6 +47,6 @@ public class TestSecretProvider implements SecretProvider {
         if (!url.path().equals("test")) {
             throw new IllegalArgumentException();
         }
-        return new SecretMount(url.provider(), new SecretLocation(Map.of("path", url.path())), url.key(), url);
+        return new SecretMount(url.provider(), new SecretLocation(Map.of("path", url.path())), url.key(), url, true);
     }
 }

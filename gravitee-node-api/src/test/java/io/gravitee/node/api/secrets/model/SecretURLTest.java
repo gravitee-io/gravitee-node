@@ -3,14 +3,14 @@ package io.gravitee.node.api.secrets.model;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
@@ -56,7 +56,7 @@ class SecretURLTest {
     @ParameterizedTest
     @MethodSource("workingURLs")
     void should_parse_url(String url, String provider, String path, String key, Map<String, Collection<String>> query, boolean watch) {
-        SecretURL cut = SecretURL.from(url);
+        SecretURL cut = SecretURL.from(url, true);
         assertThat(cut.provider()).isEqualTo(provider);
         assertThat(cut.path()).isEqualTo(path);
         assertThat(cut.key()).isEqualTo(key);
@@ -84,7 +84,7 @@ class SecretURLTest {
     @ParameterizedTest
     @MethodSource("nonWorkingURLs")
     void should_not_parse_url(String url) {
-        assertThatCode(() -> SecretURL.from(url))
+        assertThatCode(() -> SecretURL.from(url, true))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("should have the following format");
     }
@@ -120,7 +120,7 @@ class SecretURLTest {
     @ParameterizedTest
     @MethodSource("wellKnowKeysURLs")
     void should_have_well_known_mapping(String url, Map<String, SecretMap.WellKnownSecretKey> expected) {
-        SecretURL cut = SecretURL.from(url);
+        SecretURL cut = SecretURL.from(url, true);
         assertThat(cut.wellKnowKeyMap()).containsAllEntriesOf(expected);
     }
 
@@ -140,7 +140,7 @@ class SecretURLTest {
     @ParameterizedTest
     @MethodSource("failingWellKnownKeysURLs")
     void should_fail_parsing_well_known_mapping_error(String url) {
-        SecretURL cut = SecretURL.from(url);
+        SecretURL cut = SecretURL.from(url, true);
         assertThatThrownBy(cut::wellKnowKeyMap).isInstanceOf(IllegalArgumentException.class);
     }
 }

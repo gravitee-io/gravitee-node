@@ -46,6 +46,14 @@ public final class SecretMap {
     }
 
     /**
+     *
+     * @return a copy f the secrets
+     */
+    public Map<String, Secret> asMap() {
+        return Map.copyOf(map);
+    }
+
+    /**
      * Builds a secret map where secrets are base64 encoded
      *
      * @param data the secret as a map (String/byte[] or String/String) where bytes or String are base64 encoded

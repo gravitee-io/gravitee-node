@@ -99,22 +99,22 @@ class GraviteeConfigurationSecretResolverDispatcherTest {
         SecretMap first = cut.watch(secretMount).blockingFirst();
         SecretMap last = cut.watch(secretMount).blockingLast();
         assertThat(first).isNotEqualTo(last).isNotNull();
-        assertThat(first.getSecret(new SecretMount(null, null, "created_flag", null))).isPresent();
-        assertThat(first.getSecret(new SecretMount(null, null, "updated_flag", null))).isNotPresent();
-        assertThat(last.getSecret(new SecretMount(null, null, "created_flag", null))).isNotPresent();
-        assertThat(last.getSecret(new SecretMount(null, null, "updated_flag", null))).isPresent();
+        assertThat(first.getSecret(new SecretMount(null, null, "created_flag", null, true))).isPresent();
+        assertThat(first.getSecret(new SecretMount(null, null, "updated_flag", null, true))).isNotPresent();
+        assertThat(last.getSecret(new SecretMount(null, null, "created_flag", null, true))).isNotPresent();
+        assertThat(last.getSecret(new SecretMount(null, null, "updated_flag", null, true))).isPresent();
 
         first = cut.watch(secretMount, SecretEvent.Type.UPDATED).blockingFirst();
         last = cut.watch(secretMount, SecretEvent.Type.UPDATED).blockingLast();
         assertThat(first).isEqualTo(last).isNotNull();
-        assertThat(first.getSecret(new SecretMount(null, null, "created_flag", null))).isNotPresent();
-        assertThat(first.getSecret(new SecretMount(null, null, "updated_flag", null))).isPresent();
+        assertThat(first.getSecret(new SecretMount(null, null, "created_flag", null, true))).isNotPresent();
+        assertThat(first.getSecret(new SecretMount(null, null, "updated_flag", null, true))).isPresent();
 
         first = cut.watch(secretMount, SecretEvent.Type.CREATED).blockingFirst();
         last = cut.watch(secretMount, SecretEvent.Type.CREATED).blockingLast();
         assertThat(first).isEqualTo(last).isNotNull();
-        assertThat(first.getSecret(new SecretMount(null, null, "created_flag", null))).isPresent();
-        assertThat(first.getSecret(new SecretMount(null, null, "updated_flag", null))).isNotPresent();
+        assertThat(first.getSecret(new SecretMount(null, null, "created_flag", null, true))).isPresent();
+        assertThat(first.getSecret(new SecretMount(null, null, "updated_flag", null, true))).isNotPresent();
 
         Iterable<SecretMap> all = cut.watch(secretMount, SecretEvent.Type.DELETED).blockingIterable();
         assertThat(all).isEmpty();

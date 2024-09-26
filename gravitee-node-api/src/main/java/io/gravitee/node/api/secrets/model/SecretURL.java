@@ -3,7 +3,10 @@ package io.gravitee.node.api.secrets.model;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -27,7 +30,7 @@ public record SecretURL(String provider, String path, String key, Multimap<Strin
      * <p>
      * the format is : <code>secret://&lt;provider&gt;/&lt;path or name&gt;[:&lt;key&gt;][?option=value1&option=value2]</code>
      * </p>
-     * <li>secret://is mandatory</li>
+     * <li><code>secret://</code> is mandatory is includesSchema is true</li>
      * <li>provider is mandatory and should match a secret provider id</li>
      * <li>"path or name" is mandatory, a free string that can contain forward slashes ('/').
      * If an empty string or spaces are found between two forward slashes (eg. <code>//</code> or <code>/ /</code>) parsing will fail.</li>
@@ -35,16 +38,17 @@ public record SecretURL(String provider, String path, String key, Multimap<Strin
      * <li>query string is optional and is simply split into key/value pairs.
      * Pair are always list as can be specified more than once. If no value is parsed, then <code>true</code> is set</li>
      *
-     * @param url the string to parse
+     * @param url            the string to parse
+     * @param includesSchema to indicate
      * @return SecretURL object
      * @throws IllegalArgumentException when failing to parse
      */
-    public static SecretURL from(String url) {
+    public static SecretURL from(String url, boolean includesSchema) {
         url = Objects.requireNonNull(url).trim();
-        if (!url.startsWith(SCHEME)) {
+        if (includesSchema && !url.startsWith(SCHEME)) {
             throwFormatError(url);
         }
-        String schemeLess = url.substring(SCHEME.length());
+        String schemeLess = includesSchema ? url.substring(SCHEME.length()) : url.substring(1);
         int firstSlash = schemeLess.indexOf('/');
         if (firstSlash < 0 || firstSlash == schemeLess.length() - 1) {
             throwFormatError(url);

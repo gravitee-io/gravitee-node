@@ -37,9 +37,9 @@ class SecretMapTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("secretMaps")
     void should_get_secret_from_map(String name, SecretMap secretMap) {
-        SecretMount pass = new SecretMount(null, null, KEY, null);
+        SecretMount pass = new SecretMount(null, null, KEY, null, true);
         assertThat(secretMap.getSecret(pass)).isPresent().get().extracting(Secret::asString).isEqualTo(SECRET);
-        assertThat(secretMap.getSecret(new SecretMount(null, null, "bar", null))).isNotPresent();
+        assertThat(secretMap.getSecret(new SecretMount(null, null, "bar", null, true))).isNotPresent();
     }
 
     @Test
@@ -58,7 +58,7 @@ class SecretMapTest {
     void should_have_well_know_data() {
         SecretMap secretMap = SecretMap.of(Map.of(KEY, SECRET));
         secretMap.handleWellKnownSecretKeys(Map.of(KEY, SecretMap.WellKnownSecretKey.PASSWORD));
-        assertThat(secretMap.getSecret(new SecretMount(null, null, KEY, null)))
+        assertThat(secretMap.getSecret(new SecretMount(null, null, KEY, null, true)))
             .isPresent()
             .get()
             .extracting(Secret::asString)

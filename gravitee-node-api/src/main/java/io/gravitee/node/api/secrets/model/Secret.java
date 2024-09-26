@@ -20,6 +20,10 @@ public final class Secret {
     private final Object data;
     private final boolean base64Encoded;
 
+    public Secret() {
+        this("");
+    }
+
     /**
      * Builds a secret value assuming it is not base64 encoded
      *

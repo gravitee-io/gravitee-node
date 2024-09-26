@@ -20,6 +20,6 @@ public class TestSecretProvider implements SecretProvider {
 
     @Override
     public SecretMount fromURL(SecretURL url) {
-        return new SecretMount("test", new SecretLocation(), "password", url);
+        return new SecretMount("test", new SecretLocation(), "password", url, true);
     }
 }

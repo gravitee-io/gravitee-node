@@ -1,7 +1,6 @@
 package io.gravitee.node.api.secrets.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -16,11 +15,11 @@ class SecretMountTest {
 
     @Test
     void should_know_if_key_is_empty() {
-        SecretMount secretMount = new SecretMount(null, null, null, null);
+        SecretMount secretMount = new SecretMount(null, null, null, null, true);
         assertThat(secretMount.isKeyEmpty()).isTrue();
-        secretMount = new SecretMount(null, null, "", null);
+        secretMount = new SecretMount(null, null, "", null, true);
         assertThat(secretMount.isKeyEmpty()).isTrue();
-        secretMount = new SecretMount(null, null, "foo", null);
+        secretMount = new SecretMount(null, null, "foo", null, true);
         assertThat(secretMount.isKeyEmpty()).isFalse();
     }
 }

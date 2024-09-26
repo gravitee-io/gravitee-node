@@ -53,7 +53,7 @@ public class GraviteeConfigurationSecretPropertyResolver implements WatchablePro
 
     @Override
     public boolean isWatchable(String value) {
-        return SecretURL.from(value).isWatchable();
+        return SecretURL.from(value, true).isWatchable();
     }
 
     @Override

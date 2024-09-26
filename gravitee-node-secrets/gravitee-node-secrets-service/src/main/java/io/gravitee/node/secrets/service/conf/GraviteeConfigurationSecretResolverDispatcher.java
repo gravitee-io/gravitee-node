@@ -156,7 +156,7 @@ public class GraviteeConfigurationSecretResolverDispatcher extends AbstractSecre
      * @throws IllegalArgumentException            if the URL is well formatted
      */
     public SecretMount toSecretMount(String location) {
-        SecretURL url = SecretURL.from(location);
+        SecretURL url = SecretURL.from(location, true);
         return this.findSecretProvider(url.provider())
             .map(secretProvider -> {
                 try {
