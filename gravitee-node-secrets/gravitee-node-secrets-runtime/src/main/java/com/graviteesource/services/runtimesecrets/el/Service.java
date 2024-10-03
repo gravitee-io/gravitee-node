@@ -1,20 +1,37 @@
+/*
+ * Copyright © 2015 The Gravitee team (http://gravitee.io)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.graviteesource.services.runtimesecrets.el;
 
 import static io.gravitee.node.api.secrets.runtime.discovery.Ref.URI_KEY_SEPARATOR;
 
 import com.graviteesource.services.runtimesecrets.discovery.RefParser;
 import com.graviteesource.services.runtimesecrets.errors.*;
-import com.graviteesource.services.runtimesecrets.spec.registry.EnvAwareSpecRegistry;
+import com.graviteesource.services.runtimesecrets.spec.SpecRegistry;
 import io.gravitee.node.api.secrets.model.Secret;
 import io.gravitee.node.api.secrets.runtime.discovery.DiscoveryContext;
 import io.gravitee.node.api.secrets.runtime.discovery.DiscoveryLocation;
 import io.gravitee.node.api.secrets.runtime.discovery.Ref;
+import io.gravitee.node.api.secrets.runtime.grant.Grant;
 import io.gravitee.node.api.secrets.runtime.grant.GrantService;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
 import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
 import io.gravitee.node.api.secrets.runtime.storage.Cache;
 import io.gravitee.node.api.secrets.runtime.storage.Entry;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -27,19 +44,35 @@ public class Service {
     private final Cache cache;
     private final GrantService grantService;
     private final SpecLifecycleService specLifecycleService;
-    private final EnvAwareSpecRegistry specRegistry;
+    private final SpecRegistry specRegistry;
 
-    public String fromGrant(String token, String envId, String expression, String key) {
-        boolean granted = grantService.isGranted(token);
-        if (!granted) {
-            return resultToValue(new Result(Result.Type.DENIED, "secret [%s] is denied in environment [%s]".formatted(expression, envId)));
+    public String fromGrant(String contextId, String envId) {
+        Optional<Grant> grantOptional = grantService.getGrant(contextId);
+        if (grantOptional.isEmpty()) {
+            return resultToValue(new Result(Result.Type.DENIED, "secret was denied ahead of traffic"));
         }
+        return getFromCache(envId, grantOptional.get(), grantOptional.get().key());
+    }
+
+    public String fromGrant(String contextId, String envId, String key) {
+        Optional<Grant> grantOptional = grantService.getGrant(contextId);
+        if (grantOptional.isEmpty()) {
+            return resultToValue(new Result(Result.Type.DENIED, "secret was denied ahead of traffic"));
+        }
+        return getFromCache(envId, grantOptional.get(), key);
+    }
+
+    private String getFromCache(String envId, Grant grant, String key) {
         return resultToValue(
             toResult(
                 cache
-                    .get(envId, expression)
+                    .get(envId, grant.naturalId())
                     .orElse(
-                        new Entry(Entry.Type.EMPTY, null, "no value in cache for [%s] in environment [%s]".formatted(expression, envId))
+                        new Entry(
+                            Entry.Type.EMPTY,
+                            null,
+                            "no value in cache for [%s] in environment [%s]".formatted(grant.naturalId(), envId)
+                        )
                     ),
                 key
             )
@@ -75,7 +108,7 @@ public class Service {
     }
 
     private String grantAndGet(String envId, String definitionKind, String definitionId, Spec spec, Ref ref, String naturalId, String key) {
-        boolean granted = grantService.authorize(
+        boolean granted = grantService.isGranted(
             new DiscoveryContext(null, envId, ref, new DiscoveryLocation(new DiscoveryLocation.Definition(definitionKind, definitionId))),
             spec
         );

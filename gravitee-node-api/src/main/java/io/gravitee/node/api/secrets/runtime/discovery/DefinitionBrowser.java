@@ -7,9 +7,9 @@ import java.util.Map;
  * @author GraviteeSource Team
  */
 public interface DefinitionBrowser<T> {
-    boolean canHandle(T definition);
+    boolean canHandle(Object definition);
 
     Definition getDefinitionKindLocation(T definition, Map<String, String> metadata);
 
-    void findPayloads(DefinitionPayloadNotifier notifier);
+    void findPayloads(T definition, DefinitionPayloadNotifier notifier);
 }

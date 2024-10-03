@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -25,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class AbstractSecretProviderDispatcher implements SecretProviderDispatcher {
 
-    public static final String SECRET_PROVIDER_NOT_FOUND_FOR_ID = "No secret-provider plugin found for provider id: '%s'";
+    public static final String SECRET_PROVIDER_NOT_FOUND_FOR_ID = "No secret-provider plugin found for provider: '%s'";
     private final SecretProviderPluginManager secretProviderPluginManager;
 
     private final Map<String, SecretProvider> secretProviders = new HashMap<>();
@@ -35,6 +36,10 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
     }
 
     protected final void createAndRegister(String id) {
+        createAndRegister(id, sp -> secretProviders.put(id, sp));
+    }
+
+    protected final void createAndRegister(String id, Consumer<SecretProvider> register) {
         try {
             final SecretProviderPlugin<?, ?> secretProviderPlugin = secretProviderPluginManager.get(id);
             final Class<? extends SecretManagerConfiguration> configurationClass = secretProviderPlugin.configuration();
@@ -44,7 +49,7 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
                 SecretManagerConfiguration config =
                     this.readConfiguration(id, factory.getClass().getClassLoader().loadClass(configurationClass.getName()));
                 // register and start
-                secretProviders.put(id, factory.create(config).start());
+                register.accept(factory.create(config).start());
             } else {
                 throw new SecretProviderNotFoundException(SECRET_PROVIDER_NOT_FOUND_FOR_ID.formatted(id));
             }

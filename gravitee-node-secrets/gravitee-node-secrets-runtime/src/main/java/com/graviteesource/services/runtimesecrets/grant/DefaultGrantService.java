@@ -1,18 +1,36 @@
+/*
+ * Copyright © 2015 The Gravitee team (http://gravitee.io)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.graviteesource.services.runtimesecrets.grant;
 
-import static com.graviteesource.services.runtimesecrets.config.Config.ALLOW_EMPTY_ACL_SPECS;
-import static com.graviteesource.services.runtimesecrets.config.Config.ALLOW_ON_THE_FLY_SPECS;
+import static com.graviteesource.services.runtimesecrets.config.Config.ALLOW_EMPTY_NO_ACL_SPECS;
+import static com.graviteesource.services.runtimesecrets.config.Config.ON_THE_FLY_SPECS_ENABLED;
 import static io.gravitee.node.api.secrets.runtime.discovery.PayloadLocation.PLUGIN_KIND;
 
 import com.graviteesource.services.runtimesecrets.config.Config;
 import com.graviteesource.services.runtimesecrets.errors.SecretSpecNotFoundException;
 import io.gravitee.node.api.secrets.runtime.discovery.DiscoveryContext;
 import io.gravitee.node.api.secrets.runtime.discovery.PayloadLocation;
+import io.gravitee.node.api.secrets.runtime.discovery.Ref;
+import io.gravitee.node.api.secrets.runtime.grant.Grant;
 import io.gravitee.node.api.secrets.runtime.grant.GrantService;
 import io.gravitee.node.api.secrets.runtime.spec.ACLs;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
@@ -30,14 +48,14 @@ public class DefaultGrantService implements GrantService {
     private final Config config;
 
     @Override
-    public boolean authorize(@Nonnull DiscoveryContext context, Spec spec) {
+    public boolean isGranted(@Nonnull DiscoveryContext context, Spec spec) {
         if (spec == null) {
             throw new SecretSpecNotFoundException(
                 "no spec found or created on-the-fly for ref [%s] in envId [%s], %s=%s".formatted(
                         context.ref().rawRef(),
                         context.envId(),
-                        ALLOW_ON_THE_FLY_SPECS,
-                        config.allowOnTheFlySpecs()
+                        ON_THE_FLY_SPECS_ENABLED,
+                        config.onTheFlySpecsEnabled()
                     )
             );
         }
@@ -46,24 +64,25 @@ public class DefaultGrantService implements GrantService {
                 log.warn(
                     "secret spec for ref [{}] is not granted because is does not contains ACLs and this is not allowed. see: {}",
                     context.ref().rawRef(),
-                    ALLOW_EMPTY_ACL_SPECS
+                    ALLOW_EMPTY_NO_ACL_SPECS
                 );
                 return false;
             } else {
-                return Objects.equals(context.envId(), spec.envId());
+                return checkSpec(context).test(spec);
             }
         }
 
-        return checkACLs(spec, context);
-    }
-
-    public boolean isGranted(@Nonnull String token) {
-        return grantRegistry.exists(token);
+        return checkSpec(context).test(spec) && checkACLs(context).test(spec.acls());
     }
 
     @Override
-    public void grant(@Nonnull DiscoveryContext context) {
-        grantRegistry.register(context);
+    public void grant(@Nonnull DiscoveryContext context, Spec spec) {
+        grantRegistry.register(context.id().toString(), new Grant(spec.naturalId(), spec.key()));
+    }
+
+    @Override
+    public Optional<Grant> getGrant(String contextId) {
+        return Optional.ofNullable(grantRegistry.get(contextId));
     }
 
     @Override
@@ -71,13 +90,26 @@ public class DefaultGrantService implements GrantService {
         grantRegistry.unregister(context);
     }
 
-    private boolean checkACLs(Spec spec, DiscoveryContext context) {
+    private Predicate<Spec> checkSpec(DiscoveryContext context) {
+        Predicate<Spec> envMatch = spec -> Objects.equals(context.envId(), spec.envId());
+
+        Predicate<Spec> dynOrNoKey = spec -> spec.usesDynamicKey() || context.ref().secondaryType() == null;
+
+        Predicate<Spec> keyMatch = spec ->
+            context.ref().secondaryType() == Ref.SecondaryType.KEY &&
+            context.ref().secondaryExpression().isLiteral() &&
+            spec.key().equals(context.ref().secondaryExpression().value());
+
+        return envMatch.and(keyMatch.or(dynOrNoKey));
+    }
+
+    private Predicate<ACLs> checkACLs(DiscoveryContext context) {
         Predicate<ACLs> noDefKind = acls ->
             acls.definitions() == null ||
             acls.definitions().isEmpty() ||
             acls.definitions().stream().allMatch(def -> def.kind() == null || def.kind().isEmpty());
 
-        Predicate<ACLs> defKind = acls ->
+        Predicate<ACLs> defKindMatch = acls ->
             acls.definitions().stream().anyMatch(defACLs -> defACLs.kind().contains(context.location().definition().kind()));
 
         Predicate<ACLs> noDefId = acls ->
@@ -85,12 +117,12 @@ public class DefaultGrantService implements GrantService {
             acls.definitions().isEmpty() ||
             acls.definitions().stream().allMatch(def -> def.ids() == null || def.ids().isEmpty());
 
-        Predicate<ACLs> defId = acls ->
+        Predicate<ACLs> defIdMatch = acls ->
             acls.definitions().stream().anyMatch(defACLs -> defACLs.ids().contains(context.location().definition().id()));
 
         Predicate<ACLs> noPlugin = acls -> acls.plugins() == null || acls.plugins().isEmpty();
 
-        Predicate<ACLs> plugin = acls ->
+        Predicate<ACLs> pluginMatch = acls ->
             acls
                 .plugins()
                 .stream()
@@ -106,6 +138,6 @@ public class DefaultGrantService implements GrantService {
                     )
                 );
 
-        return noDefKind.or(defKind).and(noDefId.or(defId)).and(noPlugin.or(plugin)).test(spec.acls());
+        return noDefKind.or(defKindMatch).and(noDefId.or(defIdMatch)).and(noPlugin.or(pluginMatch));
     }
 }

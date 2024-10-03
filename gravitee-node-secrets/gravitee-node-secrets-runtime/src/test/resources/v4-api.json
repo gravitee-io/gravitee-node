@@ -1,0 +1,269 @@
+{
+    "id": "7023b5ac-0fff-402e-a3b5-ac0fff402efe",
+    "name": "Test V4",
+    "type": "proxy",
+    "apiVersion": "1",
+    "definitionVersion": "4.0.0",
+    "tags": [],
+    "properties": [],
+    "resources": [
+        {
+            "name": "users",
+            "type": "auth-provider-inline-resource",
+            "configuration": {
+                "users": [
+                    {
+                        "username": "batman",
+                        "password": "<< /mock/users:batman >>",
+                        "roles": []
+                    },
+                    {
+                        "username": "robin",
+                        "password": "<< /mock/users:robin >>",
+                        "roles": []
+                    }
+                ]
+            },
+            "enabled": true
+        }
+    ],
+    "listeners": [
+        {
+            "type": "http",
+            "entrypoints": [
+                {
+                    "type": "http-proxy",
+                    "configuration": {},
+                    "qos": "auto"
+                }
+            ],
+            "paths": [
+                {
+                    "path": "/test-benoit-secrets/"
+                }
+            ]
+        }
+    ],
+    "endpointGroups": [
+        {
+            "name": "Default HTTP proxy group",
+            "type": "http-proxy",
+            "loadBalancer": {
+                "type": "round-robin"
+            },
+            "sharedConfiguration": {
+                "headers": [
+                    {
+                        "name": "Authorization",
+                        "value": "Bearer << backend-bearer-token >>"
+                    }
+                ],
+                "proxy": {
+                    "useSystemProxy": false,
+                    "enabled": false
+                },
+                "http": {
+                    "keepAliveTimeout": 30000,
+                    "keepAlive": true,
+                    "followRedirects": false,
+                    "readTimeout": 10000,
+                    "idleTimeout": 60000,
+                    "connectTimeout": 3000,
+                    "useCompression": true,
+                    "maxConcurrentConnections": 20,
+                    "version": "HTTP_1_1",
+                    "pipelining": false
+                },
+                "ssl": {
+                    "keyStore": {
+                        "certContent": "<< /mock/back-end-tls:crt >>",
+                        "keyContent": "<< /mock/back-end-tls:key >>",
+                        "type": "PEM"
+                    },
+                    "hostnameVerifier": true,
+                    "trustStore": {
+                        "type": ""
+                    },
+                    "trustAll": false
+                }
+            },
+            "endpoints": [
+                {
+                    "name": "Default HTTP proxy",
+                    "type": "http-proxy",
+                    "secondary": false,
+                    "weight": 1,
+                    "inheritConfiguration": true,
+                    "configuration": {
+                        "target": "http://localhost:7777"
+                    },
+                    "sharedConfigurationOverride": {},
+                    "services": {
+                        "healthCheck": {
+                            "overrideConfiguration": true,
+                            "enabled": true,
+                            "type": "http-health-check",
+                            "configuration": {
+                                "schedule": "0 */1 * * * *",
+                                "headers": [
+                                    {
+                                        "name": "Authorization",
+                                        "value": "ApiKey << /mock/hc:apikey >>"
+                                    }
+                                ],
+                                "overrideEndpointPath": true,
+                                "method": "GET",
+                                "failureThreshold": 2,
+                                "assertion": "{#response.status == 200}",
+                                "successThreshold": 2,
+                                "target": "/"
+                            }
+                        }
+                    }
+                }
+            ],
+            "services": {}
+        }
+    ],
+    "analytics": {
+        "enabled": true
+    },
+    "plans": [
+        {
+            "id": "02ee8113-158c-4ff4-ae81-13158c7ff4f0",
+            "name": "Default Keyless (UNSECURED)",
+            "security": {
+                "type": "key-less",
+                "configuration": {}
+            },
+            "mode": "standard",
+            "tags": [],
+            "status": "published",
+            "flows": [
+                {
+                    "id": "57444b7d-2bef-4370-844b-7d2bef737020",
+                    "name": "plan",
+                    "enabled": true,
+                    "request": [
+                        {
+                            "name": "Assign attributes",
+                            "enabled": true,
+                            "policy": "policy-assign-attributes",
+                            "configuration": {
+                                "scope": "REQUEST",
+                                "attributes": [
+                                    {
+                                        "name": "partner-id",
+                                        "value": "{#request.headers['X-Partner-Id']}"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "name": "Transform Headers",
+                            "enabled": true,
+                            "policy": "transform-headers",
+                            "configuration": {
+                                "whitelistHeaders": [],
+                                "addHeaders": [
+                                    {
+                                        "name": "X-Request-Plan",
+                                        "value": "<< /mock/headers:request-plan >>"
+                                    }
+                                ],
+                                "scope": "REQUEST",
+                                "removeHeaders": []
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Transform Headers",
+                            "enabled": true,
+                            "policy": "transform-headers",
+                            "configuration": {
+                                "whitelistHeaders": [],
+                                "addHeaders": [
+                                    {
+                                        "name": "X-Response-Plan",
+                                        "value": "<< /mock/headers:response-plan >>"
+                                    }
+                                ],
+                                "scope": "REQUEST",
+                                "removeHeaders": []
+                            }
+                        }
+                    ],
+                    "subscribe": [],
+                    "publish": [],
+                    "selectors": [
+                        {
+                            "type": "http",
+                            "path": "/",
+                            "pathOperator": "EQUALS",
+                            "methods": []
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "flowExecution": {
+        "mode": "default",
+        "matchRequired": false
+    },
+    "flows": [
+        {
+            "id": "45bdee1c-41b7-4a79-bdee-1c41b75a790d",
+            "name": "flow",
+            "enabled": true,
+            "request": [
+                {
+                    "name": "Transform Headers",
+                    "enabled": true,
+                    "policy": "transform-headers",
+                    "configuration": {
+                        "whitelistHeaders": [],
+                        "addHeaders": [
+                            {
+                                "name": "X-Flow-Request",
+                                "value": "<< /mock/headers:request-flow >>"
+                            }
+                        ],
+                        "scope": "REQUEST",
+                        "removeHeaders": []
+                    }
+                }
+            ],
+            "response": [
+                {
+                    "name": "Transform Headers",
+                    "enabled": true,
+                    "policy": "transform-headers",
+                    "configuration": {
+                        "whitelistHeaders": [],
+                        "addHeaders": [
+                            {
+                                "name": "X-Flow-Response",
+                                "value": "<< /mock/headers:response-plan >>"
+                            }
+                        ],
+                        "scope": "REQUEST",
+                        "removeHeaders": []
+                    }
+                }
+            ],
+            "subscribe": [],
+            "publish": [],
+            "selectors": [
+                {
+                    "type": "http",
+                    "path": "/api",
+                    "pathOperator": "EQUALS",
+                    "methods": []
+                }
+            ]
+        }
+    ],
+    "responseTemplates": {}
+}

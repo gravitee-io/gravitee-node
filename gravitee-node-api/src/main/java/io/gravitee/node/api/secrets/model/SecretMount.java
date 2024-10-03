@@ -10,7 +10,7 @@ import com.google.common.base.Strings;
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public record SecretMount(String provider, SecretLocation location, String key, SecretURL secretURL, boolean withRetries) {
+public record SecretMount(String provider, SecretLocation location, String key, SecretURL secretURL, boolean retryOnError) {
     /**
      * Test the presence of a key
      *

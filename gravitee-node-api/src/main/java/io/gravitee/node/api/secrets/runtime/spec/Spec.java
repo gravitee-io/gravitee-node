@@ -1,6 +1,6 @@
 package io.gravitee.node.api.secrets.runtime.spec;
 
-import static io.gravitee.node.api.secrets.runtime.discovery.Ref.URI_KEY_SEPARATOR;
+import static io.gravitee.node.api.secrets.runtime.discovery.Ref.formatUriAndKey;
 
 import io.gravitee.node.api.secrets.model.SecretURL;
 import java.util.List;
@@ -18,7 +18,7 @@ public record Spec(
     String key,
     List<ChildSpec> children,
     boolean usesDynamicKey,
-    boolean isRuntime,
+    boolean isOnTheFly,
     RenewalPolicy renewalPolicy,
     ACLs acls,
     String envId
@@ -42,7 +42,7 @@ public record Spec(
     }
 
     public String uriAndKey() {
-        return uri + URI_KEY_SEPARATOR + key;
+        return formatUriAndKey(uri, key);
     }
 
     public SecretURL toSecretURL() {

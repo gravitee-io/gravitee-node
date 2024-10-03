@@ -33,8 +33,19 @@ public record Ref(
 
     public static final String URI_KEY_SEPARATOR = ":";
 
-    public Spec toRuntimeSpec(String envId) {
-        return new Spec(null, null, mainExpression.value(), secondaryExpression().value(), null, false, true, null, null, envId);
+    public Spec asOnTheFlySpec(String envId) {
+        return new Spec(
+            null,
+            null,
+            mainExpression().value(),
+            secondaryExpression().value(),
+            null,
+            mainType() == MainType.URI && mainExpression.isLiteral() && secondaryType() == null,
+            true,
+            null,
+            null,
+            envId
+        );
     }
 
     /**

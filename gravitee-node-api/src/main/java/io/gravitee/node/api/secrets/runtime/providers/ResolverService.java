@@ -12,5 +12,5 @@ import io.reactivex.rxjava3.core.Single;
 public interface ResolverService {
     Single<Entry> resolve(String envId, SecretMount secretMount);
 
-    SecretMount toSecretMount(String envId, SecretURL secretURL);
+    Single<SecretMount> toSecretMount(String envId, SecretURL secretURL);
 }

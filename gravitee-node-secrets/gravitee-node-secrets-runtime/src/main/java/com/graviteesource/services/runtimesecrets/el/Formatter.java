@@ -1,3 +1,18 @@
+/*
+ * Copyright © 2015 The Gravitee team (http://gravitee.io)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.graviteesource.services.runtimesecrets.el;
 
 import io.gravitee.node.api.secrets.runtime.discovery.Definition;
@@ -12,11 +27,12 @@ import java.util.UUID;
  */
 public class Formatter {
 
-    public static final String FROM_GRANT_TEMPLATE = "{#secrets.fromGrant('%s', '%s', '%s', %s)}";
+    public static final String FROM_GRANT_TEMPLATE = "{#secrets.fromGrant('%s', '%s')}";
+    public static final String FROM_GRANT_EL_KEY_TEMPLATE = "{#secrets.fromGrant('%s', '%s', %s)}";
     public static final String METHOD_NAME_SUFFIX = "WithName";
     public static final String METHOD_URI_SUFFIX = "WithUri";
     public static final String FROM_GRANT_WITH_TEMPLATE = "{#secrets.fromGrant%s('%s', '%s', '%s', %s)}";
-    public static final String FROM_EL_WITH_TEMPLATE = "{#secrets.fromEL%s('%s', '%s', '%s', '%s'%s)}";
+    public static final String FROM_EL_WITH_TEMPLATE = "{#secrets.fromEL%s('%s', %s, '%s', '%s'%s)}";
 
     public static String computeELFromStatic(DiscoveryContext context, String envId) {
         if (context.ref().mainExpression().isEL()) {
@@ -24,13 +40,25 @@ public class Formatter {
         }
         final String mainSpec = context.ref().mainExpression().value();
         String el;
-        switch (context.ref().secondaryType()) {
-            case KEY -> el = fromGrant(context.id(), envId, mainSpec, context.ref().secondaryExpression());
-            case NAME -> el = fromGrantWithTemplate(METHOD_NAME_SUFFIX, context.id(), envId, mainSpec, context.ref().secondaryExpression());
-            case URI -> el = fromGrantWithTemplate(METHOD_URI_SUFFIX, context.id(), envId, mainSpec, context.ref().secondaryExpression());
-            default -> {
-                throw new IllegalArgumentException("secondary type unknown: %s".formatted(context.ref().secondaryType()));
+        if (context.ref().secondaryType() != null) {
+            switch (context.ref().secondaryType()) {
+                case KEY -> {
+                    if (context.ref().secondaryExpression().isLiteral()) {
+                        el = fromGrant(context.id(), envId);
+                    } else {
+                        el = fromGrant(context.id(), envId, context.ref().secondaryExpression().value());
+                    }
+                }
+                case NAME -> el =
+                    fromGrantWithTemplate(METHOD_NAME_SUFFIX, context.id(), envId, mainSpec, context.ref().secondaryExpression());
+                case URI -> el =
+                    fromGrantWithTemplate(METHOD_URI_SUFFIX, context.id(), envId, mainSpec, context.ref().secondaryExpression());
+                default -> {
+                    throw new IllegalArgumentException("secondary type unknown: %s".formatted(context.ref().secondaryType()));
+                }
             }
+        } else {
+            el = fromGrant(context.id(), envId);
         }
         return el;
     }
@@ -80,8 +108,12 @@ public class Formatter {
         return FROM_GRANT_WITH_TEMPLATE.formatted(methodSuffix, id, envId, literalExpression, quoteLiteral(secondaryExpression));
     }
 
-    private static String fromGrant(UUID id, String envId, String expression, Ref.Expression keySpec) {
-        return FROM_GRANT_TEMPLATE.formatted(id, envId, expression, quoteLiteral(keySpec));
+    private static String fromGrant(UUID id, String envId) {
+        return FROM_GRANT_TEMPLATE.formatted(id, envId);
+    }
+
+    private static String fromGrant(UUID id, String envId, String key) {
+        return FROM_GRANT_EL_KEY_TEMPLATE.formatted(id, envId, key);
     }
 
     private static String quoteLiteral(Ref.Expression expression) {

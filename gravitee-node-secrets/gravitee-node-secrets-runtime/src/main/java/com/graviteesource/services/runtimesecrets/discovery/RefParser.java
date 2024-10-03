@@ -1,3 +1,18 @@
+/*
+ * Copyright © 2015 The Gravitee team (http://gravitee.io)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.graviteesource.services.runtimesecrets.discovery;
 
 import static io.gravitee.node.api.secrets.runtime.discovery.Ref.URI_KEY_SEPARATOR;
@@ -57,7 +72,7 @@ public class RefParser {
         } catch (IllegalArgumentException e) {
             throw enumError("unknown kind: '%s' for secret reference '%s'".formatted(typeString, ref));
         }
-        final RefParsing refParsing = mainExpression(buffer);
+        final RefParsing refParsing = mainExpression(buffer, ref);
 
         Ref.SecondaryType secondaryType = null;
         if (refParsing.secondaryType() != null) {
@@ -107,7 +122,7 @@ public class RefParser {
             }
             if (isEL(buffer.toString())) {
                 throw new SecretRefParsingException(
-                    "EL expression must be preceded by '%s' or '%s' when starting the secret reference".formatted(
+                    "EL expression must be preceded by '%s' or '%s' when located at the beginning of secret reference".formatted(
                             NAME_TYPE.stripLeading(),
                             URI_TYPE.stripLeading()
                         )
@@ -122,7 +137,7 @@ public class RefParser {
 
     record RefParsing(String mainExpression, String secondaryType, String secondaryExpression) {}
 
-    private static RefParsing mainExpression(StringBuilder buffer) {
+    private static RefParsing mainExpression(StringBuilder buffer, String ref) {
         String foundToken = null;
         String expression = null;
         int end = 0;
@@ -137,7 +152,7 @@ public class RefParser {
         }
 
         if (foundToken == null) {
-            throw new SecretRefParsingException("reference %s syntax is incorrect looks like nothing is specified");
+            throw new SecretRefParsingException("reference %s syntax is incorrect".formatted(ref));
         }
 
         String uriOrName = expression.trim();

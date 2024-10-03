@@ -2,17 +2,18 @@ package io.gravitee.node.api.secrets.runtime.grant;
 
 import io.gravitee.node.api.secrets.runtime.discovery.DiscoveryContext;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
+import java.util.Optional;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
 public interface GrantService {
-    boolean isGranted(String token);
+    Optional<Grant> getGrant(String contextId);
 
-    boolean authorize(DiscoveryContext context, Spec spec);
+    boolean isGranted(DiscoveryContext context, Spec spec);
 
-    void grant(DiscoveryContext context);
+    void grant(DiscoveryContext context, Spec spec);
 
     void revoke(DiscoveryContext context);
 }

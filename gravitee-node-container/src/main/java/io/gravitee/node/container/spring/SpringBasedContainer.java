@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.container.spring;
 
+import com.graviteesource.services.runtimesecrets.spring.RuntimeSecretsBeanFactory;
 import io.gravitee.common.component.LifecycleComponent;
 import io.gravitee.kubernetes.client.spring.KubernetesClientConfiguration;
 import io.gravitee.node.api.Node;
@@ -160,6 +161,7 @@ public abstract class SpringBasedContainer extends AbstractContainer {
         classes.add(PluginConfiguration.class);
         classes.add(ManagementConfiguration.class);
         classes.add(NodeMonitoringConfiguration.class);
+        classes.add(RuntimeSecretsBeanFactory.class);
 
         // Bean registry post processor needs to be manually registered as it MUST be taken in account before spring context is refreshed.
         classes.add(PluginHandlerBeanRegistryPostProcessor.class);

@@ -7,5 +7,7 @@ import java.util.Map;
  * @author GraviteeSource Team
  */
 public interface SecretProviderDeployer {
-    void deploy(String id, String pluginId, Map<String, Object> config, String envId);
+    default void init() {}
+
+    void deploy(String pluginId, Map<String, Object> config, String providerId, String envId);
 }

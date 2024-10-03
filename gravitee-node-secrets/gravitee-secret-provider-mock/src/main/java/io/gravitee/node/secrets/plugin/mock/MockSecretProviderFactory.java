@@ -2,6 +2,7 @@ package io.gravitee.node.secrets.plugin.mock;
 
 import io.gravitee.node.api.secrets.SecretProvider;
 import io.gravitee.node.api.secrets.SecretProviderFactory;
+import io.gravitee.node.secrets.plugin.mock.conf.MockSecretProviderConfiguration;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)

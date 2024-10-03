@@ -17,13 +17,17 @@ import lombok.NoArgsConstructor;
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public record SecretURL(String provider, String path, String key, Multimap<String, String> query) {
+public record SecretURL(String provider, String path, String key, Multimap<String, String> query, boolean pluginIdMatchURLProvider) {
     public static final char URL_SEPARATOR = '/';
     private static final Splitter urlPathSplitter = Splitter.on(URL_SEPARATOR);
     private static final Splitter queryParamSplitter = Splitter.on('&');
     private static final Splitter queryParamKeyValueSplitter = Splitter.on('=');
     private static final Splitter keyMapParamValueSplitter = Splitter.on(':');
     public static final String SCHEME = "secret://";
+
+    public static SecretURL from(String url) {
+        return from(url, true);
+    }
 
     /**
      * Parse the string into a {@link SecretURL}
@@ -93,7 +97,7 @@ public record SecretURL(String provider, String path, String key, Multimap<Strin
             throwFormatError(url);
         }
 
-        return new SecretURL(provider, path, key, query);
+        return new SecretURL(provider, path, key, query, includesSchema);
     }
 
     private static void throwFormatError(String url) {

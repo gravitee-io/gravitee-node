@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.container;
 
+import com.graviteesource.services.runtimesecrets.RuntimeSecretsService;
 import io.gravitee.common.component.Lifecycle;
 import io.gravitee.common.component.LifecycleComponent;
 import io.gravitee.common.service.AbstractService;
@@ -145,6 +146,7 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
         components.add(NodeHealthCheckService.class);
         components.add(NodeMonitorService.class);
         components.add(ReporterManager.class);
+        components.add(RuntimeSecretsService.class);
 
         return components;
     }

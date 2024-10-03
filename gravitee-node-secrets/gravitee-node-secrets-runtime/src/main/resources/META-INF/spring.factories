@@ -1,0 +1,1 @@
+io.gravitee.el.TemplateEngineFactory=com.graviteesource.services.runtimesecrets.spring.SecretTemplateEngineFactory

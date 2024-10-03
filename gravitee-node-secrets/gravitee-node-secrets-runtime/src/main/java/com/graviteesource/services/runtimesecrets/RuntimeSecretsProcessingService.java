@@ -1,16 +1,31 @@
+/*
+ * Copyright © 2015 The Gravitee team (http://gravitee.io)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.graviteesource.services.runtimesecrets;
 
-import com.graviteesource.services.runtimesecrets.discovery.ContextRegistry;
 import com.graviteesource.services.runtimesecrets.discovery.DefinitionBrowserRegistry;
 import com.graviteesource.services.runtimesecrets.discovery.PayloadRefParser;
 import com.graviteesource.services.runtimesecrets.discovery.RefParser;
 import com.graviteesource.services.runtimesecrets.el.Formatter;
-import com.graviteesource.services.runtimesecrets.spec.registry.EnvAwareSpecRegistry;
+import com.graviteesource.services.runtimesecrets.spec.SpecRegistry;
 import io.gravitee.node.api.secrets.runtime.discovery.*;
 import io.gravitee.node.api.secrets.runtime.grant.GrantService;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
 import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
 import java.util.*;
+import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import lombok.Getter;
@@ -23,25 +38,25 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class RuntimeSecretProcessingService {
+public class RuntimeSecretsProcessingService {
 
     private final DefinitionBrowserRegistry definitionBrowserRegistry;
     private final ContextRegistry contextRegistry;
+    private final SpecRegistry specRegistry;
     private final GrantService grantService;
     private final SpecLifecycleService specLifecycleService;
-    private final EnvAwareSpecRegistry specRegistry;
 
     /**
      * <li>finds a {@link DefinitionBrowser}</li>
      * <li>Run it to get {@link DiscoveryContext}</li>
      * <li>Inject EL {@link PayloadRefParser}</li>
-     * <li>Find {@link Spec}</li>
+     * <li>Find {@link Spec} or create on the fly</li>
      * <li>Grant {@link DiscoveryContext}</li>
      * @param definition the secret naturalId container
      * @param metadata some optional metadata
      * @param <T> the kind of subject
      */
-    <T> void processSecrets(String envId, @Nonnull T definition, @Nullable Map<String, String> metadata) {
+    public <T> void onDefinitionDeploy(String envId, @Nonnull T definition, @Nullable Map<String, String> metadata) {
         Optional<DefinitionBrowser<T>> browser = definitionBrowserRegistry.findBrowser(definition);
         if (browser.isEmpty()) {
             log.info("No definition browser found for kind [{}]", definition.getClass());
@@ -50,8 +65,11 @@ public class RuntimeSecretProcessingService {
 
         DefinitionBrowser<T> definitionBrowser = browser.get();
         Definition rootDefinition = definitionBrowser.getDefinitionKindLocation(definition, metadata);
-        DefaultPayloadNotifier notifier = new DefaultPayloadNotifier(rootDefinition, envId);
-        definitionBrowser.findPayloads(notifier);
+
+        log.info("Finding secret in definition: {}", rootDefinition);
+
+        DefaultPayloadNotifier notifier = new DefaultPayloadNotifier(rootDefinition, envId, specRegistry);
+        definitionBrowser.findPayloads(definition, notifier);
 
         // register contexts by naturalId and definition
         for (DiscoveryContext context : notifier.getContextList()) {
@@ -61,9 +79,12 @@ public class RuntimeSecretProcessingService {
             if (spec == null && specLifecycleService.shouldDeployOnTheFly(context.ref())) {
                 spec = specLifecycleService.deployOnTheFly(envId, context.ref());
             }
-            boolean granted = grantService.authorize(context, spec);
-            if (granted && context.ref().mainExpression().isLiteral()) {
-                grantService.grant(context);
+
+            if (context.ref().mainExpression().isLiteral()) {
+                boolean granted = grantService.isGranted(context, spec);
+                if (granted) {
+                    grantService.grant(context, spec);
+                }
             }
         }
     }
@@ -75,14 +96,16 @@ public class RuntimeSecretProcessingService {
 
         final Definition rootDefinition;
         final String envId;
+        final SpecRegistry specRegistry;
 
-        DefaultPayloadNotifier(Definition rootDefinition, String envId) {
+        DefaultPayloadNotifier(Definition rootDefinition, String envId, SpecRegistry specRegistry) {
             this.rootDefinition = rootDefinition;
             this.envId = envId;
+            this.specRegistry = specRegistry;
         }
 
         @Override
-        public void onPayload(String payload, PayloadLocation payloadLocation) {
+        public void onPayload(String payload, PayloadLocation payloadLocation, Consumer<String> updatedPayload) {
             PayloadRefParser payloadRefParser = new PayloadRefParser(payload);
             List<DiscoveryContext> discoveryContexts = payloadRefParser
                 .runDiscovery()
@@ -112,6 +135,7 @@ public class RuntimeSecretProcessingService {
                 })
                 .toList();
             payloadRefParser.replaceRefs(ELs);
+            updatedPayload.accept(payloadRefParser.getUpdatePayload());
         }
     }
 }
