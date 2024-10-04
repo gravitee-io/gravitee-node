@@ -41,7 +41,7 @@ public class NodeHealthCheckMicrometerHandler implements MeterBinder {
         try {
             for (Map.Entry<Probe, Result> entry : probeRegistry.evaluate().get().entrySet()) {
                 Gauge
-                    .builder("node", entry, e -> e.getValue().isHealthy() ? 1d : 0d)
+                    .builder("node", probeRegistry, e -> e.getCachedResults().get(entry.getKey()).isHealthy() ? 1d : 0d)
                     .tag("probe", entry.getKey().id())
                     .description("The health-check probes of the node")
                     .baseUnit("health")
