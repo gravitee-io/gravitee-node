@@ -65,4 +65,8 @@ public class DefaultProbeEvaluator implements ProbeEvaluator {
                 }
             });
     }
+
+    public Map<Probe, Result> getCachedResults() {
+        return lastProbeResults;
+    }
 }
