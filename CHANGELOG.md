@@ -1,3 +1,10 @@
+## [6.4.5](https://github.com/gravitee-io/gravitee-node/compare/6.4.4...6.4.5) (2024-10-04)
+
+
+### Bug Fixes
+
+* **metrics:** hold strong reference to probes results in micrometer gauge ([e17fa16](https://github.com/gravitee-io/gravitee-node/commit/e17fa16f282f95678dc80c85cb8855e677cfe674))
+
 ## [6.4.4](https://github.com/gravitee-io/gravitee-node/compare/6.4.3...6.4.4) (2024-09-24)
 
 
