@@ -286,13 +286,6 @@
                 <version>${guava.version}</version>
             </dependency>
 
-            <!-- Spring -->
-            <dependency>
-                <groupId>org.springframework.data</groupId>
-                <artifactId>spring-data-redis</artifactId>
-                <version>${spring-data-redis.version}</version>
-            </dependency>
-
             <!-- Hazelcast -->
             <dependency>
                 <groupId>com.hazelcast</groupId>
