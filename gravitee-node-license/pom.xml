@@ -35,7 +35,6 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.gravitee.common</groupId>
@@ -44,7 +43,6 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-management</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <!-- Licensing -->

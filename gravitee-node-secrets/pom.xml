@@ -36,19 +36,4 @@
         <module>gravitee-node-secrets-service</module>
     </modules>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>io.gravitee.node</groupId>
-                <artifactId>gravitee-node-secrets-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gravitee.node</groupId>
-                <artifactId>gravitee-node-secrets-plugin-handler</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
 </project>

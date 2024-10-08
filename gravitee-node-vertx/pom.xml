@@ -39,17 +39,14 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-tracing</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-certificates</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <!-- Vert.x -->
