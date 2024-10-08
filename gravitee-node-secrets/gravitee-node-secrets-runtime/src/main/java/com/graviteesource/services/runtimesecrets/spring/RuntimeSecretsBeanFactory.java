@@ -17,12 +17,12 @@ package com.graviteesource.services.runtimesecrets.spring;
 
 import static com.graviteesource.services.runtimesecrets.config.Config.*;
 
-import com.graviteesource.services.runtimesecrets.RuntimeSecretsProcessingService;
+import com.graviteesource.services.runtimesecrets.Processor;
 import com.graviteesource.services.runtimesecrets.RuntimeSecretsService;
 import com.graviteesource.services.runtimesecrets.config.Config;
 import com.graviteesource.services.runtimesecrets.discovery.DefaultContextRegistry;
 import com.graviteesource.services.runtimesecrets.discovery.DefinitionBrowserRegistry;
-import com.graviteesource.services.runtimesecrets.el.ContextUpdater;
+import com.graviteesource.services.runtimesecrets.el.engine.SecretsTemplateVariableProvider;
 import com.graviteesource.services.runtimesecrets.grant.DefaultGrantService;
 import com.graviteesource.services.runtimesecrets.grant.GrantRegistry;
 import com.graviteesource.services.runtimesecrets.providers.DefaultResolverService;
@@ -44,6 +44,7 @@ import java.util.function.Predicate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
@@ -64,28 +65,24 @@ public class RuntimeSecretsBeanFactory {
 
     @Bean
     RuntimeSecretsService runtimeSecretsService(
-        RuntimeSecretsProcessingService runtimeSecretsProcessingService,
+        Processor processor,
         SpecLifecycleService specLifecycleService,
-        SecretProviderDeployer secretProviderDeployer
+        SpecRegistry specRegistry,
+        SecretProviderDeployer secretProviderDeployer,
+        Environment environment
     ) {
-        return new RuntimeSecretsService(runtimeSecretsProcessingService, specLifecycleService, secretProviderDeployer);
+        return new RuntimeSecretsService(processor, specLifecycleService, specRegistry, secretProviderDeployer, environment);
     }
 
     @Bean
-    RuntimeSecretsProcessingService runtimeSecretsProcessingService(
+    Processor processor(
         DefinitionBrowserRegistry definitionBrowserRegistry,
         ContextRegistry contextRegistry,
         SpecRegistry specRegistry,
         SpecLifecycleService specLifecycleService,
         GrantService grantService
     ) {
-        return new RuntimeSecretsProcessingService(
-            definitionBrowserRegistry,
-            contextRegistry,
-            specRegistry,
-            grantService,
-            specLifecycleService
-        );
+        return new Processor(definitionBrowserRegistry, contextRegistry, specRegistry, grantService, specLifecycleService);
     }
 
     @Bean
@@ -100,13 +97,14 @@ public class RuntimeSecretsBeanFactory {
 
     @Bean
     SpecLifecycleService specLifecycleService(
+        SpecRegistry specRegistry,
         ContextRegistry contextRegistry,
         Cache cache,
         ResolverService resolverService,
         GrantService grantService,
         Config config
     ) {
-        return new DefaultSpecLifecycleService(new SpecRegistry(), contextRegistry, cache, resolverService, grantService, config);
+        return new DefaultSpecLifecycleService(specRegistry, contextRegistry, cache, resolverService, grantService, config);
     }
 
     @Bean
@@ -152,13 +150,13 @@ public class RuntimeSecretsBeanFactory {
     }
 
     @Bean
-    ContextUpdater elContextUpdater(
+    SecretsTemplateVariableProvider secretsTemplateVariableProvider(
         Cache cache,
         GrantService grantService,
         SpecLifecycleService specLifecycleService,
         SpecRegistry specRegistry
     ) {
-        return new ContextUpdater(cache, grantService, specLifecycleService, specRegistry);
+        return new SecretsTemplateVariableProvider(cache, grantService, specLifecycleService, specRegistry);
     }
 
     private static final Predicate<ConditionContext> ALLOW_PROVIDERS_FROM_CONFIG = context ->

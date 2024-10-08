@@ -22,8 +22,8 @@ import static org.awaitility.Awaitility.await;
 import com.graviteesource.services.runtimesecrets.config.Config;
 import com.graviteesource.services.runtimesecrets.discovery.DefaultContextRegistry;
 import com.graviteesource.services.runtimesecrets.discovery.DefinitionBrowserRegistry;
-import com.graviteesource.services.runtimesecrets.el.ContextUpdater;
 import com.graviteesource.services.runtimesecrets.el.engine.SecretSpelTemplateEngine;
+import com.graviteesource.services.runtimesecrets.el.engine.SecretsTemplateVariableProvider;
 import com.graviteesource.services.runtimesecrets.errors.SecretAccessDeniedException;
 import com.graviteesource.services.runtimesecrets.errors.SecretProviderException;
 import com.graviteesource.services.runtimesecrets.grant.DefaultGrantService;
@@ -62,7 +62,7 @@ import org.springframework.security.util.InMemoryResource;
  * @author GraviteeSource Team
  */
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class RuntimeSecretsProcessingServiceTest {
+class ProcessorTest {
 
     public static final String FOO_ENV_ID = "foo";
     public static final String BAR_ENV_ID = "bar";
@@ -95,7 +95,7 @@ class RuntimeSecretsProcessingServiceTest {
     private SpecLifecycleService specLifeCycleService;
     private Cache cache;
     private SpelTemplateEngine spelTemplateEngine;
-    private RuntimeSecretsProcessingService cut;
+    private Processor cut;
 
     @BeforeEach
     void before() {
@@ -124,14 +124,19 @@ class RuntimeSecretsProcessingServiceTest {
         ContextRegistry contextRegistry = new DefaultContextRegistry();
         ResolverService resolverService = new DefaultResolverService(secretProviderRegistry);
         specLifeCycleService = new DefaultSpecLifecycleService(specRegistry, contextRegistry, cache, resolverService, grantService, config);
-        ContextUpdater contextUpdater = new ContextUpdater(cache, grantService, specLifeCycleService, specRegistry);
+        SecretsTemplateVariableProvider secretsTemplateVariableProvider = new SecretsTemplateVariableProvider(
+            cache,
+            grantService,
+            specLifeCycleService,
+            specRegistry
+        );
         spelTemplateEngine = new SecretSpelTemplateEngine(new SpelExpressionParser());
         // set up EL variables
-        contextUpdater.addRuntimeSecretsService(spelTemplateEngine.getTemplateContext());
+        secretsTemplateVariableProvider.provide(spelTemplateEngine.getTemplateContext());
         spelTemplateEngine.getTemplateContext().setVariable("uris", Map.of("redis", "/mock/mySecret:redisPassword"));
 
         DefinitionBrowserRegistry browserRegistry = new DefinitionBrowserRegistry(List.of(new TestDefinitionBrowser()));
-        cut = new RuntimeSecretsProcessingService(browserRegistry, contextRegistry, specRegistry, grantService, specLifeCycleService);
+        cut = new Processor(browserRegistry, contextRegistry, specRegistry, grantService, specLifeCycleService);
     }
 
     @Test
@@ -429,23 +434,27 @@ class RuntimeSecretsProcessingServiceTest {
             );
         specLifeCycleService.deploy(spec);
 
+        awaitShortly()
+            .untilAsserted(() ->
+                assertThat(cache.get(FOO_ENV_ID, "redis-password")).isPresent().get().extracting(Entry::type).isEqualTo(Entry.Type.VALUE)
+            );
+
         FakeDefinition fakeDefinition2 = new FakeDefinition("123", "<<redis-password >>", "<< redis-password>>");
         cut.onDefinitionDeploy(FOO_ENV_ID, fakeDefinition2, Map.of("revision", "2"));
 
         awaitShortly()
             .untilAsserted(() -> {
                 assertThat(cache.get(FOO_ENV_ID, "redis-password")).isPresent().get().extracting(Entry::type).isEqualTo(Entry.Type.VALUE);
-                // TODO assert old secret is still there
+                // TODO assert old secret is still there ???
                 assertThat(spelTemplateEngine.getValue(fakeDefinition2.getFirst(), String.class)).isEqualTo("fighters");
                 assertThatCode(() -> spelTemplateEngine.getValue(fakeDefinition2.getSecond(), String.class))
                     .isInstanceOf(SecretAccessDeniedException.class);
             });
-        // TODO assert old secret is evict after undeploy of revision 1
+        // TODO assert on the fly secret is evicted after undeploy of revision 1
     }
 
     @Test
     void should_continue_getting_secret_when_previous_revision_removed_unused_are_evicted() {
-        // PARAMTERIZED => secret are [on the fly, named, uri]
         // simulate fake definition deploy
         // - deploy rev1 => secret 1 + secret 2
         // - deploy rev2 => secret 1

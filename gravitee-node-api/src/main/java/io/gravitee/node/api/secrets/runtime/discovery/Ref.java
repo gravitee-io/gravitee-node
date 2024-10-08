@@ -40,7 +40,7 @@ public record Ref(
             mainExpression().value(),
             secondaryExpression().value(),
             null,
-            mainType() == MainType.URI && mainExpression.isLiteral() && secondaryType() == null,
+            mainType() == MainType.URI && mainExpression.isLiteral() && (secondaryType() == null || secondaryExpression().isEL()),
             true,
             null,
             null,

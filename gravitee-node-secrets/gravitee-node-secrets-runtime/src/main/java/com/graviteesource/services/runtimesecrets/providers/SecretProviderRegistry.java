@@ -19,6 +19,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.graviteesource.services.runtimesecrets.errors.SecretProviderNotFoundException;
 import io.gravitee.node.api.secrets.SecretProvider;
+import io.gravitee.node.secrets.service.AbstractSecretProviderDispatcher;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
 import java.util.HashMap;
@@ -60,11 +61,7 @@ public class SecretProviderRegistry {
                     .findFirst()
                     .or(() -> Optional.ofNullable(allEnvs.get(id)))
             )
-            .switchIfEmpty(
-                Single.error(
-                    new SecretProviderNotFoundException("Cannot find secret provider with id [%s] for envId [%s]".formatted(id, envId))
-                )
-            );
+            .switchIfEmpty(Single.just(new AbstractSecretProviderDispatcher.ErrorSecretProvider()));
     }
 
     public record SecretProviderEntry(String id, SecretProvider provider) {}

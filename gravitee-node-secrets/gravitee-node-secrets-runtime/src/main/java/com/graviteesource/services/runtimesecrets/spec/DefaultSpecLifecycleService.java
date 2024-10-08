@@ -16,6 +16,7 @@
 package com.graviteesource.services.runtimesecrets.spec;
 
 import com.graviteesource.services.runtimesecrets.config.Config;
+import com.graviteesource.services.runtimesecrets.spec.SpecRegistry.SpecUpdate;
 import io.gravitee.node.api.secrets.model.SecretMount;
 import io.gravitee.node.api.secrets.model.SecretURL;
 import io.gravitee.node.api.secrets.runtime.discovery.ContextRegistry;
@@ -27,8 +28,6 @@ import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
 import io.gravitee.node.api.secrets.runtime.storage.Cache;
 import io.gravitee.node.api.secrets.runtime.storage.Entry;
 import io.reactivex.rxjava3.annotations.NonNull;
-import io.reactivex.rxjava3.core.SingleObserver;
-import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Action;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.util.Objects;
@@ -86,54 +85,57 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
     }
 
     @Override
-    public void deploy(Spec newSpec) {
-        Spec currentSpec = specRegistry.fromSpec(newSpec.envId(), newSpec);
-        log.info("Deploying Secret Spec: {}", newSpec);
-        Action afterResolve = () -> {
-            specRegistry.register(newSpec);
-        };
+    public void deploy(Spec spec) {
+        Spec currentSpec = specRegistry.fromSpec(spec.envId(), spec);
+        log.info("Deploying Secret Spec: {}", spec);
+        Action afterResolve = () -> specRegistry.register(spec);
         boolean shouldResolve = true;
         if (currentSpec != null) {
-            if (isNameOrLocationChanged(currentSpec, newSpec)) {
+            SpecUpdate update = new SpecUpdate(currentSpec, spec);
+            if (isNameOrLocationChanged(update)) {
                 afterResolve =
                     () -> {
-                        renewGrant(currentSpec, newSpec);
-                        specRegistry.replace(currentSpec, newSpec);
-                        if (!currentSpec.naturalId().equals(newSpec.naturalId())) {
-                            cache.evict(newSpec.envId(), currentSpec.naturalId());
+                        renewGrant(update);
+                        specRegistry.replace(update);
+                        if (!currentSpec.naturalId().equals(spec.naturalId())) {
+                            cache.evict(currentSpec.envId(), currentSpec.naturalId());
                         }
                     };
-            } else if (isACLsChange(newSpec, currentSpec)) {
-                renewGrant(currentSpec, newSpec);
+            } else if (isACLsChange(update)) {
+                renewGrant(update);
+                specRegistry.replace(update);
                 shouldResolve = false;
             }
+        } else {
+            contextRegistry.findBySpec(spec).forEach(context -> grantService.grant(context, spec));
         }
 
         if (shouldResolve) {
-            asyncResolution(newSpec, 0, afterResolve);
+            asyncResolution(spec, 0, afterResolve);
         }
     }
 
-    private void renewGrant(Spec oldSpec, Spec newSpec) {
+    private void renewGrant(SpecUpdate update) {
         contextRegistry
-            .findBySpec(oldSpec)
+            .findBySpec(update.oldSpec())
             .forEach(context -> {
-                if (grantService.isGranted(context, newSpec)) {
-                    grantService.grant(context, newSpec);
-                } else {
+                boolean grant = grantService.grant(context, update.newSpec());
+                if (!grant) {
                     grantService.revoke(context);
                 }
             });
-        specRegistry.replace(oldSpec, newSpec);
     }
 
-    private static boolean isACLsChange(Spec spec, Spec previousSpec) {
-        return !Objects.equals(previousSpec.acls(), spec.acls());
+    private static boolean isACLsChange(SpecUpdate update) {
+        return !Objects.equals(update.oldSpec().acls(), update.newSpec().acls());
     }
 
-    private boolean isNameOrLocationChanged(Spec oldSpec, Spec newSpec) {
+    private boolean isNameOrLocationChanged(SpecUpdate update) {
         record LiteSpec(String name, String uriAndKey) {}
-        return !Objects.equals(new LiteSpec(oldSpec.name(), oldSpec.uriAndKey()), new LiteSpec(newSpec.name(), newSpec.uriAndKey()));
+        return !Objects.equals(
+            new LiteSpec(update.oldSpec().name(), update.oldSpec().uriAndKey()),
+            new LiteSpec(update.newSpec().name(), update.newSpec().uriAndKey())
+        );
     }
 
     @Override
@@ -149,31 +151,11 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
         resolverService
             .toSecretMount(envId, secretURL)
             .delay(delayMs, TimeUnit.MILLISECONDS)
-            .doOnSuccess(mount -> {
-                log.info("Resolving secret: {}", mount);
-            })
+            .doOnSuccess(mount -> log.info("Resolving secret: {}", mount))
             .flatMap(mount -> resolverService.resolve(envId, mount).subscribeOn(Schedulers.io()))
-            .doOnTerminate(postResolution)
-            .subscribe(
-                new SimpleSingleObserver<>() {
-                    @Override
-                    public void onSuccess(@NonNull Entry entry) {
-                        cache.put(spec.envId(), spec.naturalId(), entry);
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable err) {
-                        log.error("Async resolution failed", err);
-                    }
-                }
-            );
-    }
-
-    private abstract static class SimpleSingleObserver<T> implements SingleObserver<T> {
-
-        @Override
-        public void onSubscribe(@NonNull Disposable d) {
-            // no op
-        }
+            .subscribeOn(Schedulers.io())
+            .doOnError(err -> log.error("Async resolution failed", err))
+            .doFinally(postResolution)
+            .subscribe(entry -> cache.put(spec.envId(), spec.naturalId(), entry));
     }
 }

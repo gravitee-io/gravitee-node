@@ -43,32 +43,31 @@ class FromConfigurationSecretProviderDeployerTest {
             api:
                secrets:
                  providers:
-                   - enabled: true
-                     plugin: "mock"
+                   - plugin: "mock"
                      environments:
                        - "dev"
                      configuration:
+                        enabled: true
                         secrets:
                           mySecret:
                             redisPassword: "foo"
                             ldapPassword: "bar"
-                   - enabled: true
-                     id: "all-env-secret-manager"
+                   - id: "all-env-secret-manager"
                      plugin: "mock"
                      configuration:
+                        enabled: true
                         secrets:
                           my_secret:
                             redisPassword: "very-long-password"
                             ldapPassword: "also-quite-not-short-password"
-                   - enabled: false
-                     id: "disabled"
+                   - id: "disabled"
                      plugin: "mock"
-                     configuration: {}
+                     configuration:
+                       enabled: false
                                         
             """
     );
     private SecretProviderRegistry registry;
-    private SecretProviderPluginManager pluginManager;
     private FromConfigurationSecretProviderDeployer cut;
 
     @BeforeEach
@@ -78,7 +77,7 @@ class FromConfigurationSecretProviderDeployerTest {
         MockEnvironment mockEnvironment = new MockEnvironment();
         mockEnvironment.getPropertySources().addFirst(new MapPropertySource("test", new LinkedHashMap(yaml.getObject())));
         registry = new SecretProviderRegistry();
-        pluginManager = PluginManagerHelper.newPluginManagerWithMockPlugin();
+        SecretProviderPluginManager pluginManager = PluginManagerHelper.newPluginManagerWithMockPlugin();
         cut = new FromConfigurationSecretProviderDeployer(mockEnvironment, registry, pluginManager);
     }
 

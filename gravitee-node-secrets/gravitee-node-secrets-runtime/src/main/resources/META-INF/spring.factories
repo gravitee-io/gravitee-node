@@ -1,1 +1,2 @@
-io.gravitee.el.TemplateEngineFactory=com.graviteesource.services.runtimesecrets.spring.SecretTemplateEngineFactory
+io.gravitee.el.TemplateVariableProvider=\
+    com.graviteesource.services.runtimesecrets.el.engine.SecretsTemplateVariableProvider

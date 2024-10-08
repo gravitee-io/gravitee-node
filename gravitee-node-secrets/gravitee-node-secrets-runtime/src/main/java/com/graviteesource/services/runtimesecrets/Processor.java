@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class RuntimeSecretsProcessingService {
+public class Processor {
 
     private final DefinitionBrowserRegistry definitionBrowserRegistry;
     private final ContextRegistry contextRegistry;
@@ -81,7 +81,7 @@ public class RuntimeSecretsProcessingService {
             }
 
             if (context.ref().mainExpression().isLiteral()) {
-                boolean granted = grantService.isGranted(context, spec);
+                boolean granted = grantService.grant(context, spec);
                 if (granted) {
                     grantService.grant(context, spec);
                 }
@@ -89,7 +89,7 @@ public class RuntimeSecretsProcessingService {
         }
     }
 
-    static class DefaultPayloadNotifier implements DefinitionPayloadNotifier {
+    static final class DefaultPayloadNotifier implements DefinitionPayloadNotifier {
 
         @Getter
         final List<DiscoveryContext> contextList = new ArrayList<>();
@@ -106,6 +106,11 @@ public class RuntimeSecretsProcessingService {
 
         @Override
         public void onPayload(String payload, PayloadLocation payloadLocation, Consumer<String> updatedPayload) {
+            // no op on empty payloads
+            if (payload == null || payload.isBlank()) {
+                updatedPayload.accept(payload);
+                return;
+            }
             PayloadRefParser payloadRefParser = new PayloadRefParser(payload);
             List<DiscoveryContext> discoveryContexts = payloadRefParser
                 .runDiscovery()

@@ -23,11 +23,15 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node-secrets</artifactId>
-        <version>6.4.2</version>
+        <version>6.4.4</version>
     </parent>
 
     <artifactId>gravitee-node-secrets-runtime</artifactId>
     <name>Gravitee.io - Node - Secrets - Runtime</name>
+
+    <properties>
+        <gravitee-expression-language.version>3.2.3</gravitee-expression-language.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -39,14 +43,21 @@
             <artifactId>gravitee-node-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-secrets-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-secrets-plugin-handler</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.reactivex.rxjava3</groupId>
             <artifactId>rxjava</artifactId>
         </dependency>
         <dependency>
             <groupId>io.gravitee.el</groupId>
             <artifactId>gravitee-expression-language</artifactId>
-            <version>3.2.3</version>
-            <scope>compile</scope>
+            <version>${gravitee-expression-language.version}</version>
         </dependency>
         <!-- tests -->
         <dependency>
@@ -57,7 +68,8 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-secret-provider-mock</artifactId>
-            <version>6.4.2</version>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -67,7 +79,7 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>2.2</version>
+            <version>${snakeyaml.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -76,15 +88,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.gravitee.apim.definition</groupId>
-            <artifactId>gravitee-apim-definition-model</artifactId>
-            <version>4.5.0-SNAPSHOT</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.gravitee.apim.definition</groupId>
-            <artifactId>gravitee-apim-definition-jackson</artifactId>
-            <version>4.5.0-SNAPSHOT</version>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

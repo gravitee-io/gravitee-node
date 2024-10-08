@@ -23,11 +23,11 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node-secrets</artifactId>
-        <version>6.4.2</version>
+        <version>6.4.4</version>
     </parent>
 
     <artifactId>gravitee-secret-provider-mock</artifactId>
-    <name>Gravitee.io - Node - Secrets - Mock Provider</name>
+    <name>Gravitee.io - Plugin - Secret Provider - Mock</name>
 
     <properties>
         <maven-plugin-assembly.version>3.7.1</maven-plugin-assembly.version>
@@ -64,7 +64,7 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>2.2</version>
+            <version>${snakeyaml.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

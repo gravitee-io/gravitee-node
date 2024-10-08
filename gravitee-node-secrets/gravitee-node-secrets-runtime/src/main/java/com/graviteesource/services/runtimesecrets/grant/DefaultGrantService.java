@@ -20,7 +20,6 @@ import static com.graviteesource.services.runtimesecrets.config.Config.ON_THE_FL
 import static io.gravitee.node.api.secrets.runtime.discovery.PayloadLocation.PLUGIN_KIND;
 
 import com.graviteesource.services.runtimesecrets.config.Config;
-import com.graviteesource.services.runtimesecrets.errors.SecretSpecNotFoundException;
 import io.gravitee.node.api.secrets.runtime.discovery.DiscoveryContext;
 import io.gravitee.node.api.secrets.runtime.discovery.PayloadLocation;
 import io.gravitee.node.api.secrets.runtime.discovery.Ref;
@@ -48,16 +47,24 @@ public class DefaultGrantService implements GrantService {
     private final Config config;
 
     @Override
-    public boolean isGranted(@Nonnull DiscoveryContext context, Spec spec) {
+    public boolean grant(@Nonnull DiscoveryContext context, Spec spec) {
+        boolean granted = isGranted(context, spec);
+        if (granted && context.id() != null) {
+            grantRegistry.register(context.id().toString(), new Grant(spec.naturalId(), spec.key()));
+        }
+        return granted;
+    }
+
+    private boolean isGranted(DiscoveryContext context, Spec spec) {
         if (spec == null) {
-            throw new SecretSpecNotFoundException(
-                "no spec found or created on-the-fly for ref [%s] in envId [%s], %s=%s".formatted(
-                        context.ref().rawRef(),
-                        context.envId(),
-                        ON_THE_FLY_SPECS_ENABLED,
-                        config.onTheFlySpecsEnabled()
-                    )
+            log.warn(
+                "no spec found for ref {} in envId [{}], {}={}",
+                context.ref().rawRef(),
+                context.envId(),
+                ON_THE_FLY_SPECS_ENABLED,
+                config.onTheFlySpecsEnabled()
             );
+            return false;
         }
         if (spec.acls() == null) {
             if (!config.allowEmptyACLSpecs()) {
@@ -73,11 +80,6 @@ public class DefaultGrantService implements GrantService {
         }
 
         return checkSpec(context).test(spec) && checkACLs(context).test(spec.acls());
-    }
-
-    @Override
-    public void grant(@Nonnull DiscoveryContext context, Spec spec) {
-        grantRegistry.register(context.id().toString(), new Grant(spec.naturalId(), spec.key()));
     }
 
     @Override

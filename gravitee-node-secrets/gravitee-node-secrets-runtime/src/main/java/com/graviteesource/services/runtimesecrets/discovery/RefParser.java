@@ -189,6 +189,10 @@ public class RefParser {
         }
     }
 
+    public static UriAndKey parseUriAndKey(String expression) {
+        return parseUriAndKey(expression, expression.length());
+    }
+
     public static UriAndKey parseUriAndKey(String expression, int end) {
         int keyIndex = expression.indexOf(URI_KEY_SEPARATOR);
         String uri = expression.substring(0, keyIndex).trim();

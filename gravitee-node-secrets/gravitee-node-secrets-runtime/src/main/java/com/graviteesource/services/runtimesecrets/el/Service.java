@@ -89,7 +89,7 @@ public class Service {
 
     public String fromELWithUri(String envId, String uriWithKey, String definitionKind, String definitionId) {
         if (uriWithKey.contains(URI_KEY_SEPARATOR)) {
-            RefParser.UriAndKey uriAndKey = RefParser.parseUriAndKey(uriWithKey, uriWithKey.length());
+            RefParser.UriAndKey uriAndKey = RefParser.parseUriAndKey(uriWithKey);
             Ref ref = uriAndKey.asRef();
             Spec spec = specRegistry.getFromUriAndKey(envId, uriWithKey);
             if (spec == null && specLifecycleService.shouldDeployOnTheFly(ref)) {
@@ -108,7 +108,7 @@ public class Service {
     }
 
     private String grantAndGet(String envId, String definitionKind, String definitionId, Spec spec, Ref ref, String naturalId, String key) {
-        boolean granted = grantService.isGranted(
+        boolean granted = grantService.grant(
             new DiscoveryContext(null, envId, ref, new DiscoveryLocation(new DiscoveryLocation.Definition(definitionKind, definitionId))),
             spec
         );

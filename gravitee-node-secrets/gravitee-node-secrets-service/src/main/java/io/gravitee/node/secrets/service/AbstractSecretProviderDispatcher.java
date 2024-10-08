@@ -99,7 +99,7 @@ public abstract class AbstractSecretProviderDispatcher implements SecretProvider
 
     public abstract boolean isEnabled(String pluginId);
 
-    static class ErrorSecretProvider implements SecretProvider {
+    public static class ErrorSecretProvider implements SecretProvider {
 
         @Override
         public Maybe<SecretMap> resolve(SecretMount secretMount) {

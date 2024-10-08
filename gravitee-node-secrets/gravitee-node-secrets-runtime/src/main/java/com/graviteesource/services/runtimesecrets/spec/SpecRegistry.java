@@ -26,6 +26,8 @@ import java.util.Map;
  */
 public class SpecRegistry {
 
+    public record SpecUpdate(Spec oldSpec, Spec newSpec) {}
+
     private final Map<String, Registry> registries = new HashMap<>();
 
     public void register(Spec spec) {
@@ -36,11 +38,11 @@ public class SpecRegistry {
         registry(spec.envId()).unregister(spec);
     }
 
-    public void replace(Spec oldSpec, Spec newSpec) {
-        String envId = oldSpec.envId();
+    public void replace(SpecUpdate update) {
+        String envId = update.oldSpec().envId();
         synchronized (registry(envId)) {
-            registry(envId).unregister(oldSpec);
-            registry(envId).register(newSpec);
+            registry(envId).unregister(update.oldSpec());
+            registry(envId).register(update.newSpec());
         }
     }
 
@@ -48,16 +50,8 @@ public class SpecRegistry {
         return registry(envId).getFromName(name);
     }
 
-    public Spec getFromUri(String envId, String uri) {
-        return registry(envId).getFromUri(uri);
-    }
-
     public Spec getFromUriAndKey(String envId, String uriAndKey) {
         return registry(envId).getFromUriAndKey(uriAndKey);
-    }
-
-    public Spec getFromID(String envId, String id) {
-        return registry(envId).getFromID(id);
     }
 
     public Spec fromSpec(String envId, Spec query) {
@@ -113,16 +107,8 @@ public class SpecRegistry {
             return byName.get(name);
         }
 
-        Spec getFromUri(String uri) {
-            return byUri.get(uri);
-        }
-
         Spec getFromUriAndKey(String uriAndKey) {
             return byUriAndKey.get(uriAndKey);
-        }
-
-        Spec getFromID(String id) {
-            return byID.get(id);
         }
 
         Spec fromRef(Ref query) {

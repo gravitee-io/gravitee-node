@@ -3,6 +3,7 @@ package io.gravitee.node.api.secrets.model;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import lombok.ToString;
 
 /**
  * This class represents where the secret is from a provider perspective. It is a map internally.
@@ -10,6 +11,7 @@ import java.util.Objects;
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
+@ToString
 public class SecretLocation {
 
     private final Map<String, Object> properties;

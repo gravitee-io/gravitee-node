@@ -16,7 +16,6 @@
 package com.graviteesource.services.runtimesecrets.grant;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.graviteesource.services.runtimesecrets.config.Config;
@@ -31,7 +30,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -156,26 +154,21 @@ class DefaultGrantServiceTest {
                 "plugin acl only ko",
                 context("dev", "api", "123", plugin("bar")),
                 spec("dev", new ACLs(null, List.of(new ACLs.PluginACL("foo", null))), null)
-            )
+            ),
+            arguments("no spec", context("dev", "api", "123", plugin("bar")), null)
         );
     }
 
     @MethodSource("grants")
     @ParameterizedTest(name = "{0}")
     void should_grant(String name, DiscoveryContext context, Spec spec) {
-        assertThat(cut.isGranted(context, spec)).isTrue();
+        assertThat(cut.grant(context, spec)).isTrue();
     }
 
     @MethodSource("denials")
     @ParameterizedTest(name = "{0}")
     void should_deny(String name, DiscoveryContext context, Spec spec) {
-        assertThat(cut.isGranted(context, spec)).isFalse();
-    }
-
-    @Test
-    void should_raise_error() {
-        DiscoveryContext context = context("dev", "api", "123");
-        assertThatCode(() -> cut.isGranted(context, null)).hasMessageContaining("no spec found");
+        assertThat(cut.grant(context, spec)).isFalse();
     }
 
     static DiscoveryContext context(String env, String kind, String id, String key, PayloadLocation... payloads) {

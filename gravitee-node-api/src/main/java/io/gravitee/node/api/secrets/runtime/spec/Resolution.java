@@ -6,10 +6,10 @@ import java.time.Duration;
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public record RenewalPolicy(Type type, Duration duration, Duration checkBeforeTTL) {
+public record Resolution(Type type, Duration interval) {
     public enum Type {
-        NONE,
-        TTL,
+        ONCE,
         POLL,
+        WATCH,
     }
 }

@@ -55,7 +55,7 @@ public class FromConfigurationSecretProviderDeployer implements SecretProviderDe
         String provider = provider(i);
         while (apiSecrets.containsKey(provider + ".plugin")) {
             Map<String, Object> providerConfig = ConfigHelper.removePrefix(apiSecrets, provider);
-            if (!ConfigHelper.getProperty(providerConfig, "enabled", Boolean.class, true)) {
+            if (!ConfigHelper.getProperty(providerConfig, "configuration.enabled", Boolean.class, true)) {
                 return;
             }
             String plugin = ConfigHelper.getProperty(providerConfig, "plugin", String.class);
@@ -64,12 +64,12 @@ public class FromConfigurationSecretProviderDeployer implements SecretProviderDe
             String environment = environment(e);
             while (providerConfig.containsKey(environment)) {
                 String envId = providerConfig.get(environment).toString();
-                deploy(plugin, ConfigHelper.removePrefix(providerConfig, provider + ".configuration"), id, envId);
+                deploy(plugin, ConfigHelper.removePrefix(providerConfig, "configuration"), id, envId);
                 environment = environment(++e);
             }
             // no env
             if (e == 0) {
-                deploy(plugin, ConfigHelper.removePrefix(providerConfig, provider + ".configuration"), id, null);
+                deploy(plugin, ConfigHelper.removePrefix(providerConfig, "configuration"), id, null);
             }
             provider = provider(++i);
         }

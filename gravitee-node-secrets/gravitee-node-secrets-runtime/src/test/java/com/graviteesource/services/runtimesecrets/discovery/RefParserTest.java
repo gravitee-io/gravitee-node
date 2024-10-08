@@ -135,7 +135,7 @@ class RefParserTest {
     @Test
     void should_parse_uri_and_key() {
         String expression = "/provider/secret:password";
-        assertThat(RefParser.parseUriAndKey(expression, expression.length()))
+        assertThat(RefParser.parseUriAndKey(expression))
             .usingRecursiveComparison()
             .isEqualTo(new RefParser.UriAndKey("/provider/secret", "password"));
     }

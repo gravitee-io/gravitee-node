@@ -11,9 +11,7 @@ import java.util.Optional;
 public interface GrantService {
     Optional<Grant> getGrant(String contextId);
 
-    boolean isGranted(DiscoveryContext context, Spec spec);
-
-    void grant(DiscoveryContext context, Spec spec);
+    boolean grant(DiscoveryContext context, Spec spec);
 
     void revoke(DiscoveryContext context);
 }

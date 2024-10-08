@@ -19,7 +19,7 @@ public record Spec(
     List<ChildSpec> children,
     boolean usesDynamicKey,
     boolean isOnTheFly,
-    RenewalPolicy renewalPolicy,
+    Resolution resolution,
     ACLs acls,
     String envId
 ) {

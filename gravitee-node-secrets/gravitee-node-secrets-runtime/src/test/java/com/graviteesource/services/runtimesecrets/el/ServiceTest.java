@@ -22,6 +22,7 @@ import com.graviteesource.services.runtimesecrets.config.Config;
 import com.graviteesource.services.runtimesecrets.discovery.DefaultContextRegistry;
 import com.graviteesource.services.runtimesecrets.discovery.RefParser;
 import com.graviteesource.services.runtimesecrets.el.engine.SecretSpelTemplateEngine;
+import com.graviteesource.services.runtimesecrets.el.engine.SecretsTemplateVariableProvider;
 import com.graviteesource.services.runtimesecrets.grant.DefaultGrantService;
 import com.graviteesource.services.runtimesecrets.grant.GrantRegistry;
 import com.graviteesource.services.runtimesecrets.providers.DefaultResolverService;
@@ -92,10 +93,15 @@ class ServiceTest {
         ResolverService resolverService = new DefaultResolverService(secretProviderRegistry);
         specLifeCycleService =
             new DefaultSpecLifecycleService(specRegistry, new DefaultContextRegistry(), cache, resolverService, grantService, config);
-        ContextUpdater contextUpdater = new ContextUpdater(cache, grantService, specLifeCycleService, specRegistry);
+        SecretsTemplateVariableProvider secretsTemplateVariableProvider = new SecretsTemplateVariableProvider(
+            cache,
+            grantService,
+            specLifeCycleService,
+            specRegistry
+        );
         spelTemplateEngine = new SecretSpelTemplateEngine(new SpelExpressionParser());
         // set up EL variables
-        contextUpdater.addRuntimeSecretsService(spelTemplateEngine.getTemplateContext());
+        secretsTemplateVariableProvider.provide(spelTemplateEngine.getTemplateContext());
         spelTemplateEngine.getTemplateContext().setVariable("keys", Map.of("redis", "redisPassword"));
         spelTemplateEngine.getTemplateContext().setVariable("names", Map.of("redis", "redis-password"));
         spelTemplateEngine.getTemplateContext().setVariable("uris", Map.of("redis", "/mock/mySecret:redisPassword"));
@@ -129,7 +135,7 @@ class ServiceTest {
             RefParser.parse(refAsString),
             new DiscoveryLocation(new DiscoveryLocation.Definition("test", "123"))
         );
-        boolean authorized = grantService.isGranted(context, spec);
+        boolean authorized = grantService.grant(context, spec);
         assertThat(authorized).isTrue();
         grantService.grant(context, spec);
 
@@ -158,7 +164,7 @@ class ServiceTest {
             Spec spec = new Spec(null, specName, "/mock/mySecret", "redisPassword", null, false, false, null, null, ENV_ID);
             specLifeCycleService.deploy(spec);
             shortAwait().untilAsserted(() -> assertThat(cache.get(ENV_ID, naturalId)).isPresent());
-            boolean authorized = grantService.isGranted(context, spec);
+            boolean authorized = grantService.grant(context, spec);
             assertThat(authorized).isTrue();
             grantService.grant(context, spec);
         }
