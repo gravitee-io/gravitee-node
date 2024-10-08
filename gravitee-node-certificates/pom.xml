@@ -35,7 +35,6 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <!-- Spring -->

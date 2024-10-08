@@ -40,13 +40,11 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-api</artifactId>
-            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-cache-common</artifactId>
-            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <!-- Hazelcast -->

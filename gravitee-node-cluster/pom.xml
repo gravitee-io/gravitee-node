@@ -33,7 +33,7 @@
 
     <modules>
         <module>gravitee-node-cluster-plugin-handler</module>
-        <module>gravitee-node-cluster-plugin-standalone</module>
         <module>gravitee-node-cluster-plugin-hazelcast</module>
+        <module>gravitee-node-cluster-plugin-standalone</module>
     </modules>
 </project>

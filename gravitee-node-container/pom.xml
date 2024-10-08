@@ -35,60 +35,50 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-plugins-service</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-monitoring</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-cluster-plugin-handler</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-cache-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-cache-plugin-handler</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-management</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-reporter</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-kubernetes</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-license</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
