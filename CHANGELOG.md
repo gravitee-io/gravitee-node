@@ -1,3 +1,11 @@
+## [6.4.6](https://github.com/gravitee-io/gravitee-node/compare/6.4.5...6.4.6) (2024-10-09)
+
+
+### Bug Fixes
+
+* declare all modules in dependency management ([c7874ed](https://github.com/gravitee-io/gravitee-node/commit/c7874ed6583e92712e89d7676a560c003176e543))
+* remove unused dependency ([8b4e034](https://github.com/gravitee-io/gravitee-node/commit/8b4e0341c03784a539a253a63aed5515cbf93436))
+
 ## [6.4.5](https://github.com/gravitee-io/gravitee-node/compare/6.4.4...6.4.5) (2024-10-04)
 
 
