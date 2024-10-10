@@ -14,8 +14,8 @@ import java.util.Optional;
 public record Spec(
     String id,
     String name,
-    String uri,
-    String key,
+    String uri, // /vault/secrets/passwords
+    String key, // 1/ redis, 2/ ldap
     List<ChildSpec> children,
     boolean usesDynamicKey,
     boolean isOnTheFly,
@@ -54,4 +54,11 @@ public record Spec(
     }
 
     public record ChildSpec(String name, String uri, String key) {}
+
+    public boolean hasResolutionType(Resolution.Type type) {
+        if (type == Resolution.Type.ONCE) {
+            return resolution == null || resolution.type() == Resolution.Type.ONCE;
+        }
+        return resolution != null && type.equals(resolution.type());
+    }
 }

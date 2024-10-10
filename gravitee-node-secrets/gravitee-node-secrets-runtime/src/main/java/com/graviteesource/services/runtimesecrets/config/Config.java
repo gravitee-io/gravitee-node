@@ -19,10 +19,14 @@ package com.graviteesource.services.runtimesecrets.config;
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public record Config(boolean onTheFlySpecsEnabled, long onTheFlySpecsDelayBeforeRetryMs, boolean allowEmptyACLSpecs) {
+public record Config(boolean denySpecWithoutACLs, OnTheFlySpecs onTheFlySpecs, Renewal renewal) {
     public static final String CONFIG_PREFIX = "api.secrets";
-    public static final String ALLOW_EMPTY_NO_ACL_SPECS = CONFIG_PREFIX + ".allowNoACLsSpecs";
+    public static final String DENY_SPEC_WITHOUT_ACLS = CONFIG_PREFIX + ".denySpecWithoutACLs";
     public static final String ON_THE_FLY_SPECS_ENABLED = CONFIG_PREFIX + ".onTheFlySpecs.enabled";
-    public static final String ON_THE_FLY_SPECS_DELAY_BEFORE_RETRY_MS = CONFIG_PREFIX + ".onTheFlySpecs.delayBeforeRetryMs";
+    public static final String ON_THE_FLY_SPECS_ON_ERROR_RETRY_AFTER_DELAY = CONFIG_PREFIX + ".onTheFlySpecs.onErrorRetryAfter.delay";
+    public static final String ON_THE_FLY_SPECS_ON_ERROR_RETRY_AFTER_UNIT = CONFIG_PREFIX + ".onTheFlySpecs.onErrorRetryAfter.unit";
+    public static final String RENEWAL_ENABLED = CONFIG_PREFIX + ".renewal.enable";
+    public static final String RENEWAL_CHECK_DELAY = CONFIG_PREFIX + ".renewal.check.delay";
+    public static final String RENEWAL_CHECK_UNIT = CONFIG_PREFIX + ".renewal.check.unit";
     public static final String API_SECRETS_ALLOW_PROVIDERS_FROM_CONFIGURATION = CONFIG_PREFIX + ".allowProvidersFromConfiguration";
 }

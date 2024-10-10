@@ -15,10 +15,12 @@
  */
 package com.graviteesource.services.runtimesecrets;
 
+import com.graviteesource.services.runtimesecrets.renewal.RenewalService;
 import com.graviteesource.services.runtimesecrets.spec.SpecRegistry;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.secrets.runtime.providers.SecretProviderDeployer;
 import io.gravitee.node.api.secrets.runtime.spec.ACLs;
+import io.gravitee.node.api.secrets.runtime.spec.Resolution;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
 import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -26,6 +28,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.*;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,11 +49,17 @@ public class RuntimeSecretsService extends AbstractService<RuntimeSecretsService
     private final SpecLifecycleService specLifecycleService;
     private final SpecRegistry specRegistry;
     private final SecretProviderDeployer secretProviderDeployer;
+    private final RenewalService renewalService;
     private final Environment environment;
 
     @Override
     protected void doStart() throws Exception {
         secretProviderDeployer.init();
+        renewalService.start();
+        startDemo();
+    }
+
+    private void startDemo() {
         startWatch(environment.getProperty("rtsecdemodir"));
         specLifecycleService.deploy(
             new Spec(
@@ -62,6 +71,20 @@ public class RuntimeSecretsService extends AbstractService<RuntimeSecretsService
                 true,
                 false,
                 null,
+                acls("transform-headers"),
+                "DEFAULT"
+            )
+        );
+        specLifecycleService.deploy(
+            new Spec(
+                "49a538ff-ac6e-4534-b3d1-ab37519569e4",
+                "renewable-api-keys",
+                "/mock/rotating",
+                "api-key-1",
+                null,
+                true,
+                false,
+                new Resolution(Resolution.Type.POLL, Duration.ofSeconds(5)),
                 acls("transform-headers"),
                 "DEFAULT"
             )
@@ -78,6 +101,10 @@ public class RuntimeSecretsService extends AbstractService<RuntimeSecretsService
 
     public <T> void onDefinitionDeploy(String envId, @Nonnull T definition, @Nullable Map<String, String> metadata) {
         processor.onDefinitionDeploy(envId, definition, metadata);
+    }
+
+    public <T> void onDefinitionUnDeploy(String envId, @Nonnull T definition, @Nullable Map<String, String> metadata) {
+        processor.onDefinitionUnDeploy(envId, definition, metadata);
     }
 
     private void startWatch(String directory) {

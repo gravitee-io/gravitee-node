@@ -27,6 +27,7 @@ public class MockSecretProviderConfiguration implements SecretManagerConfigurati
     private final Map<String, Object> secrets;
 
     private final Map<String, ConfiguredError> configuredErrors = new ConcurrentHashMap<>();
+    private final Map<String, Renewal> configuredRenewals = new ConcurrentHashMap<>();
     private final List<ConfiguredEvent> configuredEvents = new ArrayList<>();
     private final Long watchesDelayDuration;
     private final TimeUnit watchesDelayUnit;
@@ -40,27 +41,45 @@ public class MockSecretProviderConfiguration implements SecretManagerConfigurati
 
         // process errors
         int i = 0;
-        String base = error(i);
-        while (config.containsKey(base + ".secret")) {
-            String secret = config.get(base + ".secret").toString();
-            int repeat = Integer.parseInt(config.getOrDefault(base + ".repeat", String.valueOf(NO_REPEAT)).toString());
-            configuredErrors.put(secret, new ConfiguredError(config.getOrDefault(base + ".message", "").toString(), repeat));
-            base = error(++i);
+        String error = error(i);
+        while (config.containsKey(error + ".secret")) {
+            String secret = config.get(error + ".secret").toString();
+            int repeat = Integer.parseInt(config.getOrDefault(error + ".repeat", String.valueOf(NO_REPEAT)).toString());
+            configuredErrors.put(secret, new ConfiguredError(config.getOrDefault(error + ".message", "").toString(), repeat));
+            error = error(++i);
         }
 
         // process watch
         i = 0;
-        base = event(i);
-        while (watches.containsKey(base + ".secret")) {
+        String event = event(i);
+        while (watches.containsKey(event + ".secret")) {
             configuredEvents.add(
                 new ConfiguredEvent(
-                    watches.get(base + ".secret").toString(),
-                    SecretEvent.Type.valueOf(watches.getOrDefault(base + ".type", "CREATED").toString()),
-                    ConfigHelper.removePrefix(watches, base + ".data"),
-                    String.valueOf(watches.get(base + ".error"))
+                    watches.get(event + ".secret").toString(),
+                    SecretEvent.Type.valueOf(watches.getOrDefault(event + ".type", "CREATED").toString()),
+                    ConfigHelper.removePrefix(watches, event + ".data"),
+                    String.valueOf(watches.get(event + ".error"))
                 )
             );
-            base = event(++i);
+            event = event(++i);
+        }
+
+        // process renewal
+        i = 0;
+        String renewal = renewal(i);
+        while (config.containsKey(renewal + ".secret")) {
+            String secret = config.get(renewal + ".secret").toString();
+            boolean loop = ConfigHelper.getProperty(config, renewal + ".loop", Boolean.class, false);
+
+            List<Map<String, Object>> revisions = new ArrayList<>();
+            int r = 0;
+            Map<String, Object> data = ConfigHelper.removePrefix(config, revision(renewal, r) + ".data");
+            while (!data.isEmpty()) {
+                revisions.add(data);
+                data = ConfigHelper.removePrefix(config, revision(renewal, ++r) + ".data");
+            }
+            configuredRenewals.put(secret, new Renewal(loop, revisions));
+            renewal = renewal(++i);
         }
     }
 
@@ -70,6 +89,14 @@ public class MockSecretProviderConfiguration implements SecretManagerConfigurati
 
     private static String error(int i) {
         return "errors[%s]".formatted(i);
+    }
+
+    private static String renewal(int i) {
+        return "renewals[%s]".formatted(i);
+    }
+
+    private static String revision(String base, int j) {
+        return "%s.revisions[%s]".formatted(base, j);
     }
 
     @Override

@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 
 /**
  * Represent a secret in the Secret Manager. It is a map key/secret.
- * It can have an expiration to help cache eviction.
+ * It can have an pollInterval to help cache eviction.
  * <p>
  * Secrets can be pulled directly or using {@link WellKnownSecretKey} for well known secrets type (TLS and Basic Auth).
  * An explicit call to {@link #handleWellKnownSecretKeys(Map)} with a mapping must be performed to extract well-known keys.
@@ -26,7 +26,7 @@ public final class SecretMap {
     private final Instant expireAt;
 
     /**
-     * Create a {@link SecretMap} from a map of {@link Secret} without expiration
+     * Create a {@link SecretMap} from a map of {@link Secret} without pollInterval
      *
      * @param map the map of {@link Secret}
      */
@@ -35,10 +35,10 @@ public final class SecretMap {
     }
 
     /**
-     * Create a {@link SecretMap} from a map of {@link Secret} with expiration
+     * Create a {@link SecretMap} from a map of {@link Secret} with pollInterval
      *
      * @param map      the map of {@link Secret}
-     * @param expireAt expiration
+     * @param expireAt pollInterval
      */
     public SecretMap(Map<String, Secret> map, Instant expireAt) {
         this.map = map == null ? Map.of() : Map.copyOf(map);
@@ -65,7 +65,7 @@ public final class SecretMap {
     }
 
     /**
-     * Builds a secret map where secrets are base64 encoded with expiration date
+     * Builds a secret map where secrets are base64 encoded with pollInterval date
      *
      * @param data     the secret as a map (String/byte[] or String/String) where bytes or String are base64 encoded
      * @param expireAt when the secret expires
@@ -88,7 +88,7 @@ public final class SecretMap {
     }
 
     /**
-     * Builds a secret map with expiration date
+     * Builds a secret map with pollInterval date
      *
      * @param data     the secret as a map (String/byte[] or String/String)
      * @param expireAt when the secret expires
@@ -114,7 +114,7 @@ public final class SecretMap {
     }
 
     /**
-     * @return optional of the expiration of this secret
+     * @return optional of the pollInterval of this secret
      */
     public Optional<Instant> expireAt() {
         return Optional.ofNullable(expireAt);

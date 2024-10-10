@@ -9,7 +9,7 @@ import java.util.Map;
 public interface DefinitionBrowser<T> {
     boolean canHandle(Object definition);
 
-    Definition getDefinitionKindLocation(T definition, Map<String, String> metadata);
+    Definition getDefinitionLocation(T definition, Map<String, String> metadata);
 
     void findPayloads(T definition, DefinitionPayloadNotifier notifier);
 }

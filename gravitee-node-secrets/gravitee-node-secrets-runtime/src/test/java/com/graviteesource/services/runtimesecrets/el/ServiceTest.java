@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import com.graviteesource.services.runtimesecrets.config.Config;
+import com.graviteesource.services.runtimesecrets.config.OnTheFlySpecs;
+import com.graviteesource.services.runtimesecrets.config.Renewal;
 import com.graviteesource.services.runtimesecrets.discovery.DefaultContextRegistry;
 import com.graviteesource.services.runtimesecrets.discovery.RefParser;
 import com.graviteesource.services.runtimesecrets.el.engine.SecretSpelTemplateEngine;
@@ -27,6 +29,7 @@ import com.graviteesource.services.runtimesecrets.grant.DefaultGrantService;
 import com.graviteesource.services.runtimesecrets.grant.GrantRegistry;
 import com.graviteesource.services.runtimesecrets.providers.DefaultResolverService;
 import com.graviteesource.services.runtimesecrets.providers.SecretProviderRegistry;
+import com.graviteesource.services.runtimesecrets.renewal.RenewalService;
 import com.graviteesource.services.runtimesecrets.spec.DefaultSpecLifecycleService;
 import com.graviteesource.services.runtimesecrets.spec.SpecRegistry;
 import com.graviteesource.services.runtimesecrets.storage.SimpleOffHeapCache;
@@ -41,6 +44,7 @@ import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
 import io.gravitee.node.api.secrets.runtime.storage.Cache;
 import io.gravitee.node.secrets.plugin.mock.MockSecretProvider;
 import io.gravitee.node.secrets.plugin.mock.conf.MockSecretProviderConfiguration;
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -87,12 +91,21 @@ class ServiceTest {
             null
         );
         cache = new SimpleOffHeapCache();
-        Config config = new Config(true, 0, true);
+        Config config = new Config(false, new OnTheFlySpecs(true, Duration.ZERO), new Renewal(true, Duration.ZERO));
         this.grantService = new DefaultGrantService(new GrantRegistry(), config);
         SpecRegistry specRegistry = new SpecRegistry();
         ResolverService resolverService = new DefaultResolverService(secretProviderRegistry);
+        RenewalService renewalService = new RenewalService(resolverService, cache, config);
         specLifeCycleService =
-            new DefaultSpecLifecycleService(specRegistry, new DefaultContextRegistry(), cache, resolverService, grantService, config);
+            new DefaultSpecLifecycleService(
+                specRegistry,
+                new DefaultContextRegistry(),
+                cache,
+                resolverService,
+                grantService,
+                renewalService,
+                config
+            );
         SecretsTemplateVariableProvider secretsTemplateVariableProvider = new SecretsTemplateVariableProvider(
             cache,
             grantService,

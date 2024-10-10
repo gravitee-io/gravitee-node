@@ -136,7 +136,7 @@ public class Service {
                 if (secret != null) {
                     result = new Result(Result.Type.VALUE, secret.asString());
                 } else {
-                    result = new Result(Result.Type.KEY_NOT_FOUND, "key [%s] not found");
+                    result = new Result(Result.Type.KEY_NOT_FOUND, "key [%s] not found".formatted(key));
                 }
             }
             case EMPTY -> {

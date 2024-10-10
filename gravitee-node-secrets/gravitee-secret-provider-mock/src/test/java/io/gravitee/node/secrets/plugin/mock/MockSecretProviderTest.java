@@ -39,6 +39,10 @@ class MockSecretProviderTest {
                         value: now it works
                     retry-test:
                         value: after several retries it works
+                    loop:
+                        value: loop 1
+                    renewable:
+                        value: once
                 errors:
                     - secret: flaky
                       message: next attempt it should work
@@ -49,6 +53,18 @@ class MockSecretProviderTest {
                       message: fatal error
                       repeat: 10
                       delayMs: 200
+                renewals:
+                  - secret: loop
+                    loop: true
+                    revisions:
+                      - data:
+                          value: loop 2
+                      - data:
+                          value: loop 3
+                  - secret: renewable
+                    revisions:
+                      - data:
+                          value: twice and no more
                 watches:
                     delay:
                         unit: SECONDS
@@ -67,7 +83,6 @@ class MockSecretProviderTest {
                         - secret: apikeys
                           data: {}
                           error: odd enough message to be unique
-                          
                 """
         );
         final YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
@@ -150,5 +165,33 @@ class MockSecretProviderTest {
                     secretEvent.secretMap().asMap().values().containsAll(List.of(new Secret("789", false), new Secret("101112", false)))
             )
             .assertError(err -> err.getMessage().contains("odd enough message to be unique"));
+    }
+
+    @Test
+    void should_renew_once() {
+        SecretMount secretMount = cut.fromURL(SecretURL.from("secret://mock/renewable"));
+        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "once")));
+        cut
+            .resolve(secretMount)
+            .test()
+            .awaitDone(100, TimeUnit.MILLISECONDS)
+            .assertValue(SecretMap.of(Map.of("value", "twice and no more")));
+        cut
+            .resolve(secretMount)
+            .test()
+            .awaitDone(100, TimeUnit.MILLISECONDS)
+            .assertValue(SecretMap.of(Map.of("value", "twice and no more")));
+    }
+
+    @Test
+    void should_renew_in_loop() {
+        SecretMount secretMount = cut.fromURL(SecretURL.from("secret://mock/loop"));
+        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 1")));
+        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 2")));
+        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 3")));
+        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 1")));
+        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 2")));
+        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 3")));
+        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 1")));
     }
 }

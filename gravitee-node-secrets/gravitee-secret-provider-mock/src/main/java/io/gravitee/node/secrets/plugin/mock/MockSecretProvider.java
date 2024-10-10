@@ -11,6 +11,7 @@ import io.gravitee.node.api.secrets.util.ConfigHelper;
 import io.gravitee.node.secrets.plugin.mock.conf.ConfiguredError;
 import io.gravitee.node.secrets.plugin.mock.conf.ConfiguredEvent;
 import io.gravitee.node.secrets.plugin.mock.conf.MockSecretProviderConfiguration;
+import io.gravitee.node.secrets.plugin.mock.conf.Renewal;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
@@ -36,12 +37,12 @@ public class MockSecretProvider implements SecretProvider {
     private final MockSecretProviderConfiguration configuration;
 
     Map<String, AtomicInteger> errorReturned = new ConcurrentHashMap<>();
+    Map<String, AtomicInteger> renewalReturned = new ConcurrentHashMap<>();
 
     @Override
     public Maybe<SecretMap> resolve(SecretMount secretMount) {
-        log.info("{}-{} resolving secret: {}", PLUGIN_ID, SECRET_PROVIDER, secretMount);
-
         MockSecretLocation location = MockSecretLocation.fromLocation(secretMount.location());
+        log.info("{}-{} resolving secret: {}", PLUGIN_ID, SECRET_PROVIDER, location.secret());
 
         // return error first
         Optional<ConfiguredError> errorOpt = configuration.getError(location.secret());
@@ -60,20 +61,42 @@ public class MockSecretProvider implements SecretProvider {
                     );
                     return resolve(secretMount);
                 }
-                String message = "error while getting secret [%s]: %s".formatted(location.secret(), error.message());
+                String message = "fake error while getting secret [%s]: %s".formatted(location.secret(), error.message());
                 log.info("{}-{} simulating error: {}", PLUGIN_ID, SECRET_PROVIDER, message);
                 return Maybe.error(new MockSecretProviderException(message));
             }
         }
 
-        // normal case
+        if (renewalReturned.containsKey(location.secret())) {
+            AtomicInteger counter = renewalReturned.get(location.secret());
+            Renewal renewal = configuration.getConfiguredRenewals().get(location.secret());
+            if (counter.get() < renewal.revisions().size()) {
+                // next revision and increment
+                return Maybe.just(getAndIncrement(renewal, counter));
+            } else if (renewal.loop()) {
+                // went over just reset
+                counter.set(0);
+            } else {
+                // went over no looping => get latest, simulate that won't change anymore
+                return Maybe.just(SecretMap.of(renewal.revisions().get(counter.get() - 1)));
+            }
+        }
+        if (configuration.getConfiguredRenewals().containsKey(location.secret())) {
+            renewalReturned.put(location.secret(), new AtomicInteger());
+        }
+
+        // standard resolution
         Map<String, Object> secretMap = ConfigHelper.removePrefix(configuration.getSecrets(), location.secret());
         if (secretMap.isEmpty()) {
-            log.info("{}-{} no secrets for: {}", PLUGIN_ID, SECRET_PROVIDER, secretMount);
+            log.info("{}-{} no secrets for: {}", PLUGIN_ID, SECRET_PROVIDER, location.secret());
             return Maybe.empty();
         }
-        log.info("{}-{} found secrets ({}) for: {}", PLUGIN_ID, SECRET_PROVIDER, secretMap.size(), secretMount);
+        log.info("{}-{} found secrets ({}) for: {}", PLUGIN_ID, SECRET_PROVIDER, secretMap.size(), location.secret());
         return Maybe.just(SecretMap.of(secretMap));
+    }
+
+    private static SecretMap getAndIncrement(Renewal renewal, AtomicInteger counter) {
+        return SecretMap.of(renewal.revisions().get(counter.getAndIncrement()));
     }
 
     @Override

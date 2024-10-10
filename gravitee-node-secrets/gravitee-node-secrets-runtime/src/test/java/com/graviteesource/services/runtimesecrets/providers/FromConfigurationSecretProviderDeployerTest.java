@@ -18,6 +18,7 @@ package com.graviteesource.services.runtimesecrets.providers;
 import com.graviteesource.services.runtimesecrets.providers.config.FromConfigurationSecretProviderDeployer;
 import com.graviteesource.services.runtimesecrets.testsupport.PluginManagerHelper;
 import io.gravitee.node.api.secrets.SecretProvider;
+import io.gravitee.node.api.secrets.model.SecretMount;
 import io.gravitee.node.secrets.plugin.mock.MockSecretProvider;
 import io.gravitee.node.secrets.plugins.SecretProviderPluginManager;
 import java.util.LinkedHashMap;
@@ -99,7 +100,15 @@ class FromConfigurationSecretProviderDeployerTest {
             .awaitCount(1)
             .assertValue(sp -> sp instanceof MockSecretProvider && sp == last.get());
         registry.get("dev", "mock").test().awaitCount(1).assertValue(sp -> sp instanceof MockSecretProvider && last.get() != sp);
-        registry.get("test", "mock").test().assertError(err -> err.getMessage().contains("[mock] for envId [test]"));
-        registry.get("any", "disabled").test().assertError(err -> err.getMessage().contains("[disabled] for envId [any]"));
+        registry
+            .get("test", "mock")
+            .flatMapMaybe(sp -> sp.resolve(new SecretMount("mock", null, "", null, false)))
+            .test()
+            .assertError(err -> err.getMessage().contains("for provider: 'mock'"));
+        registry
+            .get("any", "disabled")
+            .flatMapMaybe(sp -> sp.resolve(new SecretMount("mock", null, "", null, false)))
+            .test()
+            .assertError(err -> err.getMessage().contains("for provider: 'mock'"));
     }
 }

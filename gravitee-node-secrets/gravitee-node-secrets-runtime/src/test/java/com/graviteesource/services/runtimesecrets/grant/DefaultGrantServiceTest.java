@@ -19,12 +19,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.graviteesource.services.runtimesecrets.config.Config;
+import com.graviteesource.services.runtimesecrets.config.OnTheFlySpecs;
+import com.graviteesource.services.runtimesecrets.config.Renewal;
 import io.gravitee.node.api.secrets.runtime.discovery.DiscoveryContext;
 import io.gravitee.node.api.secrets.runtime.discovery.DiscoveryLocation;
 import io.gravitee.node.api.secrets.runtime.discovery.PayloadLocation;
 import io.gravitee.node.api.secrets.runtime.discovery.Ref;
 import io.gravitee.node.api.secrets.runtime.spec.ACLs;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +48,7 @@ class DefaultGrantServiceTest {
 
     @BeforeEach
     void setup() {
-        Config config = new Config(true, 0, true);
+        Config config = new Config(false, new OnTheFlySpecs(true, Duration.ZERO), new Renewal(true, Duration.ZERO));
         this.cut = new DefaultGrantService(new GrantRegistry(), config);
     }
 

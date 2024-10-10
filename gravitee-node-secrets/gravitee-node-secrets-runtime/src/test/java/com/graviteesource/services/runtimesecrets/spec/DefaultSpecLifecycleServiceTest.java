@@ -18,12 +18,15 @@ package com.graviteesource.services.runtimesecrets.spec;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.graviteesource.services.runtimesecrets.config.Config;
+import com.graviteesource.services.runtimesecrets.config.OnTheFlySpecs;
+import com.graviteesource.services.runtimesecrets.config.Renewal;
 import com.graviteesource.services.runtimesecrets.discovery.DefaultContextRegistry;
 import com.graviteesource.services.runtimesecrets.discovery.RefParser;
 import com.graviteesource.services.runtimesecrets.grant.DefaultGrantService;
 import com.graviteesource.services.runtimesecrets.grant.GrantRegistry;
 import com.graviteesource.services.runtimesecrets.providers.DefaultResolverService;
 import com.graviteesource.services.runtimesecrets.providers.SecretProviderRegistry;
+import com.graviteesource.services.runtimesecrets.renewal.RenewalService;
 import com.graviteesource.services.runtimesecrets.storage.SimpleOffHeapCache;
 import io.gravitee.node.api.secrets.model.Secret;
 import io.gravitee.node.api.secrets.runtime.discovery.Ref;
@@ -32,6 +35,7 @@ import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
 import io.gravitee.node.api.secrets.runtime.storage.Entry;
 import io.gravitee.node.secrets.plugin.mock.MockSecretProvider;
 import io.gravitee.node.secrets.plugin.mock.conf.MockSecretProviderConfiguration;
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -79,14 +83,17 @@ class DefaultSpecLifecycleServiceTest {
             null
         );
         cache = new SimpleOffHeapCache();
+        Config config = new Config(false, new OnTheFlySpecs(true, Duration.ZERO), new Renewal(true, Duration.ZERO));
+        RenewalService renewalService = new RenewalService(null, cache, config);
         cut =
             new DefaultSpecLifecycleService(
                 new SpecRegistry(),
                 new DefaultContextRegistry(),
                 cache,
                 new DefaultResolverService(registry),
-                new DefaultGrantService(new GrantRegistry(), new Config(true, 0, true)),
-                new Config(true, 0, true)
+                new DefaultGrantService(new GrantRegistry(), config),
+                renewalService,
+                config
             );
     }
 

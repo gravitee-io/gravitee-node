@@ -57,14 +57,13 @@ public class Processor {
      * @param <T> the kind of subject
      */
     public <T> void onDefinitionDeploy(String envId, @Nonnull T definition, @Nullable Map<String, String> metadata) {
-        Optional<DefinitionBrowser<T>> browser = definitionBrowserRegistry.findBrowser(definition);
+        Optional<DefinitionBrowser<T>> browser = getDefinitionBrowser(definition);
         if (browser.isEmpty()) {
-            log.info("No definition browser found for kind [{}]", definition.getClass());
             return;
         }
 
         DefinitionBrowser<T> definitionBrowser = browser.get();
-        Definition rootDefinition = definitionBrowser.getDefinitionKindLocation(definition, metadata);
+        Definition rootDefinition = definitionBrowser.getDefinitionLocation(definition, metadata);
 
         log.info("Finding secret in definition: {}", rootDefinition);
 
@@ -87,6 +86,50 @@ public class Processor {
                 }
             }
         }
+    }
+
+    private <T> Optional<DefinitionBrowser<T>> getDefinitionBrowser(T definition) {
+        Optional<DefinitionBrowser<T>> browser = definitionBrowserRegistry.findBrowser(definition);
+        if (browser.isEmpty()) {
+            log.info("No definition browser found for kind [{}]", definition.getClass());
+        }
+        return browser;
+    }
+
+    public <T> void onDefinitionUnDeploy(String envId, @Nonnull T definition, @Nullable Map<String, String> metadata) {
+        Optional<DefinitionBrowser<T>> browser = getDefinitionBrowser(definition);
+        if (browser.isEmpty()) {
+            return;
+        }
+
+        Definition rootDefinition = browser.get().getDefinitionLocation(definition, metadata);
+        List<DiscoveryContext> currentDefinitionContexts = contextRegistry.getByDefinition(envId, rootDefinition);
+
+        // undeploy unused on-the-fly spec
+        record ContextBySpec(Spec spec, long count) {}
+        currentDefinitionContexts
+            .stream()
+            .map(context -> specRegistry.fromRef(envId, context.ref()))
+            .filter(Spec::isOnTheFly)
+            .map(spec -> {
+                // count context using this spec, excluding the current definition's
+                long count = contextRegistry
+                    .findBySpec(spec)
+                    .stream()
+                    .filter(context1 -> !currentDefinitionContexts.contains(context1))
+                    .count();
+                return new ContextBySpec(spec, count);
+            })
+            // when this spec will not be used after definition is undeploy
+            .filter(contextBySpec -> contextBySpec.count == 0L)
+            .map(ContextBySpec::spec)
+            .forEach(specLifecycleService::undeploy);
+
+        // revoke and remove all contexts
+        currentDefinitionContexts.forEach(context -> {
+            grantService.revoke(context);
+            contextRegistry.unregister(context, rootDefinition);
+        });
     }
 
     static final class DefaultPayloadNotifier implements DefinitionPayloadNotifier {

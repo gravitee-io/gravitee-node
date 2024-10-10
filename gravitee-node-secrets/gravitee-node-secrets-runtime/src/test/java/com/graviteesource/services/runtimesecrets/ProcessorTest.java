@@ -20,6 +20,8 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.awaitility.Awaitility.await;
 
 import com.graviteesource.services.runtimesecrets.config.Config;
+import com.graviteesource.services.runtimesecrets.config.OnTheFlySpecs;
+import com.graviteesource.services.runtimesecrets.config.Renewal;
 import com.graviteesource.services.runtimesecrets.discovery.DefaultContextRegistry;
 import com.graviteesource.services.runtimesecrets.discovery.DefinitionBrowserRegistry;
 import com.graviteesource.services.runtimesecrets.el.engine.SecretSpelTemplateEngine;
@@ -30,6 +32,7 @@ import com.graviteesource.services.runtimesecrets.grant.DefaultGrantService;
 import com.graviteesource.services.runtimesecrets.grant.GrantRegistry;
 import com.graviteesource.services.runtimesecrets.providers.DefaultResolverService;
 import com.graviteesource.services.runtimesecrets.providers.SecretProviderRegistry;
+import com.graviteesource.services.runtimesecrets.renewal.RenewalService;
 import com.graviteesource.services.runtimesecrets.spec.DefaultSpecLifecycleService;
 import com.graviteesource.services.runtimesecrets.spec.SpecRegistry;
 import com.graviteesource.services.runtimesecrets.storage.SimpleOffHeapCache;
@@ -39,12 +42,14 @@ import io.gravitee.node.api.secrets.runtime.discovery.*;
 import io.gravitee.node.api.secrets.runtime.grant.GrantService;
 import io.gravitee.node.api.secrets.runtime.providers.ResolverService;
 import io.gravitee.node.api.secrets.runtime.spec.ACLs;
+import io.gravitee.node.api.secrets.runtime.spec.Resolution;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
 import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
 import io.gravitee.node.api.secrets.runtime.storage.Cache;
 import io.gravitee.node.api.secrets.runtime.storage.Entry;
 import io.gravitee.node.secrets.plugin.mock.MockSecretProvider;
 import io.gravitee.node.secrets.plugin.mock.conf.MockSecretProviderConfiguration;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import lombok.AllArgsConstructor;
@@ -72,15 +77,25 @@ class ProcessorTest {
               mySecret:
                   redisPassword: "fighters"
                   ldapPassword: "dog"
+              secondSecret:
+                  ldapPassword: "yeah!"
               flaky:
                   password: iamflaky
+              rotating:
+                password: secret1
             errors:
-                - secret: flaky
-                  message: huge error!!!
-                  repeat: 1
-                - secret: error
-                  message: I am not in the mood
-                                                                         
+              - secret: flaky
+                message: huge error!!!
+                repeat: 1
+              - secret: error
+                message: I am not in the mood
+            renewals:
+              - secret: rotating
+                revisions:
+                  - data:
+                      password: secret2
+                  - data:
+                      password: secret3
             """
     );
     InMemoryResource providerBarEnv = new InMemoryResource(
@@ -96,6 +111,7 @@ class ProcessorTest {
     private Cache cache;
     private SpelTemplateEngine spelTemplateEngine;
     private Processor cut;
+    private RenewalService renewalService;
 
     @BeforeEach
     void before() {
@@ -118,12 +134,15 @@ class ProcessorTest {
         );
 
         cache = new SimpleOffHeapCache();
-        Config config = new Config(true, 200, true);
+        Config config = new Config(false, new OnTheFlySpecs(true, Duration.ofMillis(200)), new Renewal(true, Duration.ofMillis(200)));
         GrantService grantService = new DefaultGrantService(new GrantRegistry(), config);
         SpecRegistry specRegistry = new SpecRegistry();
         ContextRegistry contextRegistry = new DefaultContextRegistry();
         ResolverService resolverService = new DefaultResolverService(secretProviderRegistry);
-        specLifeCycleService = new DefaultSpecLifecycleService(specRegistry, contextRegistry, cache, resolverService, grantService, config);
+
+        renewalService = new RenewalService(resolverService, cache, config);
+        specLifeCycleService =
+            new DefaultSpecLifecycleService(specRegistry, contextRegistry, cache, resolverService, grantService, renewalService, config);
         SecretsTemplateVariableProvider secretsTemplateVariableProvider = new SecretsTemplateVariableProvider(
             cache,
             grantService,
@@ -418,6 +437,9 @@ class ProcessorTest {
                     .isInstanceOf(SecretAccessDeniedException.class);
             });
 
+        // TODO, this needs to be refined. The cache key should the Id. CacheKey.from(spec) ?
+        // This would let the previous on the fly untouched and not evicted, then when undeployed => remove and evict
+
         // create spec to limit sage
         spec =
             new Spec(
@@ -445,21 +467,85 @@ class ProcessorTest {
         awaitShortly()
             .untilAsserted(() -> {
                 assertThat(cache.get(FOO_ENV_ID, "redis-password")).isPresent().get().extracting(Entry::type).isEqualTo(Entry.Type.VALUE);
-                // TODO assert old secret is still there ???
                 assertThat(spelTemplateEngine.getValue(fakeDefinition2.getFirst(), String.class)).isEqualTo("fighters");
                 assertThatCode(() -> spelTemplateEngine.getValue(fakeDefinition2.getSecond(), String.class))
                     .isInstanceOf(SecretAccessDeniedException.class);
             });
-        // TODO assert on the fly secret is evicted after undeploy of revision 1
     }
 
     @Test
-    void should_continue_getting_secret_when_previous_revision_removed_unused_are_evicted() {
-        // simulate fake definition deploy
-        // - deploy rev1 => secret 1 + secret 2
-        // - deploy rev2 => secret 1
-        // - undeploy rev1
-        // => secret 1 still available
+    void should_evict_unused_secrets_on_the_fly() {
+        // on the fly
+        FakeDefinition fakeDefinitionRev1 = new FakeDefinition(
+            "123",
+            "<</mock/mySecret:redisPassword>>",
+            "<</mock/secondSecret:ldapPassword>>"
+        );
+        cut.onDefinitionDeploy(FOO_ENV_ID, fakeDefinitionRev1, Map.of("revision", "1"));
+
+        assertThat(spelTemplateEngine.getValue(fakeDefinitionRev1.getFirst(), String.class)).isEqualTo("fighters");
+        assertThat(spelTemplateEngine.getValue(fakeDefinitionRev1.getSecond(), String.class)).isEqualTo("yeah!");
+
+        FakeDefinition fakeDefinitionRev2 = new FakeDefinition("123", "<</mock/mySecret:redisPassword>>", null);
+        cut.onDefinitionDeploy(FOO_ENV_ID, fakeDefinitionRev2, Map.of("revision", "2"));
+        cut.onDefinitionUnDeploy(FOO_ENV_ID, fakeDefinitionRev1, Map.of("revision", "1"));
+
+        assertThat(spelTemplateEngine.getValue(fakeDefinitionRev2.getFirst(), String.class)).isEqualTo("fighters");
+        assertThat(cache.get(FOO_ENV_ID, "/mock/secondSecret")).isNotPresent();
+    }
+
+    @Test
+    void should_renew_secrets() {
+        renewalService.start();
+
+        specLifeCycleService.deploy(
+            new Spec(
+                "123456",
+                "rotating",
+                "/mock/rotating",
+                "password",
+                null,
+                false,
+                false,
+                new Resolution(Resolution.Type.POLL, Duration.ofSeconds(1)),
+                null,
+                FOO_ENV_ID
+            )
+        );
+
+        awaitShortly()
+            .atMost(1, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                assertThat(cache.get(FOO_ENV_ID, "rotating")).isPresent().get().extracting(Entry::type).isEqualTo(Entry.Type.VALUE);
+            });
+
+        FakeDefinition fakeDefinition = new FakeDefinition("123", "<<rotating>>", "<</mock/secondSecret:ldapPassword>>");
+        cut.onDefinitionDeploy(FOO_ENV_ID, fakeDefinition, Map.of("revision", "1"));
+        awaitShortly()
+            .atMost(1, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                assertThat(cache.get(FOO_ENV_ID, "/mock/secondSecret"))
+                    .isPresent()
+                    .get()
+                    .extracting(Entry::type)
+                    .isEqualTo(Entry.Type.VALUE);
+            });
+
+        assertThat(spelTemplateEngine.getValue(fakeDefinition.getFirst(), String.class)).isEqualTo("secret1");
+        assertThat(spelTemplateEngine.getValue(fakeDefinition.getSecond(), String.class)).isEqualTo("yeah!");
+
+        await()
+            .atMost(2, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                assertThat(spelTemplateEngine.getValue(fakeDefinition.getFirst(), String.class)).isEqualTo("secret2");
+                assertThat(spelTemplateEngine.getValue(fakeDefinition.getSecond(), String.class)).isEqualTo("yeah!");
+            });
+        await()
+            .atMost(2, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                assertThat(spelTemplateEngine.getValue(fakeDefinition.getFirst(), String.class)).isEqualTo("secret3");
+                assertThat(spelTemplateEngine.getValue(fakeDefinition.getSecond(), String.class)).isEqualTo("yeah!");
+            });
     }
 
     static class TestDefinitionBrowser implements DefinitionBrowser<FakeDefinition> {
@@ -470,7 +556,7 @@ class ProcessorTest {
         }
 
         @Override
-        public Definition getDefinitionKindLocation(FakeDefinition definition, Map<String, String> metadata) {
+        public Definition getDefinitionLocation(FakeDefinition definition, Map<String, String> metadata) {
             return new Definition("test", definition.getId(), Optional.of(metadata.get("revision")));
         }
 
@@ -492,11 +578,11 @@ class ProcessorTest {
     ConditionFactory awaitShortly() {
         return await().pollDelay(0, TimeUnit.MILLISECONDS).pollInterval(20, TimeUnit.MILLISECONDS).atMost(100, TimeUnit.MILLISECONDS);
     }
-}
 
-@Data
-@AllArgsConstructor
-class FakeDefinition {
+    @Data
+    @AllArgsConstructor
+    static class FakeDefinition {
 
-    private String id, first, second;
+        private String id, first, second;
+    }
 }

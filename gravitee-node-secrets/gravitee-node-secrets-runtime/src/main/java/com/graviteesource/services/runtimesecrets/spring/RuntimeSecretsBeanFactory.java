@@ -20,6 +20,8 @@ import static com.graviteesource.services.runtimesecrets.config.Config.*;
 import com.graviteesource.services.runtimesecrets.Processor;
 import com.graviteesource.services.runtimesecrets.RuntimeSecretsService;
 import com.graviteesource.services.runtimesecrets.config.Config;
+import com.graviteesource.services.runtimesecrets.config.OnTheFlySpecs;
+import com.graviteesource.services.runtimesecrets.config.Renewal;
 import com.graviteesource.services.runtimesecrets.discovery.DefaultContextRegistry;
 import com.graviteesource.services.runtimesecrets.discovery.DefinitionBrowserRegistry;
 import com.graviteesource.services.runtimesecrets.el.engine.SecretsTemplateVariableProvider;
@@ -28,6 +30,7 @@ import com.graviteesource.services.runtimesecrets.grant.GrantRegistry;
 import com.graviteesource.services.runtimesecrets.providers.DefaultResolverService;
 import com.graviteesource.services.runtimesecrets.providers.SecretProviderRegistry;
 import com.graviteesource.services.runtimesecrets.providers.config.FromConfigurationSecretProviderDeployer;
+import com.graviteesource.services.runtimesecrets.renewal.RenewalService;
 import com.graviteesource.services.runtimesecrets.spec.DefaultSpecLifecycleService;
 import com.graviteesource.services.runtimesecrets.spec.SpecRegistry;
 import com.graviteesource.services.runtimesecrets.storage.SimpleOffHeapCache;
@@ -39,7 +42,9 @@ import io.gravitee.node.api.secrets.runtime.providers.SecretProviderDeployer;
 import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
 import io.gravitee.node.api.secrets.runtime.storage.Cache;
 import io.gravitee.node.secrets.plugins.SecretProviderPluginManager;
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
@@ -56,11 +61,22 @@ public class RuntimeSecretsBeanFactory {
 
     @Bean
     Config config(
+        @Value("${" + DENY_SPEC_WITHOUT_ACLS + ":false}") boolean denySpecWithoutACLs,
         @Value("${" + ON_THE_FLY_SPECS_ENABLED + ":true}") boolean onTheFlySpecsEnabled,
-        @Value("${" + ALLOW_EMPTY_NO_ACL_SPECS + ":true}") boolean allowEmptyACLSpecs,
-        @Value("${" + ON_THE_FLY_SPECS_DELAY_BEFORE_RETRY_MS + ":500}") long onTheFlySpecsDelayBeforeRetryMs
+        @Value("${" + ON_THE_FLY_SPECS_ON_ERROR_RETRY_AFTER_DELAY + ":500}") long onTheFlySpecsOnErrorRetryAfterDelay,
+        @Value("${" + ON_THE_FLY_SPECS_ON_ERROR_RETRY_AFTER_UNIT + ":MILLISECONDS}") TimeUnit onTheFlySpecsOnErrorRetryAfterUnit,
+        @Value("${" + RENEWAL_ENABLED + ":true}") boolean renewalEnabled,
+        @Value("${" + RENEWAL_CHECK_DELAY + ":15}") long renewalCheckDelay,
+        @Value("${" + RENEWAL_CHECK_UNIT + ":MINUTES}") TimeUnit renewalCheckUnit
     ) {
-        return new Config(onTheFlySpecsEnabled, onTheFlySpecsDelayBeforeRetryMs, allowEmptyACLSpecs);
+        return new Config(
+            denySpecWithoutACLs,
+            new OnTheFlySpecs(
+                onTheFlySpecsEnabled,
+                Duration.of(onTheFlySpecsOnErrorRetryAfterDelay, onTheFlySpecsOnErrorRetryAfterUnit.toChronoUnit())
+            ),
+            new Renewal(renewalEnabled, Duration.of(renewalCheckDelay, renewalCheckUnit.toChronoUnit()))
+        );
     }
 
     @Bean
@@ -69,9 +85,17 @@ public class RuntimeSecretsBeanFactory {
         SpecLifecycleService specLifecycleService,
         SpecRegistry specRegistry,
         SecretProviderDeployer secretProviderDeployer,
+        RenewalService renewalService,
         Environment environment
     ) {
-        return new RuntimeSecretsService(processor, specLifecycleService, specRegistry, secretProviderDeployer, environment);
+        return new RuntimeSecretsService(
+            processor,
+            specLifecycleService,
+            specRegistry,
+            secretProviderDeployer,
+            renewalService,
+            environment
+        );
     }
 
     @Bean
@@ -96,15 +120,21 @@ public class RuntimeSecretsBeanFactory {
     }
 
     @Bean
+    RenewalService renewalService(ResolverService resolverService, Cache cache, Config config) {
+        return new RenewalService(resolverService, cache, config);
+    }
+
+    @Bean
     SpecLifecycleService specLifecycleService(
         SpecRegistry specRegistry,
         ContextRegistry contextRegistry,
         Cache cache,
         ResolverService resolverService,
         GrantService grantService,
-        Config config
+        Config config,
+        RenewalService renewalService
     ) {
-        return new DefaultSpecLifecycleService(specRegistry, contextRegistry, cache, resolverService, grantService, config);
+        return new DefaultSpecLifecycleService(specRegistry, contextRegistry, cache, resolverService, grantService, renewalService, config);
     }
 
     @Bean

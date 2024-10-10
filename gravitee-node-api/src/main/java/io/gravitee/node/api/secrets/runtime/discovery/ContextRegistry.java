@@ -11,4 +11,5 @@ public interface ContextRegistry {
     void register(DiscoveryContext context, Definition definition);
     List<DiscoveryContext> findBySpec(Spec spec);
     List<DiscoveryContext> getByDefinition(String envId, Definition definition);
+    void unregister(DiscoveryContext context, Definition definition);
 }

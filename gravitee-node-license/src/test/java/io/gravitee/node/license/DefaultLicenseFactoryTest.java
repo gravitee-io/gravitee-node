@@ -355,7 +355,7 @@ class DefaultLicenseFactoryTest {
             assertThat(license.isFeatureEnabled(feature)).isTrue();
         }
 
-        // Check expiration date is ok.
+        // Check pollInterval date is ok.
         assertThat(license.getExpirationDate()).isAfter(Instant.now());
 
         // Assert other attributes and raw.

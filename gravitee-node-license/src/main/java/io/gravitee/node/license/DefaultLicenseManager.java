@@ -1,7 +1,9 @@
 package io.gravitee.node.license;
 
 import io.gravitee.common.service.AbstractService;
-import io.gravitee.node.api.license.*;
+import io.gravitee.node.api.license.ForbiddenFeatureException;
+import io.gravitee.node.api.license.License;
+import io.gravitee.node.api.license.LicenseManager;
 import io.gravitee.plugin.core.api.PluginRegistry;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * This default {@link LicenseManager} is responsible for keeping a reference on the platform and the organizations licenses.
  * It allows to easily validate a feature is allowed by the license.
- * Internally, the expiration date of the license is checked regularly.
+ * Internally, the pollInterval date of the license is checked regularly.
  * Anyone can register an action to execute when a license is expired
  *
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)

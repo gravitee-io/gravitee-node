@@ -88,8 +88,9 @@ public class FromConfigurationSecretProviderDeployer implements SecretProviderDe
                 Class<?> configurationClass1 = factory.getClass().getClassLoader().loadClass(configurationClass.getName());
                 try {
                     @SuppressWarnings("unchecked")
-                    Constructor<SecretManagerConfiguration> constructor =
-                        (Constructor<SecretManagerConfiguration>) configurationClass1.getDeclaredConstructor(Map.class);
+                    Constructor<SecretManagerConfiguration> constructor = (Constructor<SecretManagerConfiguration>) configurationClass1.getDeclaredConstructor(
+                        Map.class
+                    );
                     config = constructor.newInstance(configurationProperties);
                 } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                     throw new SecretManagerConfigurationException(

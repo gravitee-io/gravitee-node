@@ -19,16 +19,17 @@ import io.gravitee.node.api.secrets.runtime.discovery.Ref;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Slf4j
 public class SpecRegistry {
 
-    public record SpecUpdate(Spec oldSpec, Spec newSpec) {}
-
-    private final Map<String, Registry> registries = new HashMap<>();
+    private final Map<String, Registry> registries = new ConcurrentHashMap<>();
 
     public void register(Spec spec) {
         registry(spec.envId()).register(spec);
@@ -54,12 +55,16 @@ public class SpecRegistry {
         return registry(envId).getFromUriAndKey(uriAndKey);
     }
 
-    public Spec fromSpec(String envId, Spec query) {
-        return registry(envId).fromSpec(query);
+    public Spec fromSpec(Spec query) {
+        return registry(query.envId()).fromSpec(query);
     }
 
     public Spec fromRef(String envId, Ref query) {
         return registry(envId).fromRef(query);
+    }
+
+    public Spec fromId(String envId, String id) {
+        return registry(envId).fromId(id);
     }
 
     private Registry registry(String envId) {
@@ -69,7 +74,6 @@ public class SpecRegistry {
     private static class Registry {
 
         private final Map<String, Spec> byName = new HashMap<>();
-        private final Map<String, Spec> byUri = new HashMap<>();
         private final Map<String, Spec> byUriAndKey = new HashMap<>();
         private final Map<String, Spec> byID = new HashMap<>();
 
@@ -80,11 +84,8 @@ public class SpecRegistry {
             if (spec.name() != null) {
                 byName.put(spec.name(), spec);
             }
-            if (spec.uri() != null) {
-                byUri.put(spec.uri(), spec);
-                if (spec.key() != null) {
-                    byUriAndKey.put(spec.uriAndKey(), spec);
-                }
+            if (spec.uri() != null && spec.key() != null) {
+                byUriAndKey.put(spec.uriAndKey(), spec);
             }
         }
 
@@ -92,11 +93,8 @@ public class SpecRegistry {
             if (spec.id() != null) {
                 byID.remove(spec.id());
             }
-            if (spec.uri() != null) {
-                byUri.remove(spec.uri());
-                if (spec.key() != null) {
-                    byUriAndKey.remove(spec.uriAndKey(), spec);
-                }
+            if (spec.uri() != null && spec.key() != null) {
+                byUriAndKey.remove(spec.uriAndKey(), spec);
             }
             if (spec.name() != null) {
                 byName.remove(spec.name());
@@ -119,7 +117,6 @@ public class SpecRegistry {
                 if (query.secondaryType() == Ref.SecondaryType.KEY) {
                     return byUriAndKey.get(query.uriAndKey());
                 }
-                return byUri.get(query.mainExpression().value());
             }
             return null;
         }
@@ -132,14 +129,14 @@ public class SpecRegistry {
             if (result == null && query.name() != null) {
                 result = byName.get(query.name());
             }
-            if (result == null && query.uri() != null) {
-                if (query.key() != null) {
-                    result = byUriAndKey.get(query.uriAndKey());
-                } else {
-                    result = byUri.get(query.uri());
-                }
+            if (result == null && query.uri() != null && query.key() != null) {
+                result = byUriAndKey.get(query.uriAndKey());
             }
             return result;
+        }
+
+        Spec fromId(String id) {
+            return byID.get(id);
         }
     }
 }

@@ -65,23 +65,23 @@ public interface License {
     boolean isFeatureEnabled(String feature);
 
     /**
-     * Verify that the license is valid. This checks both the signature and the expiration date.
+     * Verify that the license is valid. This checks both the signature and the pollInterval date.
      *
      * @throws InvalidLicenseException if the license is expired or invalid.
      */
     void verify() throws InvalidLicenseException;
 
     /**
-     * Return the expiration date of the license or <code>null</code> if the license has no expiration date.
+     * Return the pollInterval date of the license or <code>null</code> if the license has no pollInterval date.
      *
-     * @return the license expiration date.
+     * @return the license pollInterval date.
      */
     @Nullable
     Date getExpirationDate();
 
     /**
      * Indicates if the license is expired or not.
-     * Having a <code>null</code> expiration date means no expiration.
+     * Having a <code>null</code> pollInterval date means no pollInterval.
      *
      * @return <code>true</code> if the license has expired, <code>false</code> else.
      */

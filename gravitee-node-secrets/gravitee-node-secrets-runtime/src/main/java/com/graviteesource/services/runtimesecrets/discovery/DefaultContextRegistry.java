@@ -47,6 +47,11 @@ public class DefaultContextRegistry implements ContextRegistry {
         return registry(envId).getByDefinition(null, definition);
     }
 
+    @Override
+    public void unregister(DiscoveryContext context, Definition definition) {
+        registry(context.envId()).unregister(context, definition);
+    }
+
     ContextRegistry registry(String envId) {
         return registry.computeIfAbsent(envId, ignore -> new InternalRegistry());
     }
@@ -86,7 +91,21 @@ public class DefaultContextRegistry implements ContextRegistry {
         }
 
         public List<DiscoveryContext> getByDefinition(String envId, Definition definition) {
-            return (List<DiscoveryContext>) byDefinitionSpec.get(definition);
+            return List.copyOf(byDefinitionSpec.get(definition));
+        }
+
+        @Override
+        public void unregister(DiscoveryContext context, Definition definition) {
+            if (context.ref().mainType() == Ref.MainType.NAME && context.ref().mainExpression().isLiteral()) {
+                byName.remove(context.ref().mainExpression().value(), context);
+            }
+            if (context.ref().mainType() == Ref.MainType.URI && context.ref().mainExpression().isLiteral()) {
+                byUri.remove(context.ref().mainExpression().value(), context);
+                if (context.ref().secondaryType() == Ref.SecondaryType.KEY && context.ref().secondaryExpression().isLiteral()) {
+                    byUriAndKey.remove(context.ref().uriAndKey(), context);
+                }
+            }
+            byDefinitionSpec.put(definition, context);
         }
     }
 }

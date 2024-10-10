@@ -16,7 +16,7 @@
 package com.graviteesource.services.runtimesecrets.spec;
 
 import com.graviteesource.services.runtimesecrets.config.Config;
-import com.graviteesource.services.runtimesecrets.spec.SpecRegistry.SpecUpdate;
+import com.graviteesource.services.runtimesecrets.renewal.RenewalService;
 import io.gravitee.node.api.secrets.model.SecretMount;
 import io.gravitee.node.api.secrets.model.SecretURL;
 import io.gravitee.node.api.secrets.runtime.discovery.ContextRegistry;
@@ -29,7 +29,7 @@ import io.gravitee.node.api.secrets.runtime.storage.Cache;
 import io.gravitee.node.api.secrets.runtime.storage.Entry;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.functions.Action;
-import io.reactivex.rxjava3.schedulers.Schedulers;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
@@ -48,34 +48,35 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
     private final Cache cache;
     private final ResolverService resolverService;
     private final GrantService grantService;
+    private final RenewalService renewalService;
     private final Config config;
 
     @Override
     public boolean shouldDeployOnTheFly(Ref ref) {
-        return (ref.mainType() == Ref.MainType.URI && ref.mainExpression().isLiteral() && config.onTheFlySpecsEnabled());
+        return (ref.mainType() == Ref.MainType.URI && ref.mainExpression().isLiteral() && config.onTheFlySpecs().enabled());
     }
 
     @Override
     public Spec deployOnTheFly(String envId, Ref ref) {
         Spec runtimeSpec = ref.asOnTheFlySpec(envId);
+        specRegistry.register(runtimeSpec);
         cache.computeIfAbsent(
             envId,
             runtimeSpec.naturalId(),
             () -> {
-                specRegistry.register(runtimeSpec);
                 SecretURL secretURL = runtimeSpec.toSecretURL();
                 return resolverService
                     .toSecretMount(envId, secretURL)
+                    .doOnSuccess(mount -> log.info("Resolving secret (On the fly): {}", mount))
                     .map(SecretMount::withoutRetries)
                     .flatMap(mount ->
                         resolverService
                             .resolve(envId, mount)
                             .doOnSuccess(entry -> {
                                 if (entry.type() == Entry.Type.ERROR) {
-                                    asyncResolution(runtimeSpec, config.onTheFlySpecsDelayBeforeRetryMs(), () -> {});
+                                    asyncResolution(runtimeSpec, config.onTheFlySpecs().onErrorRetryAfter(), () -> {});
                                 }
                             })
-                            .subscribeOn(Schedulers.io())
                     )
                     .blockingGet();
             }
@@ -86,7 +87,7 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
 
     @Override
     public void deploy(Spec spec) {
-        Spec currentSpec = specRegistry.fromSpec(spec.envId(), spec);
+        Spec currentSpec = specRegistry.fromSpec(spec);
         log.info("Deploying Secret Spec: {}", spec);
         Action afterResolve = () -> specRegistry.register(spec);
         boolean shouldResolve = true;
@@ -106,12 +107,14 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
                 specRegistry.replace(update);
                 shouldResolve = false;
             }
+            renewalService.onSpec(update);
         } else {
+            renewalService.onSpec(spec);
             contextRegistry.findBySpec(spec).forEach(context -> grantService.grant(context, spec));
         }
 
         if (shouldResolve) {
-            asyncResolution(spec, 0, afterResolve);
+            asyncResolution(spec, Duration.ZERO, afterResolve);
         }
     }
 
@@ -141,19 +144,19 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
     @Override
     public void undeploy(Spec spec) {
         contextRegistry.findBySpec(spec).forEach(grantService::revoke);
-        cache.evict(spec.envId(), spec.naturalId());
         specRegistry.unregister(spec);
+        cache.evict(spec.envId(), spec.naturalId());
+        renewalService.onDelete(spec);
     }
 
-    private void asyncResolution(Spec spec, long delayMs, @NonNull Action postResolution) {
+    private void asyncResolution(Spec spec, Duration delay, @NonNull Action postResolution) {
         SecretURL secretURL = spec.toSecretURL();
         String envId = spec.envId();
         resolverService
             .toSecretMount(envId, secretURL)
-            .delay(delayMs, TimeUnit.MILLISECONDS)
+            .delay(delay.toMillis(), TimeUnit.MILLISECONDS)
             .doOnSuccess(mount -> log.info("Resolving secret: {}", mount))
-            .flatMap(mount -> resolverService.resolve(envId, mount).subscribeOn(Schedulers.io()))
-            .subscribeOn(Schedulers.io())
+            .flatMap(mount -> resolverService.resolve(envId, mount))
             .doOnError(err -> log.error("Async resolution failed", err))
             .doFinally(postResolution)
             .subscribe(entry -> cache.put(spec.envId(), spec.naturalId(), entry));
