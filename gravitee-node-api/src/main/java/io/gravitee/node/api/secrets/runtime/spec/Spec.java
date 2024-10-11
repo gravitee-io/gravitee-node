@@ -14,8 +14,8 @@ import java.util.Optional;
 public record Spec(
     String id,
     String name,
-    String uri, // /vault/secrets/passwords
-    String key, // 1/ redis, 2/ ldap
+    String uri,
+    String key,
     List<ChildSpec> children,
     boolean usesDynamicKey,
     boolean isOnTheFly,
