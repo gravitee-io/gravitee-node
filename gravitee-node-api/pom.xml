@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>6.5.0</version>
+        <version>7.0.0-archi-401-opentelemetry-SNAPSHOT</version>
     </parent>
 
     <artifactId>gravitee-node-api</artifactId>
@@ -48,11 +48,6 @@
             <artifactId>gravitee-reporter-api</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>io.gravitee.tracing</groupId>
-            <artifactId>gravitee-tracing-api</artifactId>
-        </dependency>
-
         <!-- RxJava 3 -->
         <dependency>
             <groupId>io.reactivex.rxjava3</groupId>
@@ -62,6 +57,18 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+        </dependency>
+
+        <!-- Vertx -->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+        </dependency>
+
+        <!-- OpenTelemetry -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
         </dependency>
     </dependencies>
 </project>
