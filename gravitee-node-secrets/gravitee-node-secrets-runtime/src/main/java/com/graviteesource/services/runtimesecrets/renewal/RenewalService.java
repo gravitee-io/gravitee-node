@@ -21,6 +21,7 @@ import io.gravitee.node.api.secrets.runtime.providers.ResolverService;
 import io.gravitee.node.api.secrets.runtime.spec.Resolution;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
 import io.gravitee.node.api.secrets.runtime.storage.Cache;
+import io.gravitee.node.api.secrets.runtime.storage.CacheKey;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.time.Instant;
@@ -99,7 +100,7 @@ public class RenewalService {
                         .doOnSuccess(entry -> {
                             // todo update partial
                             setupNextCheck(spec);
-                            cache.put(spec.envId(), spec.naturalId(), entry);
+                            cache.put(CacheKey.from(spec), entry);
                         });
                 })
                 .subscribe();

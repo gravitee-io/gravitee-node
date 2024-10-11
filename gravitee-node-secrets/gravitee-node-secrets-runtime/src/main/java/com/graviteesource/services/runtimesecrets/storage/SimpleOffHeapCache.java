@@ -20,6 +20,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import io.gravitee.node.api.secrets.model.Secret;
 import io.gravitee.node.api.secrets.runtime.storage.Cache;
+import io.gravitee.node.api.secrets.runtime.storage.CacheKey;
 import io.gravitee.node.api.secrets.runtime.storage.Entry;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -50,8 +51,7 @@ public class SimpleOffHeapCache implements Cache {
     private final ConcurrentMap<CacheKey, ByteBuffer> data = new ConcurrentHashMap<>();
 
     @Override
-    public CacheKey put(String envId, String naturalId, Entry value) {
-        final CacheKey cacheKey = new CacheKey(envId, naturalId);
+    public CacheKey put(CacheKey cacheKey, Entry value) {
         var bytes = serialize(value);
         final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(bytes.length);
         data.put(cacheKey, byteBuffer);
@@ -60,8 +60,8 @@ public class SimpleOffHeapCache implements Cache {
     }
 
     @Override
-    public Optional<Entry> get(String envId, String naturalId) {
-        ByteBuffer byteBuffer = data.get(new CacheKey(envId, naturalId));
+    public Optional<Entry> get(CacheKey cacheKey) {
+        ByteBuffer byteBuffer = data.get(cacheKey);
         if (byteBuffer != null) {
             byte[] buf = new byte[byteBuffer.limit()];
             byteBuffer.position(0);
@@ -72,9 +72,9 @@ public class SimpleOffHeapCache implements Cache {
     }
 
     @Override
-    public void computeIfAbsent(String envId, String naturalId, Supplier<Entry> supplier) {
+    public void computeIfAbsent(CacheKey cacheKey, Supplier<Entry> supplier) {
         data.computeIfAbsent(
-            new CacheKey(envId, naturalId),
+            cacheKey,
             key -> {
                 Entry value = supplier.get();
                 byte[] stringAsBytes = serialize(value);
@@ -86,8 +86,8 @@ public class SimpleOffHeapCache implements Cache {
     }
 
     @Override
-    public void evict(String envId, String naturalId) {
-        data.remove(new CacheKey(envId, naturalId));
+    public void evict(CacheKey cacheKey) {
+        data.remove(cacheKey);
     }
 
     public byte[] serialize(Entry value) {

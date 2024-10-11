@@ -46,6 +46,7 @@ import io.gravitee.node.api.secrets.runtime.spec.Resolution;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
 import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
 import io.gravitee.node.api.secrets.runtime.storage.Cache;
+import io.gravitee.node.api.secrets.runtime.storage.CacheKey;
 import io.gravitee.node.api.secrets.runtime.storage.Entry;
 import io.gravitee.node.secrets.plugin.mock.MockSecretProvider;
 import io.gravitee.node.secrets.plugin.mock.conf.MockSecretProviderConfiguration;
@@ -187,7 +188,7 @@ class ProcessorTest {
         final String name = "redis-password";
         Spec spec = new Spec(null, name, "/mock/mySecret", "redisPassword", null, false, false, null, null, FOO_ENV_ID);
         specLifeCycleService.deploy(spec);
-        awaitShortly().untilAsserted(() -> assertThat(cache.get(FOO_ENV_ID, name)).isPresent());
+        awaitShortly().untilAsserted(() -> assertThat(cache.get(CacheKey.from(spec))).isPresent());
 
         FakeDefinition fakeDefinition = new FakeDefinition("123", "<<" + name + ">>", "");
         cut.onDefinitionDeploy(FOO_ENV_ID, fakeDefinition, Map.of("revision", "1"));
@@ -203,8 +204,8 @@ class ProcessorTest {
         specLifeCycleService.deploy(fooSpec);
         specLifeCycleService.deploy(barSpec);
 
-        awaitShortly().untilAsserted(() -> assertThat(cache.get(FOO_ENV_ID, name)).isPresent());
-        awaitShortly().untilAsserted(() -> assertThat(cache.get(BAR_ENV_ID, name)).isPresent());
+        awaitShortly().untilAsserted(() -> assertThat(cache.get(CacheKey.from(fooSpec))).isPresent());
+        awaitShortly().untilAsserted(() -> assertThat(cache.get(CacheKey.from(barSpec))).isPresent());
 
         FakeDefinition fooDefinition = new FakeDefinition("123", "<<" + name + ">>", "");
         cut.onDefinitionDeploy(FOO_ENV_ID, fooDefinition, Map.of("revision", "1"));
@@ -239,7 +240,7 @@ class ProcessorTest {
             FOO_ENV_ID
         );
         specLifeCycleService.deploy(spec);
-        awaitShortly().untilAsserted(() -> assertThat(cache.get(FOO_ENV_ID, "/mock/mySecret")).isPresent());
+        awaitShortly().untilAsserted(() -> assertThat(cache.get(CacheKey.from(spec))).isPresent());
 
         FakeDefinition fakeDefinition = new FakeDefinition("123", "<</mock/mySecret:redisPassword>>", "<</mock/mySecret:redisPassword>>");
         cut.onDefinitionDeploy(FOO_ENV_ID, fakeDefinition, Map.of("revision", "1"));
@@ -254,7 +255,7 @@ class ProcessorTest {
         String name = "redis-password";
         Spec spec = new Spec(null, name, "/mock/mySecret", "redisPassword", null, false, false, null, null, FOO_ENV_ID);
         specLifeCycleService.deploy(spec);
-        awaitShortly().untilAsserted(() -> assertThat(cache.get(FOO_ENV_ID, name)).isPresent());
+        awaitShortly().untilAsserted(() -> assertThat(cache.get(CacheKey.from(spec))).isPresent());
 
         FakeDefinition fakeDefinition = new FakeDefinition("123", "<<" + name + ">>", null);
         cut.onDefinitionDeploy(FOO_ENV_ID, fakeDefinition, Map.of("revision", "1"));
@@ -270,7 +271,11 @@ class ProcessorTest {
         FakeDefinition fakeDefinition = new FakeDefinition("123", "<< /mock/flaky:password>>", null);
         cut.onDefinitionDeploy(FOO_ENV_ID, fakeDefinition, Map.of("revision", "1"));
 
-        assertThat(cache.get(FOO_ENV_ID, "/mock/flaky")).isPresent().get().extracting(Entry::type).isEqualTo(Entry.Type.ERROR);
+        assertThat(cache.get(new CacheKey(FOO_ENV_ID, "/mock/flaky")))
+            .isPresent()
+            .get()
+            .extracting(Entry::type)
+            .isEqualTo(Entry.Type.ERROR);
         assertThatCode(() -> spelTemplateEngine.getValue(fakeDefinition.getFirst(), String.class))
             .isInstanceOf(SecretProviderException.class)
             .hasMessageContaining("huge error!!!");
@@ -301,7 +306,7 @@ class ProcessorTest {
             FOO_ENV_ID
         );
         specLifeCycleService.deploy(spec);
-        awaitShortly().untilAsserted(() -> assertThat(cache.get(FOO_ENV_ID, name)).isPresent());
+        awaitShortly().untilAsserted(() -> assertThat(cache.get(CacheKey.from(spec))).isPresent());
 
         FakeDefinition fakeDefinition = new FakeDefinition("123", "<<" + name + ">>", null);
         cut.onDefinitionDeploy(FOO_ENV_ID, fakeDefinition, Map.of("revision", "1"));
@@ -341,7 +346,7 @@ class ProcessorTest {
             FOO_ENV_ID
         );
         specLifeCycleService.deploy(spec);
-        awaitShortly().untilAsserted(() -> assertThat(cache.get(FOO_ENV_ID, name)).isPresent());
+        awaitShortly().untilAsserted(() -> assertThat(cache.get(CacheKey.from(spec))).isPresent());
 
         FakeDefinition fakeDefinition = new FakeDefinition("123", "<<" + name + ">>", null);
         cut.onDefinitionDeploy(FOO_ENV_ID, fakeDefinition, Map.of("revision", "1"));
@@ -394,7 +399,7 @@ class ProcessorTest {
             FOO_ENV_ID
         );
         specLifeCycleService.deploy(spec);
-        awaitShortly().untilAsserted(() -> assertThat(cache.get(FOO_ENV_ID, name)).isPresent());
+        awaitShortly().untilAsserted(() -> assertThat(cache.get(CacheKey.from(spec))).isPresent());
 
         FakeDefinition fakeDefinition = new FakeDefinition("123", "<<" + name + ">>", null);
         cut.onDefinitionDeploy(FOO_ENV_ID, fakeDefinition, Map.of("revision", "1"));
@@ -417,7 +422,7 @@ class ProcessorTest {
 
         // create spec to limit sage
         String specID = UUID.randomUUID().toString();
-        Spec spec = new Spec(
+        Spec specWithUri = new Spec(
             specID,
             null,
             "/mock/mySecret",
@@ -429,7 +434,7 @@ class ProcessorTest {
             new ACLs(null, List.of(new ACLs.PluginACL("first", null))),
             FOO_ENV_ID
         );
-        specLifeCycleService.deploy(spec);
+        specLifeCycleService.deploy(specWithUri);
         awaitShortly()
             .untilAsserted(() -> {
                 assertThat(spelTemplateEngine.getValue(fakeDefinition.getFirst(), String.class)).isEqualTo("fighters");
@@ -441,24 +446,23 @@ class ProcessorTest {
         // This would let the previous on the fly untouched and not evicted, then when undeployed => remove and evict
 
         // create spec to limit sage
-        spec =
-            new Spec(
-                specID,
-                "redis-password",
-                "/mock/mySecret",
-                "redisPassword",
-                null,
-                false,
-                false,
-                null,
-                new ACLs(null, List.of(new ACLs.PluginACL("first", null))),
-                FOO_ENV_ID
-            );
-        specLifeCycleService.deploy(spec);
+        Spec specWithName = new Spec(
+            specID,
+            "redis-password",
+            "/mock/mySecret",
+            "redisPassword",
+            null,
+            false,
+            false,
+            null,
+            new ACLs(null, List.of(new ACLs.PluginACL("first", null))),
+            FOO_ENV_ID
+        );
+        specLifeCycleService.deploy(specWithName);
 
         awaitShortly()
             .untilAsserted(() ->
-                assertThat(cache.get(FOO_ENV_ID, "redis-password")).isPresent().get().extracting(Entry::type).isEqualTo(Entry.Type.VALUE)
+                assertThat(cache.get(CacheKey.from(specWithName))).isPresent().get().extracting(Entry::type).isEqualTo(Entry.Type.VALUE)
             );
 
         FakeDefinition fakeDefinition2 = new FakeDefinition("123", "<<redis-password >>", "<< redis-password>>");
@@ -466,7 +470,7 @@ class ProcessorTest {
 
         awaitShortly()
             .untilAsserted(() -> {
-                assertThat(cache.get(FOO_ENV_ID, "redis-password")).isPresent().get().extracting(Entry::type).isEqualTo(Entry.Type.VALUE);
+                assertThat(cache.get(CacheKey.from(specWithName))).isPresent().get().extracting(Entry::type).isEqualTo(Entry.Type.VALUE);
                 assertThat(spelTemplateEngine.getValue(fakeDefinition2.getFirst(), String.class)).isEqualTo("fighters");
                 assertThatCode(() -> spelTemplateEngine.getValue(fakeDefinition2.getSecond(), String.class))
                     .isInstanceOf(SecretAccessDeniedException.class);
@@ -491,32 +495,31 @@ class ProcessorTest {
         cut.onDefinitionUnDeploy(FOO_ENV_ID, fakeDefinitionRev1, Map.of("revision", "1"));
 
         assertThat(spelTemplateEngine.getValue(fakeDefinitionRev2.getFirst(), String.class)).isEqualTo("fighters");
-        assertThat(cache.get(FOO_ENV_ID, "/mock/secondSecret")).isNotPresent();
+        assertThat(cache.get(new CacheKey(FOO_ENV_ID, "/mock/secondSecret"))).isNotPresent();
     }
 
     @Test
     void should_renew_secrets() {
         renewalService.start();
 
-        specLifeCycleService.deploy(
-            new Spec(
-                "123456",
-                "rotating",
-                "/mock/rotating",
-                "password",
-                null,
-                false,
-                false,
-                new Resolution(Resolution.Type.POLL, Duration.ofSeconds(1)),
-                null,
-                FOO_ENV_ID
-            )
+        Spec spec = new Spec(
+            "123456",
+            "rotating",
+            "/mock/rotating",
+            "password",
+            null,
+            false,
+            false,
+            new Resolution(Resolution.Type.POLL, Duration.ofSeconds(1)),
+            null,
+            FOO_ENV_ID
         );
+        specLifeCycleService.deploy(spec);
 
         awaitShortly()
             .atMost(1, TimeUnit.SECONDS)
             .untilAsserted(() -> {
-                assertThat(cache.get(FOO_ENV_ID, "rotating")).isPresent().get().extracting(Entry::type).isEqualTo(Entry.Type.VALUE);
+                assertThat(cache.get(CacheKey.from(spec))).isPresent().get().extracting(Entry::type).isEqualTo(Entry.Type.VALUE);
             });
 
         FakeDefinition fakeDefinition = new FakeDefinition("123", "<<rotating>>", "<</mock/secondSecret:ldapPassword>>");
@@ -524,7 +527,7 @@ class ProcessorTest {
         awaitShortly()
             .atMost(1, TimeUnit.SECONDS)
             .untilAsserted(() -> {
-                assertThat(cache.get(FOO_ENV_ID, "/mock/secondSecret"))
+                assertThat(cache.get(new CacheKey(FOO_ENV_ID, "/mock/secondSecret")))
                     .isPresent()
                     .get()
                     .extracting(Entry::type)

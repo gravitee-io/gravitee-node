@@ -32,6 +32,7 @@ import io.gravitee.node.api.secrets.model.Secret;
 import io.gravitee.node.api.secrets.runtime.discovery.Ref;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
 import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
+import io.gravitee.node.api.secrets.runtime.storage.CacheKey;
 import io.gravitee.node.api.secrets.runtime.storage.Entry;
 import io.gravitee.node.secrets.plugin.mock.MockSecretProvider;
 import io.gravitee.node.secrets.plugin.mock.conf.MockSecretProviderConfiguration;
@@ -101,7 +102,7 @@ class DefaultSpecLifecycleServiceTest {
     void should_deploy_spec_and_get_secret_map_from_cache() {
         Spec spec = new Spec(null, "redis-password", "/mock/mySecret", "redisPassword", null, false, false, null, null, ENV_ID);
         cut.deploy(spec);
-        Awaitility.await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> checkInCache("redis-password"));
+        Awaitility.await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> checkInCache(spec));
     }
 
     @Test
@@ -111,7 +112,7 @@ class DefaultSpecLifecycleServiceTest {
         Spec spec = cut.deployOnTheFly(ENV_ID, ref);
         assertThat(spec.uri()).isEqualTo("/mock/mySecret");
         assertThat(spec.key()).isEqualTo("redisPassword");
-        Awaitility.await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> checkInCache("/mock/mySecret"));
+        Awaitility.await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> checkInCache(spec));
     }
 
     @ParameterizedTest
@@ -124,13 +125,13 @@ class DefaultSpecLifecycleServiceTest {
     void should_deploy_spec_and_get_secret_map_from_cache_un_deploy_check_cache_empty() {
         Spec spec = new Spec(null, "redis-password", "/mock/mySecret", "redisPassword", null, false, false, null, null, ENV_ID);
         cut.deploy(spec);
-        Awaitility.await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> checkInCache("redis-password"));
+        Awaitility.await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> checkInCache(spec));
         cut.undeploy(spec);
-        assertThat(cache.get(ENV_ID, "redis-password")).isNotPresent();
+        assertThat(cache.get(CacheKey.from(spec))).isNotPresent();
     }
 
-    private void checkInCache(String natualId) {
-        Optional<Entry> foo = cache.get(ENV_ID, natualId);
+    private void checkInCache(Spec spec) {
+        Optional<Entry> foo = cache.get(CacheKey.from(spec));
         assertThat(foo).get().extracting(Entry::type).asString().isEqualTo("VALUE");
         assertThat(foo)
             .get()

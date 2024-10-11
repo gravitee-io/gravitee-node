@@ -42,6 +42,7 @@ import io.gravitee.node.api.secrets.runtime.providers.ResolverService;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
 import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
 import io.gravitee.node.api.secrets.runtime.storage.Cache;
+import io.gravitee.node.api.secrets.runtime.storage.CacheKey;
 import io.gravitee.node.secrets.plugin.mock.MockSecretProvider;
 import io.gravitee.node.secrets.plugin.mock.conf.MockSecretProviderConfiguration;
 import java.time.Duration;
@@ -140,7 +141,7 @@ class ServiceTest {
     ) {
         Spec spec = new Spec(null, specName, "/mock/mySecret", key, null, dynKeys, false, null, null, ENV_ID);
         specLifeCycleService.deploy(spec);
-        shortAwait().untilAsserted(() -> assertThat(cache.get(ENV_ID, naturalId)).isPresent());
+        shortAwait().untilAsserted(() -> assertThat(cache.get(CacheKey.from(spec))).isPresent());
 
         DiscoveryContext context = new DiscoveryContext(
             UUID.randomUUID(),
@@ -176,7 +177,7 @@ class ServiceTest {
         if (createSpec) {
             Spec spec = new Spec(null, specName, "/mock/mySecret", "redisPassword", null, false, false, null, null, ENV_ID);
             specLifeCycleService.deploy(spec);
-            shortAwait().untilAsserted(() -> assertThat(cache.get(ENV_ID, naturalId)).isPresent());
+            shortAwait().untilAsserted(() -> assertThat(cache.get(CacheKey.from(spec))).isPresent());
             boolean authorized = grantService.grant(context, spec);
             assertThat(authorized).isTrue();
             grantService.grant(context, spec);

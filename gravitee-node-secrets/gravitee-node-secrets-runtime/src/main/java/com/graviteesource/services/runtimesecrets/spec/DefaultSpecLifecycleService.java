@@ -26,6 +26,7 @@ import io.gravitee.node.api.secrets.runtime.providers.ResolverService;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
 import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
 import io.gravitee.node.api.secrets.runtime.storage.Cache;
+import io.gravitee.node.api.secrets.runtime.storage.CacheKey;
 import io.gravitee.node.api.secrets.runtime.storage.Entry;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.functions.Action;
@@ -61,8 +62,7 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
         Spec runtimeSpec = ref.asOnTheFlySpec(envId);
         specRegistry.register(runtimeSpec);
         cache.computeIfAbsent(
-            envId,
-            runtimeSpec.naturalId(),
+            CacheKey.from(runtimeSpec),
             () -> {
                 SecretURL secretURL = runtimeSpec.toSecretURL();
                 return resolverService
@@ -99,7 +99,7 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
                         renewGrant(update);
                         specRegistry.replace(update);
                         if (!currentSpec.naturalId().equals(spec.naturalId())) {
-                            cache.evict(currentSpec.envId(), currentSpec.naturalId());
+                            cache.evict(CacheKey.from(currentSpec));
                         }
                     };
             } else if (isACLsChange(update)) {
@@ -145,7 +145,7 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
     public void undeploy(Spec spec) {
         contextRegistry.findBySpec(spec).forEach(grantService::revoke);
         specRegistry.unregister(spec);
-        cache.evict(spec.envId(), spec.naturalId());
+        cache.evict(CacheKey.from(spec));
         renewalService.onDelete(spec);
     }
 
@@ -159,6 +159,6 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
             .flatMap(mount -> resolverService.resolve(envId, mount))
             .doOnError(err -> log.error("Async resolution failed", err))
             .doFinally(postResolution)
-            .subscribe(entry -> cache.put(spec.envId(), spec.naturalId(), entry));
+            .subscribe(entry -> cache.put(CacheKey.from(spec), entry));
     }
 }

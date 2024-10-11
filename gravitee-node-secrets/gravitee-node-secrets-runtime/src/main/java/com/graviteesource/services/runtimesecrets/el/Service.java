@@ -29,6 +29,7 @@ import io.gravitee.node.api.secrets.runtime.grant.GrantService;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
 import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
 import io.gravitee.node.api.secrets.runtime.storage.Cache;
+import io.gravitee.node.api.secrets.runtime.storage.CacheKey;
 import io.gravitee.node.api.secrets.runtime.storage.Entry;
 import java.util.Map;
 import java.util.Optional;
@@ -46,6 +47,7 @@ public class Service {
     private final SpecLifecycleService specLifecycleService;
     private final SpecRegistry specRegistry;
 
+    // TODO remove envId
     public String fromGrant(String contextId, String envId) {
         Optional<Grant> grantOptional = grantService.getGrant(contextId);
         if (grantOptional.isEmpty()) {
@@ -66,7 +68,7 @@ public class Service {
         return resultToValue(
             toResult(
                 cache
-                    .get(envId, grant.naturalId())
+                    .get(new CacheKey(envId, grant.naturalId()))
                     .orElse(
                         new Entry(
                             Entry.Type.EMPTY,
@@ -118,7 +120,7 @@ public class Service {
         return resultToValue(
             toResult(
                 cache
-                    .get(envId, naturalId)
+                    .get(new CacheKey(envId, naturalId))
                     .orElse(
                         new Entry(Entry.Type.EMPTY, null, "no value in cache for [%s] in environment [%s]".formatted(naturalId, envId))
                     ),
