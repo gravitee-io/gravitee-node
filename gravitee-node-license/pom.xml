@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>6.5.0</version>
+        <version>7.0.0-archi-401-opentelemetry-SNAPSHOT</version>
     </parent>
 
     <artifactId>gravitee-node-license</artifactId>
@@ -43,6 +43,10 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-management</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.gravitee.plugin</groupId>
+            <artifactId>gravitee-plugin-core</artifactId>
         </dependency>
 
         <!-- Licensing -->

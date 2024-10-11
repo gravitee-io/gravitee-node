@@ -26,6 +26,7 @@ import io.gravitee.node.container.spring.env.PropertiesConfiguration;
 import io.gravitee.node.license.LicenseLoaderService;
 import io.gravitee.node.management.http.spring.ManagementConfiguration;
 import io.gravitee.node.monitoring.spring.NodeMonitoringConfiguration;
+import io.gravitee.node.opentelemetry.spring.OpenTelemetrySpringConfiguration;
 import io.gravitee.node.secrets.service.spring.SecretServiceConfiguration;
 import io.gravitee.node.vertx.spring.VertxConfiguration;
 import io.gravitee.plugin.core.internal.BootPluginEventListener;
@@ -157,6 +158,7 @@ public abstract class SpringBasedContainer extends AbstractContainer {
     protected List<Class<?>> annotatedClasses() {
         List<Class<?>> classes = new ArrayList<>();
         classes.add(VertxConfiguration.class);
+        classes.add(OpenTelemetrySpringConfiguration.class);
         classes.add(PluginConfiguration.class);
         classes.add(ManagementConfiguration.class);
         classes.add(NodeMonitoringConfiguration.class);
