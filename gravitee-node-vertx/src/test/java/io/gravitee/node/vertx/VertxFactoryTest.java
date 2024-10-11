@@ -19,9 +19,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import io.gravitee.node.api.Node;
-import io.gravitee.node.tracing.vertx.LazyVertxTracerFactory;
 import io.gravitee.node.vertx.metrics.ExcludeTagsFilter;
-import io.gravitee.node.vertx.verticle.factory.SpringVerticleFactory;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
