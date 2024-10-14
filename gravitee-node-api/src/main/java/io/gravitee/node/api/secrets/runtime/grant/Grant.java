@@ -1,8 +1,10 @@
 package io.gravitee.node.api.secrets.runtime.grant;
 
+import io.gravitee.node.api.secrets.runtime.storage.CacheKey;
+
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-// TODO use CacheKey
-public record Grant(String naturalId, String key) {}
+
+public record Grant(CacheKey cacheKey, String secretKey) {}

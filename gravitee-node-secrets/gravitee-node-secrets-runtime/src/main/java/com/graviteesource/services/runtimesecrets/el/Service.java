@@ -47,33 +47,35 @@ public class Service {
     private final SpecLifecycleService specLifecycleService;
     private final SpecRegistry specRegistry;
 
-    // TODO remove envId
-    public String fromGrant(String contextId, String envId) {
+    public String fromGrant(String contextId) {
         Optional<Grant> grantOptional = grantService.getGrant(contextId);
         if (grantOptional.isEmpty()) {
             return resultToValue(new Result(Result.Type.DENIED, "secret was denied ahead of traffic"));
         }
-        return getFromCache(envId, grantOptional.get(), grantOptional.get().key());
+        return getFromCache(grantOptional.get(), grantOptional.get().secretKey());
     }
 
-    public String fromGrant(String contextId, String envId, String key) {
+    public String fromGrant(String contextId, String key) {
         Optional<Grant> grantOptional = grantService.getGrant(contextId);
         if (grantOptional.isEmpty()) {
             return resultToValue(new Result(Result.Type.DENIED, "secret was denied ahead of traffic"));
         }
-        return getFromCache(envId, grantOptional.get(), key);
+        return getFromCache(grantOptional.get(), key);
     }
 
-    private String getFromCache(String envId, Grant grant, String key) {
+    private String getFromCache(Grant grant, String key) {
         return resultToValue(
             toResult(
                 cache
-                    .get(new CacheKey(envId, grant.naturalId()))
+                    .get(grant.cacheKey())
                     .orElse(
                         new Entry(
                             Entry.Type.EMPTY,
                             null,
-                            "no value in cache for [%s] in environment [%s]".formatted(grant.naturalId(), envId)
+                            "no value in cache for [%s] in environment [%s]".formatted(
+                                    grant.cacheKey().naturalId(),
+                                    grant.cacheKey().envId()
+                                )
                         )
                     ),
                 key

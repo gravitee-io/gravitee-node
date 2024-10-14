@@ -27,8 +27,8 @@ import java.util.UUID;
  */
 public class Formatter {
 
-    public static final String FROM_GRANT_TEMPLATE = "{#secrets.fromGrant('%s', '%s')}";
-    public static final String FROM_GRANT_EL_KEY_TEMPLATE = "{#secrets.fromGrant('%s', '%s', %s)}";
+    public static final String FROM_GRANT_TEMPLATE = "{#secrets.fromGrant('%s')}";
+    public static final String FROM_GRANT_EL_KEY_TEMPLATE = "{#secrets.fromGrant('%s', %s)}";
     public static final String METHOD_NAME_SUFFIX = "WithName";
     public static final String METHOD_URI_SUFFIX = "WithUri";
     public static final String FROM_GRANT_WITH_TEMPLATE = "{#secrets.fromGrant%s('%s', '%s', '%s', %s)}";
@@ -44,9 +44,9 @@ public class Formatter {
             switch (context.ref().secondaryType()) {
                 case KEY -> {
                     if (context.ref().secondaryExpression().isLiteral()) {
-                        el = fromGrant(context.id(), envId);
+                        el = fromGrant(context.id());
                     } else {
-                        el = fromGrant(context.id(), envId, context.ref().secondaryExpression().value());
+                        el = fromGrant(context.id(), context.ref().secondaryExpression().value());
                     }
                 }
                 case NAME -> el =
@@ -58,7 +58,7 @@ public class Formatter {
                 }
             }
         } else {
-            el = fromGrant(context.id(), envId);
+            el = fromGrant(context.id());
         }
         return el;
     }
@@ -108,12 +108,12 @@ public class Formatter {
         return FROM_GRANT_WITH_TEMPLATE.formatted(methodSuffix, id, envId, literalExpression, quoteLiteral(secondaryExpression));
     }
 
-    private static String fromGrant(UUID id, String envId) {
-        return FROM_GRANT_TEMPLATE.formatted(id, envId);
+    private static String fromGrant(UUID id) {
+        return FROM_GRANT_TEMPLATE.formatted(id);
     }
 
-    private static String fromGrant(UUID id, String envId, String key) {
-        return FROM_GRANT_EL_KEY_TEMPLATE.formatted(id, envId, key);
+    private static String fromGrant(UUID id, String key) {
+        return FROM_GRANT_EL_KEY_TEMPLATE.formatted(id, key);
     }
 
     private static String quoteLiteral(Ref.Expression expression) {

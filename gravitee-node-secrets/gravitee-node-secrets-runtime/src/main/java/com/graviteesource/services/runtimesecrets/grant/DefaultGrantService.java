@@ -27,6 +27,7 @@ import io.gravitee.node.api.secrets.runtime.grant.Grant;
 import io.gravitee.node.api.secrets.runtime.grant.GrantService;
 import io.gravitee.node.api.secrets.runtime.spec.ACLs;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
+import io.gravitee.node.api.secrets.runtime.storage.CacheKey;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
@@ -50,7 +51,7 @@ public class DefaultGrantService implements GrantService {
     public boolean grant(@Nonnull DiscoveryContext context, Spec spec) {
         boolean granted = isGranted(context, spec);
         if (granted && context.id() != null) {
-            grantRegistry.register(context.id().toString(), new Grant(spec.naturalId(), spec.key()));
+            grantRegistry.register(context.id().toString(), new Grant(CacheKey.from(spec), spec.key()));
         }
         return granted;
     }

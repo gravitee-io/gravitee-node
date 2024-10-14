@@ -151,7 +151,6 @@ class ServiceTest {
         );
         boolean authorized = grantService.grant(context, spec);
         assertThat(authorized).isTrue();
-        grantService.grant(context, spec);
 
         String el = Formatter.computeELFromStatic(context, ENV_ID);
         assertThat(spelTemplateEngine.getValue(el, String.class)).isEqualTo("redisadmin");
