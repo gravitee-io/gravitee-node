@@ -53,13 +53,13 @@ public class RefParser {
      * <code>EXPRESSION</code> is any string NOT starting with '<code>#</code>' or "<code>{#</code>". When <code>MAIN_TYPE</code>is absent or "<code>uri</code>" then a <code>EL_EXPRESSION</code> ending with "<code>:</code>" and followed  is an alias of "<code>key KEY</code>"<br>
      * <code>EL_EXPRESSION</code> = string starting with '<code>#</code>' or "<code>{#</code>". After parsing <code>{</code> and <code>}</code> is removed (a.k.a mixin).<br>
      *
-     * @param ref the full naturalId (with start and end separator
+     * @param ref the full uri (with start and end separator)
      * @return a SecretRef
      * @throws SecretRefParsingException when parsing fails
      */
     public static Ref parse(String ref) {
         if (ref == null || ref.isBlank()) {
-            throw new SecretRefParsingException("naturalId is null or empty");
+            throw new SecretRefParsingException("ref is null or empty");
         }
         var buffer = new StringBuilder(ref);
         // delete

@@ -59,6 +59,22 @@ public class RuntimeSecretsService extends AbstractService<RuntimeSecretsService
         startDemo();
     }
 
+    public void deploy(Spec spec) {
+        specLifecycleService.deploy(spec);
+    }
+
+    public void undeploy(Spec spec) {
+        specLifecycleService.undeploy(spec);
+    }
+
+    public <T> void onDefinitionDeploy(String envId, @Nonnull T definition, @Nullable Map<String, String> metadata) {
+        processor.onDefinitionDeploy(envId, definition, metadata);
+    }
+
+    public <T> void onDefinitionUnDeploy(String envId, @Nonnull T definition, @Nullable Map<String, String> metadata) {
+        processor.onDefinitionUnDeploy(envId, definition, metadata);
+    }
+
     private void startDemo() {
         startWatch(environment.getProperty("rtsecdemodir"));
         specLifecycleService.deploy(
@@ -89,22 +105,6 @@ public class RuntimeSecretsService extends AbstractService<RuntimeSecretsService
                 "DEFAULT"
             )
         );
-    }
-
-    public void deploy(Spec spec) {
-        specLifecycleService.deploy(spec);
-    }
-
-    public void undeploy(Spec spec) {
-        specLifecycleService.undeploy(spec);
-    }
-
-    public <T> void onDefinitionDeploy(String envId, @Nonnull T definition, @Nullable Map<String, String> metadata) {
-        processor.onDefinitionDeploy(envId, definition, metadata);
-    }
-
-    public <T> void onDefinitionUnDeploy(String envId, @Nonnull T definition, @Nullable Map<String, String> metadata) {
-        processor.onDefinitionUnDeploy(envId, definition, metadata);
     }
 
     private void startWatch(String directory) {
@@ -157,20 +157,21 @@ public class RuntimeSecretsService extends AbstractService<RuntimeSecretsService
     private void handleDemo(Properties properties) {
         String pluginToAdd = properties.getProperty("updateSpecACLAddPlugin", "ignore");
         String specToUndeploy = properties.getProperty("undeploySpec", "");
-        String addSpec = properties.getProperty("newSpecWithACL", "");
+        String otfSpecWithACL = properties.getProperty("otfSpecWithACL", "");
+        int otfSpecWithRenewal = Integer.parseInt(properties.getProperty("otfSpecWithRenewal", "0"));
 
-        if (!addSpec.isEmpty()) {
+        if (!otfSpecWithACL.isEmpty()) {
             specLifecycleService.deploy(
                 new Spec(
                     "f9024ec8-ad20-4834-8962-9c9153218983",
-                    null,
+                    "case-1-api-key",
                     "/mock/static/uri",
                     "api-key",
                     null,
                     false,
                     false,
-                    null,
-                    acls(addSpec),
+                    otfSpecWithRenewal > 0 ? new Resolution(Resolution.Type.POLL, Duration.ofSeconds(otfSpecWithRenewal)) : null,
+                    acls(otfSpecWithACL),
                     "DEFAULT"
                 )
             );

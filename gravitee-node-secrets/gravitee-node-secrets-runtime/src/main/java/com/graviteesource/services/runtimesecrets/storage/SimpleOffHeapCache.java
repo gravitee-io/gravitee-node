@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -51,12 +52,30 @@ public class SimpleOffHeapCache implements Cache {
     private final ConcurrentMap<CacheKey, ByteBuffer> data = new ConcurrentHashMap<>();
 
     @Override
-    public CacheKey put(CacheKey cacheKey, Entry value) {
+    public void put(CacheKey cacheKey, Entry value) {
         var bytes = serialize(value);
         final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(bytes.length);
         data.put(cacheKey, byteBuffer);
         byteBuffer.put(bytes);
-        return cacheKey;
+    }
+
+    @Override
+    public void putPartial(CacheKey cacheKey, Map<String, Secret> partial) {
+        Optional<Entry> entryOpt = this.get(cacheKey);
+        Entry entry;
+        if (entryOpt.isPresent()) {
+            entry = entryOpt.get();
+            if (entry.type() == Entry.Type.VALUE) {
+                Map<String, Secret> secretMap = entry.value();
+                secretMap.putAll(partial);
+                entry = new Entry(Entry.Type.VALUE, secretMap, null);
+            } else {
+                entry = new Entry(Entry.Type.VALUE, partial, null);
+            }
+        } else {
+            entry = new Entry(Entry.Type.VALUE, partial, null);
+        }
+        this.put(cacheKey, entry);
     }
 
     @Override

@@ -52,7 +52,7 @@ public class Processor {
      * <li>Inject EL {@link PayloadRefParser}</li>
      * <li>Find {@link Spec} or create on the fly</li>
      * <li>Grant {@link DiscoveryContext}</li>
-     * @param definition the secret naturalId container
+     * @param definition the secret ref container
      * @param metadata some optional metadata
      * @param <T> the kind of subject
      */
@@ -70,7 +70,7 @@ public class Processor {
         DefaultPayloadNotifier notifier = new DefaultPayloadNotifier(rootDefinition, envId, specRegistry);
         definitionBrowser.findPayloads(definition, notifier);
 
-        // register contexts by naturalId and definition
+        // register contexts by ref and definition
         for (DiscoveryContext context : notifier.getContextList()) {
             contextRegistry.register(context, rootDefinition);
             // get spec

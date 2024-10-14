@@ -93,13 +93,13 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
         boolean shouldResolve = true;
         if (currentSpec != null) {
             SpecUpdate update = new SpecUpdate(currentSpec, spec);
-            if (isNameOrLocationChanged(update)) {
+            if (isUriAndKeyChanged(update)) {
                 afterResolve =
                     () -> {
                         renewGrant(update);
                         specRegistry.replace(update);
-                        if (!currentSpec.naturalId().equals(spec.naturalId())) {
-                            cache.evict(CacheKey.from(currentSpec));
+                        if (!Objects.equals(CacheKey.from(update.oldSpec()), CacheKey.from(update.newSpec()))) {
+                            cache.evict(CacheKey.from(update.oldSpec()));
                         }
                     };
             } else if (isACLsChange(update)) {
@@ -133,12 +133,8 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
         return !Objects.equals(update.oldSpec().acls(), update.newSpec().acls());
     }
 
-    private boolean isNameOrLocationChanged(SpecUpdate update) {
-        record LiteSpec(String name, String uriAndKey) {}
-        return !Objects.equals(
-            new LiteSpec(update.oldSpec().name(), update.oldSpec().uriAndKey()),
-            new LiteSpec(update.newSpec().name(), update.newSpec().uriAndKey())
-        );
+    private boolean isUriAndKeyChanged(SpecUpdate update) {
+        return !Objects.equals(update.oldSpec().uriAndKey(), update.newSpec().uriAndKey());
     }
 
     @Override

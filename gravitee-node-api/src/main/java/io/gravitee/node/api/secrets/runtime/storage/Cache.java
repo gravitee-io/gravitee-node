@@ -1,5 +1,7 @@
 package io.gravitee.node.api.secrets.runtime.storage;
 
+import io.gravitee.node.api.secrets.model.Secret;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -8,7 +10,9 @@ import java.util.function.Supplier;
  * @author GraviteeSource Team
  */
 public interface Cache {
-    CacheKey put(CacheKey cacheKey, Entry value);
+    void put(CacheKey cacheKey, Entry value);
+
+    void putPartial(CacheKey cacheKey, Map<String, Secret> partial);
 
     Optional<Entry> get(CacheKey cacheKey);
 

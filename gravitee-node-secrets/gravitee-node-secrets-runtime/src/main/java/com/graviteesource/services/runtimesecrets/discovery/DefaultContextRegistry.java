@@ -65,47 +65,72 @@ public class DefaultContextRegistry implements ContextRegistry {
 
         public void register(DiscoveryContext context, Definition definition) {
             if (context.ref().mainType() == Ref.MainType.NAME && context.ref().mainExpression().isLiteral()) {
-                byName.put(context.ref().mainExpression().value(), context);
-            }
-            if (context.ref().mainType() == Ref.MainType.URI && context.ref().mainExpression().isLiteral()) {
-                byUri.put(context.ref().mainExpression().value(), context);
-                if (context.ref().secondaryType() == Ref.SecondaryType.KEY && context.ref().secondaryExpression().isLiteral()) {
-                    byUriAndKey.put(context.ref().uriAndKey(), context);
+                synchronized (byName) {
+                    byName.put(context.ref().mainExpression().value(), context);
                 }
             }
-            byDefinitionSpec.put(definition, context);
+            if (context.ref().mainType() == Ref.MainType.URI && context.ref().mainExpression().isLiteral()) {
+                synchronized (byUri) {
+                    byUri.put(context.ref().mainExpression().value(), context);
+                }
+
+                if (context.ref().secondaryType() == Ref.SecondaryType.KEY && context.ref().secondaryExpression().isLiteral()) {
+                    synchronized (byUriAndKey) {
+                        byUriAndKey.put(context.ref().uriAndKey(), context);
+                    }
+                }
+            }
+            synchronized (byDefinitionSpec) {
+                byDefinitionSpec.put(definition, context);
+            }
         }
 
         public List<DiscoveryContext> findBySpec(Spec spec) {
             List<DiscoveryContext> result = new ArrayList<>();
             if (spec.name() != null && !spec.name().isEmpty()) {
-                result.addAll(byName.get(spec.name()));
+                synchronized (byName) {
+                    result.addAll(byName.get(spec.name()));
+                }
             }
             if (spec.uri() != null && !spec.uri().isEmpty()) {
-                result.addAll(byUri.get(spec.name()));
+                synchronized (byUri) {
+                    result.addAll(byUri.get(spec.name()));
+                }
             }
             if (spec.key() != null && !spec.key().isEmpty()) {
-                result.addAll(byUriAndKey.get(spec.uriAndKey()));
+                synchronized (byUriAndKey) {
+                    result.addAll(byUriAndKey.get(spec.uriAndKey()));
+                }
             }
             return result;
         }
 
         public List<DiscoveryContext> getByDefinition(String envId, Definition definition) {
-            return List.copyOf(byDefinitionSpec.get(definition));
+            synchronized (byDefinitionSpec) {
+                return List.copyOf(byDefinitionSpec.get(definition));
+            }
         }
 
         @Override
         public void unregister(DiscoveryContext context, Definition definition) {
             if (context.ref().mainType() == Ref.MainType.NAME && context.ref().mainExpression().isLiteral()) {
-                byName.remove(context.ref().mainExpression().value(), context);
-            }
-            if (context.ref().mainType() == Ref.MainType.URI && context.ref().mainExpression().isLiteral()) {
-                byUri.remove(context.ref().mainExpression().value(), context);
-                if (context.ref().secondaryType() == Ref.SecondaryType.KEY && context.ref().secondaryExpression().isLiteral()) {
-                    byUriAndKey.remove(context.ref().uriAndKey(), context);
+                synchronized (byName) {
+                    byName.remove(context.ref().mainExpression().value(), context);
                 }
             }
-            byDefinitionSpec.put(definition, context);
+            if (context.ref().mainType() == Ref.MainType.URI && context.ref().mainExpression().isLiteral()) {
+                synchronized (byUri) {
+                    byUri.remove(context.ref().mainExpression().value(), context);
+                }
+                if (context.ref().secondaryType() == Ref.SecondaryType.KEY && context.ref().secondaryExpression().isLiteral()) {
+                    synchronized (byUriAndKey) {
+                        byUriAndKey.remove(context.ref().uriAndKey(), context);
+                    }
+                }
+            }
+            synchronized (byDefinitionSpec) {
+                byDefinitionSpec.put(definition, context);
+            }
         }
     }
 }

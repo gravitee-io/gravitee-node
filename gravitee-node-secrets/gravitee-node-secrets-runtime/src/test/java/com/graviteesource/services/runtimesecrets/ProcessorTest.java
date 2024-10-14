@@ -442,9 +442,6 @@ class ProcessorTest {
                     .isInstanceOf(SecretAccessDeniedException.class);
             });
 
-        // TODO, this needs to be refined. The cache key should the Id. CacheKey.from(spec) ?
-        // This would let the previous on the fly untouched and not evicted, then when undeployed => remove and evict
-
         // create spec to limit sage
         Spec specWithName = new Spec(
             specID,
@@ -468,7 +465,8 @@ class ProcessorTest {
         FakeDefinition fakeDefinition2 = new FakeDefinition("123", "<<redis-password >>", "<< redis-password>>");
         cut.onDefinitionDeploy(FOO_ENV_ID, fakeDefinition2, Map.of("revision", "2"));
 
-        awaitShortly()
+        await()
+            .atMost(1, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 assertThat(cache.get(CacheKey.from(specWithName))).isPresent().get().extracting(Entry::type).isEqualTo(Entry.Type.VALUE);
                 assertThat(spelTemplateEngine.getValue(fakeDefinition2.getFirst(), String.class)).isEqualTo("fighters");
@@ -516,23 +514,23 @@ class ProcessorTest {
         );
         specLifeCycleService.deploy(spec);
 
-        awaitShortly()
+        await()
             .atMost(1, TimeUnit.SECONDS)
-            .untilAsserted(() -> {
-                assertThat(cache.get(CacheKey.from(spec))).isPresent().get().extracting(Entry::type).isEqualTo(Entry.Type.VALUE);
-            });
+            .untilAsserted(() ->
+                assertThat(cache.get(CacheKey.from(spec))).isPresent().get().extracting(Entry::type).isEqualTo(Entry.Type.VALUE)
+            );
 
         FakeDefinition fakeDefinition = new FakeDefinition("123", "<<rotating>>", "<</mock/secondSecret:ldapPassword>>");
         cut.onDefinitionDeploy(FOO_ENV_ID, fakeDefinition, Map.of("revision", "1"));
-        awaitShortly()
+        await()
             .atMost(1, TimeUnit.SECONDS)
-            .untilAsserted(() -> {
+            .untilAsserted(() ->
                 assertThat(cache.get(new CacheKey(FOO_ENV_ID, "/mock/secondSecret")))
                     .isPresent()
                     .get()
                     .extracting(Entry::type)
-                    .isEqualTo(Entry.Type.VALUE);
-            });
+                    .isEqualTo(Entry.Type.VALUE)
+            );
 
         assertThat(spelTemplateEngine.getValue(fakeDefinition.getFirst(), String.class)).isEqualTo("secret1");
         assertThat(spelTemplateEngine.getValue(fakeDefinition.getSecond(), String.class)).isEqualTo("yeah!");

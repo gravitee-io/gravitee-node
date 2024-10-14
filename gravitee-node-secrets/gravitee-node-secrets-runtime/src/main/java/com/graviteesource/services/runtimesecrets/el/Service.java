@@ -72,10 +72,7 @@ public class Service {
                         new Entry(
                             Entry.Type.EMPTY,
                             null,
-                            "no value in cache for [%s] in environment [%s]".formatted(
-                                    grant.cacheKey().naturalId(),
-                                    grant.cacheKey().envId()
-                                )
+                            "no value in cache for [%s] in environment [%s]".formatted(grant.cacheKey().uri(), grant.cacheKey().envId())
                         )
                     ),
                 key
@@ -99,7 +96,7 @@ public class Service {
             if (spec == null && specLifecycleService.shouldDeployOnTheFly(ref)) {
                 spec = specLifecycleService.deployOnTheFly(envId, ref);
             }
-            return grantAndGet(envId, definitionKind, definitionId, spec, ref, uriAndKey.uri(), uriAndKey.key());
+            return grantAndGet(envId, definitionKind, definitionId, spec, ref, uriAndKey.key());
         } else {
             return resultToValue(new Result(Result.Type.ERROR, "uri must contain a key like such: /provider/uri:key"));
         }
@@ -108,23 +105,27 @@ public class Service {
     public String fromELWithName(String envId, String name, String definitionKind, String definitionId) {
         Ref ref = new Ref(Ref.MainType.NAME, new Ref.Expression(name, false), null, null, name);
         Spec spec = specRegistry.getFromName(envId, name);
-        return grantAndGet(envId, definitionKind, definitionId, spec, ref, name, spec.key());
+        return grantAndGet(envId, definitionKind, definitionId, spec, ref, spec.key());
     }
 
-    private String grantAndGet(String envId, String definitionKind, String definitionId, Spec spec, Ref ref, String naturalId, String key) {
+    private String grantAndGet(String envId, String definitionKind, String definitionId, Spec spec, Ref ref, String key) {
         boolean granted = grantService.grant(
             new DiscoveryContext(null, envId, ref, new DiscoveryLocation(new DiscoveryLocation.Definition(definitionKind, definitionId))),
             spec
         );
         if (!granted) {
-            resultToValue(new Result(Result.Type.DENIED, "secret [%s] is denied in environment [%s]".formatted(naturalId, envId)));
+            resultToValue(new Result(Result.Type.DENIED, "secret [%s] is denied in environment [%s]".formatted(spec.naturalId(), envId)));
         }
         return resultToValue(
             toResult(
                 cache
-                    .get(new CacheKey(envId, naturalId))
+                    .get(CacheKey.from(spec))
                     .orElse(
-                        new Entry(Entry.Type.EMPTY, null, "no value in cache for [%s] in environment [%s]".formatted(naturalId, envId))
+                        new Entry(
+                            Entry.Type.EMPTY,
+                            null,
+                            "no value in cache for [%s] in environment [%s]".formatted(spec.naturalId(), envId)
+                        )
                     ),
                 key
             )
@@ -143,15 +144,9 @@ public class Service {
                     result = new Result(Result.Type.KEY_NOT_FOUND, "key [%s] not found".formatted(key));
                 }
             }
-            case EMPTY -> {
-                result = new Result(Result.Type.EMPTY, entry.error());
-            }
-            case NOT_FOUND -> {
-                result = new Result(Result.Type.NOT_FOUND, entry.error());
-            }
-            case ERROR -> {
-                result = new Result(Result.Type.ERROR, entry.error());
-            }
+            case EMPTY -> result = new Result(Result.Type.EMPTY, entry.error());
+            case NOT_FOUND -> result = new Result(Result.Type.NOT_FOUND, entry.error());
+            case ERROR -> result = new Result(Result.Type.ERROR, entry.error());
             default -> result = null;
         }
         return result;

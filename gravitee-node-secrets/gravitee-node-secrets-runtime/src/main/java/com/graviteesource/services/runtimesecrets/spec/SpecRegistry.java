@@ -17,7 +17,6 @@ package com.graviteesource.services.runtimesecrets.spec;
 
 import io.gravitee.node.api.secrets.runtime.discovery.Ref;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
@@ -63,19 +62,15 @@ public class SpecRegistry {
         return registry(envId).fromRef(query);
     }
 
-    public Spec fromId(String envId, String id) {
-        return registry(envId).fromId(id);
-    }
-
     private Registry registry(String envId) {
         return registries.computeIfAbsent(envId, ignore -> new Registry());
     }
 
     private static class Registry {
 
-        private final Map<String, Spec> byName = new HashMap<>();
-        private final Map<String, Spec> byUriAndKey = new HashMap<>();
-        private final Map<String, Spec> byID = new HashMap<>();
+        private final Map<String, Spec> byName = new ConcurrentHashMap<>();
+        private final Map<String, Spec> byUriAndKey = new ConcurrentHashMap<>();
+        private final Map<String, Spec> byID = new ConcurrentHashMap<>();
 
         void register(Spec spec) {
             if (spec.id() != null) {
@@ -133,10 +128,6 @@ public class SpecRegistry {
                 result = byUriAndKey.get(query.uriAndKey());
             }
             return result;
-        }
-
-        Spec fromId(String id) {
-            return byID.get(id);
         }
     }
 }

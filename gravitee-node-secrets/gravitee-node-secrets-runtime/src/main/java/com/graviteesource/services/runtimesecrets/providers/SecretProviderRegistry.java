@@ -22,9 +22,10 @@ import io.gravitee.node.api.secrets.SecretProvider;
 import io.gravitee.node.secrets.service.AbstractSecretProviderDispatcher;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
@@ -32,14 +33,16 @@ import java.util.Optional;
  */
 public class SecretProviderRegistry {
 
-    Multimap<String, SecretProviderEntry> perEnv = MultimapBuilder.hashKeys().arrayListValues().build();
-    Map<String, SecretProvider> allEnvs = new HashMap<>();
+    private final Multimap<String, SecretProviderEntry> perEnv = MultimapBuilder.hashKeys().arrayListValues().build();
+    private final Map<String, SecretProvider> allEnvs = new ConcurrentHashMap<>();
 
     public void register(String id, SecretProvider provider, String envId) {
         if (envId == null || envId.isEmpty()) {
             allEnvs.put(id, provider);
         } else {
-            perEnv.put(envId, new SecretProviderEntry(id, provider));
+            synchronized (perEnv) {
+                perEnv.put(envId, new SecretProviderEntry(id, provider));
+            }
         }
     }
 
@@ -52,17 +55,23 @@ public class SecretProviderRegistry {
      */
     public Single<SecretProvider> get(String envId, String id) {
         return Maybe
-            .fromOptional(
-                perEnv
-                    .get(envId)
-                    .stream()
-                    .filter(entry -> entry.id().equals(id))
-                    .map(SecretProviderEntry::provider)
-                    .findFirst()
-                    .or(() -> Optional.ofNullable(allEnvs.get(id)))
-            )
+            .defer(() -> {
+                Collection<SecretProviderEntry> perEnvProviders;
+                synchronized (perEnv) {
+                    perEnvProviders = perEnv.get(envId);
+                }
+
+                return Maybe.fromOptional(
+                    perEnvProviders
+                        .stream()
+                        .filter(entry -> entry.id().equals(id))
+                        .map(SecretProviderEntry::provider)
+                        .findFirst()
+                        .or(() -> Optional.ofNullable(allEnvs.get(id)))
+                );
+            })
             .switchIfEmpty(Single.just(new AbstractSecretProviderDispatcher.ErrorSecretProvider()));
     }
 
-    public record SecretProviderEntry(String id, SecretProvider provider) {}
+    record SecretProviderEntry(String id, SecretProvider provider) {}
 }

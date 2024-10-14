@@ -70,13 +70,13 @@ public class PayloadRefParser {
 
     public String replaceRefs(List<String> expressions) {
         if (expressions.size() != this.rawRefs.size()) {
-            throw new IllegalArgumentException("naturalId and replacement list don't match in size");
+            throw new IllegalArgumentException("ref and replacement list don't match in size");
         }
 
         for (int i = 0; i < rawRefs.size(); i++) {
             String replacement = expressions.get(i);
 
-            // replace naturalId by expression
+            // replace ref by expression
             Position position = rawRefs.get(i).position;
             payload.replace(position.start, position.end, replacement);
 
@@ -84,7 +84,7 @@ public class PayloadRefParser {
             int refStringLength = position.end - position.start;
             int replacementLength = replacement.length();
             int lengthDiff = replacementLength - refStringLength;
-            // apply offset change on next naturalId positions
+            // apply offset change on next ref positions
             for (int p = i + 1; p < expressions.size(); p++) {
                 rawRefs.get(p).position.move(lengthDiff);
             }

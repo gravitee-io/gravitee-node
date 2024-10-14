@@ -16,15 +16,21 @@
 package com.graviteesource.services.runtimesecrets.renewal;
 
 import com.graviteesource.services.runtimesecrets.config.Config;
+import com.graviteesource.services.runtimesecrets.errors.SecretProviderException;
 import com.graviteesource.services.runtimesecrets.spec.SpecUpdate;
+import io.gravitee.node.api.secrets.model.Secret;
+import io.gravitee.node.api.secrets.model.SecretURL;
 import io.gravitee.node.api.secrets.runtime.providers.ResolverService;
 import io.gravitee.node.api.secrets.runtime.spec.Resolution;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
 import io.gravitee.node.api.secrets.runtime.storage.Cache;
 import io.gravitee.node.api.secrets.runtime.storage.CacheKey;
+import io.gravitee.node.api.secrets.runtime.storage.Entry;
 import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -50,14 +56,12 @@ public class RenewalService {
     }
 
     public void onSpec(SpecUpdate specUpdate) {
+        Spec oldSpec = specUpdate.oldSpec();
+        if (oldSpec != null) {
+            specsToRenew.remove(oldSpec);
+        }
         if (specUpdate.newSpec().hasResolutionType(Resolution.Type.POLL)) {
-            synchronized (specsToRenew) {
-                Spec oldSpec = specUpdate.oldSpec();
-                if (oldSpec != null) {
-                    specsToRenew.remove(oldSpec);
-                }
-                setupNextCheck(specUpdate.newSpec());
-            }
+            setupNextCheck(specUpdate.newSpec());
         }
     }
 
@@ -90,19 +94,31 @@ public class RenewalService {
                         .fromIterable(specsToRenew.entrySet())
                         .filter(specAndTime -> now.isAfter(specAndTime.getValue()))
                         .map(Map.Entry::getKey)
+                        .doOnNext(this::setupNextCheck)
+                        .groupBy(CacheKey::from)
+                        .flatMapSingle(group -> {
+                            CacheKey cacheKey = group.getKey();
+                            return resolverService
+                                .toSecretMount(cacheKey.envId(), SecretURL.from(cacheKey.uri(), false))
+                                .flatMap(secretMount -> resolverService.resolve(cacheKey.envId(), secretMount))
+                                .flatMap(entry -> {
+                                    if (entry.type() == Entry.Type.VALUE) {
+                                        return group.collect(
+                                            HashMap<String, Secret>::new,
+                                            (map, spec) -> {
+                                                String key = spec.key();
+                                                map.put(key, entry.value().get(key));
+                                            }
+                                        );
+                                    } else if (entry.type() == Entry.Type.EMPTY) {
+                                        return Single.just(Map.<String, Secret>of());
+                                    }
+                                    return Single.error(new SecretProviderException(entry.error()));
+                                })
+                                .doOnError(err -> log.warn("Renewal failed for cache-key [{}]: {}", cacheKey, err.getMessage()))
+                                .doOnSuccess(map -> cache.putPartial(cacheKey, map));
+                        })
                 )
-                // todo group-by
-                .concatMapSingle(spec -> {
-                    log.info("Renewing secret for spec {}", spec);
-                    return resolverService
-                        .toSecretMount(spec.envId(), spec.toSecretURL())
-                        .flatMap(secretMount -> resolverService.resolve(spec.envId(), secretMount))
-                        .doOnSuccess(entry -> {
-                            // todo update partial
-                            setupNextCheck(spec);
-                            cache.put(CacheKey.from(spec), entry);
-                        });
-                })
                 .subscribe();
     }
 
