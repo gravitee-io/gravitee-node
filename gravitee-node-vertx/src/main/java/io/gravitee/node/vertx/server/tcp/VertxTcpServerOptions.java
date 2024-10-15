@@ -27,11 +27,9 @@ public class VertxTcpServerOptions extends VertxServerOptions {
         options.setPort(this.port);
         options.setHost(this.host);
 
-        if (this.secured && this.sni) {
-            options.setSni(true);
+        if (this.secured) {
+            options.setSni(this.sni);
             options.setClientAuth(ClientAuth.valueOf(clientAuth));
-        } else {
-            throw new IllegalArgumentException("Cannot start unsecured TCP server or without SNI enabled");
         }
 
         setupTcp(options, vertxKeyCertOptions, vertxTrustOptions);
