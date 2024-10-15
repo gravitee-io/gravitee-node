@@ -336,26 +336,32 @@ class VertxTcpServerOptionsTest {
     }
 
     @Test
-    void should_throw_illegal_argument_exception_when_create_vertx_options_with_unsecured_options() {
+    void should_be_able_to_create_options_without_SNI() {
         environment.setProperty("servers[0].secured", "false");
-        final VertxTcpServerOptions options = VertxTcpServerOptions.builder().prefix("servers[0]").environment(environment).build();
-
-        final IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> options.createNetServerOptions(mock(KeyCertOptions.class), mock(TrustOptions.class))
-        );
-        assertThat(exception.getMessage()).isEqualTo("Cannot start unsecured TCP server or without SNI enabled");
-    }
-
-    @Test
-    void should_throw_illegal_argument_exception_when_create_vertx_options_without_SNI() {
         environment.setProperty("servers[0].ssl.sni", "false");
         final VertxTcpServerOptions options = VertxTcpServerOptions.builder().prefix("servers[0]").environment(environment).build();
 
-        final IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> options.createNetServerOptions(mock(KeyCertOptions.class), mock(TrustOptions.class))
-        );
-        assertThat(exception.getMessage()).isEqualTo("Cannot start unsecured TCP server or without SNI enabled");
+        NetServerOptions netServerOptions = options.createNetServerOptions(mock(KeyCertOptions.class), mock(TrustOptions.class));
+        assertThat(netServerOptions.getKeyCertOptions()).isNull();
+        assertThat(netServerOptions.getTrustOptions()).isNull();
+        assertThat(netServerOptions.getClientAuth()).isEqualTo(ClientAuth.NONE);
+        assertThat(netServerOptions.getEnabledCipherSuites()).isEmpty();
+        assertThat(netServerOptions.getOpenSslEngineOptions()).isNull();
+        assertThat(netServerOptions.isSsl()).isFalse();
+        assertThat(netServerOptions.isSni()).isFalse();
+    }
+
+    @Test
+    void should_be_able_to_create_secured_options_without_SNI() {
+        environment.setProperty("servers[0].ssl.sni", "false");
+        final VertxTcpServerOptions options = VertxTcpServerOptions.builder().prefix("servers[0]").environment(environment).build();
+
+        NetServerOptions netServerOptions = options.createNetServerOptions(mock(KeyCertOptions.class), mock(TrustOptions.class));
+        assertThat(netServerOptions.getKeyCertOptions()).isNotNull();
+        assertThat(netServerOptions.getTrustOptions()).isNotNull();
+        assertThat(netServerOptions.getClientAuth()).isEqualTo(ClientAuth.valueOf(CLIENT_AUTH.toUpperCase()));
+        assertThat(netServerOptions.getEnabledCipherSuites()).isNotEmpty();
+        assertThat(netServerOptions.isSsl()).isTrue();
+        assertThat(netServerOptions.isSni()).isFalse();
     }
 }

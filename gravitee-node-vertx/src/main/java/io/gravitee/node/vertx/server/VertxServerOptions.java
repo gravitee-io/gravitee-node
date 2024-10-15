@@ -20,8 +20,6 @@ import io.gravitee.node.api.certificate.CertificateOptions;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
 import io.gravitee.node.api.server.ServerOptions;
-import io.gravitee.node.vertx.cert.VertxKeyCertOptions;
-import io.gravitee.node.vertx.cert.VertxTrustOptions;
 import io.gravitee.node.vertx.server.http.VertxHttpServerOptions;
 import io.gravitee.node.vertx.server.tcp.VertxTcpServerOptions;
 import io.vertx.core.http.ClientAuth;
