@@ -18,7 +18,6 @@ package io.gravitee.node.vertx.spring;
 import io.gravitee.node.api.certificate.KeyStoreLoaderFactoryRegistry;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
-import io.gravitee.node.tracing.spring.TracingConfiguration;
 import io.gravitee.node.vertx.VertxFactory;
 import io.gravitee.node.vertx.server.VertxServer;
 import io.gravitee.node.vertx.server.VertxServerFactory;
@@ -27,14 +26,12 @@ import io.gravitee.node.vertx.verticle.factory.SpringVerticleFactory;
 import io.vertx.rxjava3.core.Vertx;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
 @Configuration
-@Import(TracingConfiguration.class)
 public class VertxConfiguration {
 
     @Bean
