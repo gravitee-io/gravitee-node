@@ -1,3 +1,10 @@
+# [6.5.0](https://github.com/gravitee-io/gravitee-node/compare/6.4.6...6.5.0) (2024-10-17)
+
+
+### Features
+
+* allow unsecured tcp server ([09bbb47](https://github.com/gravitee-io/gravitee-node/commit/09bbb4707b4c1de358e6fd9d53488f457ad52238))
+
 ## [6.4.6](https://github.com/gravitee-io/gravitee-node/compare/6.4.5...6.4.6) (2024-10-09)
 
 
