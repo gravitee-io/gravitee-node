@@ -56,16 +56,16 @@ class DefaultGrantServiceTest {
         return Stream.of(
             arguments("no acl same env", context("dev", "api", "123"), spec("dev", null, null)),
             arguments("no acl same key", context("dev", "api", "123", "pwd"), spec("dev", null, "pwd")),
-            arguments("empty acl same env", context("dev", "api", "123"), spec("dev", new ACLs(List.of(), List.of()), null)),
+            arguments("empty acl same env", context("dev", "api", "123"), spec("dev", new ACLs(null, List.of(), List.of()), null)),
             arguments(
                 "def acl ok",
                 context("dev", "api", "123"),
-                spec("dev", new ACLs(List.of(new ACLs.DefinitionACL("api", List.of("123"))), null), null)
+                spec("dev", new ACLs(null, List.of(new ACLs.DefinitionACL("api", List.of("123"))), null), null)
             ),
             arguments(
                 "def acl ok same key",
                 context("dev", "api", "123", "pwd"),
-                spec("dev", new ACLs(List.of(new ACLs.DefinitionACL("api", List.of("123"))), null), "pwd")
+                spec("dev", new ACLs(null, List.of(new ACLs.DefinitionACL("api", List.of("123"))), null), "pwd")
             ),
             arguments(
                 "def acl ok many",
@@ -73,6 +73,7 @@ class DefaultGrantServiceTest {
                 spec(
                     "dev",
                     new ACLs(
+                        null,
                         List.of(new ACLs.DefinitionACL("dict", List.of("123")), new ACLs.DefinitionACL("api", List.of("123", "456"))),
                         null
                     ),
@@ -84,7 +85,7 @@ class DefaultGrantServiceTest {
                 context("dev", "api", "123", plugin("foo")),
                 spec(
                     "dev",
-                    new ACLs(List.of(new ACLs.DefinitionACL("api", List.of("123"))), List.of(new ACLs.PluginACL("foo", null))),
+                    new ACLs(null, List.of(new ACLs.DefinitionACL("api", List.of("123"))), List.of(new ACLs.PluginACL("foo", null))),
                     null
                 )
             ),
@@ -94,6 +95,7 @@ class DefaultGrantServiceTest {
                 spec(
                     "dev",
                     new ACLs(
+                        null,
                         List.of(new ACLs.DefinitionACL("api", List.of("123"))),
                         List.of(new ACLs.PluginACL("bar", null), new ACLs.PluginACL("foo", null))
                     ),
@@ -103,7 +105,7 @@ class DefaultGrantServiceTest {
             arguments(
                 "plugin acl only",
                 context("dev", "api", "123", plugin("foo")),
-                spec("dev", new ACLs(null, List.of(new ACLs.PluginACL("foo", null))), null)
+                spec("dev", new ACLs(null, null, List.of(new ACLs.PluginACL("foo", null))), null)
             ),
             arguments(
                 "plugin acl only many",
@@ -111,6 +113,7 @@ class DefaultGrantServiceTest {
                 spec(
                     "dev",
                     new ACLs(
+                        null,
                         List.of(), // setting an empty list for the sake of testing empty list
                         List.of(new ACLs.PluginACL("bar", null), new ACLs.PluginACL("foo", null))
                     ),
@@ -127,36 +130,36 @@ class DefaultGrantServiceTest {
             arguments(
                 "def acl ok wrong env",
                 context("dev", "api", "123"),
-                spec("test", new ACLs(List.of(new ACLs.DefinitionACL("api", List.of("123"))), null), null)
+                spec("test", new ACLs(null, List.of(new ACLs.DefinitionACL("api", List.of("123"))), null), null)
             ),
             arguments(
                 "def acl ok wrong key",
                 context("dev", "api", "123", "pwd"),
-                spec("dev", new ACLs(List.of(new ACLs.DefinitionACL("api", List.of("123"))), null), "pass")
+                spec("dev", new ACLs(null, List.of(new ACLs.DefinitionACL("api", List.of("123"))), null), "pass")
             ),
             arguments(
                 "def acl wrong id",
                 context("dev", "api", "123"),
-                spec("dev", new ACLs(List.of(new ACLs.DefinitionACL("api", List.of("456"))), null), null)
+                spec("dev", new ACLs(null, List.of(new ACLs.DefinitionACL("api", List.of("456"))), null), null)
             ),
             arguments(
                 "def acl wrong kind",
                 context("dev", "api", "123"),
-                spec("dev", new ACLs(List.of(new ACLs.DefinitionACL("dict", List.of("123"))), null), null)
+                spec("dev", new ACLs(null, List.of(new ACLs.DefinitionACL("dict", List.of("123"))), null), null)
             ),
             arguments(
                 "plugin acl ko",
                 context("dev", "api", "123", plugin("foo")),
                 spec(
                     "dev",
-                    new ACLs(List.of(new ACLs.DefinitionACL("api", List.of("123"))), List.of(new ACLs.PluginACL("bar", null))),
+                    new ACLs(null, List.of(new ACLs.DefinitionACL("api", List.of("123"))), List.of(new ACLs.PluginACL("bar", null))),
                     null
                 )
             ),
             arguments(
                 "plugin acl only ko",
                 context("dev", "api", "123", plugin("bar")),
-                spec("dev", new ACLs(null, List.of(new ACLs.PluginACL("foo", null))), null)
+                spec("dev", new ACLs(null, null, List.of(new ACLs.PluginACL("foo", null))), null)
             ),
             arguments("no spec", context("dev", "api", "123", plugin("bar")), null)
         );

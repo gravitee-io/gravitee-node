@@ -59,12 +59,23 @@ public class SpecFixtures {
             false,
             false,
             null,
-            new ACLs(List.of(definitionACL), List.of(pluginACL)),
+            new ACLs(null, List.of(definitionACL), List.of(pluginACL)),
             envId
         );
     }
 
     public static Spec fromNameUriAndKeyPluginACL(String envId, String name, String uri, String key, ACLs.PluginACL pluginACL) {
-        return new Spec(UUID.randomUUID().toString(), name, uri, key, null, false, false, null, new ACLs(null, List.of(pluginACL)), envId);
+        return new Spec(
+            UUID.randomUUID().toString(),
+            name,
+            uri,
+            key,
+            null,
+            false,
+            false,
+            null,
+            new ACLs(null, null, List.of(pluginACL)),
+            envId
+        );
     }
 }

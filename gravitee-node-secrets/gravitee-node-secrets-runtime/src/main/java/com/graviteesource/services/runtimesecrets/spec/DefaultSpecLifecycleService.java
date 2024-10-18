@@ -15,6 +15,8 @@
  */
 package com.graviteesource.services.runtimesecrets.spec;
 
+import static java.util.function.Predicate.not;
+
 import com.graviteesource.services.runtimesecrets.config.Config;
 import com.graviteesource.services.runtimesecrets.renewal.RenewalService;
 import io.gravitee.node.api.secrets.model.SecretMount;
@@ -33,6 +35,7 @@ import io.reactivex.rxjava3.functions.Action;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -129,8 +132,10 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
             });
     }
 
-    private static boolean isACLsChange(SpecUpdate update) {
-        return !Objects.equals(update.oldSpec().acls(), update.newSpec().acls());
+    private static boolean isACLsChange(SpecUpdate specUpdate) {
+        Predicate<SpecUpdate> sameACLs = update -> Objects.equals(update.oldSpec().acls(), update.newSpec().acls());
+        Predicate<SpecUpdate> sameKind = update -> update.oldSpec().valueKind() == update.newSpec().valueKind();
+        return not(sameACLs).or(not(sameKind)).test(specUpdate);
     }
 
     private boolean isUriAndKeyChanged(SpecUpdate update) {

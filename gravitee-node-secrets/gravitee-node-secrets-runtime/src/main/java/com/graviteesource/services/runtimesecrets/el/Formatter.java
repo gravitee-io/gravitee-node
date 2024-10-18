@@ -15,6 +15,8 @@
  */
 package com.graviteesource.services.runtimesecrets.el;
 
+import static io.gravitee.node.api.secrets.runtime.grant.RuntimeContext.EL_VARIABLE;
+
 import io.gravitee.node.api.secrets.runtime.discovery.Definition;
 import io.gravitee.node.api.secrets.runtime.discovery.DiscoveryContext;
 import io.gravitee.node.api.secrets.runtime.discovery.PayloadLocation;
@@ -27,8 +29,8 @@ import java.util.UUID;
  */
 public class Formatter {
 
-    public static final String FROM_GRANT_TEMPLATE = "{#secrets.fromGrant('%s')}";
-    public static final String FROM_GRANT_EL_KEY_TEMPLATE = "{#secrets.fromGrant('%s', %s)}";
+    public static final String FROM_GRANT_TEMPLATE = "{#secrets.fromGrant('%s', " + "#" + EL_VARIABLE + ")}";
+    public static final String FROM_GRANT_EL_KEY_TEMPLATE = "{#secrets.fromGrant('%s', %s, " + "#" + EL_VARIABLE + ")}";
     public static final String METHOD_NAME_SUFFIX = "WithName";
     public static final String METHOD_URI_SUFFIX = "WithUri";
     public static final String FROM_GRANT_WITH_TEMPLATE = "{#secrets.fromGrant%s('%s', '%s', '%s', %s)}";

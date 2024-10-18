@@ -51,7 +51,10 @@ public class DefaultGrantService implements GrantService {
     public boolean grant(@Nonnull DiscoveryContext context, Spec spec) {
         boolean granted = isGranted(context, spec);
         if (granted && context.id() != null) {
-            grantRegistry.register(context.id().toString(), new Grant(CacheKey.from(spec), spec.key()));
+            grantRegistry.register(
+                context.id().toString(),
+                new Grant(CacheKey.from(spec), spec.key(), spec.valueKind(), spec.allowedFields())
+            );
         }
         return granted;
     }

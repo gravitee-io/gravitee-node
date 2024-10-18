@@ -6,6 +6,9 @@ import io.gravitee.node.api.secrets.model.SecretURL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
@@ -51,6 +54,27 @@ public record Spec(
 
     public String naturalId() {
         return name != null && !name.isEmpty() ? name : uri;
+    }
+
+    public ValueKind valueKind() {
+        return acls != null ? acls.valueKind() : null;
+    }
+
+    public Set<String> allowedFields() {
+        if (acls != null && acls.plugins() != null) {
+            return acls()
+                .plugins()
+                .stream()
+                .flatMap(pl -> {
+                    if (pl.fields() == null) {
+                        return Stream.empty();
+                    }
+                    return pl.fields().stream();
+                })
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+        }
+        return Set.of();
     }
 
     public record ChildSpec(String name, String uri, String key) {}

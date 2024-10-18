@@ -26,6 +26,7 @@ import io.gravitee.node.api.secrets.runtime.discovery.DiscoveryLocation;
 import io.gravitee.node.api.secrets.runtime.discovery.Ref;
 import io.gravitee.node.api.secrets.runtime.grant.Grant;
 import io.gravitee.node.api.secrets.runtime.grant.GrantService;
+import io.gravitee.node.api.secrets.runtime.grant.RuntimeContext;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
 import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
 import io.gravitee.node.api.secrets.runtime.storage.Cache;
@@ -47,20 +48,20 @@ public class Service {
     private final SpecLifecycleService specLifecycleService;
     private final SpecRegistry specRegistry;
 
-    public String fromGrant(String contextId) {
+    public String fromGrant(String contextId, RuntimeContext runtimeContext) {
         Optional<Grant> grantOptional = grantService.getGrant(contextId);
-        if (grantOptional.isEmpty()) {
-            return resultToValue(new Result(Result.Type.DENIED, "secret was denied ahead of traffic"));
+        if (grantOptional.isEmpty() || !grantOptional.get().match(runtimeContext)) {
+            return resultToValue(new Result(Result.Type.DENIED, "secret is denied"));
         }
         return getFromCache(grantOptional.get(), grantOptional.get().secretKey());
     }
 
-    public String fromGrant(String contextId, String key) {
+    public String fromGrant(String contextId, String secretKey, RuntimeContext runtimeContext) {
         Optional<Grant> grantOptional = grantService.getGrant(contextId);
-        if (grantOptional.isEmpty()) {
-            return resultToValue(new Result(Result.Type.DENIED, "secret was denied ahead of traffic"));
+        if (grantOptional.isEmpty() || !grantOptional.get().match(runtimeContext)) {
+            return resultToValue(new Result(Result.Type.DENIED, "secret is denied"));
         }
-        return getFromCache(grantOptional.get(), key);
+        return getFromCache(grantOptional.get(), secretKey);
     }
 
     private String getFromCache(Grant grant, String key) {

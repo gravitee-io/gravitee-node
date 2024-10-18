@@ -236,7 +236,7 @@ class ProcessorTest {
             false,
             false,
             null,
-            new ACLs(null, List.of(new ACLs.PluginACL("first", null))),
+            new ACLs(null, null, List.of(new ACLs.PluginACL("first", null))),
             FOO_ENV_ID
         );
         specLifeCycleService.deploy(spec);
@@ -302,7 +302,7 @@ class ProcessorTest {
             false,
             false,
             null,
-            new ACLs(null, List.of(new ACLs.PluginACL("first", null))),
+            new ACLs(null, null, List.of(new ACLs.PluginACL("first", null))),
             FOO_ENV_ID
         );
         specLifeCycleService.deploy(spec);
@@ -321,7 +321,7 @@ class ProcessorTest {
             false,
             false,
             null,
-            new ACLs(null, List.of(new ACLs.PluginACL("first", null))),
+            new ACLs(null, null, List.of(new ACLs.PluginACL("first", null))),
             FOO_ENV_ID
         );
         specLifeCycleService.deploy(specV2);
@@ -342,7 +342,7 @@ class ProcessorTest {
             false,
             false,
             null,
-            new ACLs(null, List.of(new ACLs.PluginACL("first", null))),
+            new ACLs(null, null, List.of(new ACLs.PluginACL("first", null))),
             FOO_ENV_ID
         );
         specLifeCycleService.deploy(spec);
@@ -361,7 +361,7 @@ class ProcessorTest {
             false,
             false,
             null,
-            new ACLs(null, List.of(new ACLs.PluginACL("second", null))),
+            new ACLs(null, null, List.of(new ACLs.PluginACL("second", null))),
             FOO_ENV_ID
         );
         specLifeCycleService.deploy(specV2);
@@ -395,7 +395,7 @@ class ProcessorTest {
             false,
             false,
             null,
-            new ACLs(null, List.of(new ACLs.PluginACL("first", null))),
+            new ACLs(null, null, List.of(new ACLs.PluginACL("first", null))),
             FOO_ENV_ID
         );
         specLifeCycleService.deploy(spec);
@@ -431,7 +431,7 @@ class ProcessorTest {
             false,
             false,
             null,
-            new ACLs(null, List.of(new ACLs.PluginACL("first", null))),
+            new ACLs(null, null, List.of(new ACLs.PluginACL("first", null))),
             FOO_ENV_ID
         );
         specLifeCycleService.deploy(specWithUri);
@@ -452,7 +452,7 @@ class ProcessorTest {
             false,
             false,
             null,
-            new ACLs(null, List.of(new ACLs.PluginACL("first", null))),
+            new ACLs(null, null, List.of(new ACLs.PluginACL("first", null))),
             FOO_ENV_ID
         );
         specLifeCycleService.deploy(specWithName);

@@ -7,7 +7,7 @@ import java.util.List;
  * @author GraviteeSource Team
  */
 
-public record ACLs(List<DefinitionACL> definitions, List<PluginACL> plugins) {
+public record ACLs(ValueKind valueKind, List<DefinitionACL> definitions, List<PluginACL> plugins) {
     public record DefinitionACL(String kind, List<String> ids) {}
     public record PluginACL(String id, List<String> fields) {}
 }

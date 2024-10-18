@@ -19,10 +19,7 @@ import com.graviteesource.services.runtimesecrets.renewal.RenewalService;
 import com.graviteesource.services.runtimesecrets.spec.SpecRegistry;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.secrets.runtime.providers.SecretProviderDeployer;
-import io.gravitee.node.api.secrets.runtime.spec.ACLs;
-import io.gravitee.node.api.secrets.runtime.spec.Resolution;
-import io.gravitee.node.api.secrets.runtime.spec.Spec;
-import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
+import io.gravitee.node.api.secrets.runtime.spec.*;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.io.FileReader;
 import java.io.IOException;
@@ -156,6 +153,8 @@ public class RuntimeSecretsService extends AbstractService<RuntimeSecretsService
 
     private void handleDemo(Properties properties) {
         String pluginToAdd = properties.getProperty("updateSpecACLAddPlugin", "ignore");
+        String fieldToAdd = properties.getProperty("updateSpecACLAddField", "");
+        String valueKind = properties.getProperty("updateSpecACLSetKind", "");
         String specToUndeploy = properties.getProperty("undeploySpec", "");
         String otfSpecWithACL = properties.getProperty("otfSpecWithACL", "");
         int otfSpecWithRenewal = Integer.parseInt(properties.getProperty("otfSpecWithRenewal", "0"));
@@ -177,7 +176,7 @@ public class RuntimeSecretsService extends AbstractService<RuntimeSecretsService
             );
         }
         if (!pluginToAdd.equals("ignore")) {
-            deployStaticApiKey(pluginToAdd);
+            deployStaticApiKey(pluginToAdd, valueKind, fieldToAdd);
         }
 
         if (!specToUndeploy.isEmpty()) {
@@ -188,7 +187,7 @@ public class RuntimeSecretsService extends AbstractService<RuntimeSecretsService
         }
     }
 
-    private void deployStaticApiKey(String pluginToAdd) {
+    private void deployStaticApiKey(String pluginToAdd, String valueKind, String fieldToAdd) {
         specLifecycleService.deploy(
             new Spec(
                 "e69328d2-cdb0-4970-a94e-c521ff03f1d5",
@@ -199,16 +198,24 @@ public class RuntimeSecretsService extends AbstractService<RuntimeSecretsService
                 false,
                 false,
                 null,
-                acls(pluginToAdd),
+                acls(pluginToAdd, valueKind, fieldToAdd),
                 "DEFAULT"
             )
         );
     }
 
     private ACLs acls(String pluginToAdd) {
+        return acls(pluginToAdd, "", "");
+    }
+
+    private ACLs acls(String pluginToAdd, String valueKind, String fieldToAdd) {
         if (pluginToAdd.isEmpty()) {
             return null;
         }
-        return new ACLs(null, List.of(new ACLs.PluginACL(pluginToAdd, null)));
+        return new ACLs(
+            valueKind.isEmpty() ? null : ValueKind.valueOf(valueKind.toUpperCase()),
+            null,
+            List.of(new ACLs.PluginACL(pluginToAdd, fieldToAdd.isEmpty() ? null : List.of(fieldToAdd)))
+        );
     }
 }
