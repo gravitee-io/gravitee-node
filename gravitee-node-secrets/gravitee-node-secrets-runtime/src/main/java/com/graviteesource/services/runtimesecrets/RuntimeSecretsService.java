@@ -165,7 +165,7 @@ public class RuntimeSecretsService extends AbstractService<RuntimeSecretsService
                 new Spec(
                     "f9024ec8-ad20-4834-8962-9c9153218983",
                     "case-1-api-key",
-                    "/mock/static/uri",
+                    "/mock/case1",
                     "api-key",
                     null,
                     false,
@@ -182,7 +182,9 @@ public class RuntimeSecretsService extends AbstractService<RuntimeSecretsService
 
         if (!specToUndeploy.isEmpty()) {
             Spec spec = specRegistry.getFromName("DEFAULT", specToUndeploy);
-            specLifecycleService.undeploy(spec);
+            if (spec != null) {
+                specLifecycleService.undeploy(spec);
+            }
         }
     }
 
@@ -190,8 +192,8 @@ public class RuntimeSecretsService extends AbstractService<RuntimeSecretsService
         specLifecycleService.deploy(
             new Spec(
                 "e69328d2-cdb0-4970-a94e-c521ff03f1d5",
-                "static-api-key",
-                "/mock/static/named",
+                "case2-api-key",
+                "/mock/case2",
                 "api-key",
                 null,
                 false,
