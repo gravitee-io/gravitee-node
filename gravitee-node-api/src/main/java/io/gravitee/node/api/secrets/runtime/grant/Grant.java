@@ -1,6 +1,7 @@
 package io.gravitee.node.api.secrets.runtime.grant;
 
-import io.gravitee.node.api.secrets.runtime.spec.ValueKind;
+import io.gravitee.common.secrets.RuntimeContext;
+import io.gravitee.common.secrets.ValueKind;
 import io.gravitee.node.api.secrets.runtime.storage.CacheKey;
 import java.util.Set;
 import java.util.function.Predicate;

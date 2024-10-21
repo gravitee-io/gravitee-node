@@ -57,7 +57,7 @@
 
     <properties>
         <gravitee-bom.version>8.1.0</gravitee-bom.version>
-        <gravitee-common.version>3.3.3</gravitee-common.version>
+        <gravitee-common.version>4.5.1</gravitee-common.version>
         <gravitee-plugin.version>4.1.0</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.25.0</gravitee-reporter-api.version>
         <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>

@@ -2,6 +2,7 @@ package io.gravitee.node.api.secrets.runtime.spec;
 
 import static io.gravitee.node.api.secrets.runtime.discovery.Ref.formatUriAndKey;
 
+import io.gravitee.common.secrets.ValueKind;
 import io.gravitee.node.api.secrets.model.SecretURL;
 import java.util.List;
 import java.util.Objects;

@@ -15,7 +15,7 @@
  */
 package com.graviteesource.services.runtimesecrets.el;
 
-import static io.gravitee.node.api.secrets.runtime.grant.RuntimeContext.EL_VARIABLE;
+import static io.gravitee.common.secrets.RuntimeContext.EL_VARIABLE;
 
 import io.gravitee.node.api.secrets.runtime.discovery.Definition;
 import io.gravitee.node.api.secrets.runtime.discovery.DiscoveryContext;

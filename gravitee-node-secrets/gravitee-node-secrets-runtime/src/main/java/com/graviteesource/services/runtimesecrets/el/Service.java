@@ -20,13 +20,13 @@ import static io.gravitee.node.api.secrets.runtime.discovery.Ref.URI_KEY_SEPARAT
 import com.graviteesource.services.runtimesecrets.discovery.RefParser;
 import com.graviteesource.services.runtimesecrets.errors.*;
 import com.graviteesource.services.runtimesecrets.spec.SpecRegistry;
+import io.gravitee.common.secrets.RuntimeContext;
 import io.gravitee.node.api.secrets.model.Secret;
 import io.gravitee.node.api.secrets.runtime.discovery.DiscoveryContext;
 import io.gravitee.node.api.secrets.runtime.discovery.DiscoveryLocation;
 import io.gravitee.node.api.secrets.runtime.discovery.Ref;
 import io.gravitee.node.api.secrets.runtime.grant.Grant;
 import io.gravitee.node.api.secrets.runtime.grant.GrantService;
-import io.gravitee.node.api.secrets.runtime.grant.RuntimeContext;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
 import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
 import io.gravitee.node.api.secrets.runtime.storage.Cache;

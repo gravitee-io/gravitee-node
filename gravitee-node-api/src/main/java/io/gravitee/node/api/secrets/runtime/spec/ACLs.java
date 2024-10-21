@@ -1,5 +1,6 @@
 package io.gravitee.node.api.secrets.runtime.spec;
 
+import io.gravitee.common.secrets.ValueKind;
 import java.util.List;
 
 /**
