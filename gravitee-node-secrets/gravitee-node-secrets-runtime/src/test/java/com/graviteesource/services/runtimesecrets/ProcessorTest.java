@@ -22,6 +22,7 @@ import static org.awaitility.Awaitility.await;
 import com.graviteesource.services.runtimesecrets.config.Config;
 import com.graviteesource.services.runtimesecrets.config.OnTheFlySpecs;
 import com.graviteesource.services.runtimesecrets.config.Renewal;
+import com.graviteesource.services.runtimesecrets.config.Retry;
 import com.graviteesource.services.runtimesecrets.discovery.DefaultContextRegistry;
 import com.graviteesource.services.runtimesecrets.discovery.DefinitionBrowserRegistry;
 import com.graviteesource.services.runtimesecrets.el.engine.SecretSpelTemplateEngine;
@@ -135,7 +136,11 @@ class ProcessorTest {
         );
 
         cache = new SimpleOffHeapCache();
-        Config config = new Config(false, new OnTheFlySpecs(true, Duration.ofMillis(200)), new Renewal(true, Duration.ofMillis(200)));
+        Config config = new Config(
+            new OnTheFlySpecs(true, Duration.ofMillis(200)),
+            Retry.none(),
+            new Renewal(true, Duration.ofMillis(200))
+        );
         GrantService grantService = new DefaultGrantService(new GrantRegistry(), config);
         SpecRegistry specRegistry = new SpecRegistry();
         ContextRegistry contextRegistry = new DefaultContextRegistry();

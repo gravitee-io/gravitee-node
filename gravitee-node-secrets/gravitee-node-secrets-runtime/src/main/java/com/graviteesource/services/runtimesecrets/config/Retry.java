@@ -5,4 +5,8 @@ import java.util.concurrent.TimeUnit;/**
  * @author GraviteeSource Team
  */
 
-public record Retry(boolean enabled, long delay, TimeUnit unit, float backoffFactor, int maxDelay) {}
+public record Retry(boolean enabled, long delay, TimeUnit unit, float backoffFactor, int maxDelay) {
+    public static Retry none() {
+        return new Retry(false, 0, TimeUnit.MILLISECONDS, 0, 0);
+    }
+}

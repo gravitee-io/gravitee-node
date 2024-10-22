@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.graviteesource.services.runtimesecrets.config.Config;
 import com.graviteesource.services.runtimesecrets.config.OnTheFlySpecs;
 import com.graviteesource.services.runtimesecrets.config.Renewal;
+import com.graviteesource.services.runtimesecrets.config.Retry;
 import com.graviteesource.services.runtimesecrets.discovery.DefaultContextRegistry;
 import com.graviteesource.services.runtimesecrets.discovery.RefParser;
 import com.graviteesource.services.runtimesecrets.grant.DefaultGrantService;
@@ -84,7 +85,7 @@ class DefaultSpecLifecycleServiceTest {
             null
         );
         cache = new SimpleOffHeapCache();
-        Config config = new Config(false, new OnTheFlySpecs(true, Duration.ZERO), new Renewal(true, Duration.ZERO));
+        Config config = new Config(new OnTheFlySpecs(true, Duration.ZERO), Retry.none(), new Renewal(true, Duration.ZERO));
         RenewalService renewalService = new RenewalService(null, cache, config);
         cut =
             new DefaultSpecLifecycleService(

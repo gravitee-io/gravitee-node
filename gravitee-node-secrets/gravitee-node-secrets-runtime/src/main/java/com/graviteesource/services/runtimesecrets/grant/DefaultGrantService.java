@@ -15,7 +15,6 @@
  */
 package com.graviteesource.services.runtimesecrets.grant;
 
-import static com.graviteesource.services.runtimesecrets.config.Config.DENY_SPEC_WITHOUT_ACLS;
 import static com.graviteesource.services.runtimesecrets.config.Config.ON_THE_FLY_SPECS_ENABLED;
 import static io.gravitee.node.api.secrets.runtime.discovery.PayloadLocation.PLUGIN_KIND;
 
@@ -71,16 +70,7 @@ public class DefaultGrantService implements GrantService {
             return false;
         }
         if (spec.acls() == null) {
-            if (config.denySpecWithoutACLs()) {
-                log.warn(
-                    "secret spec for ref [{}] not granted because secrets requires ACLs. see conf: {}",
-                    context.ref().rawRef(),
-                    DENY_SPEC_WITHOUT_ACLS
-                );
-                return false;
-            } else {
-                return checkSpec(context).test(spec);
-            }
+            return checkSpec(context).test(spec);
         }
 
         return checkSpec(context).test(spec) && checkACLs(context).test(spec.acls());

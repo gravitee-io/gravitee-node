@@ -68,7 +68,7 @@ public class RuntimeSecretsBeanFactory {
         @Value("${" + RENEWAL_ENABLED + ":true}") boolean renewalEnabled,
         @Value("${" + RENEWAL_CHECK_DELAY + ":15}") long renewalCheckDelay,
         @Value("${" + RENEWAL_CHECK_UNIT + ":MINUTES}") TimeUnit renewalCheckUnit,
-        @Value("${" + RETRY_ON_ERROR_ENABLED + ":true}") boolean retryOnErrorEnabled,
+        @Value("${" + RETRY_ON_ERROR_ENABLED + ":false}") boolean retryOnErrorEnabled,
         @Value("${" + RETRY_ON_ERROR_DELAY + ":2}") long retryOnErrorDelay,
         @Value("${" + RETRY_ON_ERROR_UNIT + ":SECONDS}") TimeUnit retryOnErrorUnit,
         @Value("${" + RETRY_ON_ERROR_BACKOFF_FACTOR + ":1.5}") float factor,
