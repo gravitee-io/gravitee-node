@@ -15,17 +15,13 @@
  */
 package io.gravitee.node.vertx;
 
-import static java.util.stream.Collectors.*;
-import static java.util.stream.StreamSupport.stream;
+import static java.util.stream.Collectors.toList;
 
-import io.gravitee.common.util.EnvironmentUtils;
 import io.gravitee.node.api.Node;
-import io.gravitee.node.tracing.vertx.LazyVertxTracerFactory;
 import io.gravitee.node.vertx.metrics.ExcludeTagsFilter;
 import io.gravitee.node.vertx.metrics.RenameVertxFilter;
 import io.gravitee.node.vertx.verticle.factory.SpringVerticleFactory;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
@@ -34,17 +30,23 @@ import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.tracing.TracingOptions;
-import io.vertx.micrometer.*;
+import io.vertx.micrometer.Label;
+import io.vertx.micrometer.MetricsDomain;
+import io.vertx.micrometer.MetricsNaming;
+import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.VertxPrometheusOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
-import java.util.*;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 
 /**
@@ -66,9 +68,6 @@ public class VertxFactory implements FactoryBean<Vertx> {
     @Autowired
     private SpringVerticleFactory springVerticleFactory;
 
-    @Autowired
-    private LazyVertxTracerFactory vertxTracerFactory;
-
     private Set<Label> metricsLabels;
 
     private Map<String, Set<Label>> metricsExcludedLabelsByCategory;
@@ -81,11 +80,6 @@ public class VertxFactory implements FactoryBean<Vertx> {
         boolean metricsEnabled = environment.getProperty("services.metrics.enabled", Boolean.class, false);
         if (metricsEnabled) {
             configureMetrics(options);
-        }
-
-        boolean tracingEnabled = environment.getProperty("services.tracing.enabled", Boolean.class, false);
-        if (tracingEnabled) {
-            configureTracing(options);
         }
 
         Vertx instance = Vertx.vertx(options);
@@ -150,10 +144,6 @@ public class VertxFactory implements FactoryBean<Vertx> {
         }
 
         options.setMetricsOptions(micrometerMetricsOptions);
-    }
-
-    private void configureTracing(VertxOptions options) {
-        options.setTracingOptions(new TracingOptions().setFactory(vertxTracerFactory));
     }
 
     @Override
