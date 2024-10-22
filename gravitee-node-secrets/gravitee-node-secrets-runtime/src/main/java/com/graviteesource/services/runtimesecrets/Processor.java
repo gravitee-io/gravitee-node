@@ -76,7 +76,7 @@ public class Processor {
             // get spec
             Spec spec = specRegistry.fromRef(context.envId(), context.ref());
             if (spec == null && specLifecycleService.shouldDeployOnTheFly(context.ref())) {
-                spec = specLifecycleService.deployOnTheFly(envId, context.ref());
+                spec = specLifecycleService.deployOnTheFly(envId, context.ref(), true);
             }
 
             if (context.ref().mainExpression().isLiteral()) {

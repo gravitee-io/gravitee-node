@@ -149,9 +149,13 @@ public final class SecretMap {
         return Optional.ofNullable(wellKnown.get(key));
     }
 
+    public SecretMap withExpireAt(Instant expireAt) {
+        return new SecretMap(map, expireAt);
+    }
+
     /**
      * Well-known field that can typically exist find in a secret. This is from Gravitee.io point of view.
-     * Any consumer of those field should use {@link SecretMap#wellKnown()} to use fetch the data.
+     * Any consumer of those field should use {@link SecretMap#wellKnown(WellKnownSecretKey)} to use fetch the data.
      */
     public enum WellKnownSecretKey {
         CERTIFICATE,

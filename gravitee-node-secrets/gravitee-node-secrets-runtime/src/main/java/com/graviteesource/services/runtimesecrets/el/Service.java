@@ -48,6 +48,8 @@ public class Service {
     private final SpecLifecycleService specLifecycleService;
     private final SpecRegistry specRegistry;
 
+    // TODO add a lambda to handle TTL
+
     public String fromGrant(String contextId, RuntimeContext runtimeContext) {
         Optional<Grant> grantOptional = grantService.getGrant(contextId);
         if (grantOptional.isEmpty() || !grantOptional.get().match(runtimeContext)) {
@@ -95,7 +97,7 @@ public class Service {
             Ref ref = uriAndKey.asRef();
             Spec spec = specRegistry.getFromUriAndKey(envId, uriWithKey);
             if (spec == null && specLifecycleService.shouldDeployOnTheFly(ref)) {
-                spec = specLifecycleService.deployOnTheFly(envId, ref);
+                spec = specLifecycleService.deployOnTheFly(envId, ref, false);
             }
             return grantAndGet(envId, definitionKind, definitionId, spec, ref, uriAndKey.key());
         } else {
@@ -139,6 +141,9 @@ public class Service {
             case VALUE -> {
                 Map<String, Secret> secretMap = entry.value();
                 Secret secret = secretMap.get(key);
+                // TODO need: secretMount
+                // TODO need Secret to have expiration (not only map)
+                // TODO check expiration => call ResolverService.resolveAsync(mount, retry=true)
                 if (secret != null) {
                     result = new Result(Result.Type.VALUE, secret.asString());
                 } else {

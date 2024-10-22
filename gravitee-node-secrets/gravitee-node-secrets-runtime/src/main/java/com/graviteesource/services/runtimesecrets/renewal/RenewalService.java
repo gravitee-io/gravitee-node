@@ -129,6 +129,6 @@ public class RenewalService {
     }
 
     private void setupNextCheck(Spec spec) {
-        specsToRenew.put(spec, Instant.now().plus(spec.resolution().pollInterval()));
+        specsToRenew.put(spec, Instant.now().plus(spec.resolution().duration()));
     }
 }

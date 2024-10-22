@@ -8,7 +8,7 @@ import io.gravitee.node.api.secrets.runtime.discovery.Ref;
  */
 public interface SpecLifecycleService {
     boolean shouldDeployOnTheFly(Ref ref);
-    Spec deployOnTheFly(String envId, Ref ref);
+    Spec deployOnTheFly(String envId, Ref ref, boolean retryOnError);
 
     void deploy(Spec spec);
 

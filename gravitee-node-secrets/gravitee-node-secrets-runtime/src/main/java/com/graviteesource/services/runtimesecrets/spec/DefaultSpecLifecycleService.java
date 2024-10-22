@@ -19,6 +19,7 @@ import static java.util.function.Predicate.not;
 
 import com.graviteesource.services.runtimesecrets.config.Config;
 import com.graviteesource.services.runtimesecrets.renewal.RenewalService;
+import io.gravitee.common.utils.RxHelper;
 import io.gravitee.node.api.secrets.model.SecretMount;
 import io.gravitee.node.api.secrets.model.SecretURL;
 import io.gravitee.node.api.secrets.runtime.discovery.ContextRegistry;
@@ -61,7 +62,7 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
     }
 
     @Override
-    public Spec deployOnTheFly(String envId, Ref ref) {
+    public Spec deployOnTheFly(String envId, Ref ref, boolean retryOnError) {
         Spec runtimeSpec = ref.asOnTheFlySpec(envId);
         specRegistry.register(runtimeSpec);
         cache.computeIfAbsent(
@@ -77,7 +78,7 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
                             .resolve(envId, mount)
                             .doOnSuccess(entry -> {
                                 if (entry.type() == Entry.Type.ERROR) {
-                                    asyncResolution(runtimeSpec, config.onTheFlySpecs().onErrorRetryAfter(), () -> {});
+                                    asyncResolution(runtimeSpec, config.onTheFlySpecs().onErrorRetryAfter(), retryOnError, () -> {});
                                 }
                             })
                     )
@@ -117,7 +118,7 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
         }
 
         if (shouldResolve) {
-            asyncResolution(spec, Duration.ZERO, afterResolve);
+            asyncResolution(spec, Duration.ZERO, true, afterResolve);
         }
     }
 
@@ -150,12 +151,22 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
         renewalService.onDelete(spec);
     }
 
-    private void asyncResolution(Spec spec, Duration delay, @NonNull Action postResolution) {
+    private void asyncResolution(Spec spec, Duration delay, boolean retryOnError, @NonNull Action postResolution) {
         SecretURL secretURL = spec.toSecretURL();
         String envId = spec.envId();
+
         resolverService
             .toSecretMount(envId, secretURL)
             .delay(delay.toMillis(), TimeUnit.MILLISECONDS)
+            .retryWhen(
+                RxHelper.retryExponentialBackoff(
+                    config.retry().delay(),
+                    config.retry().maxDelay(),
+                    config.retry().unit(),
+                    config.retry().backoffFactor(),
+                    err -> retryOnError && config.retry().enabled()
+                )
+            )
             .doOnSuccess(mount -> log.info("Resolving secret: {}", mount))
             .flatMap(mount -> resolverService.resolve(envId, mount))
             .doOnError(err -> log.error("Async resolution failed", err))

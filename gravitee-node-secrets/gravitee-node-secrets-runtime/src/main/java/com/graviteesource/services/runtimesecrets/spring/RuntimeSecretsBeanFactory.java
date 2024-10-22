@@ -22,6 +22,7 @@ import com.graviteesource.services.runtimesecrets.RuntimeSecretsService;
 import com.graviteesource.services.runtimesecrets.config.Config;
 import com.graviteesource.services.runtimesecrets.config.OnTheFlySpecs;
 import com.graviteesource.services.runtimesecrets.config.Renewal;
+import com.graviteesource.services.runtimesecrets.config.Retry;
 import com.graviteesource.services.runtimesecrets.discovery.DefaultContextRegistry;
 import com.graviteesource.services.runtimesecrets.discovery.DefinitionBrowserRegistry;
 import com.graviteesource.services.runtimesecrets.el.engine.SecretsTemplateVariableProvider;
@@ -61,20 +62,24 @@ public class RuntimeSecretsBeanFactory {
 
     @Bean
     Config config(
-        @Value("${" + DENY_SPEC_WITHOUT_ACLS + ":false}") boolean denySpecWithoutACLs,
         @Value("${" + ON_THE_FLY_SPECS_ENABLED + ":true}") boolean onTheFlySpecsEnabled,
         @Value("${" + ON_THE_FLY_SPECS_ON_ERROR_RETRY_AFTER_DELAY + ":500}") long onTheFlySpecsOnErrorRetryAfterDelay,
         @Value("${" + ON_THE_FLY_SPECS_ON_ERROR_RETRY_AFTER_UNIT + ":MILLISECONDS}") TimeUnit onTheFlySpecsOnErrorRetryAfterUnit,
         @Value("${" + RENEWAL_ENABLED + ":true}") boolean renewalEnabled,
         @Value("${" + RENEWAL_CHECK_DELAY + ":15}") long renewalCheckDelay,
-        @Value("${" + RENEWAL_CHECK_UNIT + ":MINUTES}") TimeUnit renewalCheckUnit
+        @Value("${" + RENEWAL_CHECK_UNIT + ":MINUTES}") TimeUnit renewalCheckUnit,
+        @Value("${" + RETRY_ON_ERROR_ENABLED + ":true}") boolean retryOnErrorEnabled,
+        @Value("${" + RETRY_ON_ERROR_DELAY + ":2}") long retryOnErrorDelay,
+        @Value("${" + RETRY_ON_ERROR_UNIT + ":SECONDS}") TimeUnit retryOnErrorUnit,
+        @Value("${" + RETRY_ON_ERROR_BACKOFF_FACTOR + ":1.5}") float factor,
+        @Value("${" + RETRY_ON_ERROR_BACKOFF_MAX_DELAY + ":60}") int maxDelay
     ) {
         return new Config(
-            denySpecWithoutACLs,
             new OnTheFlySpecs(
                 onTheFlySpecsEnabled,
                 Duration.of(onTheFlySpecsOnErrorRetryAfterDelay, onTheFlySpecsOnErrorRetryAfterUnit.toChronoUnit())
             ),
+            new Retry(retryOnErrorEnabled, retryOnErrorDelay, retryOnErrorUnit, factor, maxDelay),
             new Renewal(renewalEnabled, Duration.of(renewalCheckDelay, renewalCheckUnit.toChronoUnit()))
         );
     }

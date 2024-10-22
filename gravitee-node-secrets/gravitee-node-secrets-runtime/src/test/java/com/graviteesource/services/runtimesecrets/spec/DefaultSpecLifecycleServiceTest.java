@@ -109,7 +109,7 @@ class DefaultSpecLifecycleServiceTest {
     void should_deploy_spec_on_the_fly_then_get_secret_map() {
         Ref ref = RefParser.parse("<</mock/mySecret:redisPassword>>");
         assertThat(cut.shouldDeployOnTheFly(ref)).isTrue();
-        Spec spec = cut.deployOnTheFly(ENV_ID, ref);
+        Spec spec = cut.deployOnTheFly(ENV_ID, ref, false);
         assertThat(spec.uri()).isEqualTo("/mock/mySecret");
         assertThat(spec.key()).isEqualTo("redisPassword");
         Awaitility.await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> checkInCache(spec));

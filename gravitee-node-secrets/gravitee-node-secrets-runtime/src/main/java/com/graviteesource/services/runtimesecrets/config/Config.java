@@ -19,14 +19,18 @@ package com.graviteesource.services.runtimesecrets.config;
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public record Config(boolean denySpecWithoutACLs, OnTheFlySpecs onTheFlySpecs, Renewal renewal) {
+public record Config(OnTheFlySpecs onTheFlySpecs, Retry retry, Renewal renewal) {
     public static final String CONFIG_PREFIX = "api.secrets";
-    public static final String DENY_SPEC_WITHOUT_ACLS = CONFIG_PREFIX + ".denySpecWithoutACLs";
     public static final String ON_THE_FLY_SPECS_ENABLED = CONFIG_PREFIX + ".onTheFlySpecs.enabled";
     public static final String ON_THE_FLY_SPECS_ON_ERROR_RETRY_AFTER_DELAY = CONFIG_PREFIX + ".onTheFlySpecs.onErrorRetryAfter.delay";
     public static final String ON_THE_FLY_SPECS_ON_ERROR_RETRY_AFTER_UNIT = CONFIG_PREFIX + ".onTheFlySpecs.onErrorRetryAfter.unit";
     public static final String RENEWAL_ENABLED = CONFIG_PREFIX + ".renewal.enable";
     public static final String RENEWAL_CHECK_DELAY = CONFIG_PREFIX + ".renewal.check.delay";
     public static final String RENEWAL_CHECK_UNIT = CONFIG_PREFIX + ".renewal.check.unit";
+    public static final String RETRY_ON_ERROR_ENABLED = CONFIG_PREFIX + ".retryOnError.enable";
+    public static final String RETRY_ON_ERROR_DELAY = CONFIG_PREFIX + ".retryOnError.delay";
+    public static final String RETRY_ON_ERROR_UNIT = CONFIG_PREFIX + ".retryOnError.unit";
+    public static final String RETRY_ON_ERROR_BACKOFF_FACTOR = CONFIG_PREFIX + ".retryOnError.backoffFactor";
+    public static final String RETRY_ON_ERROR_BACKOFF_MAX_DELAY = CONFIG_PREFIX + ".retryOnError.maxDelay";
     public static final String API_SECRETS_ALLOW_PROVIDERS_FROM_CONFIGURATION = CONFIG_PREFIX + ".allowProvidersFromConfiguration";
 }
