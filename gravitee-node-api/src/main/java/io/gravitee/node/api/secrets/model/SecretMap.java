@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toMap;
 
 import java.time.Instant;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import lombok.EqualsAndHashCode;
@@ -19,11 +20,11 @@ import lombok.EqualsAndHashCode;
  * @author GraviteeSource Team
  */
 @EqualsAndHashCode
-public final class SecretMap {
+public final class SecretMap implements WithExpiration {
 
     private final Map<String, Secret> map;
     private final Map<WellKnownSecretKey, Secret> wellKnown = new EnumMap<>(WellKnownSecretKey.class);
-    private final Instant expireAt;
+    private final Instant expiresAt;
 
     /**
      * Create a {@link SecretMap} from a map of {@link Secret} without expiration
@@ -38,11 +39,19 @@ public final class SecretMap {
      * Create a {@link SecretMap} from a map of {@link Secret} with expiration
      *
      * @param map      the map of {@link Secret}
-     * @param expireAt expiration
+     * @param expiresAt expiration
      */
-    public SecretMap(Map<String, Secret> map, Instant expireAt) {
+    public SecretMap(Map<String, Secret> map, Instant expiresAt) {
         this.map = map == null ? Map.of() : Map.copyOf(map);
-        this.expireAt = expireAt;
+        this.expiresAt = expiresAt;
+    }
+
+    /**
+     *
+     * @return a copy of the secrets as immutable map
+     */
+    public Map<String, Secret> asMap() {
+        return Map.copyOf(map);
     }
 
     /**
@@ -108,8 +117,8 @@ public final class SecretMap {
     /**
      * @return optional of the expiration of this secret
      */
-    public Optional<Instant> expireAt() {
-        return Optional.ofNullable(expireAt);
+    public Optional<Instant> expiresAt() {
+        return Optional.ofNullable(expiresAt);
     }
 
     /**
@@ -142,8 +151,31 @@ public final class SecretMap {
     }
 
     /**
+     * Compute a new secret map with expiration. If the <code>secretMount</code> has a key,
+     * then only the secret matching that key will be set to expire. If not the whole map is set to expire.
+     * @param secretMount the secret mount used to fetch that secret
+     * @param expireAt the expiration instant
+     * @return a new {@link SecretMap} containing expiring secrets
+     */
+    public SecretMap withExpiresAt(SecretMount secretMount, Instant expireAt) {
+        if (secretMount.isKeyEmpty()) {
+            // the whole map can expire
+            return new SecretMap(this.asMap(), expireAt);
+        } else {
+            Optional<Secret> expiring = this.getSecret(secretMount).map(secret -> secret.withExpiresAt(expireAt));
+            // set the secret to expire
+            if (expiring.isPresent()) {
+                Map<String, Secret> secrets = new HashMap<>(this.asMap());
+                secrets.put(secretMount.key(), expiring.get());
+                return new SecretMap(secrets);
+            }
+            return this;
+        }
+    }
+
+    /**
      * Well-known field that can typically exist find in a secret. This is from Gravitee.io point of view.
-     * Any consumer of those field should use {@link SecretMap#wellKnown()} to use fetch the data.
+     * Any consumer of those field should use {@link SecretMap#wellKnown(WellKnownSecretKey)} to fetch the data.
      */
     public enum WellKnownSecretKey {
         CERTIFICATE,

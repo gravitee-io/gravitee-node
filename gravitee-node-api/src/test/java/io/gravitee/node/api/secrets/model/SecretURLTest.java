@@ -3,14 +3,15 @@ package io.gravitee.node.api.secrets.model;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
@@ -66,6 +67,7 @@ class SecretURLTest {
 
     static Stream<Arguments> nonWorkingURLs() {
         return Stream.of(
+            arguments("/foo/bar"),
             arguments("hey://foo/bar"),
             arguments("secret:/foo"),
             arguments("secret:/foo"),
@@ -142,5 +144,20 @@ class SecretURLTest {
     void should_fail_parsing_well_known_mapping_error(String url) {
         SecretURL cut = SecretURL.from(url);
         assertThatThrownBy(cut::wellKnowKeyMap).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void should_parse_uri() {
+        SecretURL cut = SecretURL.from("/foo/bar:baz", false);
+        assertThat(cut.provider()).isEqualTo("foo");
+        assertThat(cut.path()).isEqualTo("bar");
+        assertThat(cut.key()).isEqualTo("baz");
+    }
+
+    @Test
+    void should_fail_parse_uri() {
+        assertThatCode(() -> SecretURL.from("/foo", false))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("should have the following format");
     }
 }
