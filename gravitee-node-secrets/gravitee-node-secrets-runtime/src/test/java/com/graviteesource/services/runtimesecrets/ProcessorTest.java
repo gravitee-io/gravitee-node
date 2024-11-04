@@ -144,7 +144,7 @@ class ProcessorTest {
         GrantService grantService = new DefaultGrantService(new GrantRegistry(), config);
         SpecRegistry specRegistry = new SpecRegistry();
         ContextRegistry contextRegistry = new DefaultContextRegistry();
-        ResolverService resolverService = new DefaultResolverService(secretProviderRegistry);
+        ResolverService resolverService = new DefaultResolverService(secretProviderRegistry, cache, config);
 
         renewalService = new RenewalService(resolverService, cache, config);
         specLifeCycleService =

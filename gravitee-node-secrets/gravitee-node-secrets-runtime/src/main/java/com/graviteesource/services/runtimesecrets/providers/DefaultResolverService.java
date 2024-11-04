@@ -15,18 +15,23 @@
  */
 package com.graviteesource.services.runtimesecrets.providers;
 
+import com.graviteesource.services.runtimesecrets.config.Config;
+import io.gravitee.common.utils.RxHelper;
 import io.gravitee.node.api.secrets.model.SecretMap;
 import io.gravitee.node.api.secrets.model.SecretMount;
 import io.gravitee.node.api.secrets.model.SecretURL;
 import io.gravitee.node.api.secrets.runtime.providers.ResolverService;
 import io.gravitee.node.api.secrets.runtime.spec.Resolution;
 import io.gravitee.node.api.secrets.runtime.spec.Spec;
+import io.gravitee.node.api.secrets.runtime.storage.Cache;
+import io.gravitee.node.api.secrets.runtime.storage.CacheKey;
 import io.gravitee.node.api.secrets.runtime.storage.Entry;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.functions.Action;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,6 +44,8 @@ import lombok.extern.slf4j.Slf4j;
 public class DefaultResolverService implements ResolverService {
 
     private final SecretProviderRegistry secretProviderRegistry;
+    private final Cache cache;
+    private final Config config;
 
     @Override
     public Single<Entry> resolve(String envId, SecretMount secretMount) {
@@ -56,8 +63,25 @@ public class DefaultResolverService implements ResolverService {
     }
 
     @Override
-    public void resolveAsync(String envId, Spec spec, Duration delayBeforeResolve, @NonNull Action postResolution) {
-        // TODO
+    public void resolveAsync(Spec spec, Duration delayBeforeResolve, boolean retryOnError, @NonNull Action postResolution) {
+        SecretURL secretURL = spec.toSecretURL();
+
+        this.toSecretMount(spec.envId(), secretURL)
+            .delay(delayBeforeResolve.toMillis(), TimeUnit.MILLISECONDS)
+            .retryWhen(
+                RxHelper.retryExponentialBackoff(
+                    config.retry().delay(),
+                    config.retry().maxDelay(),
+                    config.retry().unit(),
+                    config.retry().backoffFactor(),
+                    err -> retryOnError && config.retry().enabled()
+                )
+            )
+            .doOnSuccess(mount -> log.info("Resolving secret: {}", mount))
+            .flatMap(mount -> this.resolve(spec.envId(), mount))
+            .doOnError(err -> log.error("Async resolution failed", err))
+            .doFinally(postResolution)
+            .subscribe(entry -> cache.put(CacheKey.from(spec), entry));
     }
 
     private SecretMap applyExpiration(SecretMap secretMap, Resolution resolution) {

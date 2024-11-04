@@ -141,9 +141,9 @@ public class Service {
             case VALUE -> {
                 Map<String, Secret> secretMap = entry.value();
                 Secret secret = secretMap.get(key);
-                // TODO need: secretMount
+                // TODO check expiration => then call ResolverService.resolveAsync(mount, retry=true)
+                // TODO need: spec(context ID => Spec)
                 // TODO need Secret to have expiration (not only map)
-                // TODO check expiration => call ResolverService.resolveAsync(mount, retry=true)
                 if (secret != null) {
                     result = new Result(Result.Type.VALUE, secret.asString());
                 } else {

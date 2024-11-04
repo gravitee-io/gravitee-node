@@ -174,8 +174,8 @@ public class RuntimeSecretsBeanFactory {
 
     @Bean
     @Conditional({ AllowGraviteeYmlProviders.class })
-    ResolverService resolverService(SecretProviderRegistry secretProviderRegistry) {
-        return new DefaultResolverService(secretProviderRegistry);
+    ResolverService resolverService(SecretProviderRegistry secretProviderRegistry, Cache cache, Config config) {
+        return new DefaultResolverService(secretProviderRegistry, cache, config);
     }
 
     @Bean

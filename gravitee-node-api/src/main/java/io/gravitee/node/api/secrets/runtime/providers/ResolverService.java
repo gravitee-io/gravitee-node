@@ -16,7 +16,7 @@ import java.time.Duration;
 public interface ResolverService {
     Single<Entry> resolve(String envId, SecretMount secretMount);
 
-    void resolveAsync(String envId, Spec spec, Duration delayBeforeResolve, @NonNull Action postResolution);
+    void resolveAsync(Spec spec, Duration delayBeforeResolve, boolean retryOnError, @NonNull Action postResolution);
 
     Single<SecretMount> toSecretMount(String envId, SecretURL secretURL);
 }

@@ -92,7 +92,7 @@ class DefaultSpecLifecycleServiceTest {
                 new SpecRegistry(),
                 new DefaultContextRegistry(),
                 cache,
-                new DefaultResolverService(registry),
+                new DefaultResolverService(registry, cache, config),
                 new DefaultGrantService(new GrantRegistry(), config),
                 renewalService,
                 config

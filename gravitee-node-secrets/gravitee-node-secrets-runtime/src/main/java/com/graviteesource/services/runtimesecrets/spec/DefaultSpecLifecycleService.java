@@ -19,7 +19,6 @@ import static java.util.function.Predicate.not;
 
 import com.graviteesource.services.runtimesecrets.config.Config;
 import com.graviteesource.services.runtimesecrets.renewal.RenewalService;
-import io.gravitee.common.utils.RxHelper;
 import io.gravitee.node.api.secrets.model.SecretMount;
 import io.gravitee.node.api.secrets.model.SecretURL;
 import io.gravitee.node.api.secrets.runtime.discovery.ContextRegistry;
@@ -31,11 +30,9 @@ import io.gravitee.node.api.secrets.runtime.spec.SpecLifecycleService;
 import io.gravitee.node.api.secrets.runtime.storage.Cache;
 import io.gravitee.node.api.secrets.runtime.storage.CacheKey;
 import io.gravitee.node.api.secrets.runtime.storage.Entry;
-import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.functions.Action;
 import java.time.Duration;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -78,7 +75,12 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
                             .resolve(envId, mount)
                             .doOnSuccess(entry -> {
                                 if (entry.type() == Entry.Type.ERROR) {
-                                    asyncResolution(runtimeSpec, config.onTheFlySpecs().onErrorRetryAfter(), retryOnError, () -> {});
+                                    resolverService.resolveAsync(
+                                        runtimeSpec,
+                                        config.onTheFlySpecs().onErrorRetryAfter(),
+                                        retryOnError,
+                                        () -> {}
+                                    );
                                 }
                             })
                     )
@@ -118,7 +120,7 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
         }
 
         if (shouldResolve) {
-            asyncResolution(spec, Duration.ZERO, true, afterResolve);
+            resolverService.resolveAsync(spec, Duration.ZERO, true, afterResolve);
         }
     }
 
@@ -149,28 +151,5 @@ public class DefaultSpecLifecycleService implements SpecLifecycleService {
         specRegistry.unregister(spec);
         cache.evict(CacheKey.from(spec));
         renewalService.onDelete(spec);
-    }
-
-    private void asyncResolution(Spec spec, Duration delay, boolean retryOnError, @NonNull Action postResolution) {
-        SecretURL secretURL = spec.toSecretURL();
-        String envId = spec.envId();
-
-        resolverService
-            .toSecretMount(envId, secretURL)
-            .delay(delay.toMillis(), TimeUnit.MILLISECONDS)
-            .retryWhen(
-                RxHelper.retryExponentialBackoff(
-                    config.retry().delay(),
-                    config.retry().maxDelay(),
-                    config.retry().unit(),
-                    config.retry().backoffFactor(),
-                    err -> retryOnError && config.retry().enabled()
-                )
-            )
-            .doOnSuccess(mount -> log.info("Resolving secret: {}", mount))
-            .flatMap(mount -> resolverService.resolve(envId, mount))
-            .doOnError(err -> log.error("Async resolution failed", err))
-            .doFinally(postResolution)
-            .subscribe(entry -> cache.put(CacheKey.from(spec), entry));
     }
 }

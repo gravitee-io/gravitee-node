@@ -96,7 +96,7 @@ class ServiceTest {
         Config config = new Config(new OnTheFlySpecs(true, Duration.ZERO), Retry.none(), new Renewal(true, Duration.ZERO));
         this.grantService = new DefaultGrantService(new GrantRegistry(), config);
         SpecRegistry specRegistry = new SpecRegistry();
-        ResolverService resolverService = new DefaultResolverService(secretProviderRegistry);
+        ResolverService resolverService = new DefaultResolverService(secretProviderRegistry, cache, config);
         RenewalService renewalService = new RenewalService(resolverService, cache, config);
         specLifeCycleService =
             new DefaultSpecLifecycleService(
