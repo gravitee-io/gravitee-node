@@ -1,7 +1,9 @@
 package io.gravitee.node.api.secrets.model;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Base64;
+import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
@@ -15,10 +17,18 @@ import lombok.experimental.Accessors;
 
 @Accessors(fluent = true)
 @EqualsAndHashCode
-public final class Secret {
+public final class Secret implements WithExpiration {
 
     private final Object data;
     private final boolean base64Encoded;
+    private final Instant expiresAt;
+
+    /**
+     * Create an empty secret (empty string) for ser/der frameworks
+     */
+    public Secret() {
+        this("");
+    }
 
     /**
      * Builds a secret value assuming it is not base64 encoded
@@ -27,7 +37,7 @@ public final class Secret {
      * @throws IllegalArgumentException if <code>data</code> is not byte array or String
      */
     public Secret(Object data) {
-        this(data, false);
+        this(data, false, null);
     }
 
     /**
@@ -38,11 +48,24 @@ public final class Secret {
      * @throws IllegalArgumentException if <code>data</code> is not byte array or String or is null
      */
     public Secret(Object data, boolean base64Encoded) {
+        this(data, base64Encoded, null);
+    }
+
+    /**
+     * Builds a secret value
+     *
+     * @param data          a byte array or a String
+     * @param base64Encoded to declare data as base64 encoded
+     * @param expiresAt the secret expires
+     * @throws IllegalArgumentException if <code>data</code> is not byte array or String or is null
+     */
+    public Secret(Object data, boolean base64Encoded, Instant expiresAt) {
         if (!(data instanceof String) && !(data instanceof byte[])) {
             throw new IllegalArgumentException("secret can only be of type String or byte[] and must not be null");
         }
         this.data = data;
         this.base64Encoded = base64Encoded;
+        this.expiresAt = expiresAt;
     }
 
     /**
@@ -79,6 +102,13 @@ public final class Secret {
     }
 
     /**
+     * @return optional of the expiration of this secret
+     */
+    public Optional<Instant> expiresAt() {
+        return Optional.ofNullable(expiresAt);
+    }
+
+    /**
      * If {@link Secret} is a byte array, convert to String assuming bytes are UTF-8.
      * If {@link Secret} is declared to contains base64 data, it will be decoded.
      *
@@ -94,5 +124,14 @@ public final class Secret {
             result = base64Encoded ? new String(Base64.getDecoder().decode(buf)) : new String(buf, StandardCharsets.UTF_8);
         }
         return result;
+    }
+
+    /**
+     * Create a new secret with an expiration date
+     * @param expiresAt the expiration instant
+     * @return cloned expiring secret with data
+     */
+    public Secret withExpiresAt(Instant expiresAt) {
+        return new Secret(this.data, this.base64Encoded, expiresAt);
     }
 }
