@@ -1,3 +1,15 @@
+# [7.0.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/6.5.0...7.0.0-alpha.1) (2024-11-05)
+
+
+### Features
+
+* add OpenTelemetry feature into Gravitee Node ([1c377c5](https://github.com/gravitee-io/gravitee-node/commit/1c377c5eef74205d4d51b33f562307ebbdb80d87))
+
+
+### BREAKING CHANGES
+
+* Tracing plugin has been removed and is now embedded inside node framework
+
 # [6.5.0](https://github.com/gravitee-io/gravitee-node/compare/6.4.6...6.5.0) (2024-10-17)
 
 
