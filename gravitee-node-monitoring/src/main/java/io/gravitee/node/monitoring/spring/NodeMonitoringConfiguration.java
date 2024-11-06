@@ -33,11 +33,13 @@ import io.gravitee.node.monitoring.infos.NodeInfosService;
 import io.gravitee.node.monitoring.monitor.NodeMonitorManagementEndpoint;
 import io.gravitee.node.monitoring.monitor.NodeMonitorService;
 import io.gravitee.plugin.alert.AlertEventProducer;
+import io.gravitee.plugin.core.api.PluginRegistry;
 import io.vertx.core.Vertx;
 import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.env.ConfigurableEnvironment;
 
 /**
  * @author Jeoffre HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
@@ -126,8 +128,8 @@ public class NodeMonitoringConfiguration {
     }
 
     @Bean
-    public NodeInfosService nodeInfosService() {
-        return new NodeInfosService();
+    public NodeInfosService nodeInfosService(PluginRegistry pluginRegistry, ConfigurableEnvironment environment, Node node, Vertx vertx) {
+        return new NodeInfosService(pluginRegistry, environment, node, vertx);
     }
 
     @Bean
