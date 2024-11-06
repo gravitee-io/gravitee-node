@@ -16,6 +16,7 @@
 package io.gravitee.node.monitoring.infos;
 
 import io.gravitee.common.service.AbstractService;
+import io.gravitee.common.util.EnvironmentUtils;
 import io.gravitee.common.util.Version;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.api.infos.NodeInfos;
@@ -30,35 +31,32 @@ import io.vertx.core.eventbus.MessageProducer;
 import io.vertx.core.tracing.TracingPolicy;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.core.env.ConfigurableEnvironment;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Slf4j
+@RequiredArgsConstructor
 public class NodeInfosService extends AbstractService<NodeInfosService> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NodeInfosService.class);
     public static final String GIO_NODE_INFOS_BUS = "gio:node:infos";
 
-    @Autowired
-    private PluginRegistry pluginRegistry;
+    private final PluginRegistry pluginRegistry;
 
-    @Autowired
-    private Environment environment;
+    private final ConfigurableEnvironment environment;
 
-    @Autowired
-    private Node node;
+    private final Node node;
 
-    @Autowired
-    private Vertx vertx;
+    private final Vertx vertx;
 
     private MessageProducer<NodeInfos> messageProducer;
 
@@ -123,6 +121,7 @@ public class NodeInfosService extends AbstractService<NodeInfosService> {
         nodeInfos.setPluginInfos(plugins());
         nodeInfos.setJdkVersion(Constants.JVM_NAME + " " + Constants.JVM_VERSION);
         nodeInfos.setEvaluatedAt(System.currentTimeMillis());
+        nodeInfos.setMetadata(getMetadata());
 
         try {
             nodeInfos.setPort(getPort());
@@ -165,11 +164,22 @@ public class NodeInfosService extends AbstractService<NodeInfosService> {
         return environment.getProperty("tenant");
     }
 
-    private String getZone() {
-        return environment.getProperty("zone");
-    }
-
     private int getPort() {
         return Integer.parseInt(environment.getProperty("http.port", environment.getProperty("jetty.port", "-1")));
+    }
+
+    private Map<String, String> getMetadata() {
+        return EnvironmentUtils
+            .getPropertiesStartingWith(environment, "metadata")
+            .entrySet()
+            .stream()
+            .filter(entry -> Objects.nonNull(entry.getValue()))
+            .collect(
+                Collectors.toMap(
+                    entry -> entry.getKey().substring(entry.getKey().lastIndexOf(".") + 1),
+                    entry -> String.valueOf(entry.getValue()),
+                    (first, second) -> second
+                )
+            );
     }
 }
