@@ -20,7 +20,15 @@ package io.gravitee.node.api.opentelemetry;
  * @author GraviteeSource Team
  */
 public interface Span {
+    /**
+     * @return <code>true</code> if the span is the root (top span of the current context), <code>false</code> otherwise.
+     */
     boolean isRoot();
 
+    /**
+     * Append custom attribute to the span while it is already created.
+     *
+     * @return current {@link Span}
+     */
     <T> Span withAttribute(final String name, final T value);
 }

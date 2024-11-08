@@ -22,11 +22,36 @@ import io.vertx.core.Context;
  * @author GraviteeSource Team
  */
 public interface InstrumenterTracer {
+    /**
+     * @return any instrumentation name
+     */
     String instrumentationName();
 
+    /**
+     * @param request request object to handle
+     * @return <code>true</code> if the instrumenter is able to handle the given request object
+     */
     <R> boolean canHandle(final R request);
 
+    /**
+     * Start a span based on the given parameters
+     *
+     * @param vertxContext current vert context used to store tracing information
+     * @param request request instrumented to create the span
+     * @param root indicate if the span is expected to be the root one
+     * @param parentSpan any set, will be used as parent context; could be <code>null</code>
+     *
+     * @return started {@link Span}
+     */
     <R> Span startSpan(final Context vertxContext, final R request, final boolean root, final Span parentSpan);
 
+    /**
+     * End span based on the given parameters
+     *
+     * @param vertxContext current vert context used to store tracing information
+     * @param span the span to end
+     * @param response any object used as ending response, could be <code>null</code>
+     * @param throwable throwable to attach as error details; could be <code>null</code>
+     */
     <R> void endSpan(final Context vertxContext, final Span span, final R response, final Throwable throwable);
 }

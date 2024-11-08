@@ -19,6 +19,7 @@ import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.opentelemetry.Span;
 import io.gravitee.node.api.opentelemetry.Tracer;
 import io.vertx.core.Context;
+import java.util.function.BiConsumer;
 
 /**
  * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
@@ -58,4 +59,10 @@ public class NoOpTracer extends AbstractService<Tracer> implements Tracer {
 
     @Override
     public <R> void endWithResponseAndError(final Context vertxContext, final Span span, final R response, final String message) {}
+
+    @Override
+    public void injectSpanContext(final Context vertxContext, final BiConsumer<String, String> textMapSetter) {}
+
+    @Override
+    public void injectSpanContext(final Context vertxContext, final Span span, final BiConsumer<String, String> textMapSetter) {}
 }

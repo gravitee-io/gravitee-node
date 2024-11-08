@@ -22,6 +22,12 @@ import java.util.List;
  * @author GraviteeSource Team
  */
 public interface TracerFactory {
+    /**
+     * Create a new {@link Tracer} based on given parameters. The underlying Span exporter will be shared across tracer.
+     * <p>
+     * The tracer has its own life cycle and must be started and stopped accordingly.
+     *
+     */
     Tracer createTracer(
         final String id,
         final String serviceName,

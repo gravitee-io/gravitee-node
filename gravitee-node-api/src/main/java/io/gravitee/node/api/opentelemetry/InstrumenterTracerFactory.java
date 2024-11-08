@@ -22,5 +22,9 @@ import io.opentelemetry.api.OpenTelemetry;
  * @author GraviteeSource Team
  */
 public interface InstrumenterTracerFactory {
+    /**
+     * @param openTelemetry the {@link OpenTelemetry} used to create the instrumenter
+     * @return newly created {@link InstrumenterTracer}
+     */
     InstrumenterTracer createInstrumenterTracer(final OpenTelemetry openTelemetry);
 }

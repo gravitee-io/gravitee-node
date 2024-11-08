@@ -22,12 +22,15 @@ import io.gravitee.node.api.opentelemetry.Span;
 import io.gravitee.node.api.opentelemetry.Tracer;
 import io.gravitee.node.opentelemetry.tracer.noop.NoOpSpan;
 import io.gravitee.node.opentelemetry.tracer.span.OpenTelemetrySpan;
+import io.gravitee.node.opentelemetry.tracer.vertx.VertxContextStorage;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.vertx.core.Context;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -159,6 +162,25 @@ public class OpenTelemetryTracer extends AbstractService<Tracer> implements Trac
                     instrumenterTracer.endSpan(vertxContext, openTelemetrySpan, response, throwable);
                 }
             }
+        }
+    }
+
+    @Override
+    public void injectSpanContext(final Context vertxContext, final BiConsumer<String, String> textMapSetter) {
+        io.opentelemetry.context.Context currentContext = VertxContextStorage.getContext(vertxContext);
+        if (currentContext != null) {
+            W3CTraceContextPropagator
+                .getInstance()
+                .inject(currentContext, null, (carrier1, key, value) -> textMapSetter.accept(key, value));
+        }
+    }
+
+    @Override
+    public void injectSpanContext(final Context vertxContext, final Span span, final BiConsumer<String, String> textMapSetter) {
+        if (span instanceof OpenTelemetrySpan<?> openTelemetrySpan) {
+            W3CTraceContextPropagator
+                .getInstance()
+                .inject(openTelemetrySpan.otelContext(), null, (carrier1, key, value) -> textMapSetter.accept(key, value));
         }
     }
 }
