@@ -22,7 +22,7 @@ import static org.awaitility.Awaitility.await;
 import io.gravitee.node.api.opentelemetry.internal.InternalRequest;
 import io.gravitee.node.opentelemetry.configuration.OpenTelemetryConfiguration;
 import io.gravitee.node.opentelemetry.configuration.Protocol;
-import io.gravitee.node.opentelemetry.exporter.ExporterFactory;
+import io.gravitee.node.opentelemetry.exporter.SpanExporterFactory;
 import io.gravitee.node.opentelemetry.testcontainers.JaegerAllInOne;
 import io.gravitee.node.opentelemetry.tracer.instrumentation.internal.InternalInstrumenterTracerFactory;
 import io.gravitee.node.opentelemetry.tracer.instrumentation.vertx.VertxHttpInstrumenterTracerFactory;
@@ -146,7 +146,7 @@ public class OpenTelemetryTracerIntegrationTest {
         final Vertx vertx,
         final OpenTelemetryConfiguration openTelemetryConfiguration
     ) {
-        return new OpenTelemetryFactory(openTelemetryConfiguration, new ExporterFactory(openTelemetryConfiguration, vertx));
+        return new OpenTelemetryFactory(openTelemetryConfiguration, new SpanExporterFactory(openTelemetryConfiguration, vertx));
     }
 
     @ParameterizedTest(name = "{0}")

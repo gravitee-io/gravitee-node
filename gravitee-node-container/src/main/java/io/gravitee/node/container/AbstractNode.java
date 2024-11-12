@@ -28,6 +28,7 @@ import io.gravitee.node.monitoring.handler.NodeMonitoringEventHandler;
 import io.gravitee.node.monitoring.healthcheck.NodeHealthCheckService;
 import io.gravitee.node.monitoring.infos.NodeInfosService;
 import io.gravitee.node.monitoring.monitor.NodeMonitorService;
+import io.gravitee.node.opentelemetry.exporter.SpanExporterFactory;
 import io.gravitee.node.plugins.service.ServiceManager;
 import io.gravitee.node.reporter.ReporterManager;
 import io.gravitee.plugin.core.api.PluginRegistry;
@@ -134,6 +135,7 @@ public abstract class AbstractNode extends AbstractService<Node> implements Node
     public List<Class<? extends LifecycleComponent>> components() {
         List<Class<? extends LifecycleComponent>> components = new ArrayList<>();
 
+        components.add(SpanExporterFactory.class);
         components.add(PluginEventListener.class);
         components.add(PluginRegistry.class);
         components.add(NodeClusterService.class);
