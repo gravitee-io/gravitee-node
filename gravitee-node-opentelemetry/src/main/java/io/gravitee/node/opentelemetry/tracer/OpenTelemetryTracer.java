@@ -171,7 +171,7 @@ public class OpenTelemetryTracer extends AbstractService<Tracer> implements Trac
         if (currentContext != null) {
             W3CTraceContextPropagator
                 .getInstance()
-                .inject(currentContext, null, (carrier1, key, value) -> textMapSetter.accept(key, value));
+                .inject(currentContext, null, (nullCarrier, key, value) -> textMapSetter.accept(key, value));
         }
     }
 
@@ -180,7 +180,7 @@ public class OpenTelemetryTracer extends AbstractService<Tracer> implements Trac
         if (span instanceof OpenTelemetrySpan<?> openTelemetrySpan) {
             W3CTraceContextPropagator
                 .getInstance()
-                .inject(openTelemetrySpan.otelContext(), null, (carrier1, key, value) -> textMapSetter.accept(key, value));
+                .inject(openTelemetrySpan.otelContext(), null, (nullCarrier, key, value) -> textMapSetter.accept(key, value));
         }
     }
 }

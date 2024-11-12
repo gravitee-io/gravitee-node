@@ -16,6 +16,7 @@
 package io.gravitee.node.opentelemetry.exporter;
 
 import com.google.common.base.Strings;
+import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.opentelemetry.configuration.CompressionType;
 import io.gravitee.node.opentelemetry.configuration.OpenTelemetryConfiguration;
 import io.gravitee.node.opentelemetry.configuration.Protocol;
@@ -28,6 +29,7 @@ import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClientOptions;
@@ -50,13 +52,34 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RequiredArgsConstructor
 @Slf4j
-public class ExporterFactory {
+public class SpanExporterFactory extends AbstractService<SpanExporterFactory> {
 
     private static final String OTLP_VALUE = "otlp";
     private final OpenTelemetryConfiguration openTelemetryConfiguration;
     private final Vertx vertx;
+    private SharedSpanExporter sharedExporter;
 
-    public SpanExporter createSpanExporter() {
+    @Override
+    public SpanExporterFactory postStop() {
+        if (sharedExporter != null) {
+            CompletableResultCode completableResultCode = this.sharedExporter.globalShutdown();
+            completableResultCode.whenComplete(() -> {
+                if (!completableResultCode.isSuccess()) {
+                    log.warn("Unable to shutdown underlying span exporter");
+                }
+            });
+        }
+        return this;
+    }
+
+    public SpanExporter getSpanExporter() {
+        if (sharedExporter == null) {
+            this.sharedExporter = new SharedSpanExporter(createSpanExporter());
+        }
+        return this.sharedExporter;
+    }
+
+    private SpanExporter createSpanExporter() {
         URI tracesUri = getTracesUri();
         Protocol protocol = getProtocol();
         if (protocol == Protocol.HTTP_PROTOBUF || protocol == Protocol.HTTP) {

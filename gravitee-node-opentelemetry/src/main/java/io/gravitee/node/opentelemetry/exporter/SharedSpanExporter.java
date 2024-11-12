@@ -13,39 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.opentelemetry.exporter.tracing;
+package io.gravitee.node.opentelemetry.exporter;
 
-import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
-import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
+import lombok.RequiredArgsConstructor;
 
 /**
- * See <a href="https://github.com/quarkusio/quarkus/blob/main/extensions/opentelemetry/runtime/src/main/java/io/quarkus/opentelemetry/runtime/exporter/otlp/tracing/VertxGrpcSpanExporter.java">VertxGrpcSpanExporter.java</a>
+ * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
+ * @author GraviteeSource Team
  */
-public final class VertxGrpcSpanExporter implements SpanExporter {
+@RequiredArgsConstructor
+public class SharedSpanExporter implements SpanExporter {
 
-    private final GrpcExporter<TraceRequestMarshaler> delegate;
-
-    public VertxGrpcSpanExporter(GrpcExporter<TraceRequestMarshaler> delegate) {
-        this.delegate = delegate;
-    }
+    private final SpanExporter delegate;
 
     @Override
-    public CompletableResultCode export(Collection<SpanData> spans) {
-        TraceRequestMarshaler exportRequest = TraceRequestMarshaler.create(spans);
-        return delegate.export(exportRequest, spans.size());
+    public CompletableResultCode export(final Collection<SpanData> spans) {
+        return delegate.export(spans);
     }
 
     @Override
     public CompletableResultCode flush() {
-        return CompletableResultCode.ofSuccess();
+        return delegate.flush();
     }
 
     @Override
     public CompletableResultCode shutdown() {
-        return delegate.shutdown();
+        // Shutdown could be called when tracer or span processor are shutting down
+        // so we are flushing it but we don't want to close it
+        return this.delegate.flush();
+    }
+
+    @Override
+    public void close() {
+        // Should call globalShutdown();
+    }
+
+    public CompletableResultCode globalShutdown() {
+        return this.delegate.shutdown();
     }
 }

@@ -15,17 +15,14 @@
  */
 package io.gravitee.node.opentelemetry.spring;
 
-import io.gravitee.node.api.opentelemetry.InstrumenterTracerFactory;
 import io.gravitee.node.opentelemetry.OpenTelemetryFactory;
 import io.gravitee.node.opentelemetry.configuration.OpenTelemetryConfiguration;
-import io.gravitee.node.opentelemetry.exporter.ExporterFactory;
+import io.gravitee.node.opentelemetry.exporter.SpanExporterFactory;
 import io.gravitee.node.opentelemetry.tracer.instrumentation.internal.InternalInstrumenterTracerFactory;
 import io.gravitee.node.opentelemetry.tracer.instrumentation.vertx.VertxHttpInstrumenterTracerFactory;
 import io.vertx.core.Vertx;
-import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 /**
@@ -41,16 +38,16 @@ public class OpenTelemetrySpringConfiguration {
     }
 
     @Bean
-    public ExporterFactory exporterFactory(final OpenTelemetryConfiguration openTelemetryConfiguration, final Vertx vertx) {
-        return new ExporterFactory(openTelemetryConfiguration, vertx);
+    public SpanExporterFactory exporterFactory(final OpenTelemetryConfiguration openTelemetryConfiguration, final Vertx vertx) {
+        return new SpanExporterFactory(openTelemetryConfiguration, vertx);
     }
 
     @Bean
     public OpenTelemetryFactory openTelemetryFactory(
         final OpenTelemetryConfiguration openTelemetryConfiguration,
-        final ExporterFactory exporterFactory
+        final SpanExporterFactory spanExporterFactory
     ) {
-        return new OpenTelemetryFactory(openTelemetryConfiguration, exporterFactory);
+        return new OpenTelemetryFactory(openTelemetryConfiguration, spanExporterFactory);
     }
 
     @Bean

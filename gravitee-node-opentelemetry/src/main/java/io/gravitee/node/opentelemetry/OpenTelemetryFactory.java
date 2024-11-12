@@ -19,7 +19,7 @@ import io.gravitee.node.api.opentelemetry.InstrumenterTracerFactory;
 import io.gravitee.node.api.opentelemetry.Tracer;
 import io.gravitee.node.api.opentelemetry.TracerFactory;
 import io.gravitee.node.opentelemetry.configuration.OpenTelemetryConfiguration;
-import io.gravitee.node.opentelemetry.exporter.ExporterFactory;
+import io.gravitee.node.opentelemetry.exporter.SpanExporterFactory;
 import io.gravitee.node.opentelemetry.tracer.OpenTelemetryTracer;
 import io.gravitee.node.opentelemetry.tracer.noop.NoOpTracer;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
@@ -54,7 +54,7 @@ public class OpenTelemetryFactory implements TracerFactory {
     private static final AttributeKey<String> ATTRIBUTE_KEY_SERVICE_NAMESPACE = AttributeKey.stringKey("service.namespace");
 
     private final OpenTelemetryConfiguration configuration;
-    private final ExporterFactory exporterFactory;
+    private final SpanExporterFactory spanExporterFactory;
 
     @Override
     public Tracer createTracer(
@@ -77,7 +77,7 @@ public class OpenTelemetryFactory implements TracerFactory {
 
             SdkTracerProvider tracerProvider = SdkTracerProvider
                 .builder()
-                .addSpanProcessor(BatchSpanProcessor.builder(exporterFactory.createSpanExporter()).build())
+                .addSpanProcessor(BatchSpanProcessor.builder(spanExporterFactory.getSpanExporter()).build())
                 .setResource(resource)
                 .build();
 
