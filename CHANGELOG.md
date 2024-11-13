@@ -1,3 +1,10 @@
+# [7.0.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.1...7.0.0-alpha.2) (2024-11-13)
+
+
+### Features
+
+* allow to manually inject span context to carrier ([07adcde](https://github.com/gravitee-io/gravitee-node/commit/07adcde2f8c454fcb418cb776fcab9c222a9791f))
+
 # [7.0.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/6.5.0...7.0.0-alpha.1) (2024-11-05)
 
 
