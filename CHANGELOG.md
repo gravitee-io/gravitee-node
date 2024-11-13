@@ -1,3 +1,10 @@
+# [7.0.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.2...7.0.0-alpha.3) (2024-11-13)
+
+
+### Features
+
+* share underlying span exporter ([e8bc84d](https://github.com/gravitee-io/gravitee-node/commit/e8bc84df7227afbc992dfa264757980b49fefcc0))
+
 # [7.0.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.1...7.0.0-alpha.2) (2024-11-13)
 
 
