@@ -162,7 +162,11 @@ class NodeLicenseServiceTest {
                 "am-policy-account-linking",
                 "am-resource-sfr",
                 "gravitee-en-secretprovider-vault",
-                "alert-engine"
+                "alert-engine",
+                "apim-policy-interops-a-idp",
+                "apim-policy-interops-r-idp",
+                "apim-policy-interops-a-sp",
+                "apim-policy-interops-r-sp"
             );
     }
 

@@ -27,6 +27,10 @@ packs:
             - apim-policy-transform-avro-protobuf
             - am-policy-mfa-challenge
             - am-policy-account-linking
+            - apim-policy-interops-a-idp
+            - apim-policy-interops-r-idp
+            - apim-policy-interops-a-sp
+            - apim-policy-interops-r-sp
     enterprise-identity-provider:
         features:
             - am-idp-salesforce
