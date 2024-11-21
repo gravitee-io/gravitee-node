@@ -1,3 +1,10 @@
+# [7.0.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.3...7.0.0-alpha.4) (2024-11-21)
+
+
+### Features
+
+* add metadata property to NodeInfos ([c2098b0](https://github.com/gravitee-io/gravitee-node/commit/c2098b070efe43d59828f4a88dad42025af332ea))
+
 # [7.0.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.2...7.0.0-alpha.3) (2024-11-13)
 
 
