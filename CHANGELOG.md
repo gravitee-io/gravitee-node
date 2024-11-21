@@ -1,3 +1,10 @@
+# [6.6.0](https://github.com/gravitee-io/gravitee-node/compare/6.5.0...6.6.0) (2024-11-21)
+
+
+### Features
+
+* add data cache policy ([cc6fafe](https://github.com/gravitee-io/gravitee-node/commit/cc6fafe1418ae94eff5e84c7f90040a4e5de450b))
+
 # [6.5.0](https://github.com/gravitee-io/gravitee-node/compare/6.4.6...6.5.0) (2024-10-17)
 
 
