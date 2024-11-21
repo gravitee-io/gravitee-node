@@ -33,6 +33,7 @@ packs:
             - apim-policy-interops-r-idp
             - apim-policy-interops-a-sp
             - apim-policy-interops-r-sp
+            - apim-policy-data-cache
     enterprise-identity-provider:
         features:
             - am-idp-salesforce

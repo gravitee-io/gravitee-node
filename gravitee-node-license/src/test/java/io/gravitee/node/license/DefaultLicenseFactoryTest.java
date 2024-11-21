@@ -344,6 +344,7 @@ class DefaultLicenseFactoryTest {
             "apim-policy-interops-a-sp",
             "apim-policy-interops-r-sp",
             "apim-policy-oas-validation",
+            "apim-policy-data-cache",
         };
         assertThat(license.getFeatures()).containsExactlyInAnyOrder(features);
 
