@@ -1,3 +1,10 @@
+## [4.8.8](https://github.com/gravitee-io/gravitee-node/compare/4.8.7...4.8.8) (2024-11-21)
+
+
+### Bug Fixes
+
+* add interops policy in ee license features ([3272d40](https://github.com/gravitee-io/gravitee-node/commit/3272d40a87c45cf7b9fd99c3a73c5c9e05cb2c99))
+
 ## [4.8.7](https://github.com/gravitee-io/gravitee-node/compare/4.8.6...4.8.7) (2024-06-24)
 
 
