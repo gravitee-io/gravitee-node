@@ -1,3 +1,10 @@
+# [7.0.0-alpha.5](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.4...7.0.0-alpha.5) (2024-11-26)
+
+
+### Features
+
+* mock secret provider + update to secret core objects ([a2a2cf1](https://github.com/gravitee-io/gravitee-node/commit/a2a2cf1a51f95db4637bf4bf065b168d1a129e28))
+
 # [7.0.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.3...7.0.0-alpha.4) (2024-11-21)
 
 
