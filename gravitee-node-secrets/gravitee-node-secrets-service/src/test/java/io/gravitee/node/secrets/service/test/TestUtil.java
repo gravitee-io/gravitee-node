@@ -3,7 +3,7 @@ package io.gravitee.node.secrets.service.test;
 import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderClassLoaderFactory;
 import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderPlugin;
 import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderPluginManager;
-import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
+import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolver;
 import org.springframework.mock.env.MockEnvironment;
 
 /**
@@ -18,11 +18,8 @@ public class TestUtil {
         return env;
     }
 
-    public static GraviteeConfigurationSecretResolverDispatcher newDispatcher(
-        DefaultSecretProviderPluginManager pluginManager,
-        MockEnvironment env
-    ) {
-        GraviteeConfigurationSecretResolverDispatcher cut = new GraviteeConfigurationSecretResolverDispatcher(pluginManager, env);
+    public static GraviteeConfigurationSecretResolver newDispatcher(DefaultSecretProviderPluginManager pluginManager, MockEnvironment env) {
+        GraviteeConfigurationSecretResolver cut = new GraviteeConfigurationSecretResolver(pluginManager, env);
         pluginManager.register(
             new DefaultSecretProviderPlugin<>(
                 new TestSecretProviderPlugin(true),

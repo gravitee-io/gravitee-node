@@ -21,13 +21,13 @@ import org.springframework.mock.env.MockEnvironment;
  * @author GraviteeSource Team
  */
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class GraviteeConfigurationSecretResolverDispatcherTest {
+class GraviteeConfigurationSecretResolverTest {
 
     @Test
     void should_create_secret_provider_that_can_handle_resolution() {
         DefaultSecretProviderPluginManager pluginManager = newPluginManager();
         MockEnvironment env = newEnvironment();
-        GraviteeConfigurationSecretResolverDispatcher cut = newDispatcher(pluginManager, env);
+        GraviteeConfigurationSecretResolver cut = newDispatcher(pluginManager, env);
 
         assertThat(cut.findSecretProvider("foooooooo")).isNotPresent();
         assertThat(cut.findSecretProvider("test")).isPresent();
@@ -45,7 +45,7 @@ class GraviteeConfigurationSecretResolverDispatcherTest {
         DefaultSecretProviderPluginManager pluginManager = newPluginManager();
         MockEnvironment env = newEnvironment();
         env.setProperty("secrets.test.secrets.password", "noOneWillFindMyPasswordHahahaha");
-        GraviteeConfigurationSecretResolverDispatcher cut = newDispatcher(pluginManager, env);
+        GraviteeConfigurationSecretResolver cut = newDispatcher(pluginManager, env);
         SecretMount secretMount = cut.toSecretMount("secret://test/test:password");
         assertThat(secretMount.key()).isEqualTo("password");
         assertThat(secretMount.provider()).isEqualTo("test");
@@ -70,7 +70,7 @@ class GraviteeConfigurationSecretResolverDispatcherTest {
         DefaultSecretProviderPluginManager pluginManager = newPluginManager();
         MockEnvironment env = newEnvironment();
         env.setProperty("secrets.test.secrets.password", "thisIsTheBestPasswordOfAllTime!");
-        GraviteeConfigurationSecretResolverDispatcher cut = newDispatcher(pluginManager, env);
+        GraviteeConfigurationSecretResolver cut = newDispatcher(pluginManager, env);
         SecretMount secretMount = cut.toSecretMount("secret://test/test:password");
 
         Secret secret = cut.watchKey(secretMount).blockingFirst(); // don't about the rest
@@ -92,7 +92,7 @@ class GraviteeConfigurationSecretResolverDispatcherTest {
         DefaultSecretProviderPluginManager pluginManager = newPluginManager();
         MockEnvironment env = newEnvironment();
         env.setProperty("secrets.test.secrets.password", "thisIsTheBestPasswordOfAllTime!");
-        GraviteeConfigurationSecretResolverDispatcher cut = newDispatcher(pluginManager, env);
+        GraviteeConfigurationSecretResolver cut = newDispatcher(pluginManager, env);
         SecretMount secretMount = cut.toSecretMount("secret://test/test:password");
 
         // make sure we have two different maps (Flowable always returns the same)
@@ -124,7 +124,7 @@ class GraviteeConfigurationSecretResolverDispatcherTest {
     void should_fail_parsing_secret_mount() {
         DefaultSecretProviderPluginManager pluginManager = newPluginManager();
         MockEnvironment env = newEnvironment();
-        GraviteeConfigurationSecretResolverDispatcher cut = newDispatcher(pluginManager, env);
+        GraviteeConfigurationSecretResolver cut = newDispatcher(pluginManager, env);
 
         assertThatCode(() -> cut.toSecretMount("secret://foooo/test:password")).isInstanceOf(SecretProviderNotFoundException.class);
 
