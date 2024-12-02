@@ -3,7 +3,7 @@ package io.gravitee.node.secrets.service.keystoreloader;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderFactory;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
-import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
+import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolver;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ public class SecretProviderKeyStoreLoaderFactory implements KeyStoreLoaderFactor
         KeyStoreLoader.CERTIFICATE_FORMAT_JKS
     );
 
-    final GraviteeConfigurationSecretResolverDispatcher secretResolverDispatcher;
+    final GraviteeConfigurationSecretResolver secretResolverDispatcher;
 
     @Override
     public boolean canHandle(KeyStoreLoaderOptions options) {

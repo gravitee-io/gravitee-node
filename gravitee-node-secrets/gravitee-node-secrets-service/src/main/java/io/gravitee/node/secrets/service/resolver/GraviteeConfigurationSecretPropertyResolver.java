@@ -16,7 +16,7 @@
 package io.gravitee.node.secrets.service.resolver;
 
 import io.gravitee.node.api.resolver.WatchablePropertyResolver;
-import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
+import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolver;
 import io.gravitee.secrets.api.core.Secret;
 import io.gravitee.secrets.api.core.SecretURL;
 import io.reactivex.rxjava3.core.Flowable;
@@ -34,9 +34,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GraviteeConfigurationSecretPropertyResolver implements WatchablePropertyResolver<Secret> {
 
     @Autowired
-    private GraviteeConfigurationSecretResolverDispatcher dispatcher;
+    private GraviteeConfigurationSecretResolver dispatcher;
 
-    public GraviteeConfigurationSecretPropertyResolver(GraviteeConfigurationSecretResolverDispatcher dispatcher) {
+    public GraviteeConfigurationSecretPropertyResolver(GraviteeConfigurationSecretResolver dispatcher) {
         this.dispatcher = dispatcher;
     }
 
