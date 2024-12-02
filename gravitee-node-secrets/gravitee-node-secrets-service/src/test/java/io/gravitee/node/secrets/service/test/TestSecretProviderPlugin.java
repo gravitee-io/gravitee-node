@@ -1,8 +1,8 @@
 package io.gravitee.node.secrets.service.test;
 
-import io.gravitee.node.api.secrets.SecretProvider;
 import io.gravitee.node.secrets.plugins.SecretProviderPlugin;
 import io.gravitee.plugin.core.api.PluginManifest;
+import io.gravitee.secrets.api.plugin.SecretProvider;
 import java.net.URL;
 import java.nio.file.Path;
 

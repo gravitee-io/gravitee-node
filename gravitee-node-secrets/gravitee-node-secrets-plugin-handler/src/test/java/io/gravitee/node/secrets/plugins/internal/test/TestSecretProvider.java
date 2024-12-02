@@ -1,7 +1,7 @@
 package io.gravitee.node.secrets.plugins.internal.test;
 
-import io.gravitee.node.api.secrets.SecretProvider;
-import io.gravitee.node.api.secrets.model.*;
+import io.gravitee.secrets.api.core.*;
+import io.gravitee.secrets.api.plugin.SecretProvider;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import java.util.Map;
