@@ -1,7 +1,7 @@
 package io.gravitee.node.secrets.plugin.mock;
 
-import io.gravitee.node.api.secrets.model.SecretLocation;
-import io.gravitee.node.api.secrets.model.SecretURL;
+import io.gravitee.secrets.api.core.SecretLocation;
+import io.gravitee.secrets.api.core.SecretURL;
 import java.util.Map;
 
 /**

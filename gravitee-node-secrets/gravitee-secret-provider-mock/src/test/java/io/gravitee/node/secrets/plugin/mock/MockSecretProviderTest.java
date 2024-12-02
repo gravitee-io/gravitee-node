@@ -2,9 +2,9 @@ package io.gravitee.node.secrets.plugin.mock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.gravitee.node.api.secrets.SecretProvider;
-import io.gravitee.node.api.secrets.model.*;
 import io.gravitee.node.secrets.plugin.mock.conf.MockSecretProviderConfiguration;
+import io.gravitee.secrets.api.core.*;
+import io.gravitee.secrets.api.plugin.SecretProvider;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;

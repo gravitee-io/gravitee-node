@@ -1,11 +1,11 @@
 package io.gravitee.node.secrets.service.test;
 
-import io.gravitee.node.api.secrets.SecretProvider;
-import io.gravitee.node.api.secrets.SecretProviderFactory;
+import io.gravitee.secrets.api.plugin.SecretProvider;
+import io.gravitee.secrets.api.plugin.SecretProviderFactory;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
 public class TestSecretProviderFactory implements SecretProviderFactory<TestSecretProviderConfiguration> {
-
-    public TestSecretProviderFactory() {}
 
     @Override
     public SecretProvider create(TestSecretProviderConfiguration configuration) {

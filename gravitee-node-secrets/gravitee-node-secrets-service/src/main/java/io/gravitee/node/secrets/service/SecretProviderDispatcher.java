@@ -1,11 +1,13 @@
-package io.gravitee.node.api.secrets;
+package io.gravitee.node.secrets.service;
 
-import io.gravitee.node.api.secrets.errors.SecretManagerException;
-import io.gravitee.node.api.secrets.errors.SecretProviderNotFoundException;
-import io.gravitee.node.api.secrets.model.Secret;
-import io.gravitee.node.api.secrets.model.SecretEvent;
-import io.gravitee.node.api.secrets.model.SecretMap;
-import io.gravitee.node.api.secrets.model.SecretMount;
+import io.gravitee.secrets.api.core.Secret;
+import io.gravitee.secrets.api.core.SecretEvent;
+import io.gravitee.secrets.api.core.SecretMap;
+import io.gravitee.secrets.api.core.SecretMount;
+import io.gravitee.secrets.api.errors.SecretManagerException;
+import io.gravitee.secrets.api.errors.SecretProviderNotFoundException;
+import io.gravitee.secrets.api.plugin.SecretManagerConfiguration;
+import io.gravitee.secrets.api.plugin.SecretProvider;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 

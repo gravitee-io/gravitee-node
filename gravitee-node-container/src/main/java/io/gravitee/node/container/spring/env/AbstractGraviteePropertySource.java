@@ -15,9 +15,9 @@
  */
 package io.gravitee.node.container.spring.env;
 
-import io.gravitee.node.api.secrets.resolver.PropertyResolver;
-import io.gravitee.node.api.secrets.resolver.PropertyResolverFactoriesLoader;
-import io.gravitee.node.api.secrets.resolver.WatchablePropertyResolver;
+import io.gravitee.node.api.resolver.PropertyResolver;
+import io.gravitee.node.api.resolver.PropertyResolverFactoriesLoader;
+import io.gravitee.node.api.resolver.WatchablePropertyResolver;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.functions.Supplier;
@@ -90,7 +90,7 @@ public abstract class AbstractGraviteePropertySource extends EnumerablePropertyS
         new FlowableRepeater(() -> propertyResolver.watch(value.toString()))
             .repeatFlowable(REPEAT_DELAY_SECONDS)
             .subscribeOn(Schedulers.io())
-            .subscribe(newValue -> source.put(name, newValue), t -> LOGGER.error("Unable to update property {}", name, t));
+            .subscribe(newValue -> source.put(name, newValue), t -> LOGGER.error("Unable to update property {}: {}", name, t));
     }
 
     @Override

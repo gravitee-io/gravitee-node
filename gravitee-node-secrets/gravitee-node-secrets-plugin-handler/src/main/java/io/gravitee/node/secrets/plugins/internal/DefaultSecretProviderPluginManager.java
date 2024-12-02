@@ -15,20 +15,18 @@
  */
 package io.gravitee.node.secrets.plugins.internal;
 
-import io.gravitee.node.api.secrets.SecretProviderFactory;
 import io.gravitee.node.secrets.plugins.SecretProviderClassLoaderFactory;
 import io.gravitee.node.secrets.plugins.SecretProviderPlugin;
 import io.gravitee.node.secrets.plugins.SecretProviderPluginManager;
 import io.gravitee.plugin.core.api.AbstractConfigurablePluginManager;
 import io.gravitee.plugin.core.api.PluginClassLoader;
+import io.gravitee.secrets.api.plugin.SecretProviderFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author GraviteeSource Team

@@ -1,4 +1,4 @@
-package io.gravitee.node.api.secrets.resolver;
+package io.gravitee.node.api.resolver;
 
 import io.reactivex.rxjava3.core.Flowable;
 

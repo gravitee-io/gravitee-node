@@ -13,27 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.api.secrets.resolver;
+package io.gravitee.node.api.resolver;
 
-import io.reactivex.rxjava3.core.Maybe;
+import io.gravitee.common.spring.factory.SpringFactoriesLoader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  * @since 3.9.11
  */
-public interface PropertyResolver<T> {
-    /**
-     * Check if this property can be resolved
-     *
-     * @param value the property value
-     * @return true if revolve or watch can be called
-     */
-    boolean supports(String value);
+public class PropertyResolverFactoriesLoader extends SpringFactoriesLoader<PropertyResolver> {
 
-    /**
-     * @param location the value as a URL
-     * @return The values of the given property if exist
-     */
-    Maybe<T> resolve(String location);
+    @Override
+    protected Class<PropertyResolver> getObjectType() {
+        return PropertyResolver.class;
+    }
+
+    public List<PropertyResolver> getPropertyResolvers() {
+        return new ArrayList<>(getFactoriesInstances());
+    }
 }

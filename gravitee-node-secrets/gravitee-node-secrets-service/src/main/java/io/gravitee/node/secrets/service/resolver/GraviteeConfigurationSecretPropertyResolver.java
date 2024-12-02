@@ -15,10 +15,10 @@
  */
 package io.gravitee.node.secrets.service.resolver;
 
-import io.gravitee.node.api.secrets.model.Secret;
-import io.gravitee.node.api.secrets.model.SecretURL;
-import io.gravitee.node.api.secrets.resolver.WatchablePropertyResolver;
+import io.gravitee.node.api.resolver.WatchablePropertyResolver;
 import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
+import io.gravitee.secrets.api.core.Secret;
+import io.gravitee.secrets.api.core.SecretURL;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import lombok.NoArgsConstructor;

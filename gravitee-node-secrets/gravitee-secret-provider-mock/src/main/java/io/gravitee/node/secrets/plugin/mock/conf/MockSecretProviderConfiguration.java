@@ -1,8 +1,8 @@
 package io.gravitee.node.secrets.plugin.mock.conf;
 
-import io.gravitee.node.api.secrets.SecretManagerConfiguration;
-import io.gravitee.node.api.secrets.model.SecretEvent;
-import io.gravitee.node.api.secrets.util.ConfigHelper;
+import io.gravitee.secrets.api.core.SecretEvent;
+import io.gravitee.secrets.api.plugin.SecretManagerConfiguration;
+import io.gravitee.secrets.api.util.ConfigHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

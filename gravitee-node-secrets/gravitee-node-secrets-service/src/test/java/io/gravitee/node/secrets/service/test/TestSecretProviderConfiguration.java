@@ -1,7 +1,7 @@
 package io.gravitee.node.secrets.service.test;
 
-import io.gravitee.node.api.secrets.SecretManagerConfiguration;
-import io.gravitee.node.api.secrets.util.ConfigHelper;
+import io.gravitee.secrets.api.plugin.SecretManagerConfiguration;
+import io.gravitee.secrets.api.util.ConfigHelper;
 import java.util.HashMap;
 import java.util.Map;
 

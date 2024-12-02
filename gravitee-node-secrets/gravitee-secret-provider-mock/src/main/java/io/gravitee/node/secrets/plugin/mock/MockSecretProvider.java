@@ -2,15 +2,15 @@ package io.gravitee.node.secrets.plugin.mock;
 
 import static io.gravitee.plugin.core.internal.AbstractPluginEventListener.SECRET_PROVIDER;
 
-import io.gravitee.node.api.secrets.SecretProvider;
-import io.gravitee.node.api.secrets.model.SecretEvent;
-import io.gravitee.node.api.secrets.model.SecretMap;
-import io.gravitee.node.api.secrets.model.SecretMount;
-import io.gravitee.node.api.secrets.model.SecretURL;
-import io.gravitee.node.api.secrets.util.ConfigHelper;
 import io.gravitee.node.secrets.plugin.mock.conf.ConfiguredError;
 import io.gravitee.node.secrets.plugin.mock.conf.MockSecretProviderConfiguration;
 import io.gravitee.node.secrets.plugin.mock.conf.Renewal;
+import io.gravitee.secrets.api.core.SecretEvent;
+import io.gravitee.secrets.api.core.SecretMap;
+import io.gravitee.secrets.api.core.SecretMount;
+import io.gravitee.secrets.api.core.SecretURL;
+import io.gravitee.secrets.api.plugin.SecretProvider;
+import io.gravitee.secrets.api.util.ConfigHelper;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
