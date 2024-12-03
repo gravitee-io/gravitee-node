@@ -31,8 +31,6 @@
 
     <properties>
         <maven-plugin-assembly.version>3.7.1</maven-plugin-assembly.version>
-        <maven-plugin-gpg.version>3.2.6</maven-plugin-gpg.version>
-        <maven-plugin-nexus-staging.version>1.7.0</maven-plugin-nexus-staging.version>
         <maven-plugin-properties.version>1.2.1</maven-plugin-properties.version>
         <!-- Property used by the publication job in CI-->
         <publish-folder-path>plugins/secret-providers</publish-folder-path>
@@ -52,10 +50,6 @@
             <artifactId>rxjava</artifactId>
         </dependency>
         <!-- tests -->
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
@@ -77,31 +71,6 @@
         </resources>
 
         <plugins>
-            <plugin>
-                <groupId>com.mycila</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>*/**</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>${maven-plugin-nexus-staging.version}</version>
-                <configuration>
-                    <skipRemoteStaging>true</skipRemoteStaging>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>${maven-plugin-gpg.version}</version>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>properties-maven-plugin</artifactId>
