@@ -15,7 +15,7 @@
  */
 package io.gravitee.node.container.spring.env;
 
-import io.gravitee.node.api.secrets.resolver.PropertyResolverFactoriesLoader;
+import io.gravitee.node.api.resolver.PropertyResolverFactoriesLoader;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;

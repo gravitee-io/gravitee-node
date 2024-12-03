@@ -4,12 +4,12 @@ import io.gravitee.common.util.KeyStoreUtils;
 import io.gravitee.node.api.certificate.KeyStoreEvent;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
-import io.gravitee.node.api.secrets.model.Secret;
-import io.gravitee.node.api.secrets.model.SecretEvent;
-import io.gravitee.node.api.secrets.model.SecretMap;
-import io.gravitee.node.api.secrets.model.SecretMount;
 import io.gravitee.node.certificates.AbstractKeyStoreLoader;
-import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
+import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolver;
+import io.gravitee.secrets.api.core.Secret;
+import io.gravitee.secrets.api.core.SecretEvent;
+import io.gravitee.secrets.api.core.SecretMap;
+import io.gravitee.secrets.api.core.SecretMount;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.security.KeyStore;
 import lombok.extern.slf4j.Slf4j;
@@ -21,13 +21,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SecretProviderKeyStoreLoader extends AbstractKeyStoreLoader<KeyStoreLoaderOptions> {
 
-    private final GraviteeConfigurationSecretResolverDispatcher secretResolverDispatcher;
+    private final GraviteeConfigurationSecretResolver secretResolverDispatcher;
     private Disposable watch;
 
-    public SecretProviderKeyStoreLoader(
-        GraviteeConfigurationSecretResolverDispatcher secretResolverDispatcher,
-        KeyStoreLoaderOptions options
-    ) {
+    public SecretProviderKeyStoreLoader(GraviteeConfigurationSecretResolver secretResolverDispatcher, KeyStoreLoaderOptions options) {
         super(options);
         this.secretResolverDispatcher = secretResolverDispatcher;
     }

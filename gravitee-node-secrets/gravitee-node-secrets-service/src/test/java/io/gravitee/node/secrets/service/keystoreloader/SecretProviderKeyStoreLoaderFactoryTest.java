@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderPluginManager;
-import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
+import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -28,7 +28,7 @@ class SecretProviderKeyStoreLoaderFactoryTest {
     void before() {
         DefaultSecretProviderPluginManager pluginManager = newPluginManager();
         MockEnvironment env = newEnvironment();
-        GraviteeConfigurationSecretResolverDispatcher dispatcher = newDispatcher(pluginManager, env);
+        GraviteeConfigurationSecretResolver dispatcher = newDispatcher(pluginManager, env);
         this.cut = new SecretProviderKeyStoreLoaderFactory(dispatcher);
     }
 

@@ -7,7 +7,7 @@ import static org.awaitility.Awaitility.await;
 import io.gravitee.node.api.certificate.KeyStoreEvent;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderPluginManager;
-import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolverDispatcher;
+import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolver;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,7 +125,7 @@ class SecretProviderKeyStoreLoaderTest {
         env.setProperty("secrets.test.secrets.tlscert", CERT);
         env.setProperty("secrets.test.secrets.tlskey", KEY);
         env.setProperty("secrets.test.secrets.jkskeystore", JKS_KEY_STORE);
-        GraviteeConfigurationSecretResolverDispatcher dispatcher = newDispatcher(pluginManager, env);
+        GraviteeConfigurationSecretResolver dispatcher = newDispatcher(pluginManager, env);
         this.factory = new SecretProviderKeyStoreLoaderFactory(dispatcher);
     }
 
