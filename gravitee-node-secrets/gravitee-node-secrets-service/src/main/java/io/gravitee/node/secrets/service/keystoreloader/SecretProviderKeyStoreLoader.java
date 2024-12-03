@@ -10,6 +10,8 @@ import io.gravitee.secrets.api.core.Secret;
 import io.gravitee.secrets.api.core.SecretEvent;
 import io.gravitee.secrets.api.core.SecretMap;
 import io.gravitee.secrets.api.core.SecretMount;
+import io.gravitee.secrets.api.errors.SecretManagerException;
+import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.security.KeyStore;
 import lombok.extern.slf4j.Slf4j;
@@ -32,12 +34,19 @@ public class SecretProviderKeyStoreLoader extends AbstractKeyStoreLoader<KeyStor
     @Override
     public void start() {
         final SecretMount secretMount = secretResolverDispatcher.toSecretMount(options.getSecretLocation());
-        createBundleAndNotify(secretResolverDispatcher.resolve(secretMount).blockingGet(), secretMount);
         if (options.isWatch()) {
             this.watch =
                 secretResolverDispatcher
                     .watch(secretMount, SecretEvent.Type.UPDATED)
                     .subscribe(secretMap -> createBundleAndNotify(secretMap, secretMount), ex -> log.error("cannot create keystore", ex));
+        } else {
+            createBundleAndNotify(
+                secretResolverDispatcher
+                    .resolve(secretMount)
+                    .switchIfEmpty(Maybe.error(new SecretManagerException("secret not found: ".concat(options.getSecretLocation()))))
+                    .blockingGet(),
+                secretMount
+            );
         }
     }
 

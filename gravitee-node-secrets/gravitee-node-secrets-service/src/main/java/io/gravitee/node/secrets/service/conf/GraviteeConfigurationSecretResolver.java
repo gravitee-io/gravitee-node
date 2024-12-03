@@ -113,6 +113,7 @@ public class GraviteeConfigurationSecretResolver {
         }
         return this.secretProviders.getOrDefault(secretMount.provider(), new ErrorSecretProvider())
             .resolve(secretMount)
+            .switchIfEmpty(Maybe.error(new SecretManagerException("secret not found: ".concat(secretMount.location().toString()))))
             .subscribeOn(Schedulers.io())
             .doOnSuccess(secretMap -> secrets.put(secretMount.location(), secretMap));
     }
