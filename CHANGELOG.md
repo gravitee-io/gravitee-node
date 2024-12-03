@@ -1,3 +1,10 @@
+# [7.0.0-alpha.6](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.5...7.0.0-alpha.6) (2024-12-03)
+
+
+### Bug Fixes
+
+* fix mock provider pom ([c60bb86](https://github.com/gravitee-io/gravitee-node/commit/c60bb8643538568a07e1a8e7be0d1bc353b027b3))
+
 # [7.0.0-alpha.5](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.4...7.0.0-alpha.5) (2024-11-26)
 
 
