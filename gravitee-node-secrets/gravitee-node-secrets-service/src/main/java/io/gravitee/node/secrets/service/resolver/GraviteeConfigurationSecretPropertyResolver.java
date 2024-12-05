@@ -34,21 +34,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GraviteeConfigurationSecretPropertyResolver implements WatchablePropertyResolver<Secret> {
 
     @Autowired
-    private GraviteeConfigurationSecretResolver dispatcher;
+    private GraviteeConfigurationSecretResolver secretResolver;
 
-    public GraviteeConfigurationSecretPropertyResolver(GraviteeConfigurationSecretResolver dispatcher) {
-        this.dispatcher = dispatcher;
+    public GraviteeConfigurationSecretPropertyResolver(GraviteeConfigurationSecretResolver secretResolver) {
+        this.secretResolver = secretResolver;
     }
 
     @Override
     public boolean supports(String value) {
         if (value == null) return false;
-        return dispatcher.canResolveSingleValue(value);
+        return secretResolver.canResolveSingleValue(value);
     }
 
     @Override
     public Maybe<Secret> resolve(String location) {
-        return dispatcher.resolveKey(dispatcher.toSecretMount(location));
+        return secretResolver.resolveKey(secretResolver.asSecretURL(location));
     }
 
     @Override
@@ -58,6 +58,6 @@ public class GraviteeConfigurationSecretPropertyResolver implements WatchablePro
 
     @Override
     public Flowable<Secret> watch(String location) {
-        return dispatcher.watchKey(dispatcher.toSecretMount(location));
+        return secretResolver.watchKey(secretResolver.asSecretURL(location));
     }
 }

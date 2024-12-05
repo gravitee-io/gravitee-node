@@ -9,7 +9,7 @@ import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolver
 import io.gravitee.secrets.api.core.Secret;
 import io.gravitee.secrets.api.core.SecretEvent;
 import io.gravitee.secrets.api.core.SecretMap;
-import io.gravitee.secrets.api.core.SecretMount;
+import io.gravitee.secrets.api.core.SecretURL;
 import io.gravitee.secrets.api.errors.SecretManagerException;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -33,24 +33,36 @@ public class SecretProviderKeyStoreLoader extends AbstractKeyStoreLoader<KeyStor
 
     @Override
     public void start() {
-        final SecretMount secretMount = secretResolverDispatcher.toSecretMount(options.getSecretLocation());
+        final SecretURL secretURL = secretResolverDispatcher.asSecretURL(options.getSecretLocation());
+
         if (options.isWatch()) {
+            if (
+                // resolve before by default
+                !secretURL.queryParamExists(SecretURL.WellKnownQueryParam.RESOLVE_BEFORE_WATCH) ||
+                secretURL.queryParamEqualsIgnoreCase(SecretURL.WellKnownQueryParam.RESOLVE_BEFORE_WATCH, "false")
+            ) {
+                resolveAndNotify(secretURL);
+            }
             this.watch =
                 secretResolverDispatcher
-                    .watch(secretMount, SecretEvent.Type.UPDATED)
-                    .subscribe(secretMap -> createBundleAndNotify(secretMap, secretMount), ex -> log.error("cannot create keystore", ex));
+                    .watch(secretURL, SecretEvent.Type.CREATED, SecretEvent.Type.UPDATED)
+                    .subscribe(secretMap -> createBundleAndNotify(secretMap, secretURL), ex -> log.error("cannot create keystore", ex));
         } else {
-            createBundleAndNotify(
-                secretResolverDispatcher
-                    .resolve(secretMount)
-                    .switchIfEmpty(Maybe.error(new SecretManagerException("secret not found: ".concat(options.getSecretLocation()))))
-                    .blockingGet(),
-                secretMount
-            );
+            resolveAndNotify(secretURL);
         }
     }
 
-    private void createBundleAndNotify(SecretMap secretMap, SecretMount secretMount) {
+    private void resolveAndNotify(SecretURL secretURL) {
+        createBundleAndNotify(
+            secretResolverDispatcher
+                .resolve(secretURL)
+                .switchIfEmpty(Maybe.error(new SecretManagerException("secret not found: ".concat(options.getSecretLocation()))))
+                .blockingGet(),
+            secretURL
+        );
+    }
+
+    private void createBundleAndNotify(SecretMap secretMap, SecretURL secretURL) {
         switch (options.getType().toUpperCase()) {
             case KeyStoreLoader.CERTIFICATE_FORMAT_PEM -> {
                 String loaderId = id();
@@ -81,10 +93,9 @@ public class SecretProviderKeyStoreLoader extends AbstractKeyStoreLoader<KeyStor
                 KeyStore keyStore = KeyStoreUtils.initFromContent(
                     options.getType(),
                     secretMap
-                        .getSecret(secretMount)
+                        .getSecret(secretURL)
                         .map(Secret::asString)
-                        .orElseThrow(() -> new IllegalArgumentException("no keystore value found for key '%s'".formatted(secretMount.key()))
-                        ),
+                        .orElseThrow(() -> new IllegalArgumentException("no keystore value found for key '%s'".formatted(secretURL.key()))),
                     this.getPassword()
                 );
                 onEvent(new KeyStoreEvent.LoadEvent(loaderId, keyStore, this.getPassword()));
