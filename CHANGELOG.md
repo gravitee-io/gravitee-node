@@ -1,3 +1,10 @@
+# [6.7.0](https://github.com/gravitee-io/gravitee-node/compare/6.6.0...6.7.0) (2024-12-05)
+
+
+### Features
+
+* addition of new feature key for entreprise-secret-manager pack ([483543f](https://github.com/gravitee-io/gravitee-node/commit/483543f7177e494dfacccc2da902f05b9bd624a3))
+
 # [6.6.0](https://github.com/gravitee-io/gravitee-node/compare/6.5.0...6.6.0) (2024-11-21)
 
 
