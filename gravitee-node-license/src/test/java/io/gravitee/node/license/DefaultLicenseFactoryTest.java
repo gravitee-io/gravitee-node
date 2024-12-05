@@ -1,6 +1,8 @@
 package io.gravitee.node.license;
 
-import static io.gravitee.node.api.license.License.*;
+import static io.gravitee.node.api.license.License.REFERENCE_ID_PLATFORM;
+import static io.gravitee.node.api.license.License.REFERENCE_TYPE_ORGANIZATION;
+import static io.gravitee.node.api.license.License.REFERENCE_TYPE_PLATFORM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -338,6 +340,7 @@ class DefaultLicenseFactoryTest {
             "gravitee-en-secretprovider-vault",
             "gravitee-en-secretprovider-aws",
             "am-certificate-aws",
+            "am-certificate-aws-cloudhsm",
             "apim-policy-graphql-ratelimit",
             "apim-policy-interops-a-idp",
             "apim-policy-interops-r-idp",

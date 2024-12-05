@@ -90,6 +90,7 @@ packs:
             - gravitee-en-secretprovider-vault
             - gravitee-en-secretprovider-aws
             - am-certificate-aws
+            - am-certificate-aws-cloudhsm
     enterprise-alert-engine:
         features:
             - alert-engine
