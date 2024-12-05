@@ -1,9 +1,10 @@
 package io.gravitee.node.secrets.plugin.mock;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import io.gravitee.node.secrets.plugin.mock.conf.MockSecretProviderConfiguration;
-import io.gravitee.secrets.api.core.*;
+import io.gravitee.secrets.api.core.Secret;
+import io.gravitee.secrets.api.core.SecretEvent;
+import io.gravitee.secrets.api.core.SecretMap;
+import io.gravitee.secrets.api.core.SecretURL;
 import io.gravitee.secrets.api.plugin.SecretProvider;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -88,33 +89,34 @@ class MockSecretProviderTest {
     }
 
     @Test
-    void should_create_mount() {
-        SecretMount secretMountRedis = cut.fromURL(SecretURL.from("secret://mock/redis:password"));
-        assertThat(secretMountRedis.provider()).isEqualTo("mock");
-        assertThat((String) secretMountRedis.location().get("secret")).isEqualTo("redis");
-        assertThat(secretMountRedis.key()).isEqualTo("password");
-    }
-
-    @Test
     void should_resolve() {
-        SecretMount secretMountRedis = cut.fromURL(SecretURL.from("secret://mock/redis:password"));
-        cut.resolve(secretMountRedis).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("password", "r3d1s")));
+        cut
+            .resolve(SecretURL.from("secret://mock/redis:password"))
+            .test()
+            .awaitDone(100, TimeUnit.MILLISECONDS)
+            .assertValue(SecretMap.of(Map.of("password", "r3d1s")));
 
-        SecretMount secretMountLdap = cut.fromURL(SecretURL.from("secret://mock/ldap"));
-        cut.resolve(secretMountLdap).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("password", "1da9")));
+        cut
+            .resolve(SecretURL.from("secret://mock/ldap"))
+            .test()
+            .awaitDone(100, TimeUnit.MILLISECONDS)
+            .assertValue(SecretMap.of(Map.of("password", "1da9")));
     }
 
     @Test
     void should_return_empty() {
-        SecretMount secretMountEmpty = cut.fromURL(SecretURL.from("secret://mock/empty:password"));
-        cut.resolve(secretMountEmpty).test().awaitDone(100, TimeUnit.MILLISECONDS).assertNoErrors().assertComplete();
+        cut
+            .resolve(SecretURL.from("secret://mock/empty:password"))
+            .test()
+            .awaitDone(100, TimeUnit.MILLISECONDS)
+            .assertNoErrors()
+            .assertComplete();
     }
 
     @Test
     void should_return_an_error() {
-        SecretMount secretMount = cut.fromURL(SecretURL.from("secret://mock/kafka"));
         cut
-            .resolve(secretMount)
+            .resolve(SecretURL.from("secret://mock/kafka"))
             .test()
             .awaitDone(100, TimeUnit.MILLISECONDS)
             .assertError(err -> err.getMessage().contains("that's just ain't working"));
@@ -122,20 +124,20 @@ class MockSecretProviderTest {
 
     @Test
     void should_return_an_error_then_work() {
-        SecretMount secretMount = cut.fromURL(SecretURL.from("secret://mock/flaky"));
+        SecretURL url = SecretURL.from("secret://mock/flaky");
+
         cut
-            .resolve(secretMount)
+            .resolve(url)
             .test()
             .awaitDone(100, TimeUnit.MILLISECONDS)
             .assertError(err -> err.getMessage().contains("next attempt it should work"));
-        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "now it works")));
+        cut.resolve(url).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "now it works")));
     }
 
     @Test
     void should_watch_values() {
-        SecretMount secretMount = cut.fromURL(SecretURL.from("secret://mock/apikeys"));
         cut
-            .watch(secretMount)
+            .watch(SecretURL.from("secret://mock/apikeys"))
             .test()
             .awaitDone(3, TimeUnit.SECONDS)
             .assertValueAt(
@@ -155,29 +157,22 @@ class MockSecretProviderTest {
 
     @Test
     void should_renew_once() {
-        SecretMount secretMount = cut.fromURL(SecretURL.from("secret://mock/renewable"));
-        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "once")));
-        cut
-            .resolve(secretMount)
-            .test()
-            .awaitDone(100, TimeUnit.MILLISECONDS)
-            .assertValue(SecretMap.of(Map.of("value", "twice and no more")));
-        cut
-            .resolve(secretMount)
-            .test()
-            .awaitDone(100, TimeUnit.MILLISECONDS)
-            .assertValue(SecretMap.of(Map.of("value", "twice and no more")));
+        SecretURL url = SecretURL.from("secret://mock/renewable");
+
+        cut.resolve(url).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "once")));
+        cut.resolve(url).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "twice and no more")));
+        cut.resolve(url).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "twice and no more")));
     }
 
     @Test
     void should_renew_in_loop() {
-        SecretMount secretMount = cut.fromURL(SecretURL.from("secret://mock/loop"));
-        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 1")));
-        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 2")));
-        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 3")));
-        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 1")));
-        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 2")));
-        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 3")));
-        cut.resolve(secretMount).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 1")));
+        SecretURL url = SecretURL.from("secret://mock/loop");
+        cut.resolve(url).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 1")));
+        cut.resolve(url).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 2")));
+        cut.resolve(url).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 3")));
+        cut.resolve(url).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 1")));
+        cut.resolve(url).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 2")));
+        cut.resolve(url).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 3")));
+        cut.resolve(url).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 1")));
     }
 }

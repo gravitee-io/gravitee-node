@@ -8,8 +8,7 @@ import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderPluginMana
 import io.gravitee.secrets.api.core.Secret;
 import io.gravitee.secrets.api.core.SecretEvent;
 import io.gravitee.secrets.api.core.SecretMap;
-import io.gravitee.secrets.api.core.SecretMount;
-import io.gravitee.secrets.api.errors.SecretManagerConfigurationException;
+import io.gravitee.secrets.api.core.SecretURL;
 import io.gravitee.secrets.api.errors.SecretProviderNotFoundException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -46,19 +45,19 @@ class GraviteeConfigurationSecretResolverTest {
         MockEnvironment env = newEnvironment();
         env.setProperty("secrets.test.secrets.password", "noOneWillFindMyPasswordHahahaha");
         GraviteeConfigurationSecretResolver cut = newDispatcher(pluginManager, env);
-        SecretMount secretMount = cut.toSecretMount("secret://test/test:password");
-        assertThat(secretMount.key()).isEqualTo("password");
-        assertThat(secretMount.provider()).isEqualTo("test");
+        SecretURL secretURL = cut.asSecretURL("secret://test/test:password");
+        assertThat(secretURL.key()).isEqualTo("password");
+        assertThat(secretURL.provider()).isEqualTo("test");
 
-        Secret secret = cut.resolveKey(secretMount).blockingGet();
+        Secret secret = cut.resolveKey(secretURL).blockingGet();
         assertThat(secret).isNotNull();
         assertThat(secret.asString()).isEqualTo("noOneWillFindMyPasswordHahahaha");
         // secret was cached
-        assertThat(cut.secrets().get(secretMount.location())).isNotNull();
+        assertThat(cut.secrets().get(secretURL.path())).isNotNull();
 
-        SecretMap secretMap = cut.resolve(secretMount).blockingGet();
+        SecretMap secretMap = cut.resolve(secretURL).blockingGet();
         assertThat(secretMap).isNotNull();
-        assertThat(secretMap.getSecret(secretMount))
+        assertThat(secretMap.getSecret(secretURL))
             .isPresent()
             .get()
             .extracting(Secret::asString)
@@ -71,16 +70,16 @@ class GraviteeConfigurationSecretResolverTest {
         MockEnvironment env = newEnvironment();
         env.setProperty("secrets.test.secrets.password", "thisIsTheBestPasswordOfAllTime!");
         GraviteeConfigurationSecretResolver cut = newDispatcher(pluginManager, env);
-        SecretMount secretMount = cut.toSecretMount("secret://test/test:password");
+        SecretURL secretURL = cut.asSecretURL("secret://test/test:password");
 
-        Secret secret = cut.watchKey(secretMount).blockingFirst(); // don't about the rest
+        Secret secret = cut.watchKey(secretURL).blockingFirst(); // don't about the rest
         assertThat(secret.asString()).isEqualTo("thisIsTheBestPasswordOfAllTime!");
         // secret was NOT cached
-        assertThat(cut.secrets().get(secretMount.location())).isNull();
+        assertThat(cut.secrets().get(secretURL.path())).isNull();
 
-        SecretMap secretMap = cut.watch(secretMount).blockingFirst();
+        SecretMap secretMap = cut.watch(secretURL).blockingFirst();
         assertThat(secretMap).isNotNull();
-        assertThat(secretMap.getSecret(secretMount))
+        assertThat(secretMap.getSecret(secretURL))
             .isPresent()
             .get()
             .extracting(Secret::asString)
@@ -93,43 +92,39 @@ class GraviteeConfigurationSecretResolverTest {
         MockEnvironment env = newEnvironment();
         env.setProperty("secrets.test.secrets.password", "thisIsTheBestPasswordOfAllTime!");
         GraviteeConfigurationSecretResolver cut = newDispatcher(pluginManager, env);
-        SecretMount secretMount = cut.toSecretMount("secret://test/test:password");
+        SecretURL secretURL = cut.asSecretURL("secret://test/test:password");
 
         // make sure we have two different maps (Flowable always returns the same)
-        SecretMap first = cut.watch(secretMount).blockingFirst();
-        SecretMap last = cut.watch(secretMount).blockingLast();
+        SecretMap first = cut.watch(secretURL).blockingFirst();
+        SecretMap last = cut.watch(secretURL).blockingLast();
         assertThat(first).isNotEqualTo(last).isNotNull();
-        assertThat(first.getSecret(new SecretMount(null, null, "created_flag", null))).isPresent();
-        assertThat(first.getSecret(new SecretMount(null, null, "updated_flag", null))).isNotPresent();
-        assertThat(last.getSecret(new SecretMount(null, null, "created_flag", null))).isNotPresent();
-        assertThat(last.getSecret(new SecretMount(null, null, "updated_flag", null))).isPresent();
+        assertThat(first.getSecret(SecretURL.from("secret://foo/bar:created_flag"))).isPresent();
+        assertThat(first.getSecret(SecretURL.from("secret://foo/bar:updated_flag"))).isNotPresent();
+        assertThat(last.getSecret(SecretURL.from("secret://foo/bar:created_flag"))).isNotPresent();
+        assertThat(last.getSecret(SecretURL.from("secret://foo/bar:updated_flag"))).isPresent();
 
-        first = cut.watch(secretMount, SecretEvent.Type.UPDATED).blockingFirst();
-        last = cut.watch(secretMount, SecretEvent.Type.UPDATED).blockingLast();
+        first = cut.watch(secretURL, SecretEvent.Type.UPDATED).blockingFirst();
+        last = cut.watch(secretURL, SecretEvent.Type.UPDATED).blockingLast();
         assertThat(first).isEqualTo(last).isNotNull();
-        assertThat(first.getSecret(new SecretMount(null, null, "created_flag", null))).isNotPresent();
-        assertThat(first.getSecret(new SecretMount(null, null, "updated_flag", null))).isPresent();
+        assertThat(first.getSecret(SecretURL.from("secret://foo/bar:created_flag"))).isNotPresent();
+        assertThat(first.getSecret(SecretURL.from("secret://foo/bar:updated_flag"))).isPresent();
 
-        first = cut.watch(secretMount, SecretEvent.Type.CREATED).blockingFirst();
-        last = cut.watch(secretMount, SecretEvent.Type.CREATED).blockingLast();
+        first = cut.watch(secretURL, SecretEvent.Type.CREATED).blockingFirst();
+        last = cut.watch(secretURL, SecretEvent.Type.CREATED).blockingLast();
         assertThat(first).isEqualTo(last).isNotNull();
-        assertThat(first.getSecret(new SecretMount(null, null, "created_flag", null))).isPresent();
-        assertThat(first.getSecret(new SecretMount(null, null, "updated_flag", null))).isNotPresent();
+        assertThat(first.getSecret(SecretURL.from("secret://foo/bar:created_flag"))).isPresent();
+        assertThat(first.getSecret(SecretURL.from("secret://foo/bar:updated_flag"))).isNotPresent();
 
-        Iterable<SecretMap> all = cut.watch(secretMount, SecretEvent.Type.DELETED).blockingIterable();
+        Iterable<SecretMap> all = cut.watch(secretURL, SecretEvent.Type.DELETED).blockingIterable();
         assertThat(all).isEmpty();
     }
 
     @Test
-    void should_fail_parsing_secret_mount() {
+    void should_fail_validating_url() {
         DefaultSecretProviderPluginManager pluginManager = newPluginManager();
         MockEnvironment env = newEnvironment();
         GraviteeConfigurationSecretResolver cut = newDispatcher(pluginManager, env);
 
-        assertThatCode(() -> cut.toSecretMount("secret://foooo/test:password")).isInstanceOf(SecretProviderNotFoundException.class);
-
-        // the test secret provider expect the path to always be 'test'
-        assertThatCode(() -> cut.toSecretMount("secret://test/this_is_not_a_valid_path_for_our_fake_impl:password"))
-            .isInstanceOf(SecretManagerConfigurationException.class);
+        assertThatCode(() -> cut.asSecretURL("secret://foooo/test:password")).isInstanceOf(SecretProviderNotFoundException.class);
     }
 }

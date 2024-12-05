@@ -3,7 +3,10 @@ package io.gravitee.node.secrets.service.conf;
 import io.gravitee.common.util.EnvironmentUtils;
 import io.gravitee.node.secrets.plugins.SecretProviderPlugin;
 import io.gravitee.node.secrets.plugins.SecretProviderPluginManager;
-import io.gravitee.secrets.api.core.*;
+import io.gravitee.secrets.api.core.Secret;
+import io.gravitee.secrets.api.core.SecretEvent;
+import io.gravitee.secrets.api.core.SecretMap;
+import io.gravitee.secrets.api.core.SecretURL;
 import io.gravitee.secrets.api.errors.SecretManagerConfigurationException;
 import io.gravitee.secrets.api.errors.SecretManagerException;
 import io.gravitee.secrets.api.errors.SecretProviderNotFoundException;
@@ -42,7 +45,7 @@ public class GraviteeConfigurationSecretResolver {
     private final SecretProviderPluginManager secretProviderPluginManager;
     private final Environment environment;
     private final Map<String, SecretProvider> secretProviders = new HashMap<>();
-    private final Map<SecretLocation, SecretMap> secrets = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, SecretMap> secrets = Collections.synchronizedMap(new HashMap<>());
 
     @Getter
     @Accessors(fluent = true)
@@ -84,8 +87,8 @@ public class GraviteeConfigurationSecretResolver {
         Objects.requireNonNull(location);
         if (canHandle(location)) {
             try {
-                SecretMount secretMount = toSecretMount(location);
-                if (secretMount.isKeyEmpty()) {
+                SecretURL secretURL = asSecretURL(location);
+                if (secretURL.isKeyEmpty()) {
                     throw new IllegalArgumentException(
                         "Secret URL should must specify a 'key' in order to resolve a single value, such as: %s:<KEY>".formatted(location)
                     );
@@ -102,74 +105,69 @@ public class GraviteeConfigurationSecretResolver {
     /**
      * Resolves a {@link SecretMap} from the correct secret provider
      *
-     * @param secretMount the secret mount to resolve
+     * @param secretURL secret URL
      * @return a secret map
-     * @throws SecretProviderNotFoundException if the {@link SecretMount#provider()} does not match an enabled secret provider plugin
+     * @throws SecretProviderNotFoundException if the {@link SecretURL#provider()} does not match an enabled secret provider plugin
      * @throws SecretManagerException          if the secret manager throws an exception during resolution
      */
-    public Maybe<SecretMap> resolve(SecretMount secretMount) throws SecretProviderNotFoundException, SecretManagerException {
-        if (secrets.containsKey(secretMount.location())) {
-            return Maybe.just(secrets.get(secretMount.location()));
+    public Maybe<SecretMap> resolve(SecretURL secretURL) throws SecretProviderNotFoundException, SecretManagerException {
+        if (secrets.containsKey(secretURL.path())) {
+            return Maybe.just(secrets.get(secretURL.path()));
         }
-        return this.secretProviders.getOrDefault(secretMount.provider(), new ErrorSecretProvider())
-            .resolve(secretMount)
-            .switchIfEmpty(Maybe.error(new SecretManagerException("secret not found: ".concat(secretMount.location().toString()))))
+        return this.secretProviders.getOrDefault(secretURL.provider(), new ErrorSecretProvider())
+            .resolve(secretURL)
+            .switchIfEmpty(Maybe.error(new SecretManagerException("secret not found: ".concat(secretURL.path()))))
             .subscribeOn(Schedulers.io())
-            .doOnSuccess(secretMap -> secrets.put(secretMount.location(), secretMap));
+            .doOnSuccess(secretMap -> secrets.put(secretURL.path(), secretMap));
     }
 
     /**
-     * Uses a secret provider to convert a URL to {@link SecretMount}
+     * Parse URL and check that provider exists for it
      *
      * @param location secret location
-     * @return a {@link SecretMount}
+     * @return a {@link SecretURL}
      * @throws SecretProviderNotFoundException     if the URL points a non-existing secret provider
      * @throws SecretManagerConfigurationException if the URL processing led to an error
      * @throws IllegalArgumentException            if the URL is well formatted
      */
-    public SecretMount toSecretMount(String location) {
+
+    public SecretURL asSecretURL(String location) {
         SecretURL url = SecretURL.from(location);
         return this.findSecretProvider(url.provider())
-            .map(secretProvider -> {
-                try {
-                    return secretProvider.fromURL(url);
-                } catch (IllegalArgumentException e) {
-                    throw new SecretManagerConfigurationException("cannot create secret URL from: " + location, e);
-                }
-            })
+            .map(secretProvider -> url)
             .orElseThrow(() -> new SecretProviderNotFoundException(SECRET_PROVIDER_NOT_FOUND_FOR_ID.formatted(url.provider())));
     }
 
     /**
-     * Delegates to {@link SecretProvider#resolve(SecretMount)} in order to resolve a {@link SecretMap}.
-     * Then uses {@link SecretMount#key()} to extract the secret from the map.
+     * Delegates to {@link SecretProvider#resolve(SecretURL)} in order to resolve a {@link SecretMap}.
+     * Then uses {@link SecretURL#key()} to extract the secret from the map.
      * An empty maybe is returned if resolution returns no secret or the key do not exist in the secret map.
      *
-     * @param secretMount the secret mount to resolve
+     * @param secretURL url to resolve
      * @return a secret map
-     * @throws SecretProviderNotFoundException if the {@link SecretMount#provider()} does not match an enabled secret provider plugin
+     * @throws SecretProviderNotFoundException if the {@link SecretURL#provider()} does not match an enabled secret provider plugin
      * @throws SecretManagerException          if the secret manager throws an exception during resolution
      */
-    public Maybe<Secret> resolveKey(SecretMount secretMount) throws SecretProviderNotFoundException, SecretManagerException {
-        if (secretMount.isKeyEmpty()) {
+    public Maybe<Secret> resolveKey(SecretURL secretURL) throws SecretProviderNotFoundException, SecretManagerException {
+        if (secretURL.isKeyEmpty()) {
             return Maybe.error(new IllegalArgumentException("cannot request secret key, no key provided"));
         }
-        return resolve(secretMount).flatMap(secretMap -> Maybe.fromOptional(secretMap.getSecret(secretMount)));
+        return resolve(secretURL).flatMap(secretMap -> Maybe.fromOptional(secretMap.getSecret(secretURL)));
     }
 
     /**
-     * Delegates to {@link SecretProvider#watch(SecretMount)} in order to watch a {@link SecretMap}.
+     * Delegates to {@link SecretProvider#watch(SecretURL)} in order to watch a {@link SecretMap}.
      *
-     * @param secretMount the secret mount to resolve
-     * @param events      events to filter, <code>null</code> means "all"
+     * @param secretURL url to resolve
+     * @param events    events to filter, <code>null</code> means "all"
      * @return a secret map
-     * @throws SecretProviderNotFoundException if the {@link SecretMount#provider()} does not match an enabled secret provider plugin
+     * @throws SecretProviderNotFoundException if the {@link SecretURL#provider()} does not match an enabled secret provider plugin
      * @throws SecretManagerException          if the secret manager throws an exception during resolution
      */
-    public Flowable<SecretMap> watch(SecretMount secretMount, SecretEvent.Type... events) {
-        final SecretProvider provider = secretProviders.getOrDefault(secretMount.provider(), new ErrorSecretProvider());
+    public Flowable<SecretMap> watch(SecretURL secretURL, SecretEvent.Type... events) {
+        final SecretProvider provider = secretProviders.getOrDefault(secretURL.provider(), new ErrorSecretProvider());
         return provider
-            .watch(secretMount)
+            .watch(secretURL)
             .filter(secretEvent -> events == null || events.length == 0 || Arrays.asList(events).contains(secretEvent.type()))
             .subscribeOn(Schedulers.io())
             .map(SecretEvent::secretMap)
@@ -177,21 +175,21 @@ public class GraviteeConfigurationSecretResolver {
     }
 
     /**
-     * Delegates to {@link SecretProvider#watch(SecretMount)} in order to resolve a {@link SecretMap}.
-     * Then uses {@link SecretMount#key()} to extract the secret from the map.
+     * Delegates to {@link SecretProvider#watch(SecretURL)} in order to resolve a {@link SecretMap}.
+     * Then uses {@link SecretURL#key()} to extract the secret from the map.
      * No secret is published is none is found or the key do not exist in the secret map
      *
-     * @param secretMount the secret mount to resolve
-     * @param events      events to filter, null means "all"
+     * @param secretURL url to resolve
+     * @param events    events to filter, null means "all"
      * @return a secret map
-     * @throws SecretProviderNotFoundException if the {@link SecretMount#provider()} does not match an enabled secret provider plugin
+     * @throws SecretProviderNotFoundException if the {@link SecretURL#provider()} does not match an enabled secret provider plugin
      * @throws SecretManagerException          if the secret manager throws an exception during resolution
      */
-    public Flowable<Secret> watchKey(SecretMount secretMount, SecretEvent.Type... events) {
-        if (secretMount.isKeyEmpty()) {
+    public Flowable<Secret> watchKey(SecretURL secretURL, SecretEvent.Type... events) {
+        if (secretURL.isKeyEmpty()) {
             return Flowable.error(new IllegalArgumentException("cannot request secret key, no key provided"));
         }
-        return watch(secretMount, events).flatMapMaybe(secretMap -> Maybe.fromOptional(secretMap.getSecret(secretMount)));
+        return watch(secretURL, events).flatMapMaybe(secretMap -> Maybe.fromOptional(secretMap.getSecret(secretURL)));
     }
 
     // visible for tests
@@ -265,23 +263,18 @@ public class GraviteeConfigurationSecretResolver {
     private static class ErrorSecretProvider implements SecretProvider {
 
         @Override
-        public Maybe<SecretMap> resolve(SecretMount secretMount) {
-            return Maybe.error(new SecretProviderNotFoundException(SECRET_PROVIDER_NOT_FOUND_FOR_ID.formatted(secretMount.provider())));
+        public Maybe<SecretMap> resolve(SecretURL secretURL) {
+            return Maybe.error(new SecretProviderNotFoundException(SECRET_PROVIDER_NOT_FOUND_FOR_ID.formatted(secretURL.provider())));
         }
 
         @Override
-        public Flowable<SecretEvent> watch(SecretMount secretMount) {
-            return Flowable.error(new SecretProviderNotFoundException(SECRET_PROVIDER_NOT_FOUND_FOR_ID.formatted(secretMount.provider())));
-        }
-
-        @Override
-        public SecretMount fromURL(SecretURL url) {
-            throw new SecretProviderNotFoundException("No secret provider plugin found for url: " + url);
+        public Flowable<SecretEvent> watch(SecretURL secretURL) {
+            return Flowable.error(new SecretProviderNotFoundException(SECRET_PROVIDER_NOT_FOUND_FOR_ID.formatted(secretURL.provider())));
         }
     }
 
     // for tests
-    Map<SecretLocation, SecretMap> secrets() {
+    Map<String, SecretMap> secrets() {
         return Map.copyOf(secrets);
     }
 }
