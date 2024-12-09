@@ -1,3 +1,10 @@
+# [7.0.0-alpha.7](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.6...7.0.0-alpha.7) (2024-12-09)
+
+
+### Features
+
+* add new pack of features for kafka gateway ([6cfc1c4](https://github.com/gravitee-io/gravitee-node/commit/6cfc1c4db9733f16c22b653da1a31d442a81da5a))
+
 # [7.0.0-alpha.6](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.5...7.0.0-alpha.6) (2024-12-03)
 
 
