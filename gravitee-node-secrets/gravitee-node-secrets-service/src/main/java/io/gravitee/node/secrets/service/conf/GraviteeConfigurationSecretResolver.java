@@ -32,7 +32,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 
 /**
- * Class to dispatch resolution "request" to the correct secret provider.
+ * Resolve a secret for Gravitee configuration. It selects a secret-provider plugin and call it.
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
@@ -64,16 +64,16 @@ public class GraviteeConfigurationSecretResolver {
     }
 
     /**
-     * Check if the value given can be handled by a provider.
+     * Check if given location can be handled by a provider.
      *
-     * @param location the URL of a secret
-     * @return true if there is a provider able to handle this URL
+     * @param location the URL of a secret as a String
+     * @return true if there is a provider is able to handle this URL
      */
     public boolean canHandle(String location) {
         Objects.requireNonNull(location);
         return (
             location.startsWith(SecretProvider.PLUGIN_URL_SCHEME) &&
-            enabledProviders().stream().anyMatch(manager -> canProviderHandle(location, manager))
+            enabledProviders().stream().anyMatch(pluginId -> location.startsWith("%s%s/".formatted(SecretURL.SCHEME, pluginId)))
         );
     }
 
@@ -90,7 +90,9 @@ public class GraviteeConfigurationSecretResolver {
                 SecretURL secretURL = asSecretURL(location);
                 if (secretURL.isKeyEmpty()) {
                     throw new IllegalArgumentException(
-                        "Secret URL should must specify a 'key' in order to resolve a single value, such as: %s:<KEY>".formatted(location)
+                        "Secret URL must specify a 'key' in order to resolve a single value, it should like this '%s:<KEY>'".formatted(
+                                location
+                            )
                     );
                 }
                 return true;
@@ -103,14 +105,14 @@ public class GraviteeConfigurationSecretResolver {
     }
 
     /**
-     * Resolves a {@link SecretMap} from the correct secret provider
+     * Resolves a {@link SecretMap} from a secret provider
      *
      * @param secretURL secret URL
-     * @return a secret map
-     * @throws SecretProviderNotFoundException if the {@link SecretURL#provider()} does not match an enabled secret provider plugin
-     * @throws SecretManagerException          if the secret manager throws an exception during resolution
+     * @return a maybe secret map
+     * @throws SecretProviderNotFoundException (as a Maybe.error()) if the {@link SecretURL#provider()} does not match an enabled secret provider plugin
+     * @see SecretProvider#resolve(SecretURL)
      */
-    public Maybe<SecretMap> resolve(SecretURL secretURL) throws SecretProviderNotFoundException, SecretManagerException {
+    public Maybe<SecretMap> resolve(SecretURL secretURL) {
         if (secrets.containsKey(secretURL.path())) {
             return Maybe.just(secrets.get(secretURL.path()));
         }
@@ -236,10 +238,6 @@ public class GraviteeConfigurationSecretResolver {
             );
 
         environment.getConversionService().addConverter(Secret.class, String.class, Secret::asString);
-    }
-
-    private boolean canProviderHandle(String location, String manager) {
-        return location.startsWith("%s%s/".formatted(SecretURL.SCHEME, manager));
     }
 
     private <T extends SecretManagerConfiguration> T readConfiguration(String pluginId, Class<?> configurationClass) {
