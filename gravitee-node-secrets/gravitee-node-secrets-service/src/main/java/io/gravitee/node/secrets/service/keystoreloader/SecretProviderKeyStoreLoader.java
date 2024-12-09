@@ -34,18 +34,20 @@ public class SecretProviderKeyStoreLoader extends AbstractKeyStoreLoader<KeyStor
     @Override
     public void start() {
         final SecretURL secretURL = secretResolverDispatcher.asSecretURL(options.getSecretLocation());
-
+        int skip = 0;
         if (options.isWatch()) {
             if (
                 // resolve before by default
                 !secretURL.queryParamExists(SecretURL.WellKnownQueryParam.RESOLVE_BEFORE_WATCH) ||
-                secretURL.queryParamEqualsIgnoreCase(SecretURL.WellKnownQueryParam.RESOLVE_BEFORE_WATCH, "false")
+                secretURL.queryParamEqualsIgnoreCase(SecretURL.WellKnownQueryParam.RESOLVE_BEFORE_WATCH, "true")
             ) {
                 resolveAndNotify(secretURL);
+                skip = 1;
             }
             this.watch =
                 secretResolverDispatcher
                     .watch(secretURL, SecretEvent.Type.CREATED, SecretEvent.Type.UPDATED)
+                    .skip(skip)
                     .subscribe(secretMap -> createBundleAndNotify(secretMap, secretURL), ex -> log.error("cannot create keystore", ex));
         } else {
             resolveAndNotify(secretURL);
