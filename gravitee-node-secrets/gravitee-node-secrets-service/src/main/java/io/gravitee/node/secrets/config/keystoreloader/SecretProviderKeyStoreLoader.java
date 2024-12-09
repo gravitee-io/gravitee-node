@@ -1,11 +1,11 @@
-package io.gravitee.node.secrets.service.keystoreloader;
+package io.gravitee.node.secrets.config.keystoreloader;
 
 import io.gravitee.common.util.KeyStoreUtils;
 import io.gravitee.node.api.certificate.KeyStoreEvent;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.certificates.AbstractKeyStoreLoader;
-import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolver;
+import io.gravitee.node.secrets.config.GraviteeConfigurationSecretResolver;
 import io.gravitee.secrets.api.core.Secret;
 import io.gravitee.secrets.api.core.SecretEvent;
 import io.gravitee.secrets.api.core.SecretMap;
@@ -23,17 +23,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SecretProviderKeyStoreLoader extends AbstractKeyStoreLoader<KeyStoreLoaderOptions> {
 
-    private final GraviteeConfigurationSecretResolver secretResolverDispatcher;
+    private final GraviteeConfigurationSecretResolver configurationSecretResolver;
     private Disposable watch;
 
-    public SecretProviderKeyStoreLoader(GraviteeConfigurationSecretResolver secretResolverDispatcher, KeyStoreLoaderOptions options) {
+    public SecretProviderKeyStoreLoader(GraviteeConfigurationSecretResolver configurationSecretResolver, KeyStoreLoaderOptions options) {
         super(options);
-        this.secretResolverDispatcher = secretResolverDispatcher;
+        this.configurationSecretResolver = configurationSecretResolver;
     }
 
     @Override
     public void start() {
-        final SecretURL secretURL = secretResolverDispatcher.asSecretURL(options.getSecretLocation());
+        final SecretURL secretURL = configurationSecretResolver.asSecretURL(options.getSecretLocation());
         int skip = 0;
         if (options.isWatch()) {
             if (
@@ -45,7 +45,7 @@ public class SecretProviderKeyStoreLoader extends AbstractKeyStoreLoader<KeyStor
                 skip = 1;
             }
             this.watch =
-                secretResolverDispatcher
+                configurationSecretResolver
                     .watch(secretURL, SecretEvent.Type.CREATED, SecretEvent.Type.UPDATED)
                     .skip(skip)
                     .subscribe(secretMap -> createBundleAndNotify(secretMap, secretURL), ex -> log.error("cannot create keystore", ex));
@@ -56,7 +56,7 @@ public class SecretProviderKeyStoreLoader extends AbstractKeyStoreLoader<KeyStor
 
     private void resolveAndNotify(SecretURL secretURL) {
         createBundleAndNotify(
-            secretResolverDispatcher
+            configurationSecretResolver
                 .resolve(secretURL)
                 .switchIfEmpty(Maybe.error(new SecretManagerException("secret not found: ".concat(options.getSecretLocation()))))
                 .blockingGet(),

@@ -1,9 +1,9 @@
-package io.gravitee.node.secrets.service.test;
+package io.gravitee.node.secrets.config.test;
 
+import io.gravitee.node.secrets.config.GraviteeConfigurationSecretResolver;
 import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderClassLoaderFactory;
 import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderPlugin;
 import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderPluginManager;
-import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolver;
 import org.springframework.mock.env.MockEnvironment;
 
 /**

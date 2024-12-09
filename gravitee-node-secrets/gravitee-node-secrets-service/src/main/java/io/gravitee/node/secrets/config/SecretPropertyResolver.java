@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.secrets.service.resolver;
+package io.gravitee.node.secrets.config;
 
 import io.gravitee.node.api.resolver.WatchablePropertyResolver;
-import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolver;
 import io.gravitee.secrets.api.core.Secret;
 import io.gravitee.secrets.api.core.SecretURL;
 import io.reactivex.rxjava3.core.Flowable;
@@ -31,12 +30,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @Slf4j
 @NoArgsConstructor
-public class GraviteeConfigurationSecretPropertyResolver implements WatchablePropertyResolver<Secret> {
+public class SecretPropertyResolver implements WatchablePropertyResolver<Secret> {
 
     @Autowired
     private GraviteeConfigurationSecretResolver secretResolver;
 
-    public GraviteeConfigurationSecretPropertyResolver(GraviteeConfigurationSecretResolver secretResolver) {
+    public SecretPropertyResolver(GraviteeConfigurationSecretResolver secretResolver) {
         this.secretResolver = secretResolver;
     }
 

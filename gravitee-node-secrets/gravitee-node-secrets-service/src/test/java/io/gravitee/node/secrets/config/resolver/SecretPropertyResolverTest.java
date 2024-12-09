@@ -1,10 +1,11 @@
-package io.gravitee.node.secrets.service.resolver;
+package io.gravitee.node.secrets.config.resolver;
 
-import static io.gravitee.node.secrets.service.test.TestUtil.*;
+import static io.gravitee.node.secrets.config.test.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.gravitee.node.secrets.config.GraviteeConfigurationSecretResolver;
+import io.gravitee.node.secrets.config.SecretPropertyResolver;
 import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderPluginManager;
-import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolver;
 import io.gravitee.secrets.api.core.Secret;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -19,9 +20,9 @@ import org.springframework.mock.env.MockEnvironment;
  * @author GraviteeSource Team
  */
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class GraviteeConfigurationSecretPropertyResolverTest {
+class SecretPropertyResolverTest {
 
-    private GraviteeConfigurationSecretPropertyResolver cut;
+    private SecretPropertyResolver cut;
 
     @BeforeEach
     void before() {
@@ -29,7 +30,7 @@ class GraviteeConfigurationSecretPropertyResolverTest {
         MockEnvironment env = newEnvironment();
         env.setProperty("secrets.test.secrets.pass", "theMostPowerfulPasswordInTheWorldMate!!!");
         GraviteeConfigurationSecretResolver dispatcher = newDispatcher(pluginManager, env);
-        this.cut = new GraviteeConfigurationSecretPropertyResolver(dispatcher);
+        this.cut = new SecretPropertyResolver(dispatcher);
     }
 
     @ParameterizedTest

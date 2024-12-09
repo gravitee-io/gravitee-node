@@ -1,12 +1,12 @@
-package io.gravitee.node.secrets.service.keystoreloader;
+package io.gravitee.node.secrets.config.keystoreloader;
 
-import static io.gravitee.node.secrets.service.test.TestUtil.*;
+import static io.gravitee.node.secrets.config.test.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
+import io.gravitee.node.secrets.config.GraviteeConfigurationSecretResolver;
 import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderPluginManager;
-import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;

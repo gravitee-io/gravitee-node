@@ -1,4 +1,4 @@
-package io.gravitee.node.secrets.service.test;
+package io.gravitee.node.secrets.config.test;
 
 import io.gravitee.secrets.api.plugin.SecretProvider;
 import io.gravitee.secrets.api.plugin.SecretProviderFactory;

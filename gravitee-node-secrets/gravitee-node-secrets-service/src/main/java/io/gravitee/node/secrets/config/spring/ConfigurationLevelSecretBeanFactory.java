@@ -1,10 +1,10 @@
-package io.gravitee.node.secrets.service.spring;
+package io.gravitee.node.secrets.config.spring;
 
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.certificates.DefaultKeyStoreLoaderFactoryRegistry;
+import io.gravitee.node.secrets.config.GraviteeConfigurationSecretResolver;
+import io.gravitee.node.secrets.config.keystoreloader.SecretProviderKeyStoreLoaderFactory;
 import io.gravitee.node.secrets.plugins.SecretProviderPluginManager;
-import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolver;
-import io.gravitee.node.secrets.service.keystoreloader.SecretProviderKeyStoreLoaderFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -14,10 +14,10 @@ import org.springframework.core.env.Environment;
  * @author GraviteeSource Team
  */
 @Configuration
-public class SecretServiceConfiguration {
+public class ConfigurationLevelSecretBeanFactory {
 
     @Bean
-    public GraviteeConfigurationSecretResolver nodeSecretResolverDispatcher(
+    public GraviteeConfigurationSecretResolver nodeGraviteeConfigurationSecretResolver(
         SecretProviderPluginManager secretProviderPluginManager,
         Environment environment
     ) {

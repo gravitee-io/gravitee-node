@@ -1,4 +1,4 @@
-package io.gravitee.node.secrets.service.conf;
+package io.gravitee.node.secrets.config;
 
 import io.gravitee.common.util.EnvironmentUtils;
 import io.gravitee.node.secrets.plugins.SecretProviderPlugin;
