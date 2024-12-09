@@ -1,4 +1,4 @@
-package io.gravitee.node.secrets.plugins.internal.test;
+package io.gravitee.node.secrets.config.test;
 
 import io.gravitee.secrets.api.plugin.SecretProvider;
 import io.gravitee.secrets.api.plugin.SecretProviderFactory;
@@ -9,6 +9,6 @@ public class TestSecretProviderFactory implements SecretProviderFactory<TestSecr
 
     @Override
     public SecretProvider create(TestSecretProviderConfiguration configuration) {
-        return new TestSecretProvider();
+        return new TestSecretProvider(configuration);
     }
 }

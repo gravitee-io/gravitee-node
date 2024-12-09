@@ -42,8 +42,12 @@
             <artifactId>gravitee-node-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.gravitee.node</groupId>
-            <artifactId>gravitee-node-secrets-plugin-handler</artifactId>
+            <groupId>io.gravitee.secret</groupId>
+            <artifactId>gravitee-secret-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.gravitee.plugin</groupId>
+            <artifactId>gravitee-plugin-core</artifactId>
         </dependency>
         <dependency>
             <groupId>io.reactivex.rxjava3</groupId>

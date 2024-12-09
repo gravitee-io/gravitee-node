@@ -2,15 +2,14 @@ package io.gravitee.node.secrets.plugin.mock;
 
 import static io.gravitee.plugin.core.internal.AbstractPluginEventListener.SECRET_PROVIDER;
 
-import io.gravitee.node.api.secrets.SecretProvider;
-import io.gravitee.node.api.secrets.model.SecretEvent;
-import io.gravitee.node.api.secrets.model.SecretMap;
-import io.gravitee.node.api.secrets.model.SecretMount;
-import io.gravitee.node.api.secrets.model.SecretURL;
-import io.gravitee.node.api.secrets.util.ConfigHelper;
 import io.gravitee.node.secrets.plugin.mock.conf.ConfiguredError;
 import io.gravitee.node.secrets.plugin.mock.conf.MockSecretProviderConfiguration;
 import io.gravitee.node.secrets.plugin.mock.conf.Renewal;
+import io.gravitee.secrets.api.core.SecretEvent;
+import io.gravitee.secrets.api.core.SecretMap;
+import io.gravitee.secrets.api.core.SecretURL;
+import io.gravitee.secrets.api.plugin.SecretProvider;
+import io.gravitee.secrets.api.util.ConfigHelper;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
@@ -38,9 +37,9 @@ public class MockSecretProvider implements SecretProvider {
     Map<String, AtomicInteger> renewalsReturned = new ConcurrentHashMap<>();
 
     @Override
-    public Maybe<SecretMap> resolve(SecretMount secretMount) {
+    public Maybe<SecretMap> resolve(SecretURL secretURL) {
         return Maybe.fromCallable(() -> {
-            MockSecretLocation location = MockSecretLocation.fromLocation(secretMount.location());
+            MockSecretLocation location = MockSecretLocation.fromUrl(secretURL);
             log.info("{}-{} resolving secret: {}", PLUGIN_ID, SECRET_PROVIDER, location.secret());
 
             // return error first
@@ -94,10 +93,10 @@ public class MockSecretProvider implements SecretProvider {
     }
 
     @Override
-    public Flowable<SecretEvent> watch(SecretMount secretMount) {
+    public Flowable<SecretEvent> watch(SecretURL secretURL) {
         return Flowable
             .fromCallable(() -> {
-                MockSecretLocation location = MockSecretLocation.fromLocation(secretMount.location());
+                MockSecretLocation location = MockSecretLocation.fromUrl(secretURL);
                 return configuration.getConfiguredEvents().stream().filter(e -> e.secret().equals(location.secret())).toList();
             })
             .flatMapIterable(list -> list)
@@ -109,11 +108,5 @@ public class MockSecretProvider implements SecretProvider {
                     return Single.error(new MockSecretProviderException(event.error()));
                 }
             });
-    }
-
-    @Override
-    public SecretMount fromURL(SecretURL url) {
-        Objects.requireNonNull(url);
-        return new SecretMount(url.provider(), MockSecretLocation.fromUrl(url), url.key(), url);
     }
 }

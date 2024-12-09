@@ -31,10 +31,24 @@
     <name>Gravitee.io - Node - Secrets</name>
     <packaging>pom</packaging>
 
+    <properties>
+        <gravitee-secret-api.version>1.0.0-APIM-7497-api-secrets-SNAPSHOT</gravitee-secret-api.version>
+    </properties>
+
     <modules>
         <module>gravitee-node-secrets-plugin-handler</module>
         <module>gravitee-node-secrets-service</module>
         <module>gravitee-secret-provider-mock</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.gravitee.secret</groupId>
+                <artifactId>gravitee-secret-api</artifactId>
+                <version>${gravitee-secret-api.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 </project>
