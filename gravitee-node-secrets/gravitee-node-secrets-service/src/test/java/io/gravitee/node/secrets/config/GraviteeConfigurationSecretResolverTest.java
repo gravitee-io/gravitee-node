@@ -1,6 +1,6 @@
-package io.gravitee.node.secrets.service.conf;
+package io.gravitee.node.secrets.config;
 
-import static io.gravitee.node.secrets.service.test.TestUtil.*;
+import static io.gravitee.node.secrets.config.test.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 

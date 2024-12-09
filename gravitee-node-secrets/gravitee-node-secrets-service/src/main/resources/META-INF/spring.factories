@@ -1,2 +1,2 @@
 io.gravitee.node.api.resolver.PropertyResolver=\
-  io.gravitee.node.secrets.service.resolver.GraviteeConfigurationSecretPropertyResolver
+  io.gravitee.node.secrets.config.SecretPropertyResolver

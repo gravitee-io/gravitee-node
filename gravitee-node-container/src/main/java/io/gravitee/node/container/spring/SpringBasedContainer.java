@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 The Gravitee team (http://gravitee.io)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,7 @@ import io.gravitee.node.license.LicenseLoaderService;
 import io.gravitee.node.management.http.spring.ManagementConfiguration;
 import io.gravitee.node.monitoring.spring.NodeMonitoringConfiguration;
 import io.gravitee.node.opentelemetry.spring.OpenTelemetrySpringConfiguration;
-import io.gravitee.node.secrets.service.spring.SecretServiceConfiguration;
+import io.gravitee.node.secrets.config.spring.ConfigurationLevelSecretBeanFactory;
 import io.gravitee.node.vertx.spring.VertxConfiguration;
 import io.gravitee.plugin.core.internal.BootPluginEventListener;
 import io.gravitee.plugin.core.internal.PluginRegistryImpl;
@@ -134,7 +134,7 @@ public abstract class SpringBasedContainer extends AbstractContainer {
         bootstrapClasses.add(PropertiesConfiguration.class);
         bootstrapClasses.add(NodeContainerConfiguration.class);
         bootstrapClasses.add(BootPluginConfiguration.class);
-        bootstrapClasses.add(SecretServiceConfiguration.class);
+        bootstrapClasses.add(ConfigurationLevelSecretBeanFactory.class);
         bootstrapClasses.add(NodeCertificatesConfiguration.class);
         bootstrapClasses.add(KubernetesClientConfiguration.class);
 

@@ -1,9 +1,9 @@
-package io.gravitee.node.secrets.service.keystoreloader;
+package io.gravitee.node.secrets.config.keystoreloader;
 
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderFactory;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
-import io.gravitee.node.secrets.service.conf.GraviteeConfigurationSecretResolver;
+import io.gravitee.node.secrets.config.GraviteeConfigurationSecretResolver;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
