@@ -23,10 +23,13 @@ import io.gravitee.node.api.license.License;
 import io.gravitee.node.api.license.LicenseModelService;
 import io.gravitee.node.api.license.NodeLicenseService;
 import io.gravitee.node.api.license.model.LicenseModel;
+import io.gravitee.node.api.license.model.LicensePack;
+import io.gravitee.node.api.license.model.LicenseTier;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,6 +37,7 @@ import org.springframework.stereotype.Component;
  * @author GraviteeSource Team
  */
 @Component
+@Slf4j
 public class NodeLicenseServiceImpl implements NodeLicenseService {
 
     private static final String LICENSE_TIER_KEY = "tier";
@@ -89,8 +93,14 @@ public class NodeLicenseServiceImpl implements NodeLicenseService {
     private Set<String> readPacks() {
         Set<String> licensePacks = new HashSet<>(readList(LICENSE_PACKS_KEY));
         if (tier != null) {
-            Set<String> tierPacks = licenseModelService.getLicenseModel().getTiers().get(tier).getPacks();
-            licensePacks.addAll(tierPacks);
+            // Allow to declare a non existing tier. Useful when the license uses a tier that has been created for a newer version of gravitee-node
+            LicenseTier licenseTier = licenseModelService.getLicenseModel().getTiers().get(tier);
+            if (licenseTier != null) {
+                Set<String> tierPacks = licenseTier.getPacks();
+                licensePacks.addAll(tierPacks);
+            } else if (log.isDebugEnabled()) {
+                log.debug("Unknown tier: {}", tier);
+            }
         }
         return licensePacks;
     }
@@ -101,7 +111,13 @@ public class NodeLicenseServiceImpl implements NodeLicenseService {
         licenseFeatures.addAll(readList(LICENSE_FEATURES_KEY));
         licenseFeatures.addAll(getLegacyFeatures());
         for (String pack : getPacks()) {
-            licenseFeatures.addAll(licenseModel.getPacks().get(pack).getFeatures());
+            // Allow to declare a non existing pack. Useful when the license uses a pack that has been created for a newer version of gravitee-node
+            LicensePack licensePack = licenseModel.getPacks().get(pack);
+            if (licensePack != null) {
+                licenseFeatures.addAll(licensePack.getFeatures());
+            } else if (log.isDebugEnabled()) {
+                log.debug("Unknown pack: {}", pack);
+            }
         }
         return licenseFeatures;
     }

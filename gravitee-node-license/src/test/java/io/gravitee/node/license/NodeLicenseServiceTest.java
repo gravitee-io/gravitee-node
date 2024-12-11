@@ -70,7 +70,6 @@ class NodeLicenseServiceTest {
     @Test
     void shouldReturnTier() {
         when(tier.getString()).thenReturn("planet");
-        when(license.feature("tier")).thenReturn(Optional.of(tier));
         service.refresh();
         assertThat(service.getTier()).isEqualTo("planet");
     }
@@ -197,5 +196,52 @@ class NodeLicenseServiceTest {
         when(license.features()).thenReturn(Map.of("apim-api-designer", "included", "apim-bridge-gateway", "included"));
         service.refresh();
         assertThat(service.isFeatureEnabled("apim-api-designer")).isTrue();
+    }
+
+    @Test
+    void shouldNotFailIfUnknownTier() {
+        when(tier.getString()).thenReturn("unknown");
+        when(packs.getString()).thenReturn("enterprise-legacy-upgrade");
+        service.refresh();
+        assertThat(service.getTier()).isEqualTo("unknown");
+        assertThat(service.getPacks()).containsExactly("enterprise-legacy-upgrade");
+        assertThat(service.getFeatures()).containsExactlyInAnyOrder("apim-policy-xslt", "apim-policy-ws-security-authentication");
+    }
+
+    @Test
+    void shouldNotFailIfUnknownPack() {
+        when(tier.getString()).thenReturn("planet");
+        when(packs.getString()).thenReturn("unknown");
+        service.refresh();
+        assertThat(service.getTier()).isEqualTo("planet");
+        assertThat(service.getPacks())
+            .containsExactlyInAnyOrder("enterprise-features", "enterprise-legacy-upgrade", "enterprise-identity-provider", "unknown");
+        assertThat(service.getFeatures())
+            .containsExactlyInAnyOrder(
+                "apim-api-designer",
+                "apim-dcr-registration",
+                "apim-custom-roles",
+                "apim-audit-trail",
+                "apim-sharding-tags",
+                "apim-openid-connect-sso",
+                "apim-debug-mode",
+                "gravitee-risk-assessment",
+                "risk-assessment",
+                "apim-bridge-gateway",
+                "apim-policy-xslt",
+                "apim-policy-ws-security-authentication",
+                "am-idp-salesforce",
+                "am-idp-saml",
+                "am-idp-ldap",
+                "am-idp-kerberos",
+                "am-idp-azure-ad",
+                "am-idp-gateway-handler-saml",
+                "am-gateway-handler-saml-idp",
+                "am-idp-http-flow",
+                "http-flow-am-idp",
+                "am-idp-france-connect",
+                "am-idp-cas",
+                "cas-am-idp"
+            );
     }
 }
