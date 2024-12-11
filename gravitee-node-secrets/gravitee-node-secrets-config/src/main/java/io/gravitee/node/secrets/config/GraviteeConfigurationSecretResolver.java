@@ -16,6 +16,7 @@ import io.gravitee.secrets.api.plugin.SecretProviderFactory;
 import io.gravitee.secrets.api.util.ConfigHelper;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -109,16 +110,16 @@ public class GraviteeConfigurationSecretResolver {
      *
      * @param secretURL secret URL
      * @return a maybe secret map
-     * @throws SecretProviderNotFoundException (as a Maybe.error()) if the {@link SecretURL#provider()} does not match an enabled secret provider plugin
+     * @throws SecretProviderNotFoundException (as a Single.error()) if the {@link SecretURL#provider()} does not match an enabled secret provider plugin
      * @see SecretProvider#resolve(SecretURL)
      */
-    public Maybe<SecretMap> resolve(SecretURL secretURL) {
+    public Single<SecretMap> resolve(SecretURL secretURL) {
         if (secrets.containsKey(secretURL.path())) {
-            return Maybe.just(secrets.get(secretURL.path()));
+            return Single.just(secrets.get(secretURL.path()));
         }
         return this.secretProviders.getOrDefault(secretURL.provider(), new ErrorSecretProvider())
             .resolve(secretURL)
-            .switchIfEmpty(Maybe.error(new SecretManagerException("secret not found: ".concat(secretURL.path()))))
+            .switchIfEmpty(Single.error(new SecretManagerException("secret not found: ".concat(secretURL.path()))))
             .subscribeOn(Schedulers.io())
             .doOnSuccess(secretMap -> secrets.put(secretURL.path(), secretMap));
     }
@@ -154,7 +155,7 @@ public class GraviteeConfigurationSecretResolver {
         if (secretURL.isKeyEmpty()) {
             return Maybe.error(new IllegalArgumentException("cannot request secret key, no key provided"));
         }
-        return resolve(secretURL).flatMap(secretMap -> Maybe.fromOptional(secretMap.getSecret(secretURL)));
+        return resolve(secretURL).flatMapMaybe(secretMap -> Maybe.fromOptional(secretMap.getSecret(secretURL)));
     }
 
     /**

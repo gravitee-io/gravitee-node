@@ -10,8 +10,6 @@ import io.gravitee.secrets.api.core.Secret;
 import io.gravitee.secrets.api.core.SecretEvent;
 import io.gravitee.secrets.api.core.SecretMap;
 import io.gravitee.secrets.api.core.SecretURL;
-import io.gravitee.secrets.api.errors.SecretManagerException;
-import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.security.KeyStore;
 import lombok.extern.slf4j.Slf4j;
@@ -36,12 +34,10 @@ public class SecretProviderKeyStoreLoader extends AbstractKeyStoreLoader<KeyStor
         final SecretURL secretURL = configurationSecretResolver.asSecretURL(options.getSecretLocation());
         int skip = 0;
         if (options.isWatch()) {
-            if (
-                // resolve before by default
-                !secretURL.queryParamExists(SecretURL.WellKnownQueryParam.RESOLVE_BEFORE_WATCH) ||
-                secretURL.queryParamEqualsIgnoreCase(SecretURL.WellKnownQueryParam.RESOLVE_BEFORE_WATCH, "true")
-            ) {
-                resolveAndNotify(secretURL);
+            if (resolveBeforeWatch(secretURL)) {
+                // will raise exception if absent
+                SecretMap secretMap = configurationSecretResolver.resolve(secretURL).blockingGet();
+                createBundleAndNotify(secretMap, secretURL);
                 skip = 1;
             }
             this.watch =
@@ -50,18 +46,16 @@ public class SecretProviderKeyStoreLoader extends AbstractKeyStoreLoader<KeyStor
                     .skip(skip)
                     .subscribe(secretMap -> createBundleAndNotify(secretMap, secretURL), ex -> log.error("cannot create keystore", ex));
         } else {
-            resolveAndNotify(secretURL);
+            SecretMap secretMap = configurationSecretResolver.resolve(secretURL).blockingGet();
+            createBundleAndNotify(secretMap, secretURL);
         }
     }
 
-    private void resolveAndNotify(SecretURL secretURL) {
-        createBundleAndNotify(
-            configurationSecretResolver
-                .resolve(secretURL)
-                .switchIfEmpty(Maybe.error(new SecretManagerException("secret not found: ".concat(options.getSecretLocation()))))
-                .blockingGet(),
-            secretURL
-        );
+    private boolean resolveBeforeWatch(SecretURL secretURL) {
+        // resolve before watch by default
+        boolean isQueryParamAbsent = !secretURL.queryParamExists(SecretURL.WellKnownQueryParam.RESOLVE_BEFORE_WATCH);
+        boolean isQueryParamTrue = secretURL.queryParamEqualsIgnoreCase(SecretURL.WellKnownQueryParam.RESOLVE_BEFORE_WATCH, "true");
+        return isQueryParamAbsent || isQueryParamTrue;
     }
 
     private void createBundleAndNotify(SecretMap secretMap, SecretURL secretURL) {

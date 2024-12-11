@@ -37,7 +37,7 @@
 
     <modules>
         <module>gravitee-node-secrets-plugin-handler</module>
-        <module>gravitee-node-secrets-service</module>
+        <module>gravitee-node-secrets-config</module>
         <module>gravitee-secret-provider-mock</module>
     </modules>
 
