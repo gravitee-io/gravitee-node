@@ -139,6 +139,63 @@ class DefaultLicenseFactoryTest {
     }
 
     @Test
+    void should_return_license_with_unknown_tier() throws InvalidLicenseException, MalformedLicenseException {
+        final License license = cut.create(
+            REFERENCE_TYPE_PLATFORM,
+            REFERENCE_ID_PLATFORM,
+            generateBase64License("unknown", List.of("enterprise-legacy-upgrade"), null, null)
+        );
+
+        assertThat(license.getTier()).isEqualTo("unknown");
+        assertThat(license.getPacks()).containsExactly("enterprise-legacy-upgrade");
+        assertThat(license.getFeatures()).containsExactlyInAnyOrder("apim-policy-xslt", "apim-policy-ws-security-authentication");
+        assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_PLATFORM);
+        assertThat(license.getReferenceId()).isEqualTo(REFERENCE_ID_PLATFORM);
+    }
+
+    @Test
+    void should_return_license_with_unknown_pack() throws InvalidLicenseException, MalformedLicenseException {
+        final License license = cut.create(
+            REFERENCE_TYPE_PLATFORM,
+            REFERENCE_ID_PLATFORM,
+            generateBase64License("planet", List.of("unknown"), null, null)
+        );
+
+        assertThat(license.getTier()).isEqualTo("planet");
+        assertThat(license.getPacks())
+            .containsExactlyInAnyOrder("enterprise-features", "enterprise-legacy-upgrade", "enterprise-identity-provider", "unknown");
+        assertThat(license.getFeatures())
+            .containsExactlyInAnyOrder(
+                "apim-api-designer",
+                "apim-dcr-registration",
+                "apim-custom-roles",
+                "apim-audit-trail",
+                "apim-sharding-tags",
+                "apim-openid-connect-sso",
+                "apim-debug-mode",
+                "gravitee-risk-assessment",
+                "risk-assessment",
+                "apim-bridge-gateway",
+                "apim-policy-xslt",
+                "apim-policy-ws-security-authentication",
+                "am-idp-salesforce",
+                "am-idp-saml",
+                "am-idp-ldap",
+                "am-idp-kerberos",
+                "am-idp-azure-ad",
+                "am-idp-gateway-handler-saml",
+                "am-gateway-handler-saml-idp",
+                "am-idp-http-flow",
+                "http-flow-am-idp",
+                "am-idp-france-connect",
+                "am-idp-cas",
+                "cas-am-idp"
+            );
+        assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_PLATFORM);
+        assertThat(license.getReferenceId()).isEqualTo(REFERENCE_ID_PLATFORM);
+    }
+
+    @Test
     void should_throw_invalid_license_when_platform_license_is_invalid() {
         assertThrows(InvalidLicenseException.class, () -> cut.create(REFERENCE_TYPE_PLATFORM, REFERENCE_ID_PLATFORM, INVALID_LICENSE));
     }
@@ -390,7 +447,7 @@ class DefaultLicenseFactoryTest {
         license.add(Feature.Create.dateFeature("aDate", new Date(0)));
 
         if (tier != null) {
-            license.add(Feature.Create.stringFeature("tier", "universe"));
+            license.add(Feature.Create.stringFeature("tier", tier));
         }
 
         if (packs != null) {
