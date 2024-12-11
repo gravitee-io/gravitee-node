@@ -1,3 +1,10 @@
+# [6.8.0](https://github.com/gravitee-io/gravitee-node/compare/6.7.0...6.8.0) (2024-12-11)
+
+
+### Features
+
+* allow to configure unknown tier & pack in the license ([8ac83bf](https://github.com/gravitee-io/gravitee-node/commit/8ac83bf535b05d590c250bce73f23d42cbc4a512))
+
 # [6.7.0](https://github.com/gravitee-io/gravitee-node/compare/6.6.0...6.7.0) (2024-12-05)
 
 
