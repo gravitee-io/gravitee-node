@@ -1,3 +1,10 @@
+## [4.8.9](https://github.com/gravitee-io/gravitee-node/compare/4.8.8...4.8.9) (2024-12-11)
+
+
+### Bug Fixes
+
+* allow to configure unknown tier & pack in the license ([adb9631](https://github.com/gravitee-io/gravitee-node/commit/adb9631846c818e7cdd548529a3a88c366019357))
+
 ## [4.8.8](https://github.com/gravitee-io/gravitee-node/compare/4.8.7...4.8.8) (2024-11-21)
 
 
