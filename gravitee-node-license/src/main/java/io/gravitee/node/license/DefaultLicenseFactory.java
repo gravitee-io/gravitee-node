@@ -19,6 +19,8 @@ import static java.util.stream.Collectors.toSet;
 
 import io.gravitee.node.api.license.*;
 import io.gravitee.node.api.license.model.LicenseModel;
+import io.gravitee.node.api.license.model.LicensePack;
+import io.gravitee.node.api.license.model.LicenseTier;
 import io.gravitee.node.license.license3j.License3J;
 import io.gravitee.node.license.license3j.License3JFeature;
 import java.io.ByteArrayInputStream;
@@ -120,8 +122,14 @@ public class DefaultLicenseFactory implements LicenseFactory {
         final Set<String> licensePacks = new HashSet<>(readList(license, LICENSE_PACKS_KEY));
 
         if (tier != null) {
-            Set<String> tierPacks = licenseModelService.getLicenseModel().getTiers().get(tier).getPacks();
-            licensePacks.addAll(tierPacks);
+            // Allow to declare a non existing tier. Useful when the license uses a tier that has been created for a newer version of gravitee-node
+            LicenseTier licenseTier = licenseModelService.getLicenseModel().getTiers().get(tier);
+            if (licenseTier != null) {
+                Set<String> tierPacks = licenseTier.getPacks();
+                licensePacks.addAll(tierPacks);
+            } else if (log.isDebugEnabled()) {
+                log.debug("Unknown tier: {}", tier);
+            }
         }
 
         return licensePacks;
@@ -135,7 +143,13 @@ public class DefaultLicenseFactory implements LicenseFactory {
         licenseFeatures.addAll(readLegacyFeatures(license));
 
         for (String pack : packs) {
-            licenseFeatures.addAll(licenseModel.getPacks().get(pack).getFeatures());
+            // Allow to declare a non existing pack. Useful when the license uses a pack that has been created for a newer version of gravitee-node
+            LicensePack licensePack = licenseModel.getPacks().get(pack);
+            if (licensePack != null) {
+                licenseFeatures.addAll(licensePack.getFeatures());
+            } else if (log.isDebugEnabled()) {
+                log.debug("Unknown pack: {}", pack);
+            }
         }
 
         return licenseFeatures;
