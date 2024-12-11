@@ -1,3 +1,10 @@
+# [7.0.0-alpha.8](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.7...7.0.0-alpha.8) (2024-12-11)
+
+
+### Features
+
+* allow to configure unknown tier & pack in the license ([2af3f32](https://github.com/gravitee-io/gravitee-node/commit/2af3f32604823257ab2650286297195512ca62c4))
+
 # [7.0.0-alpha.7](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.6...7.0.0-alpha.7) (2024-12-09)
 
 
