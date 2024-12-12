@@ -5,7 +5,6 @@ import io.gravitee.secrets.api.core.Secret;
 import io.gravitee.secrets.api.core.SecretEvent;
 import io.gravitee.secrets.api.core.SecretMap;
 import io.gravitee.secrets.api.core.SecretURL;
-import io.gravitee.secrets.api.plugin.SecretProvider;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,7 @@ import org.springframework.security.util.InMemoryResource;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class MockSecretProviderTest {
 
-    private SecretProvider cut;
+    private MockSecretProvider cut;
 
     @BeforeEach
     void setup() {
@@ -84,8 +83,9 @@ class MockSecretProviderTest {
         );
         final YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
         yaml.setResources(inMemoryResource);
-        Map conf = new LinkedHashMap<>(yaml.getObject());
-        this.cut = new MockSecretProviderFactory().create(new MockSecretProviderConfiguration(conf));
+        this.cut =
+            (MockSecretProvider) new MockSecretProviderFactory()
+                .create(new MockSecretProviderConfiguration((Map) new LinkedHashMap<>(yaml.getObject())));
     }
 
     @Test
@@ -174,5 +174,20 @@ class MockSecretProviderTest {
         cut.resolve(url).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 2")));
         cut.resolve(url).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 3")));
         cut.resolve(url).test().awaitDone(100, TimeUnit.MILLISECONDS).assertValue(SecretMap.of(Map.of("value", "loop 1")));
+    }
+
+    @Test
+    void should_updates_secret() {
+        cut
+            .resolve(SecretURL.from("secret://mock/redis:password"))
+            .test()
+            .awaitDone(100, TimeUnit.MILLISECONDS)
+            .assertValue(SecretMap.of(Map.of("password", "r3d1s")));
+        cut.updateSecret("redis", "username", "teddy");
+        cut
+            .resolve(SecretURL.from("secret://mock/redis:password"))
+            .test()
+            .awaitDone(100, TimeUnit.MILLISECONDS)
+            .assertValue(SecretMap.of(Map.of("password", "r3d1s", "username", "teddy")));
     }
 }
