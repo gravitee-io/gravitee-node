@@ -1,3 +1,10 @@
+# [7.0.0-alpha.9](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.8...7.0.0-alpha.9) (2024-12-12)
+
+
+### Features
+
+* move classes and adapt to gravitee-secret-api ([#384](https://github.com/gravitee-io/gravitee-node/issues/384)) ([f21f095](https://github.com/gravitee-io/gravitee-node/commit/f21f095d1299be5b8773003ccfe35fd29f11a1ea))
+
 # [7.0.0-alpha.8](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.7...7.0.0-alpha.8) (2024-12-11)
 
 
