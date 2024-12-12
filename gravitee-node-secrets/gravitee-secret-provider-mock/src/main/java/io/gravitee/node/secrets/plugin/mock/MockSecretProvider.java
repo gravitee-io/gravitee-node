@@ -109,4 +109,8 @@ public class MockSecretProvider implements SecretProvider {
                 }
             });
     }
+
+    public void updateSecret(String name, String key, String value) {
+        this.configuration.getSecrets().put(name.concat(".").concat(key), value);
+    }
 }
