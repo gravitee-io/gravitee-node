@@ -2,10 +2,10 @@ package io.gravitee.node.secrets.plugins.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.gravitee.node.api.secrets.SecretProviderFactory;
 import io.gravitee.node.secrets.plugins.internal.test.TestSecretProviderConfiguration;
 import io.gravitee.node.secrets.plugins.internal.test.TestSecretProviderFactory;
 import io.gravitee.node.secrets.plugins.internal.test.TestSecretProviderPlugin;
+import io.gravitee.secrets.api.plugin.SecretProviderFactory;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.DisplayNameGeneration;
