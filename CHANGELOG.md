@@ -1,3 +1,10 @@
+# [7.0.0-alpha.10](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.9...7.0.0-alpha.10) (2024-12-13)
+
+
+### Features
+
+* allow mock secret provider to get secrets updated ([0130c8c](https://github.com/gravitee-io/gravitee-node/commit/0130c8c3dee79d9932c5709b1e1702b468c01079))
+
 # [7.0.0-alpha.9](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.8...7.0.0-alpha.9) (2024-12-12)
 
 
