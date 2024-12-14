@@ -1,3 +1,10 @@
+# [7.0.0-alpha.11](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.10...7.0.0-alpha.11) (2024-12-14)
+
+
+### Bug Fixes
+
+* bump to latest secret-api ([4b024ff](https://github.com/gravitee-io/gravitee-node/commit/4b024ffc3fabd1318e8b9b71fee9389d51f5437a))
+
 # [7.0.0-alpha.10](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.9...7.0.0-alpha.10) (2024-12-13)
 
 
