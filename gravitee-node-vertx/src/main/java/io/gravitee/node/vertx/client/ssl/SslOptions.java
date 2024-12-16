@@ -24,7 +24,8 @@ public class SslOptions implements Serializable {
     private boolean trustAll;
     private boolean hostnameVerifier = true;
 
-    private boolean openSsl;
+    @Builder.Default
+    private boolean openSsl = false;
 
     @Builder.Default
     private String hostnameVerificationAlgorithm = "NONE";

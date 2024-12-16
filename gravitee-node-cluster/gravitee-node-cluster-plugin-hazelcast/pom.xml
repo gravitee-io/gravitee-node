@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node-cluster</artifactId>
-        <version>7.0.0-alpha.11</version>
+        <version>7.0.0-add-more-tcp-options-SNAPSHOT</version>
     </parent>
 
     <artifactId>gravitee-node-cluster-plugin-hazelcast</artifactId>
