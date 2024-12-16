@@ -1,3 +1,10 @@
+# [7.0.0-alpha.12](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.11...7.0.0-alpha.12) (2024-12-16)
+
+
+### Bug Fixes
+
+* add more tcp client options ([8b30be3](https://github.com/gravitee-io/gravitee-node/commit/8b30be30b1061b338f455ebe8cc1d1727394856a))
+
 # [7.0.0-alpha.11](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.10...7.0.0-alpha.11) (2024-12-14)
 
 
