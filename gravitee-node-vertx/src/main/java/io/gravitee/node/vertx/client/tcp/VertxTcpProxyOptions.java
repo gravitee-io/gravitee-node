@@ -34,5 +34,6 @@ public class VertxTcpProxyOptions implements Serializable {
 
     private String password;
 
+    @Builder.Default
     private VertxTcpProxyType type = VertxTcpProxyType.SOCKS5;
 }
