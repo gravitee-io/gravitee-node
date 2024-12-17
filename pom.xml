@@ -56,7 +56,7 @@
     </modules>
 
     <properties>
-        <gravitee-bom.version>8.1.16</gravitee-bom.version>
+        <gravitee-bom.version>8.2.0</gravitee-bom.version>
         <gravitee-common.version>4.6.0</gravitee-common.version>
         <gravitee-plugin.version>4.2.1</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.31.2</gravitee-reporter-api.version>
@@ -71,7 +71,6 @@
         <smallrye-mutiny.version>2.6.2</smallrye-mutiny.version>
         <jmockit.version>1.49</jmockit.version>
         <awaitability.version>4.2.1</awaitability.version>
-        <testcontainers.version>1.19.3</testcontainers.version>
 
         <!-- WARNING: the next two dependencies versions must be kept in sync regarding vertx-micrometer-metrics -->
         <micrometer-registry-prometheus.version>1.12.4</micrometer-registry-prometheus.version>
@@ -360,13 +359,6 @@
                 <artifactId>awaitility</artifactId>
                 <version>${awaitability.version}</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers-bom</artifactId>
-                <version>${testcontainers.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
