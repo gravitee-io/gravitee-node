@@ -1,3 +1,10 @@
+# [7.0.0-alpha.13](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.12...7.0.0-alpha.13) (2024-12-17)
+
+
+### Features
+
+* bump gravitee-bom ([0f1e87e](https://github.com/gravitee-io/gravitee-node/commit/0f1e87e542e4597010e8f18473ca3c7d881d8678))
+
 # [7.0.0-alpha.12](https://github.com/gravitee-io/gravitee-node/compare/7.0.0-alpha.11...7.0.0-alpha.12) (2024-12-16)
 
 
