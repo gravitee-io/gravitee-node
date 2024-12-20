@@ -114,14 +114,23 @@ public class GraviteeConfigurationSecretResolver {
      * @see SecretProvider#resolve(SecretURL)
      */
     public Single<SecretMap> resolve(SecretURL secretURL) {
-        if (secrets.containsKey(secretURL.path())) {
-            return Single.just(secrets.get(secretURL.path()));
+        String cacheKey = secretURL
+            .query()
+            .get(SecretURL.WellKnownQueryParam.NAMESPACE)
+            .stream()
+            .findFirst()
+            .map(ns -> ns.concat("-"))
+            .orElse("")
+            .concat(secretURL.path());
+
+        if (secrets.containsKey(cacheKey)) {
+            return Single.just(secrets.get(cacheKey));
         }
         return this.secretProviders.getOrDefault(secretURL.provider(), new ErrorSecretProvider())
             .resolve(secretURL)
             .switchIfEmpty(Single.error(new SecretManagerException("secret not found: ".concat(secretURL.path()))))
             .subscribeOn(Schedulers.io())
-            .doOnSuccess(secretMap -> secrets.put(secretURL.path(), secretMap));
+            .doOnSuccess(secretMap -> secrets.put(cacheKey, secretMap));
     }
 
     /**
