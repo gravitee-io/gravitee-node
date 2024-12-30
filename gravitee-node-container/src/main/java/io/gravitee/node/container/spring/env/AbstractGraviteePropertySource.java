@@ -15,12 +15,10 @@
  */
 package io.gravitee.node.container.spring.env;
 
-import io.gravitee.node.api.secrets.resolver.PropertyResolver;
-import io.gravitee.node.api.secrets.resolver.PropertyResolverFactoriesLoader;
-import io.gravitee.node.api.secrets.resolver.WatchablePropertyResolver;
-import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.Scheduler;
-import io.reactivex.rxjava3.functions.Supplier;
+import io.gravitee.common.utils.RxHelper;
+import io.gravitee.node.api.resolver.PropertyResolver;
+import io.gravitee.node.api.resolver.PropertyResolverFactoriesLoader;
+import io.gravitee.node.api.resolver.WatchablePropertyResolver;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.util.Arrays;
 import java.util.Map;
@@ -37,8 +35,6 @@ import org.springframework.util.Assert;
  * @author GraviteeSource Team
  */
 public abstract class AbstractGraviteePropertySource extends EnumerablePropertySource<Map<String, Object>> {
-
-    private static final int REPEAT_DELAY_SECONDS = 1;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGraviteePropertySource.class);
     private final PropertyResolverFactoriesLoader propertyResolverLoader;
@@ -87,8 +83,9 @@ public abstract class AbstractGraviteePropertySource extends EnumerablePropertyS
     protected abstract Object getValue(String key);
 
     private void watchProperty(WatchablePropertyResolver<?> propertyResolver, String name, Object value) {
-        new FlowableRepeater(() -> propertyResolver.watch(value.toString()))
-            .repeatFlowable(REPEAT_DELAY_SECONDS)
+        propertyResolver
+            .watch(value.toString())
+            .retryWhen(RxHelper.retryExponentialBackoff(1, TimeUnit.SECONDS))
             .subscribeOn(Schedulers.io())
             .subscribe(newValue -> source.put(name, newValue), t -> LOGGER.error("Unable to update property {}", name, t));
     }
@@ -105,22 +102,5 @@ public abstract class AbstractGraviteePropertySource extends EnumerablePropertyS
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), propertyResolverLoader);
-    }
-
-    static class FlowableRepeater<T> {
-
-        private final Supplier<Flowable<T>> flowableSupplier;
-
-        FlowableRepeater(Supplier<Flowable<T>> flowableSupplier) {
-            this.flowableSupplier = flowableSupplier;
-        }
-
-        Flowable<T> repeatFlowable(int recreateDelaySeconds) {
-            return Flowable.defer(flowableSupplier).delay(recreateDelaySeconds, TimeUnit.SECONDS).repeat();
-        }
-
-        Flowable<T> repeatFlowable(int recreateDelaySeconds, Scheduler delayScheduler) {
-            return Flowable.defer(flowableSupplier).delay(recreateDelaySeconds, TimeUnit.SECONDS, delayScheduler).repeat();
-        }
     }
 }

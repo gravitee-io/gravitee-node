@@ -1,0 +1,144 @@
+= Gravitee Node OpenTelemetry
+
+== Description
+
+The *Gravitee Node OpenTelemtry* module offers the capabilities to create Tracer based on OpenTelemetry implementation. This Tracer could be then used to create start/end spans for any request objets.
+
+== Configuration
+
+All the specific configurations are located under the `services.opentelemetry` attribute.
+
+|===
+|Parameter |Default |Description
+|enabled
+|true
+|Enable OpenTelemetry capabilities
+
+|verbose
+|false
+|Enable extra span information
+
+|extraAttributes
+|
+|Allow to add any extra attributes on all spans.
+
+|===
+
+=== Exporter Configuration
+All the exporter configurations are located under the `services.opentelemetry.exporter` attribute.
+
+|===
+|Parameter |Default |Description
+|endpoint
+|http://localhost:4317
+|Sets the OTLP endpoint to send telemetry data. If unset, defaults to http://localhost:4317. If protocol is `http/protobuf` the version and signal will be appended to the path (e.g. v1/traces or v1/metrics) and the default port will be http://localhost:4318.
+
+|headers
+|N/A
+|Key-value pairs to be used as headers associated with exporter requests.
+
+|compression
+|none
+|Sets the method used to compress payloads. If unset, compression is disabled. Currently supported compression methods include `gzip` and `none`.
+
+|timeout
+|10000
+|Sets the maximum time to wait for the collector to process an exported batch of telemetry data. If unset, defaults to 10s.
+
+|protocol
+|grpc
+|OTLP defines the encoding of telemetry data and the protocol used to exchange data between the client and the server. Depending on the exporter, the available protocols will be different. Currently, only `grpc` and `http/protobu`} are allowed. Please mind that changing the protocol requires changing the port in the endpoint as well.
+
+|ssl.keystore.type
+|
+|Supports 'jks', 'pem', 'pkcs12'
+
+|ssl.keystore.path
+|
+|A path is required if certificate's type is jks or pkcs12.
+
+|ssl.keystore.password
+|
+|The password to use to open the keystore
+
+|ssl.keystore.certs
+|
+|Certificates are required if keystore’s type is pem.
+
+|ssl.keystore.keys
+|
+|Keys are required if keystore’s type is pem.
+
+|ssl.trustAll
+|false
+|
+
+|ssl.verifyHost
+|true
+|
+
+|ssl.truststore.type
+|
+|Supports 'jks', 'pem', 'pkcs12'
+
+|ssl.truststore.path
+|
+|A path is required in any case.
+
+|ssl.truststore.password
+|
+|The password to use to open the truststore
+
+|ssl.proxy.enabled
+|
+|Enable proxy configuration
+
+|ssl.proxy.useSystemProxy
+|
+|Define if the system proxy must be used.
+
+|ssl.proxy.host
+|
+|
+
+|ssl.proxy.port
+|
+|
+
+|ssl.proxy.username
+|
+|
+
+|ssl.proxy.password
+|
+|
+|===
+
+=== Example
+
+```yaml
+services:
+  opentelemetry:
+    enabled: true
+    verbose: true
+    extraAttributes:
+      - deployment.environment.name: production
+    exporter:
+      endpoint: http://localhost:4317
+      protocol: grpc
+      compression: none
+      headers:
+        - X-Custom-Header: value
+      timeout: 10000
+      ssl:
+        trustall: false
+        verifyHostname: true
+        keystore:
+          type: pkcs12
+          path: /path/to/keystore
+          password: password
+        truststore:
+          type: pkcs12
+          path: /path/to/truststore
+          password: password
+```

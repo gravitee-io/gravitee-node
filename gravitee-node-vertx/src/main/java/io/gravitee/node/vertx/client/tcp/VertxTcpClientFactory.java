@@ -50,7 +50,17 @@ public class VertxTcpClientFactory {
             .setIdleTimeout(tcpOptions.getIdleTimeout())
             .setIdleTimeoutUnit(TimeUnit.MILLISECONDS)
             .setReadIdleTimeout(tcpOptions.getIdleTimeout())
-            .setWriteIdleTimeout(tcpOptions.getIdleTimeout());
+            .setWriteIdleTimeout(tcpOptions.getWriteIdleTimeout())
+            .setTcpKeepAlive(tcpOptions.isTcpKeepAlive())
+            .setTcpCork(tcpOptions.isTcpCork())
+            .setTcpFastOpen(tcpOptions.isTcpFastOpen())
+            .setTcpNoDelay(tcpOptions.isTcpNoDelay())
+            .setTcpQuickAck(tcpOptions.isTcpQuickAck())
+            .setReuseAddress(tcpOptions.isReuseAddress())
+            .setReusePort(tcpOptions.isReusePort())
+            .setSoLinger(tcpOptions.getSoLinger())
+            .setSendBufferSize(tcpOptions.getSendBufferSize())
+            .setReceiveBufferSize(tcpOptions.getReceiveBufferSize());
 
         configureSsl(clientOptions);
         configureTcpProxy(clientOptions);
@@ -90,7 +100,10 @@ public class VertxTcpClientFactory {
     private void configureSsl(final NetClientOptions clientOptions) {
         clientOptions.setSsl(tcpTarget.isSecured());
         if (sslOptions != null) {
-            sslOptions.setOpenSsl(Boolean.TRUE.equals(nodeConfiguration.getProperty(TCP_SSL_OPENSSL_CONFIGURATION, Boolean.class, false)));
+            // FIXME: we should avoid using APIM property at node level.
+            sslOptions.setOpenSsl(
+                Boolean.TRUE.equals(nodeConfiguration.getProperty(TCP_SSL_OPENSSL_CONFIGURATION, Boolean.class, sslOptions.isOpenSsl()))
+            );
             try {
                 configureSslClientOption(clientOptions, sslOptions);
             } catch (KeyStore.KeyStoreCertOptionsException | TrustStore.TrustOptionsException e) {

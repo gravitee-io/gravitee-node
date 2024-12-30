@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee</groupId>
         <artifactId>gravitee-parent</artifactId>
-        <version>22.0.31</version>
+        <version>22.2.1</version>
     </parent>
 
     <groupId>io.gravitee.node</groupId>
@@ -39,7 +39,7 @@
         <module>gravitee-node-api</module>
         <module>gravitee-node-cache</module>
         <module>gravitee-node-cluster</module>
-        <module>gravitee-node-tracing</module>
+        <module>gravitee-node-opentelemetry</module>
         <module>gravitee-node-vertx</module>
         <module>gravitee-node-management</module>
         <module>gravitee-node-reporter</module>
@@ -56,15 +56,20 @@
     </modules>
 
     <properties>
-        <gravitee-bom.version>8.1.0</gravitee-bom.version>
-        <gravitee-common.version>3.3.3</gravitee-common.version>
-        <gravitee-plugin.version>4.2.0</gravitee-plugin.version>
-        <gravitee-reporter-api.version>1.25.0</gravitee-reporter-api.version>
-        <gravitee-tracing-api.version>1.0.0</gravitee-tracing-api.version>
+        <gravitee-bom.version>8.2.0</gravitee-bom.version>
+        <gravitee-common.version>4.6.0</gravitee-common.version>
+        <gravitee-plugin.version>4.2.1</gravitee-plugin.version>
+        <gravitee-reporter-api.version>1.31.2</gravitee-reporter-api.version>
         <gravitee-kubernetes.version>3.1.0</gravitee-kubernetes.version>
+        <gravitee-secret-api.version>1.0.0</gravitee-secret-api.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <hazelcast.version>5.5.0</hazelcast.version>
         <gravitee-alert-api.version>1.9.1</gravitee-alert-api.version>
+        <opentelemetry.version>1.39.0</opentelemetry.version>
+        <opentelemetry-instrumentation.version>1.33.4-alpha</opentelemetry-instrumentation.version>
+        <opentelemetry-semconv.version>1.23.1-alpha</opentelemetry-semconv.version>
+        <smallrye-common.version>2.7.0</smallrye-common.version>
+        <smallrye-mutiny.version>2.6.2</smallrye-mutiny.version>
         <jmockit.version>1.49</jmockit.version>
         <awaitability.version>4.2.1</awaitability.version>
 
@@ -165,6 +170,11 @@
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-opentelemetry</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-license</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -210,7 +220,7 @@
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
-                <artifactId>gravitee-node-secrets-service</artifactId>
+                <artifactId>gravitee-node-secrets-config</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -230,11 +240,6 @@
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
-                <artifactId>gravitee-node-tracing</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-vertx</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -249,12 +254,6 @@
                 <groupId>io.gravitee.reporter</groupId>
                 <artifactId>gravitee-reporter-api</artifactId>
                 <version>${gravitee-reporter-api.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.gravitee.tracing</groupId>
-                <artifactId>gravitee-tracing-api</artifactId>
-                <version>${gravitee-tracing-api.version}</version>
             </dependency>
 
             <dependency>
@@ -280,6 +279,13 @@
                 <artifactId>gravitee-kubernetes-client</artifactId>
                 <version>${gravitee-kubernetes.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>io.gravitee.secret</groupId>
+                <artifactId>gravitee-secret-api</artifactId>
+                <version>${gravitee-secret-api.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
@@ -304,6 +310,49 @@
                 <groupId>com.javax0.license3j</groupId>
                 <artifactId>license3j</artifactId>
                 <version>${license3j.version}</version>
+            </dependency>
+
+            <!-- OpenTelemetry components, imported as a BOM -->
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>${opentelemetry.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom-alpha</artifactId>
+                <version>${opentelemetry.version}-alpha</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-bom-alpha</artifactId>
+                <version>${opentelemetry-instrumentation.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- OpenTelemetry libs not in BOM -->
+            <dependency>
+                <groupId>io.opentelemetry.semconv</groupId>
+                <artifactId>opentelemetry-semconv</artifactId>
+                <version>${opentelemetry-semconv.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>mutiny-bom</artifactId>
+                <version>${smallrye-mutiny.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.common</groupId>
+                <artifactId>smallrye-common-bom</artifactId>
+                <version>${smallrye-common.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
             </dependency>
 
             <!-- Test -->

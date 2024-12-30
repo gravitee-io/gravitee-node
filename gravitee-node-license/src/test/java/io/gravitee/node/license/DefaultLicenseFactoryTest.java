@@ -54,13 +54,13 @@ class DefaultLicenseFactoryTest {
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         mockedStaticLicense3j = mockStatic(License3J.class);
         mockedStaticLicense3j.when(License3J::publicKey).thenReturn(keyPair.getPublic());
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mockedStaticLicense3j.close();
     }
 
@@ -396,6 +396,7 @@ class DefaultLicenseFactoryTest {
             "am-resource-http",
             "gravitee-en-secretprovider-vault",
             "gravitee-en-secretprovider-aws",
+            "gravitee-en-secrets",
             "am-certificate-aws",
             "am-certificate-aws-cloudhsm",
             "apim-policy-graphql-ratelimit",
