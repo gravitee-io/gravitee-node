@@ -1,2 +1,2 @@
-io.gravitee.node.api.secrets.resolver.PropertyResolver=\
+io.gravitee.node.api.resolver.PropertyResolver=\
   io.gravitee.node.kubernetes.propertyresolver.KubernetesPropertyResolver

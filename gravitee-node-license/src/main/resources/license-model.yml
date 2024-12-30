@@ -89,6 +89,7 @@ packs:
         features:
             - gravitee-en-secretprovider-vault
             - gravitee-en-secretprovider-aws
+            - gravitee-en-secrets
             - am-certificate-aws
             - am-certificate-aws-cloudhsm
     enterprise-alert-engine:
@@ -97,6 +98,12 @@ packs:
     oem:
         features:
             - oem-customization
+    native-kafka:
+        features:
+            - apim-native-kafka-reactor
+            - apim-native-kafka-policy-acl
+            - apim-native-kafka-policy-quota
+            - apim-native-kafka-policy-topic-mapping
 
 tiers:
     planet:

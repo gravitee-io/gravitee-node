@@ -15,17 +15,15 @@
  */
 package io.gravitee.node.secrets.plugins.internal;
 
-import io.gravitee.node.api.secrets.SecretManagerConfiguration;
-import io.gravitee.node.api.secrets.SecretProvider;
 import io.gravitee.node.secrets.plugins.SecretProviderPlugin;
 import io.gravitee.node.secrets.plugins.spring.SecretProviderPluginConfiguration;
 import io.gravitee.plugin.core.api.AbstractSimplePluginHandler;
 import io.gravitee.plugin.core.api.BootPluginHandler;
 import io.gravitee.plugin.core.api.Plugin;
+import io.gravitee.secrets.api.plugin.SecretManagerConfiguration;
+import io.gravitee.secrets.api.plugin.SecretProvider;
 import java.io.IOException;
 import java.net.URLClassLoader;
-import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 
 /**
