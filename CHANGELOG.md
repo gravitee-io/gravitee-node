@@ -1,3 +1,31 @@
+# [7.0.0](https://github.com/gravitee-io/gravitee-node/compare/6.8.0...7.0.0) (2024-12-30)
+
+
+### Bug Fixes
+
+* add more tcp client options ([8b30be3](https://github.com/gravitee-io/gravitee-node/commit/8b30be30b1061b338f455ebe8cc1d1727394856a))
+* bump to latest secret-api ([4b024ff](https://github.com/gravitee-io/gravitee-node/commit/4b024ffc3fabd1318e8b9b71fee9389d51f5437a))
+* fix mock provider pom ([c60bb86](https://github.com/gravitee-io/gravitee-node/commit/c60bb8643538568a07e1a8e7be0d1bc353b027b3))
+
+
+### Features
+
+* add metadata property to NodeInfos ([c2098b0](https://github.com/gravitee-io/gravitee-node/commit/c2098b070efe43d59828f4a88dad42025af332ea))
+* add new pack of features for kafka gateway ([6cfc1c4](https://github.com/gravitee-io/gravitee-node/commit/6cfc1c4db9733f16c22b653da1a31d442a81da5a))
+* add OpenTelemetry feature into Gravitee Node ([1c377c5](https://github.com/gravitee-io/gravitee-node/commit/1c377c5eef74205d4d51b33f562307ebbdb80d87))
+* allow mock secret provider to get secrets updated ([0130c8c](https://github.com/gravitee-io/gravitee-node/commit/0130c8c3dee79d9932c5709b1e1702b468c01079))
+* allow to configure unknown tier & pack in the license ([2af3f32](https://github.com/gravitee-io/gravitee-node/commit/2af3f32604823257ab2650286297195512ca62c4))
+* allow to manually inject span context to carrier ([07adcde](https://github.com/gravitee-io/gravitee-node/commit/07adcde2f8c454fcb418cb776fcab9c222a9791f))
+* bump gravitee-bom ([0f1e87e](https://github.com/gravitee-io/gravitee-node/commit/0f1e87e542e4597010e8f18473ca3c7d881d8678))
+* mock secret provider + update to secret core objects ([a2a2cf1](https://github.com/gravitee-io/gravitee-node/commit/a2a2cf1a51f95db4637bf4bf065b168d1a129e28))
+* move classes and adapt to gravitee-secret-api ([#384](https://github.com/gravitee-io/gravitee-node/issues/384)) ([f21f095](https://github.com/gravitee-io/gravitee-node/commit/f21f095d1299be5b8773003ccfe35fd29f11a1ea))
+* share underlying span exporter ([e8bc84d](https://github.com/gravitee-io/gravitee-node/commit/e8bc84df7227afbc992dfa264757980b49fefcc0))
+
+
+### BREAKING CHANGES
+
+* Tracing plugin has been removed and is now embedded inside node framework
+
 # [6.8.0](https://github.com/gravitee-io/gravitee-node/compare/6.7.0...6.8.0) (2024-12-11)
 
 
