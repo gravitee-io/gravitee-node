@@ -1,3 +1,10 @@
+## [7.0.1](https://github.com/gravitee-io/gravitee-node/compare/7.0.0...7.0.1) (2025-01-06)
+
+
+### Bug Fixes
+
+* configuration secrets cache ([9e1c49c](https://github.com/gravitee-io/gravitee-node/commit/9e1c49c9cf31155661587ddd51d9f01c84056bd9))
+
 # [7.0.0](https://github.com/gravitee-io/gravitee-node/compare/6.8.0...7.0.0) (2024-12-30)
 
 
