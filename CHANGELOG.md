@@ -1,3 +1,10 @@
+## [7.0.2](https://github.com/gravitee-io/gravitee-node/compare/7.0.1...7.0.2) (2025-01-06)
+
+
+### Bug Fixes
+
+* apply keep alive to http/2 connections ([172f0db](https://github.com/gravitee-io/gravitee-node/commit/172f0dbc5513421e5353a221b2ca5fb42282a7f3))
+
 ## [7.0.1](https://github.com/gravitee-io/gravitee-node/compare/7.0.0...7.0.1) (2025-01-06)
 
 
