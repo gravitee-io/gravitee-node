@@ -127,6 +127,7 @@ tiers:
             - observability
             - enterprise-policy
             - event-native
+            - native-kafka
             - enterprise-mfa-factor
             - enterprise-secret-manager
             - enterprise-alert-engine
