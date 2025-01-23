@@ -71,7 +71,7 @@
         <smallrye-common.version>2.7.0</smallrye-common.version>
         <smallrye-mutiny.version>2.6.2</smallrye-mutiny.version>
         <jmockit.version>1.49</jmockit.version>
-        <awaitability.version>4.2.1</awaitability.version>
+        <awaitability.version>4.2.2</awaitability.version>
 
         <!-- WARNING: the next two dependencies versions must be kept in sync regarding vertx-micrometer-metrics -->
         <micrometer-registry-prometheus.version>1.12.4</micrometer-registry-prometheus.version>
