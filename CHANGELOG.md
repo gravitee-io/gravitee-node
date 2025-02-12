@@ -1,3 +1,10 @@
+## [7.0.3](https://github.com/gravitee-io/gravitee-node/compare/7.0.2...7.0.3) (2025-02-12)
+
+
+### Bug Fixes
+
+* update kubernetes client version ([5527fae](https://github.com/gravitee-io/gravitee-node/commit/5527fae591df35c25ced72a91e531862f1780321))
+
 ## [7.0.2](https://github.com/gravitee-io/gravitee-node/compare/7.0.1...7.0.2) (2025-01-06)
 
 
