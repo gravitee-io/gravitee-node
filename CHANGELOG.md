@@ -1,3 +1,10 @@
+## [7.0.4](https://github.com/gravitee-io/gravitee-node/compare/7.0.3...7.0.4) (2025-02-14)
+
+
+### Bug Fixes
+
+* bump kube client ([756b5d2](https://github.com/gravitee-io/gravitee-node/commit/756b5d256713444384bf978c780bc2044d7bb97c))
+
 ## [7.0.3](https://github.com/gravitee-io/gravitee-node/compare/7.0.2...7.0.3) (2025-02-12)
 
 
