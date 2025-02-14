@@ -1,3 +1,10 @@
+## [7.0.5](https://github.com/gravitee-io/gravitee-node/compare/7.0.4...7.0.5) (2025-02-14)
+
+
+### Bug Fixes
+
+* remove plugin config ([82a0392](https://github.com/gravitee-io/gravitee-node/commit/82a0392e1eb1914ffd7e280f431aa4e00dc2b0a2))
+
 ## [7.0.4](https://github.com/gravitee-io/gravitee-node/compare/7.0.3...7.0.4) (2025-02-14)
 
 
