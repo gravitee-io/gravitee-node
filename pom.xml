@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee</groupId>
         <artifactId>gravitee-parent</artifactId>
-        <version>22.2.1</version>
+        <version>22.2.5</version>
     </parent>
 
     <groupId>io.gravitee.node</groupId>
@@ -56,7 +56,7 @@
     </modules>
 
     <properties>
-        <gravitee-bom.version>8.2.0</gravitee-bom.version>
+        <gravitee-bom.version>8.2.9</gravitee-bom.version>
         <gravitee-common.version>4.6.0</gravitee-common.version>
         <gravitee-plugin.version>4.2.1</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.31.2</gravitee-reporter-api.version>
@@ -434,24 +434,6 @@
         </pluginManagement>
 
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.4</version>
-                <configuration>
-                    <additionalJOption>-Xdoclint:none</additionalJOption>
-                    <source>17</source>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>17</source>
-                    <target>17</target>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>com.hubspot.maven.plugins</groupId>
                 <artifactId>prettier-maven-plugin</artifactId>
