@@ -1,3 +1,10 @@
+## [7.0.6](https://github.com/gravitee-io/gravitee-node/compare/7.0.5...7.0.6) (2025-02-18)
+
+
+### Bug Fixes
+
+* opentelemetry configuration and README ([4759c06](https://github.com/gravitee-io/gravitee-node/commit/4759c06e00d02cc825293cfeda3e54af427e7626))
+
 ## [7.0.5](https://github.com/gravitee-io/gravitee-node/compare/7.0.4...7.0.5) (2025-02-14)
 
 
