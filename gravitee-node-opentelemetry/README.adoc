@@ -10,8 +10,9 @@ All the specific configurations are located under the `services.opentelemetry` a
 
 |===
 |Parameter |Default |Description
+
 |enabled
-|true
+|false
 |Enable OpenTelemetry capabilities
 
 |verbose
@@ -20,18 +21,23 @@ All the specific configurations are located under the `services.opentelemetry` a
 
 |extraAttributes
 |
-|Allow to add any extra attributes on all spans.
+|Key value pairs allowing to add any extra attributes on all spans.
 
 |===
 
 === Exporter Configuration
 All the exporter configurations are located under the `services.opentelemetry.exporter` attribute.
 
+==== Endpoint settings
+
 |===
 |Parameter |Default |Description
+
 |endpoint
 |http://localhost:4317
-|Sets the OTLP endpoint to send telemetry data. If unset, defaults to http://localhost:4317. If protocol is `http/protobuf` the version and signal will be appended to the path (e.g. v1/traces or v1/metrics) and the default port will be http://localhost:4318.
+|Sets the OTLP endpoint to send telemetry data. If unset, defaults to http://localhost:4317. If protocol is `http` or `http/protobuf` the version and signal will be appended to the path (e.g. v1/traces or v1/metrics).
+
+**Using `https://` will apply SSL settings**
 
 |headers
 |N/A
@@ -43,11 +49,24 @@ All the exporter configurations are located under the `services.opentelemetry.ex
 
 |timeout
 |10000
-|Sets the maximum time to wait for the collector to process an exported batch of telemetry data. If unset, defaults to 10s.
+|(Milliseconds) Sets the maximum time to wait for the collector to process an exported batch of telemetry data. If unset, defaults to 10s.
 
 |protocol
 |grpc
-|OTLP defines the encoding of telemetry data and the protocol used to exchange data between the client and the server. Depending on the exporter, the available protocols will be different. Currently, only `grpc` and `http/protobu`} are allowed. Please mind that changing the protocol requires changing the port in the endpoint as well.
+|OTLP defines the encoding of telemetry data and the protocol used to exchange data between the client and the server. Depending on the exporter, the available protocols will be different. Currently `grpc`, `http` and `http/protobuf` are supported.
+|===
+
+==== SSL settings
+|===
+|Parameter |Default |Description
+
+|ssl.trustAll
+|false
+|To allow unknown CA
+
+|ssl.verifyHost
+|true
+|Check Certificates Subjects and SANs
 
 |ssl.keystore.type
 |
@@ -63,19 +82,13 @@ All the exporter configurations are located under the `services.opentelemetry.ex
 
 |ssl.keystore.certs
 |
-|Certificates are required if keystore’s type is pem.
+|An array of certificates paths that are required if keystore’s type is pem.
 
 |ssl.keystore.keys
 |
-|Keys are required if keystore’s type is pem.
+|An array of matching private keys paths if keystore’s type is pem.
 
-|ssl.trustAll
-|false
-|
 
-|ssl.verifyHost
-|true
-|
 
 |ssl.truststore.type
 |
@@ -88,47 +101,53 @@ All the exporter configurations are located under the `services.opentelemetry.ex
 |ssl.truststore.password
 |
 |The password to use to open the truststore
+|===
 
-|ssl.proxy.enabled
+==== Proxy settings
+|===
+|Parameter |Default |Description
+
+|proxy.enabled
 |
 |Enable proxy configuration
 
-|ssl.proxy.useSystemProxy
+|proxy.useSystemProxy
 |
 |Define if the system proxy must be used.
 
-|ssl.proxy.host
+|proxy.host
 |
 |
 
-|ssl.proxy.port
+|proxy.port
 |
 |
 
-|ssl.proxy.username
+|proxy.username
 |
 |
 
-|ssl.proxy.password
+|proxy.password
 |
 |
 |===
 
 === Example
 
-```yaml
+[source,yaml]
+----
 services:
   opentelemetry:
     enabled: true
     verbose: true
     extraAttributes:
-      - deployment.environment.name: production
+      deployment.environment.name: production
     exporter:
       endpoint: http://localhost:4317
       protocol: grpc
       compression: none
       headers:
-        - X-Custom-Header: value
+        X-Custom-Header: value
       timeout: 10000
       ssl:
         trustall: false
@@ -141,4 +160,4 @@ services:
           type: pkcs12
           path: /path/to/truststore
           password: password
-```
+----

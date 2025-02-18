@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -75,7 +76,6 @@ public class OpenTelemetryConfiguration {
      * Sets the OTLP endpoint to send telemetry data. If unset, defaults to <code>http://localhost:4317</code>.
      * <p>
      * If protocol is `http/protobuf` the version and signal will be appended to the path (e.g. v1/traces or v1/metrics)
-     * and the default port will be <code>http://localhost:4318</code>.
      */
     @Value("${services.opentelemetry.exporter.endpoint:${services.tracing.otel.url:http://localhost:4317}}")
     private String endpoint;
@@ -150,7 +150,7 @@ public class OpenTelemetryConfiguration {
     public List<String> getKeystorePemCerts() {
         if (keystorePemCerts == null) {
             keystorePemCerts =
-                getPropertyList("services.opentelemetry.exporter.keystore.certs", "services.tracing.otel.ssl.keystore.certs");
+                getPropertyList("services.opentelemetry.exporter.ssl.keystore.certs", "services.tracing.otel.ssl.keystore.certs");
         }
 
         return keystorePemCerts;
@@ -160,7 +160,8 @@ public class OpenTelemetryConfiguration {
 
     public List<String> getKeystorePemKeys() {
         if (keystorePemKeys == null) {
-            keystorePemKeys = getPropertyList("services.opentelemetry.exporter.keystore.keys", "services.tracing.otel.ssl.keystore.keys");
+            keystorePemKeys =
+                getPropertyList("services.opentelemetry.exporter.ssl.keystore.keys", "services.tracing.otel.ssl.keystore.keys");
         }
 
         return keystorePemKeys;
@@ -204,15 +205,26 @@ public class OpenTelemetryConfiguration {
 
     private Map<String, String> getPropertyMap(final String key) {
         return getPropertiesStartingWith(key)
-            .collect(Collectors.toMap(entry -> entry.getKey().substring(key.length() + 4), entry -> String.valueOf(entry.getValue())));
+            .collect(Collectors.toMap(entry -> entry.getKey().substring(key.length() + 1), entry -> String.valueOf(entry.getValue())));
     }
 
     private List<String> getPropertyList(final String key, final String fallbackKey) {
-        List<String> propertyList = getPropertiesStartingWith(key).map(Map.Entry::getValue).map(String::valueOf).toList();
-        if (propertyList.isEmpty()) {
-            propertyList = getPropertiesStartingWith(fallbackKey).map(Map.Entry::getValue).map(String::valueOf).toList();
+        Map<String, Object> properties = EnvironmentUtils.getPropertiesStartingWith(environment, key);
+        if (properties.isEmpty()) {
+            properties = EnvironmentUtils.getPropertiesStartingWith(environment, fallbackKey);
+            return toList(properties, fallbackKey);
         }
-        return propertyList;
+        return toList(properties, key);
+    }
+
+    private static List<String> toList(Map<String, Object> elements, String baseKey) {
+        return IntStream
+            .range(0, elements.size())
+            .boxed()
+            .map(i -> baseKey.concat("[%d]".formatted(i)))
+            .map(k -> elements.get(k).toString())
+            .filter(s -> !s.isBlank())
+            .toList();
     }
 
     private Stream<Map.Entry<String, Object>> getPropertiesStartingWith(final String key) {
