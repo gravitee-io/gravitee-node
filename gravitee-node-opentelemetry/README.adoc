@@ -141,13 +141,13 @@ services:
     enabled: true
     verbose: true
     extraAttributes:
-      deployment.environment.name: production
+      - deployment.environment.name: production
     exporter:
       endpoint: http://localhost:4317
       protocol: grpc
       compression: none
       headers:
-        X-Custom-Header: value
+        - X-Custom-Header: value
       timeout: 10000
       ssl:
         trustall: false
