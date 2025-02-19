@@ -1,3 +1,10 @@
+## [7.0.7](https://github.com/gravitee-io/gravitee-node/compare/7.0.6...7.0.7) (2025-02-19)
+
+
+### Bug Fixes
+
+* backward compatibility fix ([7a02032](https://github.com/gravitee-io/gravitee-node/commit/7a02032fe9ad5e4088f259ff5e39168032de608e))
+
 ## [7.0.6](https://github.com/gravitee-io/gravitee-node/compare/7.0.5...7.0.6) (2025-02-18)
 
 
