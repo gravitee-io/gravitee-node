@@ -22,16 +22,16 @@ class OpenTelemetryConfigurationTest {
 
     @Test
     void should_get_custom_headers() {
-        environment.setProperty("services.opentelemetry.exporter.headers.foo", "bar");
-        environment.setProperty("services.opentelemetry.exporter.headers.baz", "puk");
+        environment.setProperty("services.opentelemetry.exporter.headers[0].foo", "bar");
+        environment.setProperty("services.opentelemetry.exporter.headers[1].baz", "puk");
         Map<String, String> propertyMap = underTest.getCustomHeaders();
         assertThat(propertyMap).containsAllEntriesOf(Map.of("foo", "bar", "baz", "puk"));
     }
 
     @Test
     void should_get_custom_headers_from_fallback() {
-        environment.setProperty("services.tracing.otel.headers.foo", "bar");
-        environment.setProperty("services.tracing.otel.headers.baz", "puk");
+        environment.setProperty("services.tracing.otel.headers[0].foo", "bar");
+        environment.setProperty("services.tracing.otel.headers[1].baz", "puk");
         Map<String, String> propertyMap = underTest.getCustomHeaders();
         assertThat(propertyMap).containsAllEntriesOf(Map.of("foo", "bar", "baz", "puk"));
     }
@@ -44,8 +44,8 @@ class OpenTelemetryConfigurationTest {
 
     @Test
     void should_get_extra_attributes() {
-        environment.setProperty("services.opentelemetry.extraAttributes.foo", "bar");
-        environment.setProperty("services.opentelemetry.extraAttributes.baz", "puk");
+        environment.setProperty("services.opentelemetry.extraAttributes[0].foo", "bar");
+        environment.setProperty("services.opentelemetry.extraAttributes[1].baz", "puk");
         AttributesMap extraAttributes = underTest.getExtraAttributes();
         assertThat(extraAttributes).isNotEmpty();
         assertThat(extraAttributes.get(AttributeKey.stringKey("foo"))).isEqualTo("bar");

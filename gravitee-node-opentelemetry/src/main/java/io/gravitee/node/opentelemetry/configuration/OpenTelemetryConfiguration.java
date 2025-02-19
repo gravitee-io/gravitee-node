@@ -19,17 +19,13 @@ import io.gravitee.common.util.EnvironmentUtils;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -65,7 +61,7 @@ public class OpenTelemetryConfiguration {
 
     public AttributesMap getExtraAttributes() {
         if (extraAttributes == null) {
-            Map<String, String> configMap = getPropertyMap("services.opentelemetry.extraAttributes");
+            Map<String, String> configMap = getKeyValuePairs("services.opentelemetry.extraAttributes");
             extraAttributes = AttributesMap.create(configMap.size(), Integer.MAX_VALUE);
             configMap.forEach((k, v) -> extraAttributes.put(AttributeKey.stringKey(k), v));
         }
@@ -88,10 +84,10 @@ public class OpenTelemetryConfiguration {
 
     public Map<String, String> getCustomHeaders() {
         if (customHeaders == null) {
-            customHeaders = getPropertyMap("services.opentelemetry.exporter.headers");
+            customHeaders = getKeyValuePairs("services.opentelemetry.exporter.headers");
 
             if (customHeaders.isEmpty()) {
-                customHeaders = getPropertyMap("services.tracing.otel.headers");
+                customHeaders = getKeyValuePairs("services.tracing.otel.headers");
             }
         }
         return customHeaders;
@@ -203,11 +199,6 @@ public class OpenTelemetryConfiguration {
     @Value("${services.opentelemetry.exporter.proxy.password:#{null}}")
     String proxyPassword;
 
-    private Map<String, String> getPropertyMap(final String key) {
-        return getPropertiesStartingWith(key)
-            .collect(Collectors.toMap(entry -> entry.getKey().substring(key.length() + 1), entry -> String.valueOf(entry.getValue())));
-    }
-
     private List<String> getPropertyList(final String key, final String fallbackKey) {
         Map<String, Object> properties = EnvironmentUtils.getPropertiesStartingWith(environment, key);
         if (properties.isEmpty()) {
@@ -217,7 +208,7 @@ public class OpenTelemetryConfiguration {
         return toList(properties, key);
     }
 
-    private static List<String> toList(Map<String, Object> elements, String baseKey) {
+    private List<String> toList(Map<String, Object> elements, String baseKey) {
         return IntStream
             .range(0, elements.size())
             .boxed()
@@ -225,6 +216,19 @@ public class OpenTelemetryConfiguration {
             .map(k -> elements.get(k).toString())
             .filter(s -> !s.isBlank())
             .toList();
+    }
+
+    private Map<String, String> getKeyValuePairs(String baseKey) {
+        Map<String, String> properties = new HashMap<>();
+        getPropertiesStartingWith(baseKey)
+            .forEach(entry -> {
+                // keep what is after '].'
+                int end = entry.getKey().lastIndexOf("].");
+                if (end > 0) {
+                    properties.put(entry.getKey().substring(end + 2), entry.getValue().toString());
+                }
+            });
+        return properties;
     }
 
     private Stream<Map.Entry<String, Object>> getPropertiesStartingWith(final String key) {
