@@ -21,7 +21,9 @@ import com.hazelcast.config.FileSystemYamlConfig;
 import com.hazelcast.config.MemberAttributeConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.instance.BuildInfoProvider;
 import com.hazelcast.spi.properties.ClusterProperty;
+import com.hazelcast.version.Version;
 import io.gravitee.node.api.Node;
 import java.io.FileNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +44,18 @@ public class HazelcastCacheConfiguration {
     @Value("${cache.hazelcast.instance-name:gio-cache-hz-instance}")
     private String hazelcastInstanceName;
 
+    // WARNING: This option was introduced as a temporary fix for upgrading Hazelcast from v5.3 to v5.5.
+    // Reference: https://github.com/hazelcast/hazelcast/issues/26486
+    //
+    // When enabled ('true'), the Hazelcast cluster name is suffixed with '-hzm<major><minor>'
+    // (e.g., 'graviteeio-apim-cluster-hz55'). This ensures that clusters remain distinct,
+    // preventing an infinite loop where an application embedding Hazelcast v5.5 tries to join a v5.3 cluster.
+    //
+    // The option is enabled by default but can be disabled if running on node >= 6.4.1,
+    // which already includes Hazelcast >= 5.5.
+    @Value("${cluster.hazelcast.cluster-name-versioning:true}")
+    private boolean hazelcastClusterNameVersioning;
+
     @Autowired
     private Node node;
 
@@ -55,6 +69,12 @@ public class HazelcastCacheConfiguration {
         if (!config.getClusterName().contains("cache")) {
             config.setClusterName(config.getClusterName() + "-cache");
         }
+
+        if (hazelcastClusterNameVersioning) {
+            Version hzVersion = Version.of(BuildInfoProvider.getBuildInfo().getVersion());
+            config.setClusterName(config.getClusterName() + "-hz" + hzVersion.getMajor() + hzVersion.getMinor());
+        }
+
         config.setProperty(ClusterProperty.HEALTH_MONITORING_LEVEL.getName(), "OFF");
         config.setInstanceName(hazelcastInstanceName);
 
