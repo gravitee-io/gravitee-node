@@ -1,3 +1,10 @@
+## [7.0.8](https://github.com/gravitee-io/gravitee-node/compare/7.0.7...7.0.8) (2025-03-11)
+
+
+### Bug Fixes
+
+* avoid blocking on Hz v5.5 upgrade ([#406](https://github.com/gravitee-io/gravitee-node/issues/406)) ([74ee203](https://github.com/gravitee-io/gravitee-node/commit/74ee203c79c4ff12ba485f11ae706fc03d04bbd0))
+
 ## [7.0.7](https://github.com/gravitee-io/gravitee-node/compare/7.0.6...7.0.7) (2025-02-19)
 
 
