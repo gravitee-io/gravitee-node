@@ -1,3 +1,10 @@
+## [5.21.2](https://github.com/gravitee-io/gravitee-node/compare/5.21.1...5.21.2) (2025-03-19)
+
+
+### Bug Fixes
+
+* allow to configure unknown tier & pack in the license ([33c1b41](https://github.com/gravitee-io/gravitee-node/commit/33c1b41a35d274ac2ba5cabd516bad0904011c37))
+
 ## [5.21.1](https://github.com/gravitee-io/gravitee-node/compare/5.21.0...5.21.1) (2024-07-25)
 
 
