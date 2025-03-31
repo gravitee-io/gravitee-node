@@ -27,7 +27,13 @@ import io.vertx.redis.client.RedisAPI;
 import io.vertx.redis.client.Response;
 import io.vertx.redis.client.ResponseType;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -82,7 +88,8 @@ public class RedisCache<V> implements Cache<String, V> {
             .fromCompletionStage(this.redisAPI.keys(getRedisEntryKey("*")).toCompletionStage())
             .flatMap(this::throwExceptionOnError)
             .flattenStreamAsFlowable(Response::stream)
-            .map(response -> response.toString(StandardCharsets.UTF_8).replace(getRedisEntryKey(""), ""));
+            .map(response -> response.toString(StandardCharsets.UTF_8).replace(getRedisEntryKey(""), ""))
+            .onErrorResumeNext(ex -> Flowable.error(new CacheException("Keys cannot be listed from cache", ex)));
     }
 
     @Override
@@ -120,7 +127,8 @@ public class RedisCache<V> implements Cache<String, V> {
         return Single
             .fromCompletionStage(this.redisAPI.exists(List.of(key + SEPARATOR)).toCompletionStage())
             .flatMap(this::throwExceptionOnError)
-            .map(resp -> resp.toInteger() > 0);
+            .map(resp -> resp.toInteger() > 0)
+            .onErrorResumeNext(ex -> Single.error(new CacheException("Key existence cannot be tested from cache", ex)));
     }
 
     @Override
@@ -133,7 +141,8 @@ public class RedisCache<V> implements Cache<String, V> {
         return Maybe
             .fromCompletionStage(this.redisAPI.get(getRedisEntryKey(key)).toCompletionStage())
             .flatMapSingle(this::throwExceptionOnError)
-            .map(response -> valueMapper.toValue(asString(response)));
+            .map(response -> valueMapper.toValue(asString(response)))
+            .onErrorResumeNext(ex -> Maybe.error(new CacheException("Keys cannot be listed from cache", ex)));
     }
 
     @Override
@@ -160,7 +169,8 @@ public class RedisCache<V> implements Cache<String, V> {
                             );
                         return oldValue;
                     })
-            );
+            )
+            .onErrorResumeNext(ex -> Maybe.error(new CacheException("Unable to add cache Entry", ex)));
     }
 
     @Override
@@ -192,7 +202,8 @@ public class RedisCache<V> implements Cache<String, V> {
                             );
                         return oldValue;
                     })
-            );
+            )
+            .onErrorResumeNext(ex -> Maybe.error(new CacheException("Unable to add cache Entry", ex)));
     }
 
     @Override
@@ -253,7 +264,8 @@ public class RedisCache<V> implements Cache<String, V> {
                         this.cacheListeners.values().forEach(listener -> listener.onEntryEvicted(key, value));
                         return value;
                     })
-            );
+            )
+            .onErrorResumeNext(ex -> Maybe.error(new CacheException("Unable to remove cache Entry", ex)));
     }
 
     @Override
