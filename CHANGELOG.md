@@ -1,3 +1,10 @@
+## [7.0.9](https://github.com/gravitee-io/gravitee-node/compare/7.0.8...7.0.9) (2025-04-01)
+
+
+### Bug Fixes
+
+* wrap connection error in a CacheException ([bb41980](https://github.com/gravitee-io/gravitee-node/commit/bb41980ebbb9d8a676f87953dd2dc2e3f2945c4a))
+
 ## [7.0.8](https://github.com/gravitee-io/gravitee-node/compare/7.0.7...7.0.8) (2025-03-11)
 
 
