@@ -1,3 +1,10 @@
+# [7.1.0](https://github.com/gravitee-io/gravitee-node/compare/7.0.9...7.1.0) (2025-04-03)
+
+
+### Features
+
+* add new log level endpoint ([7dfa3a4](https://github.com/gravitee-io/gravitee-node/commit/7dfa3a4f00484dc213a4984152a5e520575626d8))
+
 ## [7.0.9](https://github.com/gravitee-io/gravitee-node/compare/7.0.8...7.0.9) (2025-04-01)
 
 
