@@ -49,6 +49,7 @@ Many enterprise plugins are relying on it.
 
 The Gravitee Node Management module allows exposing a management HTTP server that exposes product information (ex: node info, Prometheus metrics, …).
 It is also extensible as each product can expose its own set of endpoints.
+For more information about this module and the endpoints available, have a look at the module link:gravitee-node-management/README.adoc[README].
 
 === Monitoring
 

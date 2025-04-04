@@ -18,6 +18,8 @@ package io.gravitee.node.cluster;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.api.cluster.ClusterManager;
+import io.gravitee.node.cluster.endpoint.ClusterEndpoint;
+import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,9 @@ public class NodeClusterService extends AbstractService<NodeClusterService> {
     @Lazy
     private ClusterManager clusterManager;
 
+    @Autowired
+    private ManagementEndpointManager managementEndpointManager;
+
     @Override
     public void doStart() throws Exception {
         super.doStart();
@@ -44,6 +49,7 @@ public class NodeClusterService extends AbstractService<NodeClusterService> {
         node.metadata().put("node.hostname", node.hostname());
         try {
             clusterManager.start();
+            managementEndpointManager.register(new ClusterEndpoint(clusterManager));
         } catch (NoSuchBeanDefinitionException e) {
             log.error("No Cluster manager has been registered.");
             throw new NoClusterManagerException();

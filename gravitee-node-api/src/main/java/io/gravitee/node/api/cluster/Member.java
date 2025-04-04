@@ -15,22 +15,38 @@
  */
 package io.gravitee.node.api.cluster;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public interface Member {
+    @JsonProperty
     String id();
 
+    @JsonProperty
     boolean primary();
 
+    @JsonProperty
     boolean self();
 
+    @JsonProperty
     String host();
 
+    @JsonProperty
+    String version();
+
+    @JsonProperty
+    Boolean running();
+
+    @JsonProperty
     Map<String, String> attributes();
 
+    @JsonIgnore
     Member attribute(String key, String value);
 }
