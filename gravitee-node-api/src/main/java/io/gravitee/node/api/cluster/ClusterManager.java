@@ -29,6 +29,11 @@ public interface ClusterManager extends Service<ClusterManager> {
      * @return the unique cluster identifier
      */
     String clusterId();
+
+    /**
+     * @return the state of the cluster
+     */
+    boolean isRunning();
     /**
      * @return the current list of members of this cluster
      */
@@ -66,4 +71,8 @@ public interface ClusterManager extends Service<ClusterManager> {
      * @param <T> the type of content that will be published or consumed.
      */
     <T> Queue<T> queue(final String name);
+
+    default ClusterInfo clusterInfo() {
+        return new ClusterInfo(clusterId(), isRunning(), self(), members());
+    }
 }

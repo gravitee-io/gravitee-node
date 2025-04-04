@@ -17,17 +17,20 @@ package io.gravitee.node.plugin.cluster.hazelcast;
 
 import io.gravitee.node.api.cluster.Member;
 import java.util.Map;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@AllArgsConstructor
 @RequiredArgsConstructor
 public class HazelcastMember implements Member {
 
     private final com.hazelcast.cluster.Member member;
     private final boolean primary;
+    private Boolean running;
 
     @Override
     public String id() {
@@ -47,6 +50,16 @@ public class HazelcastMember implements Member {
     @Override
     public String host() {
         return member.getAddress().getHost();
+    }
+
+    @Override
+    public String version() {
+        return member.getVersion().toString();
+    }
+
+    @Override
+    public Boolean running() {
+        return running;
     }
 
     @Override
