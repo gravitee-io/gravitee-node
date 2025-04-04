@@ -15,10 +15,12 @@
  */
 package io.gravitee.node.plugin.cluster.hazelcast;
 
+import com.hazelcast.cluster.ClusterState;
 import com.hazelcast.cluster.MembershipEvent;
 import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.instance.impl.HazelcastInstanceImpl;
 import com.hazelcast.topic.ITopic;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.cluster.ClusterManager;
@@ -69,6 +71,11 @@ public class HazelcastClusterManager extends AbstractService<ClusterManager> imp
     }
 
     @Override
+    public boolean isRunning() {
+        return hazelcastInstance.getCluster().getClusterState() == ClusterState.ACTIVE;
+    }
+
+    @Override
     public Set<Member> members() {
         return hazelcastInstance
             .getCluster()
@@ -81,7 +88,7 @@ public class HazelcastClusterManager extends AbstractService<ClusterManager> imp
     @Override
     public Member self() {
         com.hazelcast.cluster.Member localMember = hazelcastInstance.getCluster().getLocalMember();
-        return new HazelcastMember(localMember, isPrimaryMember(localMember));
+        return new HazelcastMember(localMember, isPrimaryMember(localMember), hazelcastInstance.getLifecycleService().isRunning());
     }
 
     @Override

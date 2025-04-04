@@ -110,6 +110,46 @@ Node exposes different technical endpoints to provide different kind of services
 }
 ----
 
+* **Cluster**
+** **Path:** /_node/cluster
+** **Method:** GET
+** **Description:** Get the current state of the cluster with information about members
+** **Enabled:** Yes
+
+.Output example (using Hazelcast implementation)
+[source,json]
+----
+{
+  "clusterId": "gio-apim-gateway-cluster-manager-hz55",
+  "running": true, #state of the cluster
+  "self": {
+    "primary": true,
+    "running": true, #state of the current member
+    "attributes": {
+      "gio_node_hostname": "node_hostname",
+      "gio_node_id": "node_id"
+    },
+    "version": "5.5.0",
+    "host": "127.0.0.1",
+    "id": "member_id",
+    "self": true
+  },
+  "members": [
+    {
+      "primary": true,
+      "attributes": {
+        "gio_node_hostname": "node_hostname",
+        "gio_node_id": "node_id"
+      },
+      "version": "5.5.0",
+      "host": "127.0.0.1",
+      "id": "member_id",
+      "self": true
+    }
+  ]
+}
+----
+
 * **Heap Dump**
 ** **Path:** /_node/heapdump
 ** **Method:** GET
