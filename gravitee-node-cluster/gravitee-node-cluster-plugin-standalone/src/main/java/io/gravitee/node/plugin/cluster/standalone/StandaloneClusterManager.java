@@ -54,6 +54,11 @@ public class StandaloneClusterManager extends AbstractService<ClusterManager> im
     }
 
     @Override
+    public boolean isRunning() {
+        return true;
+    }
+
+    @Override
     public Set<Member> members() {
         return Set.of(LOCAL_MEMBER);
     }

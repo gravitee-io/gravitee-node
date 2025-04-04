@@ -50,6 +50,16 @@ public class StandaloneMember implements Member {
     }
 
     @Override
+    public String version() {
+        return "standalone";
+    }
+
+    @Override
+    public Boolean running() {
+        return true;
+    }
+
+    @Override
     public Map<String, String> attributes() {
         return attributes;
     }
