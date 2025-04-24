@@ -1,3 +1,10 @@
+## [7.1.1](https://github.com/gravitee-io/gravitee-node/compare/7.1.0...7.1.1) (2025-04-24)
+
+
+### Bug Fixes
+
+* added traceparent getter in opentelemetry span ([b1e012b](https://github.com/gravitee-io/gravitee-node/commit/b1e012bf6a5811452b2967157b8546858138848a))
+
 # [7.1.0](https://github.com/gravitee-io/gravitee-node/compare/7.0.9...7.1.0) (2025-04-03)
 
 
