@@ -1,3 +1,10 @@
+# [7.2.0](https://github.com/gravitee-io/gravitee-node/compare/7.1.1...7.2.0) (2025-05-02)
+
+
+### Features
+
+* **license:** add support for apim-native-kafka-policy-offloading in license-model.yml ([8db831b](https://github.com/gravitee-io/gravitee-node/commit/8db831b77dc43a865d9fbda84a7f2e99f3564a86))
+
 ## [7.1.1](https://github.com/gravitee-io/gravitee-node/compare/7.1.0...7.1.1) (2025-04-24)
 
 
