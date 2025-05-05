@@ -105,6 +105,7 @@ packs:
             - apim-native-kafka-policy-quota
             - apim-native-kafka-policy-topic-mapping
             - apim-native-kafka-policy-offloading
+            - apim-native-kafka-policy-transform-key
 
 tiers:
     planet:
