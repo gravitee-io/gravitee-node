@@ -1,3 +1,10 @@
+# [7.3.0](https://github.com/gravitee-io/gravitee-node/compare/7.2.0...7.3.0) (2025-05-05)
+
+
+### Features
+
+* add new cluster endpoint and cluster health probe ([c69273b](https://github.com/gravitee-io/gravitee-node/commit/c69273bbb48427242d28d10df37509dcea4d4b68))
+
 # [7.2.0](https://github.com/gravitee-io/gravitee-node/compare/7.1.1...7.2.0) (2025-05-02)
 
 
