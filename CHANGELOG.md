@@ -1,3 +1,10 @@
+# [7.4.0](https://github.com/gravitee-io/gravitee-node/compare/7.3.0...7.4.0) (2025-05-06)
+
+
+### Features
+
+* **license:** add support for kafka-policy-transform-key in license yml ([a7eb206](https://github.com/gravitee-io/gravitee-node/commit/a7eb20690f25d5e3d40385737d42057c77f738b8))
+
 # [7.3.0](https://github.com/gravitee-io/gravitee-node/compare/7.2.0...7.3.0) (2025-05-05)
 
 
