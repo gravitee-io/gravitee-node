@@ -21,7 +21,7 @@ package io.gravitee.node.api.upgrader;
  * @author GraviteeSource Team
  */
 public interface Upgrader {
-    boolean upgrade();
+    boolean upgrade() throws UpgraderException;
 
     int getOrder();
 
