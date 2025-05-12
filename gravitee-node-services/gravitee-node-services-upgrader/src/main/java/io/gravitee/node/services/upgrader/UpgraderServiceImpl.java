@@ -72,13 +72,12 @@ public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> im
                         LOGGER.info("{} is already applied. it will be ignored.", name);
                     } else {
                         LOGGER.info("Apply {} ...", name);
-                        if (upgrader.upgrade()) {
-                            upgraderRepository.create(new UpgradeRecord(upgrader.identifier(), new Date())).blockingGet();
-                        } else {
-                            stopUpgrade.set(true);
-                        }
+                        if (upgrader.upgrade()) upgraderRepository
+                            .create(new UpgradeRecord(upgrader.identifier(), new Date()))
+                            .blockingGet();
                     }
                 } catch (Exception e) {
+                    stopUpgrade.set(true);
                     LOGGER.error("Unable to apply {}. Error: ", name, e);
                 }
             });
