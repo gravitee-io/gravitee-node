@@ -1,3 +1,10 @@
+## [7.4.1](https://github.com/gravitee-io/gravitee-node/compare/7.4.0...7.4.1) (2025-05-12)
+
+
+### Bug Fixes
+
+* update reporter-api to 1.32.3 ([920dbef](https://github.com/gravitee-io/gravitee-node/commit/920dbef7b394b49fe09b55723c600555343737f7))
+
 # [7.4.0](https://github.com/gravitee-io/gravitee-node/compare/7.3.0...7.4.0) (2025-05-06)
 
 
