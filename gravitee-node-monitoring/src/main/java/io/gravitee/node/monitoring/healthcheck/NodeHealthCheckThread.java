@@ -28,6 +28,7 @@ import io.gravitee.plugin.alert.AlertEventProducer;
 import io.vertx.core.eventbus.MessageProducer;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class NodeHealthCheckThread implements Runnable {
 
+    public static final int TIMEOUT_MS = 30000;
     private final DefaultProbeEvaluator probeRegistry;
     private final AlertEventProducer alertEventProducer;
     private final MessageProducer<HealthCheck> producer;
@@ -51,7 +53,7 @@ public class NodeHealthCheckThread implements Runnable {
     public void run() {
         try {
             this.timestamp = System.currentTimeMillis();
-            final Map<Probe, Result> results = probeRegistry.evaluate().get();
+            final Map<Probe, Result> results = probeRegistry.evaluate().get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
             // We want to propagate health-check with visible probes only.
             final HealthCheck healthCheck = getHealthCheck(results);
@@ -60,6 +62,7 @@ public class NodeHealthCheckThread implements Runnable {
             sendAlertEngineEvent(healthCheck);
         } catch (Exception e) {
             log.error("An error occurred when trying to evaluate health check probes.", e);
+            Thread.currentThread().interrupt();
         }
     }
 

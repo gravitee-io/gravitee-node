@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -26,6 +27,8 @@ public class DefaultProbeEvaluator implements ProbeEvaluator {
     private final Map<Probe, Result> lastProbeResults = new ConcurrentHashMap<>();
     private Long lastEvaluation;
 
+    private final AtomicBoolean evaluating = new AtomicBoolean(false);
+
     @Override
     public CompletableFuture<Map<Probe, Result>> evaluate() {
         return evaluate(Set.of());
@@ -41,36 +44,41 @@ public class DefaultProbeEvaluator implements ProbeEvaluator {
             return CompletableFuture.completedFuture(lastProbeResults);
         }
 
-        final List<CompletableFuture<Void>> collect =
-            this.probeManager.getProbes()
-                .stream()
-                .filter(probe -> probeIds == null || probeIds.isEmpty() || probeIds.contains(probe.id()))
-                .map(probe -> {
-                    if (probe.isCacheable()) {
-                        if (elapsedTime < cacheDurationMs && lastProbeResults.containsKey(probe)) {
+        // Make sure the previous evaluation is finished.
+        if (evaluating.compareAndSet(false, true)) {
+            final List<CompletableFuture<Void>> collect =
+                this.probeManager.getProbes()
+                    .stream()
+                    .filter(probe -> probeIds == null || probeIds.isEmpty() || probeIds.contains(probe.id()))
+                    .map(probe -> {
+                        if (probe.isCacheable() && elapsedTime < cacheDurationMs && lastProbeResults.containsKey(probe)) {
                             // The probe has been evaluated once and the elapsed time is below the cache limit. Don't re-evaluate.
                             return CompletableFuture.<Void>completedFuture(null);
                         }
+
+                        // Evaluate the probe and update the probe map.
+                        return probe
+                            .check()
+                            .exceptionally(Result::unhealthy)
+                            .thenAccept(result -> lastProbeResults.compute(probe, (probe1, result1) -> result))
+                            .toCompletableFuture();
+                    })
+                    .toList();
+
+            // Ensure all the probes have been resolved and return all the results.
+            return CompletableFuture
+                .allOf(collect.toArray(new CompletableFuture[0]))
+                .thenApply(unused -> lastProbeResults)
+                .whenComplete((probeResultMap, throwable) -> {
+                    evaluating.set(false);
+
+                    if (throwable == null) {
+                        lastEvaluation = now;
                     }
-
-                    // Evaluate the probe and update the probe map.
-                    return probe
-                        .check()
-                        .exceptionally(Result::unhealthy)
-                        .thenAccept(result -> lastProbeResults.compute(probe, (probe1, result1) -> result))
-                        .toCompletableFuture();
-                })
-                .toList();
-
-        // Ensure all the probes have been resolved and return all the results.
-        return CompletableFuture
-            .allOf(collect.toArray(new CompletableFuture[0]))
-            .thenApply(unused -> lastProbeResults)
-            .whenComplete((probeResultMap, throwable) -> {
-                if (throwable == null) {
-                    lastEvaluation = now;
-                }
-            });
+                });
+        } else {
+            return CompletableFuture.completedFuture(lastProbeResults);
+        }
     }
 
     public Map<Probe, Result> getCachedResults() {
