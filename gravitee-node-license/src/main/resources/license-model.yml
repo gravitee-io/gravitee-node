@@ -106,6 +106,10 @@ packs:
             - apim-native-kafka-policy-topic-mapping
             - apim-native-kafka-policy-offloading
             - apim-native-kafka-policy-transform-key
+    ai-gateway:
+        features:
+            - ai-gateway-policy-guard-rails
+            - ai-gateway-policy-token-tracking
 
 tiers:
     planet:
