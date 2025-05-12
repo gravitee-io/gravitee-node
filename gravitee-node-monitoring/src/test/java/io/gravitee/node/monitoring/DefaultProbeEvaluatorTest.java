@@ -12,6 +12,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -24,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Slf4j
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 @ExtendWith(MockitoExtension.class)
 class DefaultProbeEvaluatorTest {
@@ -126,6 +130,53 @@ class DefaultProbeEvaluatorTest {
                 assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy());
                 return true;
             });
+
+        // Should have been called once.
+        verify(probe1).check();
+        verify(probe2).check();
+    }
+
+    @Test
+    @SneakyThrows
+    void should_use_cached_results_when_another_evaluation_is_already_in_progress() {
+        when(probe1.check())
+            .thenReturn(
+                CompletableFuture.supplyAsync(() -> {
+                    try {
+                        log.info("Simulating slow probe during for 1 seconds");
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    log.info("Simulating slow probe done");
+                    return Result.healthy();
+                })
+            );
+        when(probe2.check()).thenReturn(CompletableFuture.completedFuture(Result.healthy()));
+        when(probeManager.getProbes()).thenReturn(List.of(probe1, probe2));
+
+        cut = new DefaultProbeEvaluator(CACHE_DURATION_MS, probeManager);
+
+        // Evaluate first time.
+        CompletableFuture<Map<Probe, Result>> firstEvaluate = cut.evaluate();
+        assertThat(firstEvaluate).isNotCompleted();
+
+        // Re-evaluate while the previous evaluation didn't finish yet.
+        final CompletableFuture<Map<Probe, Result>> result = cut.evaluate();
+
+        // Cached results are returned.
+        assertThat(result)
+            .isCompletedWithValueMatching(probeResultMap -> {
+                assertThat(probeResultMap.get(probe1)).isNull(); // Probe still evaluating. No cache.
+                assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy()); // Probe evaluated, cache is returned.
+                return true;
+            });
+
+        Map<Probe, Result> probeResultMap = firstEvaluate.get(10, TimeUnit.SECONDS);
+
+        assertThat(probeResultMap.get(probe1)).isEqualTo(Result.healthy());
+        assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy());
 
         // Should have been called once.
         verify(probe1).check();
