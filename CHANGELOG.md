@@ -1,3 +1,15 @@
+# [7.5.0](https://github.com/gravitee-io/gravitee-node/compare/7.4.1...7.5.0) (2025-05-13)
+
+
+### Bug Fixes
+
+* avoid duplicate probes and concurrent evaluations ([fdfbf04](https://github.com/gravitee-io/gravitee-node/commit/fdfbf048e833e738b6e641b42d62327e4c7e1793))
+
+
+### Features
+
+* add new "ai-gateway" pack ([f8280f1](https://github.com/gravitee-io/gravitee-node/commit/f8280f12db20114f7da6ff0068449ca4f13d3c5f))
+
 ## [7.4.1](https://github.com/gravitee-io/gravitee-node/compare/7.4.0...7.4.1) (2025-05-12)
 
 
