@@ -1,3 +1,10 @@
+## [7.5.1](https://github.com/gravitee-io/gravitee-node/compare/7.5.0...7.5.1) (2025-05-13)
+
+
+### Reverts
+
+* Revert "feat: add new "ai-gateway" pack" ([26ee8a5](https://github.com/gravitee-io/gravitee-node/commit/26ee8a5113647d07bc20ccba736d3d48ed8153ca))
+
 # [7.5.0](https://github.com/gravitee-io/gravitee-node/compare/7.4.1...7.5.0) (2025-05-13)
 
 
