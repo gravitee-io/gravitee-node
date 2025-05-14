@@ -28,13 +28,11 @@ import io.reactivex.rxjava3.core.Single;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import mockit.MockUp;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
@@ -87,6 +85,8 @@ public class UpgraderServiceImplTest {
 
     @Test
     public void failedUpgrader_ShouldNotUpgrade() throws Exception {
+        final Date fixedDate = new Date(1234567890000L);
+
         new MockUp<System>() {
             @mockit.Mock
             public void exit(int value) {
@@ -96,18 +96,15 @@ public class UpgraderServiceImplTest {
 
         Map<String, Upgrader> beans = new HashMap<>();
         DummyUpgrader upgrader1 = new DummyUpgrader(true, null, 0);
-        beans.put("upgrader1", upgrader1);
-
         DummyUpgrader upgrader2 = new DummyUpgrader(true, null, 1);
-        beans.put("upgrader2", upgrader2);
-
         DummyUpgrader upgrader3 = new DummyUpgrader(false, null, 2);
-        beans.put("upgrader3", upgrader3);
-
         DummyUpgrader upgrader4 = new DummyUpgrader(false, null, 3);
-        beans.put("upgrader4", upgrader4);
-
         DummyUpgrader upgrader5 = new DummyUpgrader(false, null, 4);
+
+        beans.put("upgrader1", upgrader1);
+        beans.put("upgrader2", upgrader2);
+        beans.put("upgrader3", upgrader3);
+        beans.put("upgrader4", upgrader4);
         beans.put("upgrader5", upgrader5);
 
         cut.setApplicationContext(applicationContext);
@@ -115,24 +112,38 @@ public class UpgraderServiceImplTest {
         when(configuration.getProperty("upgrade.mode", Boolean.class, false)).thenReturn(true);
         when(applicationContext.getBean(Node.class)).thenReturn(node);
         when(applicationContext.getBeansOfType(Upgrader.class)).thenReturn(beans);
-        when(repository.findById(upgrader1.getClass().getName())).thenReturn(Maybe.empty());
+
+        when(repository.findById(anyString())).thenReturn(Maybe.empty());
+        when(repository.create(any(UpgradeRecord.class)))
+            .thenAnswer(invocation -> {
+                UpgradeRecord upgradeRecord = invocation.getArgument(0);
+                return Single.just(new UpgradeRecord(upgradeRecord.getId(), fixedDate));
+            });
 
         try {
             cut.start();
+            fail("Expected RuntimeException");
         } catch (RuntimeException e) {
             assertThat(e.getMessage()).isEqualTo("1");
         }
 
-        verify(repository, times(3)).findById(upgrader1.getClass().getName());
-        verify(repository, times(2)).create(any(UpgradeRecord.class));
+        verify(repository, times(3)).findById(anyString());
+
+        InOrder inOrder = inOrder(repository);
+        inOrder.verify(repository).findById(upgrader1.getClass().getName());
+        inOrder.verify(repository).findById(upgrader2.getClass().getName());
+        inOrder.verify(repository).findById(upgrader3.getClass().getName());
+
         assertThat(upgrader1.hasBeenUpgraded).isTrue();
         assertThat(upgrader2.hasBeenUpgraded).isTrue();
         assertThat(upgrader3.hasBeenUpgraded).isTrue();
         assertThat(upgrader4.hasBeenUpgraded).isFalse();
         assertThat(upgrader5.hasBeenUpgraded).isFalse();
-        verify(node, times(1)).preStop();
-        verify(node, times(1)).stop();
-        verify(node, times(1)).postStop();
+
+        InOrder nodeOrder = inOrder(node);
+        nodeOrder.verify(node).preStop();
+        nodeOrder.verify(node).stop();
+        nodeOrder.verify(node).postStop();
     }
 
     @Test
