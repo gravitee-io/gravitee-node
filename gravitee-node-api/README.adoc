@@ -1,0 +1,33 @@
+= Gravitee-io - Node API
+
+image:https://img.shields.io/badge/License-Apache%202.0-blue.svg["License",link="https://github.com/gravitee-io/graviteeio-node/blob/master/LICENSE.txt"]
+image:https://img.shields.io/badge/semantic--release-conventional%20commits-e10079?logo=semantic-release["Releases",link="https://github.com/gravitee-io/graviteeio-node/releases"]
+image:https://circleci.com/gh/gravitee-io/gravitee-node.svg?style=svg["CircleCI",link="https://circleci.com/gh/gravitee-io/gravitee-node"]
+image:https://f.hubspotusercontent40.net/hubfs/7600448/gravitee-github-button.jpg["Join the community forum",link="https://community.gravitee.io?utm_source=readme", height=20]
+
+== Description
+
+The Gravitee Node API module regroups all the interfaces that are implemented in the other modules.
+
+== Packages
+
+=== Upgrader
+To create a new Upgrader, you need to implement the `Upgrader` interface in your project.
+When implementing the `upgrade` method, it’s recommended to use the `wrapException` method provided by the interface.
+This will ensure that any exception is wrapped into an `UpgraderException`.
+
+*Do not catch the exceptions yourself!* They will be handled by the caller.
+
+1. Move your business logic into a private method.
+2. In the `upgrade` method, call `wrapException` from the `Upgrader` interface.
+3. Pass your private method as a parameter to `wrapException`.
+
+[source,java]
+----
+import io.gravitee.node.api.upgrader.UpgraderException;
+
+@Override
+public boolean upgrade() throws UpgraderException {
+    return this.wrapException(this::myBusinessLogic);
+}
+----
