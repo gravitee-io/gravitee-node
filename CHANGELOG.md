@@ -1,3 +1,10 @@
+# [7.6.0](https://github.com/gravitee-io/gravitee-node/compare/7.5.1...7.6.0) (2025-05-14)
+
+
+### Features
+
+* handle double additional metrics ([aa72362](https://github.com/gravitee-io/gravitee-node/commit/aa72362f2fc9c32abafcc36ed3fdc44b9afbefab))
+
 ## [7.5.1](https://github.com/gravitee-io/gravitee-node/compare/7.5.0...7.5.1) (2025-05-13)
 
 
