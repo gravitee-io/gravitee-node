@@ -19,9 +19,7 @@ import io.gravitee.common.component.LifecycleComponent;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.api.configuration.Configuration;
-import io.gravitee.node.api.upgrader.UpgradeRecord;
-import io.gravitee.node.api.upgrader.Upgrader;
-import io.gravitee.node.api.upgrader.UpgraderRepository;
+import io.gravitee.node.api.upgrader.*;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Map;
@@ -69,17 +67,33 @@ public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> im
                 try {
                     UpgradeRecord upgradeRecord = upgraderRepository.findById(upgrader.identifier()).blockingGet();
                     if (upgradeRecord != null) {
-                        LOGGER.info("{} is already applied. it will be ignored.", name);
-                    } else {
-                        LOGGER.info("Apply {} ...", name);
-                        if (upgrader.upgrade()) {
-                            upgraderRepository.create(new UpgradeRecord(upgrader.identifier(), new Date())).blockingGet();
-                        } else {
+                        LOGGER.info("{} is already applied. It will be ignored.", name);
+                        return;
+                    }
+
+                    LOGGER.info("Apply {} ...", name);
+
+                    UpgradeStatus status = runUpgrade(upgrader);
+                    LOGGER.debug("{} upgrade result: {}", name, status);
+
+                    switch (status) {
+                        case SUCCESS -> upgraderRepository.create(new UpgradeRecord(upgrader.identifier(), new Date())).blockingGet();
+                        case FAILED_WITH_EXCEPTION -> {
+                            LOGGER.error("{} update not applied: it {}. ", name, status);
+                            stopUpgrade.set(true);
+                        }
+                        case FAILED -> {
+                            LOGGER.error(
+                                "{} update not applied: it {}. Updater returned false — possibly due to business logic or hidden exception in legacy code.",
+                                name,
+                                status
+                            );
                             stopUpgrade.set(true);
                         }
                     }
                 } catch (Exception e) {
-                    LOGGER.error("Unable to apply {}. Error: ", name, e);
+                    LOGGER.error("Unexpected error while processing {} (likely repository-related).", name, e);
+                    stopUpgrade.set(true);
                 }
             });
 
@@ -102,5 +116,16 @@ public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> im
 
     private boolean upgradeMode() {
         return configuration.getProperty("upgrade.mode", Boolean.class, false);
+    }
+
+    private UpgradeStatus runUpgrade(Upgrader upgrader) {
+        String name = upgrader.getClass().getSimpleName();
+        try {
+            boolean status = upgrader.upgrade();
+            return status ? UpgradeStatus.SUCCESS : UpgradeStatus.FAILED;
+        } catch (UpgraderException e) {
+            LOGGER.error("Upgrade failed for {}. An exception occurred during execution. Upgrade process will be stopped.", name, e);
+            return UpgradeStatus.FAILED_WITH_EXCEPTION;
+        }
     }
 }
