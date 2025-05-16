@@ -24,8 +24,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
@@ -33,9 +32,8 @@ import org.springframework.stereotype.Component;
  * @author GraviteeSource Team
  */
 @Component
+@Slf4j
 public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> implements LifecycleComponent<UpgraderServiceImpl> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(UpgraderServiceImpl.class);
 
     private final Configuration configuration;
     private final UpgraderRepository upgraderRepository;
@@ -67,23 +65,23 @@ public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> im
                 try {
                     UpgradeRecord upgradeRecord = upgraderRepository.findById(upgrader.identifier()).blockingGet();
                     if (upgradeRecord != null) {
-                        LOGGER.info("{} is already applied. It will be ignored.", name);
+                        log.info("{} is already applied. It will be ignored.", name);
                         return;
                     }
 
-                    LOGGER.info("Apply {} ...", name);
+                    log.info("Apply {} ...", name);
 
                     UpgradeStatus status = runUpgrade(upgrader);
-                    LOGGER.debug("{} upgrade result: {}", name, status);
+                    log.debug("{} upgrade result: {}", name, status);
 
                     switch (status) {
                         case SUCCESS -> upgraderRepository.create(new UpgradeRecord(upgrader.identifier(), new Date())).blockingGet();
                         case FAILED_WITH_EXCEPTION -> {
-                            LOGGER.error("{} update not applied: it {}. ", name, status);
+                            log.error("{} update not applied: it {}. ", name, status);
                             stopUpgrade.set(true);
                         }
                         case FAILED -> {
-                            LOGGER.error(
+                            log.error(
                                 "{} update not applied: it {}. Updater returned false — possibly due to business logic or hidden exception in legacy code.",
                                 name,
                                 status
@@ -92,7 +90,7 @@ public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> im
                         }
                     }
                 } catch (Exception e) {
-                    LOGGER.error("Unexpected error while processing {} (likely repository-related).", name, e);
+                    log.error("Unexpected error while processing {} (likely repository-related).", name, e);
                     stopUpgrade.set(true);
                 }
             });
@@ -106,7 +104,7 @@ public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> im
             node.stop();
             node.postStop();
             if (stopUpgrade.get()) {
-                LOGGER.error("Stopping because one of the upgrades could not be performed");
+                log.error("Stopping because one of the upgrades could not be performed");
                 System.exit(1);
             } else {
                 System.exit(0);
@@ -124,7 +122,7 @@ public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> im
             boolean status = upgrader.upgrade();
             return status ? UpgradeStatus.SUCCESS : UpgradeStatus.FAILED;
         } catch (UpgraderException e) {
-            LOGGER.error("Upgrade failed for {}. An exception occurred during execution. Upgrade process will be stopped.", name, e);
+            log.error("Upgrade failed for {}. An exception occurred during execution. Upgrade process will be stopped.", name, e);
             return UpgradeStatus.FAILED_WITH_EXCEPTION;
         }
     }
