@@ -1,3 +1,10 @@
+# [7.7.0](https://github.com/gravitee-io/gravitee-node/compare/7.6.0...7.7.0) (2025-05-16)
+
+
+### Features
+
+* add agent-proxy entrypoint and endpoint in event native features ([85df2ee](https://github.com/gravitee-io/gravitee-node/commit/85df2ee590c7ad136b80fcc6169415e0c69afa34))
+
 # [7.6.0](https://github.com/gravitee-io/gravitee-node/compare/7.5.1...7.6.0) (2025-05-14)
 
 
