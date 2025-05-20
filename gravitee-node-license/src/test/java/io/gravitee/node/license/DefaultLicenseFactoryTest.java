@@ -110,8 +110,8 @@ class DefaultLicenseFactoryTest {
                 "apim-en-entrypoint-http-post",
                 "apim-en-endpoint-kafka",
                 "apim-en-endpoint-asb",
-                "apim-en-entrypoint-agent-proxy",
-                "apim-en-endpoint-agent-proxy"
+                "apim-en-entrypoint-agent-to-agent",
+                "apim-en-endpoint-agent-to-agent"
             );
         assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_PLATFORM);
         assertThat(license.getReferenceId()).isEqualTo(REFERENCE_ID_PLATFORM);
@@ -408,8 +408,8 @@ class DefaultLicenseFactoryTest {
             "apim-policy-interops-r-sp",
             "apim-policy-oas-validation",
             "apim-policy-data-cache",
-            "apim-en-entrypoint-agent-proxy",
-            "apim-en-endpoint-agent-proxy",
+            "apim-en-entrypoint-agent-to-agent",
+            "apim-en-endpoint-agent-to-agent",
         };
         assertThat(license.getFeatures()).containsExactlyInAnyOrder(features);
 
