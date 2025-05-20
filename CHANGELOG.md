@@ -1,3 +1,10 @@
+## [7.7.1](https://github.com/gravitee-io/gravitee-node/compare/7.7.0...7.7.1) (2025-05-20)
+
+
+### Bug Fixes
+
+* rename agent-proxy license entry to fit with the protocol name ([d0a19e8](https://github.com/gravitee-io/gravitee-node/commit/d0a19e8da9e2e8a1bec37c1d303e19247366baa3))
+
 # [7.7.0](https://github.com/gravitee-io/gravitee-node/compare/7.6.0...7.7.0) (2025-05-16)
 
 
