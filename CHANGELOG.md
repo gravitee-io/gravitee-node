@@ -1,3 +1,10 @@
+# [7.8.0](https://github.com/gravitee-io/gravitee-node/compare/7.7.1...7.8.0) (2025-05-21)
+
+
+### Features
+
+* **upgrader:** improve upgrader logs handling ([85e665e](https://github.com/gravitee-io/gravitee-node/commit/85e665e9fda27374f9597d1951b7416ea496e784))
+
 ## [7.7.1](https://github.com/gravitee-io/gravitee-node/compare/7.7.0...7.7.1) (2025-05-20)
 
 
