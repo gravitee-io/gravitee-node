@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2015 The Gravitee team (http://gravitee.io)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,20 +15,24 @@
  */
 package io.gravitee.node.management.http.metrics.prometheus;
 
-import static io.prometheus.client.exporter.common.TextFormat.*;
-import static io.vertx.core.http.HttpHeaders.*;
+import static io.prometheus.client.exporter.common.TextFormat.CONTENT_TYPE_004;
+import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.micrometer.backends.BackendRegistries;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.concurrent.Semaphore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -37,6 +41,17 @@ import org.slf4j.LoggerFactory;
 public class PrometheusEndpoint implements ManagementEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PrometheusEndpoint.class);
+    private static final Integer DEFAULT_CONCURRENCY_LIMIT = 3;
+    private static final int TOO_MANY_REQUESTS = 429;
+
+    private Semaphore semaphore;
+    private final int maxConcurrentRequests;
+
+    public PrometheusEndpoint(Environment environment) {
+        Integer configuredConcurrentLimit = environment.getProperty("services.metrics.prometheus.concurrencyLimit", Integer.class);
+        this.maxConcurrentRequests = configuredConcurrentLimit != null ? configuredConcurrentLimit : DEFAULT_CONCURRENCY_LIMIT;
+        this.semaphore = new Semaphore(maxConcurrentRequests);
+    }
 
     @Override
     public HttpMethod method() {
@@ -50,18 +65,40 @@ public class PrometheusEndpoint implements ManagementEndpoint {
 
     @Override
     public void handle(RoutingContext routingContext) {
+        if (!semaphore.tryAcquire()) {
+            LOGGER.warn("Prometheus endpoint rejected request due to concurrency limit of {}", maxConcurrentRequests);
+            routingContext
+                .response()
+                .setStatusCode(TOO_MANY_REQUESTS)
+                .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
+                .end("Too Many Requests - Prometheus scrape limit reached (" + maxConcurrentRequests + ")");
+            return;
+        }
+
         PrometheusMeterRegistry registry = (PrometheusMeterRegistry) BackendRegistries.getDefaultNow();
         HttpServerResponse response = routingContext.response();
 
         response.putHeader(CONTENT_TYPE, CONTENT_TYPE_004);
         response.setChunked(true);
 
+        response.endHandler(v -> semaphore.release());
+        response.exceptionHandler(e -> {
+            LOGGER.error("Error in Prometheus response", e);
+            semaphore.release();
+        });
+
         try (BufferWriter writer = new BufferWriter(response)) {
             registry.scrape(writer);
         } catch (IOException ioe) {
             LOGGER.error("Unexpected error while scraping the Prometheus endpoint", ioe);
             response.close();
+            semaphore.release();
         }
+    }
+
+    @VisibleForTesting
+    void setSemaphore(Semaphore semaphore) {
+        this.semaphore = semaphore;
     }
 
     private static class BufferWriter extends Writer {
