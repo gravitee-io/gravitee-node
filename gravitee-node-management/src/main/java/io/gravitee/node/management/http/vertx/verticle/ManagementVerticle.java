@@ -23,6 +23,7 @@ import io.gravitee.node.management.http.metrics.prometheus.PrometheusEndpoint;
 import io.gravitee.node.management.http.node.NodeEndpoint;
 import io.gravitee.node.management.http.node.heap.HeapDumpEndpoint;
 import io.gravitee.node.management.http.node.thread.ThreadDumpEndpoint;
+import io.gravitee.node.management.http.utils.ConcurrencyLimitHandler;
 import io.gravitee.node.management.http.vertx.configuration.HttpServerConfiguration;
 import io.vertx.core.*;
 import io.vertx.core.http.HttpMethod;
@@ -226,6 +227,13 @@ public class ManagementVerticle extends AbstractVerticle {
 
         if (endpoint.isWebhook()) {
             nodeWebhookRouter.route(convert(endpoint.method()), endpoint.path()).remove();
+        } else if (endpoint.path().equals(prometheusEndpoint.path())) {
+            Integer configuredConcurrentLimit = environment.getProperty("services.metrics.prometheus.concurrencyLimit", Integer.class);
+            int maxConcurrentRequests = configuredConcurrentLimit != null ? configuredConcurrentLimit : 3;
+            nodeRouter
+                .route(convert(endpoint.method()), endpoint.path())
+                .handler(new ConcurrencyLimitHandler(maxConcurrentRequests))
+                .handler(endpoint::handle);
         } else {
             nodeRouter.route(convert(endpoint.method()), endpoint.path()).remove();
         }
