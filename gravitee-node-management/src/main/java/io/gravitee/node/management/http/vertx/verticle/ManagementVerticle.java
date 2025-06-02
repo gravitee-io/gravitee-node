@@ -23,6 +23,8 @@ import io.gravitee.node.management.http.metrics.prometheus.PrometheusEndpoint;
 import io.gravitee.node.management.http.node.NodeEndpoint;
 import io.gravitee.node.management.http.node.heap.HeapDumpEndpoint;
 import io.gravitee.node.management.http.node.thread.ThreadDumpEndpoint;
+import io.gravitee.node.management.http.utils.ConcurrencyLimitHandler;
+import io.gravitee.node.management.http.utils.OffloadHandler;
 import io.gravitee.node.management.http.vertx.configuration.HttpServerConfiguration;
 import io.vertx.core.*;
 import io.vertx.core.http.HttpMethod;
@@ -35,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 
 /**
@@ -51,6 +54,9 @@ public class ManagementVerticle extends AbstractVerticle {
     private static final String AUTHENTICATION_TYPE_NONE = "none";
     private static final String AUTHENTICATION_TYPE_BASIC = "basic";
     private static final String AUTHENTICATION_BASIC_REALM = "gravitee.io";
+
+    @Value("${services.metrics.prometheus.concurrencyLimit:3}")
+    private int configuredConcurrentLimit;
 
     @Autowired
     @Qualifier("managementHttpServer")
@@ -211,6 +217,16 @@ public class ManagementVerticle extends AbstractVerticle {
 
         if (endpoint.isWebhook()) {
             nodeWebhookRouter.route(convert(endpoint.method()), endpoint.path()).handler(endpoint::handle);
+        } else if (endpoint instanceof PrometheusEndpoint) {
+            nodeRouter
+                .route(convert(endpoint.method()), endpoint.path())
+                .handler(new ConcurrencyLimitHandler(configuredConcurrentLimit))
+                .handler(
+                    OffloadHandler.ofCtx((ctx, promise) -> {
+                        endpoint.handle(ctx);
+                        promise.complete();
+                    })
+                );
         } else {
             nodeRouter.route(convert(endpoint.method()), endpoint.path()).handler(endpoint::handle);
         }
