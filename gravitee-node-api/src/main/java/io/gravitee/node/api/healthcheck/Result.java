@@ -30,15 +30,18 @@ public class Result implements Serializable {
 
     private final boolean healthy;
     private final String message;
+    private final long timestamp;
 
     public Result() {
         this.healthy = true;
         this.message = null;
+        this.timestamp = System.currentTimeMillis();
     }
 
     protected Result(boolean isHealthy, String message) {
         this.healthy = isHealthy;
         this.message = message;
+        this.timestamp = System.currentTimeMillis();
     }
 
     public static Result unhealthy(Throwable error) {
@@ -75,6 +78,10 @@ public class Result implements Serializable {
 
     public String getMessage() {
         return message;
+    }
+
+    public long timestamp() {
+        return timestamp;
     }
 
     @Override
