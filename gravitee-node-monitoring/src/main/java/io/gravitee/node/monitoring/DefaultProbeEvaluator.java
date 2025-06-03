@@ -51,7 +51,8 @@ public class DefaultProbeEvaluator implements ProbeEvaluator {
                     .stream()
                     .filter(probe -> probeIds == null || probeIds.isEmpty() || probeIds.contains(probe.id()))
                     .map(probe -> {
-                        if (probe.isCacheable() && elapsedTime < cacheDurationMs && lastProbeResults.containsKey(probe)) {
+                        final Result lastProbeResult = lastProbeResults.get(probe);
+                        if (lastProbeResult != null && probe.isCacheable() && (now - lastProbeResult.timestamp()) < cacheDurationMs) {
                             // The probe has been evaluated once and the elapsed time is below the cache limit. Don't re-evaluate.
                             return CompletableFuture.<Void>completedFuture(null);
                         }
