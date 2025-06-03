@@ -1,3 +1,10 @@
+## [7.0.10](https://github.com/gravitee-io/gravitee-node/compare/7.0.9...7.0.10) (2025-06-03)
+
+
+### Bug Fixes
+
+* properly re-evaluate cached probe ([25a1ef0](https://github.com/gravitee-io/gravitee-node/commit/25a1ef0d192a3ed6ffec4652d118fbda7a6cb989))
+
 ## [7.0.9](https://github.com/gravitee-io/gravitee-node/compare/7.0.8...7.0.9) (2025-04-01)
 
 
