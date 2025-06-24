@@ -53,7 +53,7 @@ class NodeHealthCheckServiceTest {
             alertEventProducer,
             node,
             Vertx.vertx(),
-            new HealthConfiguration(true, 1, MILLISECONDS, 0, 0)
+            new HealthConfiguration(true, 1, MILLISECONDS, 0, 0, 0)
         );
 
         try (MockedStatic<BackendRegistries> backendRegistries = Mockito.mockStatic(BackendRegistries.class)) {
@@ -76,7 +76,7 @@ class NodeHealthCheckServiceTest {
             alertEventProducer,
             node,
             Vertx.vertx(),
-            new HealthConfiguration(false, 1, MILLISECONDS, 0, 0)
+            new HealthConfiguration(false, 1, MILLISECONDS, 0, 0, 0)
         );
 
         cut.doStart();

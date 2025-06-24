@@ -18,7 +18,7 @@ class CPUProbeTest {
     @Test
     @SneakyThrows
     void should_be_healthy_when_cpu_threshold_is_not_reached() {
-        final CPUProbe cpuProbe = new CPUProbe(new HealthConfiguration(true, 0, TimeUnit.MILLISECONDS, Integer.MAX_VALUE, 80));
+        final CPUProbe cpuProbe = new CPUProbe(new HealthConfiguration(true, 0, TimeUnit.MILLISECONDS, Integer.MAX_VALUE, 80, 20));
 
         final Result result = cpuProbe.check().get();
 
@@ -28,7 +28,7 @@ class CPUProbeTest {
     @Test
     @SneakyThrows
     void should_be_unhealthy_when_cpu_threshold_is_reached() {
-        final CPUProbe cpuProbe = new CPUProbe(new HealthConfiguration(true, 0, TimeUnit.MILLISECONDS, Integer.MIN_VALUE, 80));
+        final CPUProbe cpuProbe = new CPUProbe(new HealthConfiguration(true, 0, TimeUnit.MILLISECONDS, Integer.MIN_VALUE, 80, 20));
 
         final Result result = cpuProbe.check().get();
 
