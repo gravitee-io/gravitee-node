@@ -6,4 +6,11 @@ import java.util.concurrent.TimeUnit;
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public record HealthConfiguration(boolean enabled, long delay, TimeUnit unit, int cpuThreshold, int memoryThreshold) {}
+public record HealthConfiguration(
+    boolean enabled,
+    long delay,
+    TimeUnit unit,
+    int cpuThreshold,
+    int memoryThreshold,
+    int gcPressureThreshold
+) {}

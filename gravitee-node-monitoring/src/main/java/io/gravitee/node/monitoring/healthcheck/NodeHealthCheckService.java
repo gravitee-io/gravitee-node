@@ -34,7 +34,9 @@ import io.vertx.micrometer.backends.BackendRegistries;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -58,6 +60,10 @@ public class NodeHealthCheckService extends AbstractService {
     private MessageProducer<HealthCheck> producer;
     private ExecutorService executorService;
 
+    @Setter
+    @Getter
+    private boolean gcPressureTooHigh;
+
     @Override
     protected void doStart() throws Exception {
         if (healthConfiguration.enabled()) {
@@ -78,7 +84,8 @@ public class NodeHealthCheckService extends AbstractService {
                 probeRegistry,
                 alertEventProducer,
                 producer,
-                node
+                node,
+                this
             );
 
             managementEndpointManager.register(healthCheckEndpoint);
