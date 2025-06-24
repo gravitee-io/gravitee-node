@@ -46,6 +46,7 @@ public class NodeHealthCheckThread implements Runnable {
     private final AlertEventProducer alertEventProducer;
     private final MessageProducer<HealthCheck> producer;
     private final Node node;
+    private final NodeHealthCheckService nodeHealthCheckService;
 
     private long timestamp;
 
@@ -58,12 +59,24 @@ public class NodeHealthCheckThread implements Runnable {
             // We want to propagate health-check with visible probes only.
             final HealthCheck healthCheck = getHealthCheck(results);
 
+            // Check memory pressure
+            checkGcPressure(results);
+
             producer.write(healthCheck);
             sendAlertEngineEvent(healthCheck);
         } catch (Exception e) {
             log.error("An error occurred when trying to evaluate health check probes.", e);
             Thread.currentThread().interrupt();
         }
+    }
+
+    private void checkGcPressure(Map<Probe, Result> results) {
+        boolean noPressure = results
+            .entrySet()
+            .stream()
+            .filter(entry -> entry.getKey().id().equals("gc-pressure"))
+            .allMatch(probeResultEntry -> probeResultEntry.getValue().isHealthy());
+        nodeHealthCheckService.setGcPressureTooHigh(!noPressure);
     }
 
     private void sendAlertEngineEvent(HealthCheck healthCheck) {

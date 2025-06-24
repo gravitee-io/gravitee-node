@@ -5,6 +5,7 @@ import static org.mockito.Mockito.lenient;
 
 import io.gravitee.node.api.healthcheck.Probe;
 import io.gravitee.node.monitoring.healthcheck.probe.CPUProbe;
+import io.gravitee.node.monitoring.healthcheck.probe.GcPressureProbe;
 import io.gravitee.node.monitoring.healthcheck.probe.MemoryProbe;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,9 +35,9 @@ class ProbeManagerImplTest {
     }
 
     @Test
-    void should_discover_and_register_cpu_and_memory_probes() {
-        final List<Probe> probes = cut.getProbes();
-        assertThat(probes).hasSize(2).hasOnlyElementsOfTypes(CPUProbe.class, MemoryProbe.class);
+    void should_discover_and_register_default_probes() {
+        final List<Probe> probes = cut.getProbes(); // cpu, memory and gc pressure
+        assertThat(probes).hasSize(3).hasOnlyElementsOfTypes(CPUProbe.class, MemoryProbe.class, GcPressureProbe.class);
     }
 
     @Test
@@ -49,6 +50,6 @@ class ProbeManagerImplTest {
     void should_not_register_cpu_probe_twice() {
         CPUProbe cpuProbe = new CPUProbe();
         cut.register(cpuProbe);
-        assertThat(cut.getProbes()).hasSize(2).contains(cpuProbe);
+        assertThat(cut.getProbes()).hasSize(3).contains(cpuProbe);
     }
 }
