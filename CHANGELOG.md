@@ -1,3 +1,10 @@
+# [7.9.0](https://github.com/gravitee-io/gravitee-node/compare/7.8.1...7.9.0) (2025-06-25)
+
+
+### Features
+
+* **license:** add support for kafka-policy-virtual topics in license yml ([a235d30](https://github.com/gravitee-io/gravitee-node/commit/a235d3032acdca7451c9887b94e4c8abc6920d7c))
+
 ## [7.8.1](https://github.com/gravitee-io/gravitee-node/compare/7.8.0...7.8.1) (2025-06-03)
 
 
