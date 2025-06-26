@@ -45,11 +45,14 @@ class NodeHealthCheckThreadTest {
     @Mock
     private MessageProducer<HealthCheck> producer;
 
+    @Mock
+    private NodeHealthCheckService nodeHealthCheckService;
+
     private NodeHealthCheckThread cut;
 
     @BeforeEach
     void init() {
-        cut = new NodeHealthCheckThread(probeRegistry, alertEventProducer, producer, node);
+        cut = new NodeHealthCheckThread(probeRegistry, alertEventProducer, producer, node, nodeHealthCheckService);
     }
 
     @Test

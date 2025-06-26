@@ -17,9 +17,9 @@ class MemoryProbeTest {
     @Test
     @SneakyThrows
     void should_be_healthy_when_memory_threshold_is_not_reached() {
-        final MemoryProbe cpuProbe = new MemoryProbe(new HealthConfiguration(true, 0, TimeUnit.MILLISECONDS, 80, Integer.MAX_VALUE));
+        final MemoryProbe memoryProbe = new MemoryProbe(new HealthConfiguration(true, 0, TimeUnit.MILLISECONDS, 80, Integer.MAX_VALUE, 20));
 
-        final Result result = cpuProbe.check().get();
+        final Result result = memoryProbe.check().get();
 
         assertThat(result.isHealthy()).isTrue();
     }
@@ -27,9 +27,9 @@ class MemoryProbeTest {
     @Test
     @SneakyThrows
     void should_be_unhealthy_when_memory_threshold_is_reached() {
-        final MemoryProbe cpuProbe = new MemoryProbe(new HealthConfiguration(true, 0, TimeUnit.MILLISECONDS, 80, Integer.MIN_VALUE));
+        final MemoryProbe memoryProbe = new MemoryProbe(new HealthConfiguration(true, 0, TimeUnit.MILLISECONDS, 80, Integer.MIN_VALUE, 20));
 
-        final Result result = cpuProbe.check().get();
+        final Result result = memoryProbe.check().get();
 
         assertThat(result.isHealthy()).isFalse();
     }

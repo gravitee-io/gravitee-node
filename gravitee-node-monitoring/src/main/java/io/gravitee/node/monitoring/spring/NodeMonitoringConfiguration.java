@@ -82,9 +82,10 @@ public class NodeMonitoringConfiguration {
         @Value("${services.health.delay:5000}") int delay,
         @Value("${services.health.unit:MILLISECONDS}") TimeUnit unit,
         @Value("${services.health.threshold.cpu:80}") int cpuThreshold,
-        @Value("${services.health.threshold.memory:80}") int memoryThreshold
+        @Value("${services.health.threshold.memory:80}") int memoryThreshold,
+        @Value("${services.health.threshold.gc-pressure:15}") int gcPressureThreshold
     ) {
-        return new HealthConfiguration(enabled, delay, unit, cpuThreshold, memoryThreshold);
+        return new HealthConfiguration(enabled, delay, unit, cpuThreshold, memoryThreshold, gcPressureThreshold);
     }
 
     @Bean
@@ -97,7 +98,7 @@ public class NodeMonitoringConfiguration {
     }
 
     @Bean
-    public ProbeEvaluator probeRegistry(ProbeManager probeManager, HealthConfiguration healthConfiguration) {
+    public DefaultProbeEvaluator probeRegistry(ProbeManager probeManager, HealthConfiguration healthConfiguration) {
         return new DefaultProbeEvaluator(healthConfiguration.unit().toMillis(healthConfiguration.delay()), probeManager);
     }
 
