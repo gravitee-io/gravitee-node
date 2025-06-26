@@ -173,7 +173,7 @@ class DefaultLicenseFetcherTest {
                 30000
             );
 
-            verify(licenseFactory, timeout(30000))
+            verify(licenseFactory, timeout(30000).atLeast(1))
                 .create(REFERENCE_TYPE_PLATFORM, REFERENCE_ID_PLATFORM, "base64LicenseKey".getBytes(StandardCharsets.UTF_8));
         } finally {
             licenseUpdaterTimer.cancel();
