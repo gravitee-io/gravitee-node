@@ -1,3 +1,10 @@
+## [7.9.1](https://github.com/gravitee-io/gravitee-node/compare/7.9.0...7.9.1) (2025-06-26)
+
+
+### Bug Fixes
+
+* bump gravitee-kubernetes to 3.5.2 ([5464a1f](https://github.com/gravitee-io/gravitee-node/commit/5464a1f4bb64babe8cce409eeeed05669cb89b93))
+
 # [7.9.0](https://github.com/gravitee-io/gravitee-node/compare/7.8.1...7.9.0) (2025-06-25)
 
 
