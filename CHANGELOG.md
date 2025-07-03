@@ -1,3 +1,10 @@
+# [7.10.0](https://github.com/gravitee-io/gravitee-node/compare/7.9.1...7.10.0) (2025-07-03)
+
+
+### Features
+
+* add new gcPressureProbe and expose gcPressureTooHigh from NodeHealthCheckService ([3392ce7](https://github.com/gravitee-io/gravitee-node/commit/3392ce7cccb29971d999efbff661d87372113ca6))
+
 ## [7.9.1](https://github.com/gravitee-io/gravitee-node/compare/7.9.0...7.9.1) (2025-06-26)
 
 
