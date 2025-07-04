@@ -42,6 +42,11 @@ public class NoOpSpan implements Span {
     }
 
     @Override
+    public String getTraceparent() {
+        return "";
+    }
+
+    @Override
     public <T> Span withAttribute(final String name, final T value) {
         return this;
     }

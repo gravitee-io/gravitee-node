@@ -26,6 +26,11 @@ public interface Span {
     boolean isRoot();
 
     /**
+     * @return traceparent value.
+     */
+    String getTraceparent();
+
+    /**
      * Append custom attribute to the span while it is already created.
      *
      * @return current {@link Span}
