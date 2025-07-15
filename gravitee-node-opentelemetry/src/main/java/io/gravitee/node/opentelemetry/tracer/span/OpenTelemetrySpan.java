@@ -16,7 +16,6 @@
 package io.gravitee.node.opentelemetry.tracer.span;
 
 import io.gravitee.node.api.opentelemetry.Span;
-import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Scope;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -62,12 +61,6 @@ public class OpenTelemetrySpan<R> implements Span {
     @Override
     public boolean isRoot() {
         return root;
-    }
-
-    @Override
-    public String getTraceparent() {
-        SpanContext spanContext = span().getSpanContext();
-        return "00-" + spanContext.getTraceId() + "-" + spanContext.getSpanId() + "-" + spanContext.getTraceFlags().asHex();
     }
 
     @Override
