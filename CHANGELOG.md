@@ -1,3 +1,10 @@
+## [6.8.2](https://github.com/gravitee-io/gravitee-node/compare/6.8.1...6.8.2) (2025-07-24)
+
+
+### Bug Fixes
+
+* Prometheus OOM error ([#426](https://github.com/gravitee-io/gravitee-node/issues/426)) ([1e0c5fd](https://github.com/gravitee-io/gravitee-node/commit/1e0c5fd21cbac224169fc079b078738f4c482cce))
+
 ## [6.8.1](https://github.com/gravitee-io/gravitee-node/compare/6.8.0...6.8.1) (2025-04-01)
 
 
