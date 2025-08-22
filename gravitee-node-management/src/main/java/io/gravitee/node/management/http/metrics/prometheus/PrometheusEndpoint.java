@@ -20,11 +20,13 @@ import static io.vertx.core.http.HttpHeaders.*;
 
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
+import io.gravitee.node.management.http.utils.SafeBufferedWriter;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.micrometer.backends.BackendRegistries;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
 import org.slf4j.Logger;
@@ -56,66 +58,11 @@ public class PrometheusEndpoint implements ManagementEndpoint {
         response.putHeader(CONTENT_TYPE, CONTENT_TYPE_004);
         response.setChunked(true);
 
-        try (BufferWriter writer = new BufferWriter(response)) {
+        try (BufferedWriter writer = new BufferedWriter(new SafeBufferedWriter(response))) {
             registry.scrape(writer);
         } catch (IOException ioe) {
             LOGGER.error("Unexpected error while scraping the Prometheus endpoint", ioe);
             response.close();
         }
-    }
-
-    private static class BufferWriter extends Writer {
-
-        private final HttpServerResponse response;
-
-        private BufferWriter(HttpServerResponse response) {
-            this.response = response;
-        }
-
-        @Override
-        public void write(char[] cbuf, int off, int len) throws IOException {
-            push(Buffer.buffer(charArrayToByteArray(cbuf)));
-        }
-
-        @Override
-        public void write(int c) throws IOException {
-            push(Buffer.buffer(1).appendByte((byte) (c & 0xFF)));
-        }
-
-        @Override
-        public void write(char[] cbuf) throws IOException {
-            push(Buffer.buffer(new String(cbuf)));
-        }
-
-        @Override
-        public void write(String str) throws IOException {
-            push(Buffer.buffer(str));
-        }
-
-        @Override
-        public void write(String str, int off, int len) throws IOException {
-            push(Buffer.buffer(str));
-        }
-
-        private void push(Buffer buffer) {
-            response.write(buffer);
-        }
-
-        @Override
-        public void flush() {}
-
-        @Override
-        public void close() throws IOException {
-            response.end();
-        }
-    }
-
-    private static byte[] charArrayToByteArray(char[] charBuf) {
-        if (charBuf == null) return null;
-        int iLen = charBuf.length;
-        byte[] buf = new byte[iLen];
-        for (int p = 0; p < iLen; p++) buf[p] = (byte) (charBuf[p]);
-
-        return buf;
     }
 }
