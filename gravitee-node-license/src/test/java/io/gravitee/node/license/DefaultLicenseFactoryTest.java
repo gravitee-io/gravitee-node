@@ -393,6 +393,7 @@ class DefaultLicenseFactoryTest {
             "am-idp-gateway-handler-saml",
             "am-policy-mfa-challenge",
             "am-policy-account-linking",
+            "am-policy-ratelimit"
             "am-resource-sfr",
             "am-resource-orange-contact-everyone",
             "am-resource-http",

@@ -28,6 +28,7 @@ packs:
             - apim-policy-transform-avro-protobuf
             - am-policy-mfa-challenge
             - am-policy-account-linking
+            - am-policy-ratelimit
             - apim-policy-graphql-ratelimit
             - apim-policy-interops-a-idp
             - apim-policy-interops-r-idp
