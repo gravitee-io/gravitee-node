@@ -20,11 +20,11 @@ import static io.vertx.core.http.HttpHeaders.*;
 
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.micrometer.backends.BackendRegistries;
 import java.io.IOException;
 import java.io.Writer;
 import org.slf4j.Logger;
@@ -38,6 +38,20 @@ public class PrometheusEndpoint implements ManagementEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PrometheusEndpoint.class);
 
+    private final PrometheusMeterRegistry prometheusRegistry;
+
+    public PrometheusEndpoint() {
+        CompositeMeterRegistry compositeMeterRegistry = io.micrometer.core.instrument.Metrics.globalRegistry;
+
+        this.prometheusRegistry =
+            (PrometheusMeterRegistry) compositeMeterRegistry
+                .getRegistries()
+                .stream()
+                .filter(meterRegistry -> meterRegistry instanceof PrometheusMeterRegistry)
+                .findFirst()
+                .orElse(null);
+    }
+
     @Override
     public HttpMethod method() {
         return HttpMethod.GET;
@@ -50,14 +64,13 @@ public class PrometheusEndpoint implements ManagementEndpoint {
 
     @Override
     public void handle(RoutingContext routingContext) {
-        PrometheusMeterRegistry registry = (PrometheusMeterRegistry) BackendRegistries.getDefaultNow();
         HttpServerResponse response = routingContext.response();
 
         response.putHeader(CONTENT_TYPE, CONTENT_TYPE_004);
         response.setChunked(true);
 
         try (BufferWriter writer = new BufferWriter(response)) {
-            registry.scrape(writer);
+            prometheusRegistry.scrape(writer);
         } catch (IOException ioe) {
             LOGGER.error("Unexpected error while scraping the Prometheus endpoint", ioe);
             response.close();
