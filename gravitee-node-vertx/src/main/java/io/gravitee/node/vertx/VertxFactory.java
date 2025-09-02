@@ -26,20 +26,31 @@ import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.netty4.NettyAllocatorMetrics;
+import io.micrometer.core.instrument.binder.netty4.NettyEventExecutorMetrics;
 import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.netty.buffer.ByteBufAllocatorMetricProvider;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.buffer.impl.VertxByteBufAllocator;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsNaming;
+import io.vertx.micrometer.MicrometerMetricsFactory;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
-import io.vertx.micrometer.backends.BackendRegistries;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -77,34 +88,38 @@ public class VertxFactory implements FactoryBean<Vertx> {
         LOGGER.debug("Creating a new instance of Vert.x");
         VertxOptions options = getVertxOptions();
 
+        VertxBuilder vertxBuilder = Vertx.builder().with(options);
+
         boolean metricsEnabled = environment.getProperty("services.metrics.enabled", Boolean.class, false);
         if (metricsEnabled) {
             configureMetrics(options);
-        }
 
-        Vertx instance = Vertx.vertx(options);
-        instance.registerVerticleFactory(springVerticleFactory);
+            MeterRegistry promRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
-        if (metricsEnabled) {
-            MeterRegistry registry = BackendRegistries.getDefaultNow();
+            CompositeMeterRegistry compositeMeterRegistry = io.micrometer.core.instrument.Metrics.globalRegistry;
 
-            registry
+            compositeMeterRegistry.add(promRegistry);
+
+            compositeMeterRegistry
                 .config()
                 .meterFilter(new RenameVertxFilter())
                 .commonTags("application", node.application())
                 .commonTags("instance", node.hostname());
 
             metricsExcludedLabelsByCategory.forEach((category, labels) ->
-                registry.config().meterFilter(new ExcludeTagsFilter(category, labels.stream().map(String::valueOf).collect(toList())))
+                promRegistry.config().meterFilter(new ExcludeTagsFilter(category, labels.stream().map(String::valueOf).collect(toList())))
             );
 
-            new FileDescriptorMetrics().bindTo(registry);
-            new ClassLoaderMetrics().bindTo(registry);
-            new JvmMemoryMetrics().bindTo(registry);
-            new JvmGcMetrics().bindTo(registry);
-            new ProcessorMetrics().bindTo(registry);
-            new JvmThreadMetrics().bindTo(registry);
+            vertxBuilder.withMetrics(new MicrometerMetricsFactory(compositeMeterRegistry));
         }
+        Vertx instance = vertxBuilder.build();
+
+        if (metricsEnabled) {
+            //Load binders
+            setBinders(io.micrometer.core.instrument.Metrics.globalRegistry, instance);
+        }
+
+        instance.registerVerticleFactory(springVerticleFactory);
 
         return instance;
     }
@@ -112,9 +127,13 @@ public class VertxFactory implements FactoryBean<Vertx> {
     private void configureMetrics(VertxOptions options) {
         LOGGER.info("Metrics support is enabled");
 
-        MicrometerMetricsOptions micrometerMetricsOptions = new MicrometerMetricsOptions();
-        micrometerMetricsOptions
-            .setDisabledMetricsCategories(
+        //Read configured metrics categories
+        Set<MetricsDomain> metricsDomains = loadMetricsDomains();
+
+        Set<String> disabledMetricsDomains;
+        // Default configuration
+        if (metricsDomains.isEmpty()) {
+            disabledMetricsDomains =
                 new HashSet<>(
                     Arrays.asList(
                         MetricsDomain.DATAGRAM_SOCKET.toCategory(),
@@ -122,9 +141,18 @@ public class VertxFactory implements FactoryBean<Vertx> {
                         MetricsDomain.VERTICLES.toCategory(),
                         MetricsDomain.EVENT_BUS.toCategory()
                     )
-                )
-            )
-            .setEnabled(true);
+                );
+        } else {
+            disabledMetricsDomains =
+                Arrays
+                    .stream(MetricsDomain.values())
+                    .filter(metricsDomain -> !metricsDomains.contains(metricsDomain))
+                    .map(MetricsDomain::toCategory)
+                    .collect(Collectors.toSet());
+        }
+
+        MicrometerMetricsOptions micrometerMetricsOptions = new MicrometerMetricsOptions();
+        micrometerMetricsOptions.setDisabledMetricsCategories(disabledMetricsDomains).setEnabled(true);
 
         String namesVersion = environment.getProperty("services.metrics.prometheus.naming.version");
 
@@ -201,6 +229,71 @@ public class VertxFactory implements FactoryBean<Vertx> {
         }
     }
 
+    private Set<Binder> loadBinders() {
+        final Set<Binder> binders = new HashSet<>();
+
+        String value;
+        int counter = 0;
+
+        while ((value = environment.getProperty("services.metrics.binder[" + (counter++) + "]")) != null) {
+            binders.add(Binder.valueOf(value));
+        }
+
+        //If empty, keep same binders to avoid breaking change
+        if (binders.isEmpty()) {
+            binders.addAll(
+                List.of(
+                    Binder.FILE_DESCRIPTOR,
+                    Binder.CLASS_LOADER,
+                    Binder.JVM_MEMORY,
+                    Binder.JVM_GC_METRICS,
+                    Binder.JVM_THREAD,
+                    Binder.PROCESSOR
+                )
+            );
+        }
+
+        return binders;
+    }
+
+    private Set<MetricsDomain> loadMetricsDomains() {
+        final Set<MetricsDomain> metricsDomains = new HashSet<>();
+
+        String value;
+        int counter = 0;
+        while ((value = environment.getProperty("services.metrics.domain[" + (counter++) + "]")) != null) {
+            metricsDomains.add(MetricsDomain.valueOf(value));
+        }
+
+        return metricsDomains;
+    }
+
+    private void setBinders(CompositeMeterRegistry compositeMeterRegistry, Vertx instance) {
+        Set<Binder> binders = loadBinders();
+
+        for (Binder binder : binders) {
+            switch (binder) {
+                case PROCESSOR -> new ProcessorMetrics().bindTo(compositeMeterRegistry);
+                case CLASS_LOADER -> new ClassLoaderMetrics().bindTo(compositeMeterRegistry);
+                case FILE_DESCRIPTOR -> new FileDescriptorMetrics().bindTo(compositeMeterRegistry);
+                case JVM_GC_METRICS -> new JvmGcMetrics().bindTo(compositeMeterRegistry);
+                case JVM_MEMORY -> new JvmMemoryMetrics().bindTo(compositeMeterRegistry);
+                case JVM_THREAD -> new JvmThreadMetrics().bindTo(compositeMeterRegistry);
+                case NETTY_ALLOCATOR -> {
+                    new NettyAllocatorMetrics(UnpooledByteBufAllocator.DEFAULT).bindTo(compositeMeterRegistry);
+                    new NettyAllocatorMetrics(PooledByteBufAllocator.DEFAULT).bindTo(compositeMeterRegistry);
+
+                    new NettyAllocatorMetrics((ByteBufAllocatorMetricProvider) VertxByteBufAllocator.POOLED_ALLOCATOR)
+                        .bindTo(compositeMeterRegistry);
+                    new NettyAllocatorMetrics((ByteBufAllocatorMetricProvider) VertxByteBufAllocator.UNPOOLED_ALLOCATOR)
+                        .bindTo(compositeMeterRegistry);
+                }
+                case NETTY_EVENT_EXECUTOR -> new NettyEventExecutorMetrics(instance.nettyEventLoopGroup())
+                    .bindTo(io.micrometer.core.instrument.Metrics.globalRegistry);
+            }
+        }
+    }
+
     private Map<String, Set<Label>> readConfiguredLabelsByCategory(final String type) {
         final Map<String, Set<Label>> labelsByCategory = new HashMap<>();
 
@@ -267,5 +360,16 @@ public class VertxFactory implements FactoryBean<Vertx> {
         }
 
         return options;
+    }
+
+    public enum Binder {
+        FILE_DESCRIPTOR,
+        CLASS_LOADER,
+        PROCESSOR,
+        JVM_MEMORY,
+        JVM_GC_METRICS,
+        JVM_THREAD,
+        NETTY_ALLOCATOR,
+        NETTY_EVENT_EXECUTOR,
     }
 }
