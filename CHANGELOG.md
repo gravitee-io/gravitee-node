@@ -1,3 +1,10 @@
+## [7.5.4](https://github.com/gravitee-io/gravitee-node/compare/7.5.3...7.5.4) (2025-09-08)
+
+
+### Bug Fixes
+
+* update project properties ([f091510](https://github.com/gravitee-io/gravitee-node/commit/f091510179e26accbe0bdf928e8dae024b05e34e))
+
 ## [7.5.3](https://github.com/gravitee-io/gravitee-node/compare/7.5.2...7.5.3) (2025-08-22)
 
 
