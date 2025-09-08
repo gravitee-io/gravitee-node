@@ -1,3 +1,10 @@
+## [6.8.3](https://github.com/gravitee-io/gravitee-node/compare/6.8.2...6.8.3) (2025-09-08)
+
+
+### Bug Fixes
+
+* update project properties ([677f572](https://github.com/gravitee-io/gravitee-node/commit/677f572513e4cfe59ae939c72ac66967a589ea7a))
+
 ## [6.8.2](https://github.com/gravitee-io/gravitee-node/compare/6.8.1...6.8.2) (2025-07-24)
 
 
