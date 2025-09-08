@@ -1,3 +1,15 @@
+## [7.10.1](https://github.com/gravitee-io/gravitee-node/compare/7.10.0...7.10.1) (2025-09-08)
+
+
+### Bug Fixes
+
+* update project properties ([673e14a](https://github.com/gravitee-io/gravitee-node/commit/673e14a97017688f46d42ca4a05fe154080fdfec))
+
+
+### Reverts
+
+* added traceparent getter in opentelemetry span ([#435](https://github.com/gravitee-io/gravitee-node/issues/435)) ([ae064be](https://github.com/gravitee-io/gravitee-node/commit/ae064bedfb15e273086a8986f5e929e298f60ea9))
+
 # [7.10.0](https://github.com/gravitee-io/gravitee-node/compare/7.9.1...7.10.0) (2025-07-03)
 
 
