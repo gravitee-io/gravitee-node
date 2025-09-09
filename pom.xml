@@ -57,7 +57,7 @@
 
     <properties>
         <gravitee-bom.version>8.2.9</gravitee-bom.version>
-        <gravitee-common.version>4.6.0</gravitee-common.version>
+        <gravitee-common.version>4.7.0</gravitee-common.version>
         <gravitee-plugin.version>4.2.1</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.33.0</gravitee-reporter-api.version>
         <gravitee-kubernetes.version>3.5.2</gravitee-kubernetes.version>
