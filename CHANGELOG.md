@@ -1,3 +1,10 @@
+# [7.11.0](https://github.com/gravitee-io/gravitee-node/compare/7.10.1...7.11.0) (2025-09-11)
+
+
+### Features
+
+* add `apim-cluster`, `apim-native-kafka-console` feature to license ([ac1622d](https://github.com/gravitee-io/gravitee-node/commit/ac1622db8e1a139d3cb46dfbb7c1273aae91a16e))
+
 ## [7.10.1](https://github.com/gravitee-io/gravitee-node/compare/7.10.0...7.10.1) (2025-09-08)
 
 
