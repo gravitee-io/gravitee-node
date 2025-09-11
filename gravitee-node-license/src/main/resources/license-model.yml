@@ -102,6 +102,8 @@ packs:
             - oem-customization
     native-kafka:
         features:
+            - apim-cluster
+            - apim-native-kafka-console
             - apim-native-kafka-reactor
             - apim-native-kafka-policy-acl
             - apim-native-kafka-policy-quota
