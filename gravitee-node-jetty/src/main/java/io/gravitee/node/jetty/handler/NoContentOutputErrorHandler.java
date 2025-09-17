@@ -29,15 +29,8 @@ import org.eclipse.jetty.server.handler.ErrorHandler;
 public class NoContentOutputErrorHandler extends ErrorHandler {
 
     @Override
-    protected void writeErrorHtml(
-        Request request,
-        Writer writer,
-        Charset charset,
-        int code,
-        String message,
-        Throwable cause,
-        boolean showStacks
-    ) throws IOException {
+    protected void writeErrorHtml(Request request, Writer writer, Charset charset, int code, String message, Throwable cause)
+        throws IOException {
         // No error page
     }
 }
