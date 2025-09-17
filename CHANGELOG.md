@@ -1,3 +1,11 @@
+## [7.11.1](https://github.com/gravitee-io/gravitee-node/compare/7.11.0...7.11.1) (2025-09-17)
+
+
+### Bug Fixes
+
+* **deps:** bump gravitee-bom 8.3.41 ([7faf42d](https://github.com/gravitee-io/gravitee-node/commit/7faf42db445a21c70db8100ce92fc44420c661f2))
+* **deps:** bump protobuf-java to 3.25.5 ([4570ca9](https://github.com/gravitee-io/gravitee-node/commit/4570ca9ebb6dc7159f7b05e4fb4a71d7949ba9d3))
+
 # [7.11.0](https://github.com/gravitee-io/gravitee-node/compare/7.10.1...7.11.0) (2025-09-11)
 
 
