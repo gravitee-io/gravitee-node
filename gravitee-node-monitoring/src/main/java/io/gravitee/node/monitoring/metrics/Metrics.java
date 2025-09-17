@@ -32,17 +32,12 @@ public class Metrics {
     private Metrics() {}
 
     /**
-     * Get the default micrometer registry. May return null if it hasn't been registered yet or if it has been stopped.
-     * @return the micrometer registry or null if metrics is not enabled. You can enable metrics by setting
+     * Get the default micrometer registry.
+     * @return the micrometer registry. You can enable metrics by setting
      * services.metrics.enabled=true  inside gravitee.yaml or environmental variable gravitee_services_metrics_enabled=true
      */
     public static MeterRegistry getDefaultRegistry() {
-        MeterRegistry registry = BackendRegistries.getDefaultNow();
-        if (registry == null) {
-            LOGGER.error("Gravitee metrics is disabled. You need to enable it first (services.metrics.enabled=true)");
-            return NoopBackendRegistry.INSTANCE.getMeterRegistry();
-        }
-        return registry;
+        return io.micrometer.core.instrument.Metrics.globalRegistry;
     }
 
     /**
@@ -51,6 +46,7 @@ public class Metrics {
      * @return the micrometer registry or null if metrics is not enabled. You can enable metrics by setting
      * services.metrics.enabled=true  inside gravitee.yaml or environmental variable gravitee_services_metrics_enabled=true
      */
+    @Deprecated
     public static MeterRegistry getRegistry(String registryName) {
         MeterRegistry registry = BackendRegistries.getNow(registryName);
         if (registry == null) {
