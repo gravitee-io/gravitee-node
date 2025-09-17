@@ -65,6 +65,7 @@
         <snakeyaml.version>2.0</snakeyaml.version>
         <hazelcast.version>5.5.0</hazelcast.version>
         <gravitee-alert-api.version>1.9.1</gravitee-alert-api.version>
+        <protobuf-java.version>3.25.5</protobuf-java.version>
         <opentelemetry.version>1.39.0</opentelemetry.version>
         <opentelemetry-instrumentation.version>1.33.4-alpha</opentelemetry-instrumentation.version>
         <opentelemetry-semconv.version>1.23.1-alpha</opentelemetry-semconv.version>
