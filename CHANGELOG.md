@@ -1,3 +1,10 @@
+## [7.0.13](https://github.com/gravitee-io/gravitee-node/compare/7.0.12...7.0.13) (2025-09-17)
+
+
+### Bug Fixes
+
+* **deps:** bump protobuf-java to 3.25.5 ([99038fa](https://github.com/gravitee-io/gravitee-node/commit/99038fa149d41e6cd73167665dc7129295d116fb))
+
 ## [7.0.12](https://github.com/gravitee-io/gravitee-node/compare/7.0.11...7.0.12) (2025-09-08)
 
 
