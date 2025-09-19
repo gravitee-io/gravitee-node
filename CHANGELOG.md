@@ -1,3 +1,10 @@
+## [7.11.2](https://github.com/gravitee-io/gravitee-node/compare/7.11.1...7.11.2) (2025-09-19)
+
+
+### Bug Fixes
+
+* Prometheus OOM error ([70a8c03](https://github.com/gravitee-io/gravitee-node/commit/70a8c036a1b7df2de9fb0330cbcd15dd3c5fec3f))
+
 ## [7.11.1](https://github.com/gravitee-io/gravitee-node/compare/7.11.0...7.11.1) (2025-09-17)
 
 
