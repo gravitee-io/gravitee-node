@@ -1,3 +1,10 @@
+## [6.8.4](https://github.com/gravitee-io/gravitee-node/compare/6.8.3...6.8.4) (2025-09-24)
+
+
+### Bug Fixes
+
+* prometheus endpoint non responsive ([#456](https://github.com/gravitee-io/gravitee-node/issues/456)) ([4ad65f3](https://github.com/gravitee-io/gravitee-node/commit/4ad65f34891c5137ff9adb43cabf621877c622cd))
+
 ## [6.8.3](https://github.com/gravitee-io/gravitee-node/compare/6.8.2...6.8.3) (2025-09-08)
 
 
