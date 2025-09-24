@@ -15,20 +15,18 @@
  */
 package io.gravitee.node.management.http.metrics.prometheus;
 
-import static io.prometheus.client.exporter.common.TextFormat.*;
-import static io.vertx.core.http.HttpHeaders.*;
+import static io.prometheus.client.exporter.common.TextFormat.CONTENT_TYPE_004;
+import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
 import io.gravitee.node.management.http.utils.SafeBufferedWriter;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.micrometer.backends.BackendRegistries;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.Writer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,9 +58,15 @@ public class PrometheusEndpoint implements ManagementEndpoint {
 
         try (BufferedWriter writer = new BufferedWriter(new SafeBufferedWriter(response))) {
             registry.scrape(writer);
+            writer.flush();
+            if (!response.ended()) {
+                response.end();
+            }
         } catch (IOException ioe) {
             LOGGER.error("Unexpected error while scraping the Prometheus endpoint", ioe);
-            response.close();
+            if (!response.ended()) {
+                response.close();
+            }
         }
     }
 }
