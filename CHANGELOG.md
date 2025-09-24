@@ -1,3 +1,10 @@
+## [7.11.3](https://github.com/gravitee-io/gravitee-node/compare/7.11.2...7.11.3) (2025-09-24)
+
+
+### Bug Fixes
+
+* prometheus endpoint non responsive ([#460](https://github.com/gravitee-io/gravitee-node/issues/460)) ([09ce853](https://github.com/gravitee-io/gravitee-node/commit/09ce85338e95913787a22496cea589a2e18e0f98))
+
 ## [7.11.2](https://github.com/gravitee-io/gravitee-node/compare/7.11.1...7.11.2) (2025-09-19)
 
 
