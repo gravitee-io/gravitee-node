@@ -34,20 +34,31 @@ public class OffloadHandler {
      */
     public static Handler<RoutingContext> ofCtx(BiHandler<RoutingContext, Promise<Void>> blockingHandler) {
         return ctx -> {
+            if (ctx.response().ended()) {
+                return;
+            }
             ctx
                 .vertx()
-                .executeBlocking(promise -> blockingHandler.handle(ctx, promise))
+                .<Void>executeBlocking(promise -> {
+                    try {
+                        blockingHandler.handle(ctx, promise);
+                    } catch (Throwable t) {
+                        promise.tryFail(t);
+                    }
+                })
                 .onSuccess(v -> {
-                    // Do nothing
+                    // Endpoint is responsible for ending the response.
                 })
                 .onFailure(t -> {
-                    ctx.response().setStatusCode(500).end("Internal server error");
+                    if (!ctx.response().ended()) {
+                        ctx.response().setStatusCode(500).end("Internal server error");
+                    }
                 });
         };
     }
 
     @FunctionalInterface
     public interface BiHandler<T, U> {
-        void handle(RoutingContext t, Promise<Object> u);
+        void handle(T t, U u);
     }
 }
