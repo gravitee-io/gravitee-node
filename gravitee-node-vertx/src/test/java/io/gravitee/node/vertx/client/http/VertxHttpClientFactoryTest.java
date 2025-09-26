@@ -3,6 +3,9 @@ package io.gravitee.node.vertx.client.http;
 import static io.gravitee.node.vertx.client.http.VertxHttpClientFactory.HTTP_SSL_OPENSSL_CONFIGURATION;
 import static io.gravitee.node.vertx.client.http.VertxHttpProtocolVersion.HTTP_2;
 import static io.gravitee.node.vertx.client.http.VertxHttpProxyType.HTTP;
+import static io.vertx.core.http.Http2Settings.*;
+import static io.vertx.core.http.HttpClientOptions.DEFAULT_HTTP2_MULTIPLEXING_LIMIT;
+import static io.vertx.core.http.HttpServerOptions.DEFAULT_HTTP2_CONNECTION_WINDOW_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
@@ -15,11 +18,15 @@ import io.gravitee.node.vertx.client.ssl.pem.PEMKeyStore;
 import io.gravitee.node.vertx.client.ssl.pem.PEMTrustStore;
 import io.gravitee.node.vertx.client.ssl.pkcs12.PKCS12KeyStore;
 import io.gravitee.node.vertx.client.ssl.pkcs12.PKCS12TrustStore;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.impl.HttpClientImpl;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.http.HttpClient;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Base64;
 import java.util.Objects;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Nested;
@@ -27,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
@@ -78,6 +86,59 @@ class VertxHttpClientFactoryTest {
             .defaultTarget("https://api.gravitee.io/echo")
             .httpOptions(httpOptions)
             .proxyOptions(proxyOptions);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_build_client_with_default_http2_settings() {
+        VertxHttpClientFactory.VertxHttpClientFactoryBuilder builder = builder();
+
+        builder.httpOptions(VertxHttpClientOptions.builder().version(HTTP_2).build());
+        final HttpClient httpClient = builder.build().createHttpClient();
+
+        assertThat(httpClient).isNotNull();
+
+        final HttpClientOptions httpClientOptions = extractHttpClientOptions(httpClient);
+        assertThat(httpClientOptions).isNotNull();
+        assertThat(httpClientOptions.getHttp2MultiplexingLimit()).isEqualTo(DEFAULT_HTTP2_MULTIPLEXING_LIMIT);
+        assertThat(httpClientOptions.getHttp2ConnectionWindowSize()).isEqualTo(DEFAULT_HTTP2_CONNECTION_WINDOW_SIZE);
+        assertThat(httpClientOptions.getInitialSettings().getInitialWindowSize()).isEqualTo(DEFAULT_INITIAL_WINDOW_SIZE);
+        assertThat(httpClientOptions.getInitialSettings().getMaxConcurrentStreams()).isEqualTo(DEFAULT_MAX_CONCURRENT_STREAMS);
+        assertThat(httpClientOptions.getInitialSettings().getMaxFrameSize()).isEqualTo(DEFAULT_MAX_FRAME_SIZE);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_build_client_with_custom_http2_settings() {
+        VertxHttpClientFactory.VertxHttpClientFactoryBuilder builder = builder();
+
+        builder.httpOptions(
+            VertxHttpClientOptions
+                .builder()
+                .version(HTTP_2)
+                .http2MultiplexingLimit(13)
+                .http2ConnectionWindowSize(128000)
+                .http2StreamWindowSize(72000)
+                .http2MaxFrameSize(32000)
+                .build()
+        );
+        final HttpClient httpClient = builder.build().createHttpClient();
+
+        assertThat(httpClient).isNotNull();
+
+        final HttpClientOptions httpClientOptions = extractHttpClientOptions(httpClient);
+        assertThat(httpClientOptions).isNotNull();
+        assertThat(httpClientOptions.getHttp2MultiplexingLimit()).isEqualTo(13);
+        assertThat(httpClientOptions.getHttp2ConnectionWindowSize()).isEqualTo(128000);
+        assertThat(httpClientOptions.getInitialSettings().getInitialWindowSize()).isEqualTo(72000);
+        assertThat(httpClientOptions.getInitialSettings().getMaxConcurrentStreams()).isEqualTo(13);
+        assertThat(httpClientOptions.getInitialSettings().getMaxFrameSize()).isEqualTo(32000);
+    }
+
+    private static HttpClientOptions extractHttpClientOptions(HttpClient httpClient) throws IllegalAccessException {
+        Field httpOptionsFields = ReflectionUtils.findField(HttpClientImpl.class, "options", HttpClientOptions.class);
+        httpOptionsFields.setAccessible(true);
+        return (HttpClientOptions) httpOptionsFields.get(httpClient.getDelegate());
     }
 
     @Test
