@@ -36,6 +36,11 @@ public class VertxHttpClientOptions implements Serializable {
     private static final long serialVersionUID = -7061411805967594667L;
 
     public static final int DEFAULT_HTTP2_MULTIPLEXING_LIMIT = -1;
+    public static final int DEFAULT_HTTP2_CONNECTION_WINDOW_SIZE = -1;
+    public static final int DEFAULT_HTTP2_STREAM_WINDOW_SIZE = -1;
+    public static final int DEFAULT_MAX_FRAME_SIZE = 16384;
+    public static final int MAX_FRAME_SIZE_LOWER_BOUND = 16384;
+    public static final int MAX_FRAME_SIZE_UPPER_BOUND = 16777215;
     public static final long DEFAULT_IDLE_TIMEOUT = 60000;
     public static final long DEFAULT_KEEP_ALIVE_TIMEOUT = 30000;
     public static final long DEFAULT_CONNECT_TIMEOUT = 5000;
@@ -51,6 +56,29 @@ public class VertxHttpClientOptions implements Serializable {
 
     @Builder.Default
     private int http2MultiplexingLimit = DEFAULT_HTTP2_MULTIPLEXING_LIMIT;
+
+    /**
+     * Connection Window Size.
+     * Setting the value to -1 means {@link io.vertx.core.http.Http2Settings#DEFAULT_INITIAL_WINDOW_SIZE} -> {@value io.vertx.core.http.Http2Settings#DEFAULT_INITIAL_WINDOW_SIZE}
+     */
+    @Builder.Default
+    private int http2ConnectionWindowSize = DEFAULT_HTTP2_CONNECTION_WINDOW_SIZE;
+
+    /**
+     * Stream Window Size.
+     * Setting the value to -1 means {@link io.vertx.core.http.Http2Settings#DEFAULT_INITIAL_WINDOW_SIZE} -> {@value io.vertx.core.http.Http2Settings#DEFAULT_INITIAL_WINDOW_SIZE}
+     */
+    @Builder.Default
+    private int http2StreamWindowSize = DEFAULT_HTTP2_STREAM_WINDOW_SIZE;
+
+    /**
+     * Max frame size (initial settings).
+     * Default is the HTTP/2 spec default value: {@value DEFAULT_MAX_FRAME_SIZE}.
+     * Min value is {@value MAX_FRAME_SIZE_LOWER_BOUND}.
+     * Max value is {@value MAX_FRAME_SIZE_UPPER_BOUND}.
+     */
+    @Builder.Default
+    private int http2MaxFrameSize = DEFAULT_MAX_FRAME_SIZE;
 
     @Builder.Default
     private long idleTimeout = DEFAULT_IDLE_TIMEOUT;

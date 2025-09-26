@@ -15,6 +15,9 @@
  */
 package io.gravitee.node.vertx.client.http;
 
+import static io.netty.handler.codec.http2.Http2CodecUtil.MAX_FRAME_SIZE_UPPER_BOUND;
+import static io.vertx.core.http.Http2Settings.DEFAULT_MAX_CONCURRENT_STREAMS;
+
 import io.gravitee.node.api.configuration.Configuration;
 import io.gravitee.node.vertx.client.ssl.KeyStore;
 import io.gravitee.node.vertx.client.ssl.SslOptions;
@@ -120,8 +123,27 @@ public class VertxHttpClientFactory {
                 .setProtocolVersion(HttpVersion.HTTP_2)
                 .setHttp2ClearTextUpgrade(httpOptions.isClearTextUpgrade())
                 .setHttp2KeepAliveTimeout((int) httpOptions.getKeepAliveTimeout() / 1000)
-                .setHttp2MaxPoolSize(httpOptions.getMaxConcurrentConnections())
-                .setHttp2MultiplexingLimit(httpOptions.getHttp2MultiplexingLimit());
+                .setHttp2MaxPoolSize(httpOptions.getMaxConcurrentConnections());
+
+            if (httpOptions.getHttp2MultiplexingLimit() != VertxHttpClientOptions.DEFAULT_HTTP2_MULTIPLEXING_LIMIT) {
+                options.setHttp2MultiplexingLimit(httpOptions.getHttp2MultiplexingLimit());
+                options.getInitialSettings().setMaxConcurrentStreams(httpOptions.getHttp2MultiplexingLimit());
+            }
+
+            if (httpOptions.getHttp2ConnectionWindowSize() != VertxHttpClientOptions.DEFAULT_HTTP2_CONNECTION_WINDOW_SIZE) {
+                // Http2 connection window size for flow control with the data received from the server.
+                options.setHttp2ConnectionWindowSize(httpOptions.getHttp2ConnectionWindowSize());
+            }
+
+            // Http2 stream window size for flow control with the data received from the server.
+            if (httpOptions.getHttp2StreamWindowSize() != VertxHttpClientOptions.DEFAULT_HTTP2_STREAM_WINDOW_SIZE) {
+                options.getInitialSettings().setInitialWindowSize(httpOptions.getHttp2StreamWindowSize());
+            }
+
+            // Http2 stream max frame size for the data frames received from the server.
+            if (httpOptions.getHttp2MaxFrameSize() != VertxHttpClientOptions.DEFAULT_MAX_FRAME_SIZE) {
+                options.getInitialSettings().setMaxFrameSize(httpOptions.getHttp2MaxFrameSize());
+            }
         }
 
         final URL target = buildUrl(defaultTarget);
