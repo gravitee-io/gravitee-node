@@ -15,10 +15,13 @@
  */
 package io.gravitee.node.vertx.server.http;
 
+import io.gravitee.node.api.certificate.CRLLoaderFactoryRegistry;
+import io.gravitee.node.api.certificate.CRLLoaderOptions;
 import io.gravitee.node.api.certificate.KeyStoreLoaderFactoryRegistry;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
 import io.gravitee.node.api.server.ServerFactory;
+import io.gravitee.node.certificates.CRLLoaderManager;
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
 import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import io.gravitee.node.vertx.server.AbstractVertxServerFactory;
@@ -30,18 +33,29 @@ import io.vertx.rxjava3.core.Vertx;
  */
 public class VertxHttpServerFactory extends AbstractVertxServerFactory implements ServerFactory<VertxHttpServer, VertxHttpServerOptions> {
 
+    // TODO POC: Hardcoded CRL path for proof of concept. Should be configurable later.
+    private static final CRLLoaderOptions POC_CRL_OPTIONS = CRLLoaderOptions
+        .builder()
+        .path(System.getenv("gravitee_http_ssl_crl_path"))
+        .build();
+
     public VertxHttpServerFactory(
         Vertx vertx,
         KeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry,
-        KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry
+        KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry,
+        CRLLoaderFactoryRegistry crlLoaderFactoryRegistry
     ) {
-        super(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry);
+        super(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry, crlLoaderFactoryRegistry);
     }
 
     @Override
     public VertxHttpServer create(VertxHttpServerOptions options) {
         KeyStoreLoaderManager keyStoreLoaderManager = createKeyManager(options);
         TrustStoreLoaderManager trustStoreLoaderManager = createCertificateManager(options);
-        return new VertxHttpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager);
+
+        // POC: Create CRL manager with hardcoded options
+        CRLLoaderManager crlLoaderManager = createCRLManager(trustStoreLoaderManager, POC_CRL_OPTIONS);
+
+        return new VertxHttpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, crlLoaderManager);
     }
 }

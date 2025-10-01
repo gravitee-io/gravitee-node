@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.vertx.server.http;
 
+import io.gravitee.node.certificates.CRLLoaderManager;
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
 import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import io.gravitee.node.vertx.cert.VertxKeyCertOptions;
@@ -39,9 +40,10 @@ public class VertxHttpServer extends VertxServer<HttpServer, VertxHttpServerOpti
         Vertx vertx,
         VertxHttpServerOptions options,
         KeyStoreLoaderManager keyStoreLoaderManager,
-        TrustStoreLoaderManager trustStoreLoaderManager
+        TrustStoreLoaderManager trustStoreLoaderManager,
+        CRLLoaderManager crlLoaderManager
     ) {
-        super(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager);
+        super(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, crlLoaderManager);
     }
 
     @Override

@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.vertx.server;
 
+import io.gravitee.node.api.certificate.CRLLoaderFactoryRegistry;
 import io.gravitee.node.api.certificate.KeyStoreLoaderFactoryRegistry;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
@@ -37,10 +38,13 @@ public class VertxServerFactory<T extends VertxServer<?, C>, C extends VertxServ
     public VertxServerFactory(
         Vertx vertx,
         KeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry,
-        KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry
+        KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry,
+        CRLLoaderFactoryRegistry crlLoaderFactoryRegistry
     ) {
-        this.httpServerFactory = new VertxHttpServerFactory(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry);
-        this.tcpServerFactory = new VertxTcpServerFactory(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry);
+        this.httpServerFactory =
+            new VertxHttpServerFactory(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry, crlLoaderFactoryRegistry);
+        this.tcpServerFactory =
+            new VertxTcpServerFactory(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry, crlLoaderFactoryRegistry);
     }
 
     @Override

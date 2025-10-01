@@ -15,11 +15,14 @@
  */
 package io.gravitee.node.certificates.x509;
 
+import io.gravitee.node.api.certificate.CRLRefreshable;
 import io.gravitee.node.api.certificate.RefreshableX509Manager;
 import java.net.Socket;
 import java.security.KeyStore;
+import java.security.cert.CRL;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.List;
 import java.util.Objects;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManagerFactory;
@@ -31,11 +34,12 @@ import org.slf4j.LoggerFactory;
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class RefreshableX509TrustManagerDelegator extends X509ExtendedTrustManager implements RefreshableX509Manager {
+public class RefreshableX509TrustManagerDelegator extends X509ExtendedTrustManager implements RefreshableX509Manager, CRLRefreshable {
 
     private final String target;
     private static final Logger logger = LoggerFactory.getLogger(RefreshableX509TrustManagerDelegator.class);
     private X509ExtendedTrustManager delegate;
+    private volatile List<CRL> crls = List.of();
 
     public RefreshableX509TrustManagerDelegator(String target) {
         this.target = Objects.requireNonNull(target, "target cannot be null");
@@ -61,10 +65,29 @@ public class RefreshableX509TrustManagerDelegator extends X509ExtendedTrustManag
     }
 
     @Override
+    public void refresh(List<CRL> crls) {
+        if (crls != null) {
+            this.crls = List.copyOf(crls);
+            logger.info("CRL has been (re)loaded with {} entries for target: {}", crls.size(), target);
+        }
+    }
+
+    @Override
     public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         X509ExtendedTrustManager trustManager = this.delegate;
         if (trustManager != null) {
             trustManager.checkClientTrusted(chain, authType);
+            checkRevoked(chain);
+        }
+    }
+
+    private void checkRevoked(X509Certificate[] x509Certificates) throws CertificateException {
+        for (X509Certificate cert : x509Certificates) {
+            for (CRL crl : crls) {
+                if (crl.isRevoked(cert)) {
+                    throw new CertificateException("Certificate revoked");
+                }
+            }
         }
     }
 
@@ -73,6 +96,7 @@ public class RefreshableX509TrustManagerDelegator extends X509ExtendedTrustManag
         X509ExtendedTrustManager trustManager = this.delegate;
         if (trustManager != null) {
             trustManager.checkServerTrusted(chain, authType);
+            checkRevoked(chain);
         }
     }
 
@@ -90,6 +114,7 @@ public class RefreshableX509TrustManagerDelegator extends X509ExtendedTrustManag
         X509ExtendedTrustManager trustManager = this.delegate;
         if (trustManager != null) {
             trustManager.checkClientTrusted(chain, authType, socket);
+            checkRevoked(chain);
         }
     }
 
@@ -98,6 +123,7 @@ public class RefreshableX509TrustManagerDelegator extends X509ExtendedTrustManag
         X509ExtendedTrustManager trustManager = this.delegate;
         if (trustManager != null) {
             trustManager.checkServerTrusted(chain, authType, socket);
+            checkRevoked(chain);
         }
     }
 
@@ -106,6 +132,7 @@ public class RefreshableX509TrustManagerDelegator extends X509ExtendedTrustManag
         X509ExtendedTrustManager trustManager = this.delegate;
         if (trustManager != null) {
             trustManager.checkClientTrusted(chain, authType, engine);
+            checkRevoked(chain);
         }
     }
 
@@ -114,6 +141,7 @@ public class RefreshableX509TrustManagerDelegator extends X509ExtendedTrustManag
         X509ExtendedTrustManager trustManager = this.delegate;
         if (trustManager != null) {
             trustManager.checkServerTrusted(chain, authType, engine);
+            checkRevoked(chain);
         }
     }
 }

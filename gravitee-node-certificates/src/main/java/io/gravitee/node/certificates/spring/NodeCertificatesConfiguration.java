@@ -15,9 +15,12 @@
  */
 package io.gravitee.node.certificates.spring;
 
+import io.gravitee.node.api.certificate.CRLLoaderFactoryRegistry;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
+import io.gravitee.node.certificates.DefaultCRLLoaderFactoryRegistry;
 import io.gravitee.node.certificates.DefaultKeyStoreLoaderFactoryRegistry;
+import io.gravitee.node.certificates.crl.FileCRLLoaderFactory;
 import io.gravitee.node.certificates.file.FileKeyStoreLoaderFactory;
 import io.gravitee.node.certificates.file.FileTrustStoreLoaderFactory;
 import io.gravitee.node.certificates.file.FolderTrustStoreLoaderFactory;
@@ -45,6 +48,13 @@ public class NodeCertificatesConfiguration {
         DefaultKeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> registry = new DefaultKeyStoreLoaderFactoryRegistry<>();
         registry.registerFactory(new FileTrustStoreLoaderFactory());
         registry.registerFactory(new FolderTrustStoreLoaderFactory());
+        return registry;
+    }
+
+    @Bean
+    public CRLLoaderFactoryRegistry crlLoaderFactoryRegistry() {
+        DefaultCRLLoaderFactoryRegistry registry = new DefaultCRLLoaderFactoryRegistry();
+        registry.registerFactory(new FileCRLLoaderFactory());
         return registry;
     }
 }
