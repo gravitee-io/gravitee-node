@@ -1,3 +1,10 @@
+## [7.5.7](https://github.com/gravitee-io/gravitee-node/compare/7.5.6...7.5.7) (2025-10-06)
+
+
+### Bug Fixes
+
+* allow customizing client http2 windows ([4923e25](https://github.com/gravitee-io/gravitee-node/commit/4923e25d1966ed6c935bf20ee601defde5d61306))
+
 ## [7.5.6](https://github.com/gravitee-io/gravitee-node/compare/7.5.5...7.5.6) (2025-09-26)
 
 
