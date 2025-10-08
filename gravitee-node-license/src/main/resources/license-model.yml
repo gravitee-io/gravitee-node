@@ -111,6 +111,10 @@ packs:
             - apim-native-kafka-policy-offloading
             - apim-native-kafka-policy-transform-key
             - apim-native-kafka-policy-virtual-topics
+    agent-mesh:
+        features:
+            - apim-llm-proxy-reactor
+            - apim-mcp-proxy-reactor
 
 tiers:
     planet:
