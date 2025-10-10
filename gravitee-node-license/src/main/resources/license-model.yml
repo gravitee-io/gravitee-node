@@ -48,6 +48,9 @@ packs:
             - am-idp-france-connect
             - am-idp-cas
             - cas-am-idp # for removal
+    enterprise-authorization-engine:
+        features:
+            - am-authorizationengine-openfga
     enterprise-mfa-factor:
         features:
             - am-mfa-recovery-code
