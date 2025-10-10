@@ -1,3 +1,10 @@
+# [7.13.0](https://github.com/gravitee-io/gravitee-node/compare/7.12.0...7.13.0) (2025-10-10)
+
+
+### Features
+
+* added openfga to license model ([a49ab38](https://github.com/gravitee-io/gravitee-node/commit/a49ab38775b4a11bc5e8402f31ae0a51e896bf81))
+
 # [7.12.0](https://github.com/gravitee-io/gravitee-node/compare/7.11.4...7.12.0) (2025-10-10)
 
 
