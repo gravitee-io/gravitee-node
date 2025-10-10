@@ -21,22 +21,43 @@ import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
 import io.gravitee.node.management.http.utils.SafeBufferedWriter;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.micrometer.backends.BackendRegistries;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Endpoint used to expose metrics using a Prometheus registry
+ * Note that the endpoint is only registered if services.metrics.enabled=true and
+ * services.metrics.prometheus.enabled=true.
+ *
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
 public class PrometheusEndpoint implements ManagementEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PrometheusEndpoint.class);
+
+    private final PrometheusMeterRegistry prometheusRegistry;
+
+    public PrometheusEndpoint() {
+        Optional<CompositeMeterRegistry> compositeMeterRegistry = Optional.ofNullable(
+            (CompositeMeterRegistry) BackendRegistries.getDefaultNow()
+        );
+
+        this.prometheusRegistry =
+            (PrometheusMeterRegistry) compositeMeterRegistry
+                .flatMap(c ->
+                    c.getRegistries().stream().filter(meterRegistry -> meterRegistry instanceof PrometheusMeterRegistry).findFirst()
+                )
+                .orElse(null);
+    }
 
     @Override
     public HttpMethod method() {
@@ -50,14 +71,13 @@ public class PrometheusEndpoint implements ManagementEndpoint {
 
     @Override
     public void handle(RoutingContext routingContext) {
-        PrometheusMeterRegistry registry = (PrometheusMeterRegistry) BackendRegistries.getDefaultNow();
         HttpServerResponse response = routingContext.response();
 
         response.putHeader(CONTENT_TYPE, CONTENT_TYPE_004);
         response.setChunked(true);
 
         try (BufferedWriter writer = new BufferedWriter(new SafeBufferedWriter(response))) {
-            registry.scrape(writer);
+            prometheusRegistry.scrape(writer);
             writer.flush();
             if (!response.ended()) {
                 response.end();
