@@ -15,33 +15,18 @@
  */
 package io.gravitee.node.vertx.metrics;
 
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.StreamSupport.stream;
-
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.reactivex.rxjava3.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class ExcludeTagsFilter implements MeterFilter {
-
-    private final String category;
-
-    private final List<String> excludedLabels;
-
-    public ExcludeTagsFilter(String category, List<String> excludedLabels) {
-        this.category = category;
-        this.excludedLabels = excludedLabels;
-    }
-
+public record ExcludeTagsFilter(String category, List<String> excludedLabels) implements MeterFilter {
     @NonNull
     @Override
     public Meter.Id map(@NonNull Meter.Id id) {
@@ -60,13 +45,5 @@ public class ExcludeTagsFilter implements MeterFilter {
             return processedTags > tags.size() ? id.replaceTags(tags) : id;
         }
         return id;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public List<String> getExcludedLabels() {
-        return excludedLabels;
     }
 }

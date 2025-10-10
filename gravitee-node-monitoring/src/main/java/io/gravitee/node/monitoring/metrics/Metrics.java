@@ -32,8 +32,8 @@ public class Metrics {
     private Metrics() {}
 
     /**
-     * Get the default micrometer registry. May return null if it hasn't been registered yet or if it has been stopped.
-     * @return the micrometer registry or null if metrics is not enabled. You can enable metrics by setting
+     * Get the default micrometer registry.
+     * @return the micrometer registry. You can enable metrics by setting
      * services.metrics.enabled=true  inside gravitee.yaml or environmental variable gravitee_services_metrics_enabled=true
      */
     public static MeterRegistry getDefaultRegistry() {
@@ -47,10 +47,14 @@ public class Metrics {
 
     /**
      * Get the micrometer registry of the given name. May return null if it hasn't been registered yet or if it has been stopped.
+     * <p/>
+     * <b>WARN</b>: this method should not be used, default registry should always be used.
+     *
      * @param registryName  – the name associated with this registry in Micrometer options
      * @return the micrometer registry or null if metrics is not enabled. You can enable metrics by setting
      * services.metrics.enabled=true  inside gravitee.yaml or environmental variable gravitee_services_metrics_enabled=true
      */
+    @Deprecated
     public static MeterRegistry getRegistry(String registryName) {
         MeterRegistry registry = BackendRegistries.getNow(registryName);
         if (registry == null) {

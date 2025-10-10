@@ -15,24 +15,36 @@
  */
 package io.gravitee.node.vertx;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import io.gravitee.node.api.Node;
 import io.gravitee.node.vertx.metrics.ExcludeTagsFilter;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.netty.channel.EventLoopGroup;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsNaming;
+import io.vertx.micrometer.MicrometerMetricsFactory;
 import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.backends.BackendRegistries;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -45,6 +57,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author GraviteeSource Team
  */
 @ExtendWith(MockitoExtension.class)
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class VertxFactoryTest {
 
     @Mock
@@ -57,11 +70,9 @@ class VertxFactoryTest {
     private Vertx vertx;
 
     @Mock
-    private PrometheusMeterRegistry registry;
+    private VertxBuilder vertxBuilder;
 
     private MockedStatic<Vertx> vertxStatic;
-
-    private MockedStatic<BackendRegistries> registryStatic;
 
     @InjectMocks
     private VertxFactory cut;
@@ -69,11 +80,13 @@ class VertxFactoryTest {
     @BeforeEach
     void init() {
         vertxStatic = Mockito.mockStatic(Vertx.class);
-        registryStatic = Mockito.mockStatic(BackendRegistries.class);
 
-        vertxStatic.when(() -> Vertx.vertx(any(VertxOptions.class))).thenReturn(vertx);
-        registry = spy(new PrometheusMeterRegistry(PrometheusConfig.DEFAULT));
-        registryStatic.when(BackendRegistries::getDefaultNow).thenReturn(registry);
+        when(vertxBuilder.with(any())).thenReturn(vertxBuilder);
+        when(vertxBuilder.build()).thenReturn(vertx);
+        vertxStatic.when(Vertx::builder).thenReturn(vertxBuilder);
+
+        EventLoopGroup eventLoopGroup = mock(EventLoopGroup.class);
+        lenient().when(vertx.nettyEventLoopGroup()).thenReturn(eventLoopGroup);
 
         environment.setProperty("services.metrics.enabled", "false");
         environment.setProperty("services.opentelemetry.enabled", "false");
@@ -82,7 +95,6 @@ class VertxFactoryTest {
     @AfterEach
     void cleanup() {
         vertxStatic.close();
-        registryStatic.close();
     }
 
     @Test
@@ -91,7 +103,7 @@ class VertxFactoryTest {
 
         cut.getObject();
 
-        verify(registry, atLeastOnce()).config();
+        verify(vertxBuilder).withMetrics(argThat(metricsFactory -> metricsFactory instanceof MicrometerMetricsFactory));
     }
 
     @Test
@@ -104,14 +116,13 @@ class VertxFactoryTest {
             staticMetricsNaming.when(MetricsNaming::v3Names).thenReturn(v3Naming);
             cut.getObject();
 
-            vertxStatic.verify(() ->
-                Vertx.vertx(
+            verify(vertxBuilder)
+                .with(
                     argThat(options -> {
                         final MicrometerMetricsOptions metricsOptions = (MicrometerMetricsOptions) options.getMetricsOptions();
                         return Objects.equals(v3Naming, metricsOptions.getMetricsNaming());
                     })
-                )
-            );
+                );
         }
     }
 
@@ -125,16 +136,9 @@ class VertxFactoryTest {
 
         cut.getObject();
 
-        vertxStatic.verify(() ->
-            Vertx.vertx(
-                argThat(options -> {
-                    final MicrometerMetricsOptions metricsOptions = (MicrometerMetricsOptions) options.getMetricsOptions();
-                    return metricsOptions.getLabels().containsAll(Set.of(Label.LOCAL, Label.REMOTE, Label.HTTP_METHOD, Label.HTTP_CODE));
-                })
-            )
-        );
+        final List<MeterFilter> filters = extractPrometheusRegistryMeterFilters(vertxBuilder);
 
-        verify(registry, atLeastOnce()).config();
+        verifyGlobalLabels(filters, List.of(Label.LOCAL, Label.REMOTE, Label.HTTP_METHOD, Label.HTTP_CODE));
     }
 
     @Test
@@ -147,16 +151,12 @@ class VertxFactoryTest {
 
         cut.getObject();
 
-        vertxStatic.verify(() ->
-            Vertx.vertx(
-                argThat(options -> {
-                    final MicrometerMetricsOptions metricsOptions = (MicrometerMetricsOptions) options.getMetricsOptions();
-                    return metricsOptions.getLabels().containsAll(Set.of(Label.LOCAL, Label.REMOTE, Label.HTTP_METHOD, Label.HTTP_CODE));
-                })
-            )
-        );
+        final List<MeterFilter> filters = extractPrometheusRegistryMeterFilters(vertxBuilder);
 
-        verify(registry, atLeastOnce()).config();
+        verifyGlobalLabels(
+            filters,
+            List.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_NAME, Label.POOL_TYPE, Label.REMOTE)
+        );
     }
 
     @Test
@@ -164,44 +164,26 @@ class VertxFactoryTest {
         enableMetrics();
         environment.setProperty("services.metrics.labels[0]", "local");
         environment.setProperty("services.metrics.labels[1]", "remote");
-        environment.setProperty("services.metrics.labels[2]", "http_method");
-        environment.setProperty("services.metrics.labels[3]", "http_code");
         environment.setProperty("services.metrics.exclude.http.client[0]", "local");
         environment.setProperty("services.metrics.exclude.http.server[0]", "remote");
 
-        final MeterRegistry.Config registryConfig = spy(registry.config());
-        ReflectionTestUtils.setField(registry, "config", registryConfig);
-
         cut.getObject();
 
-        vertxStatic.verify(() ->
-            Vertx.vertx(
-                argThat(options -> {
-                    final MicrometerMetricsOptions metricsOptions = (MicrometerMetricsOptions) options.getMetricsOptions();
-                    return metricsOptions.getLabels().containsAll(Set.of(Label.LOCAL, Label.REMOTE, Label.HTTP_METHOD, Label.HTTP_CODE));
-                })
+        final List<MeterFilter> filters = extractPrometheusRegistryMeterFilters(vertxBuilder);
+        verifyGlobalLabels(filters, List.of(Label.LOCAL, Label.REMOTE));
+
+        //Check exclude labels
+        var httpClientFilter = new ExcludeTagsFilter("http.client", List.of("local"));
+        var httpServerFilter = new ExcludeTagsFilter("http.server", List.of("remote"));
+        assertThat(filters).filteredOn(f -> f instanceof ExcludeTagsFilter).containsAll(List.of(httpClientFilter, httpServerFilter));
+
+        //Check allowed labels
+        assertThat(filters)
+            .filteredOn(f -> f instanceof ExcludeTagsFilter)
+            .filteredOn(f ->
+                !((ExcludeTagsFilter) f).category().contains("http.server") && !((ExcludeTagsFilter) f).category().contains("http.client")
             )
-        );
-
-        verify(registry, atLeastOnce()).config();
-
-        // Check that the appropriate meter tags filters have been passed to the registry config.
-        verify(registryConfig)
-            .meterFilter(
-                argThat(filter ->
-                    filter instanceof ExcludeTagsFilter &&
-                    ((ExcludeTagsFilter) filter).getCategory().equals("http.client") &&
-                    ((ExcludeTagsFilter) filter).getExcludedLabels().contains("local")
-                )
-            );
-        verify(registryConfig)
-            .meterFilter(
-                argThat(filter ->
-                    filter instanceof ExcludeTagsFilter &&
-                    ((ExcludeTagsFilter) filter).getCategory().equals("http.server") &&
-                    ((ExcludeTagsFilter) filter).getExcludedLabels().contains("remote")
-                )
-            );
+            .allSatisfy(f -> assertThat(((ExcludeTagsFilter) f).excludedLabels()).isEmpty());
     }
 
     @Test
@@ -209,32 +191,22 @@ class VertxFactoryTest {
         enableMetrics();
         environment.setProperty("services.metrics.include.http.client[0]", "remote");
 
-        final MeterRegistry.Config registryConfig = spy(registry.config());
-        ReflectionTestUtils.setField(registry, "config", registryConfig);
-
         cut.getObject();
 
-        // Only 'local' tag should be added globally because of the include config.
-        vertxStatic.verify(() ->
-            Vertx.vertx(
-                argThat(options -> {
-                    final MicrometerMetricsOptions metricsOptions = (MicrometerMetricsOptions) options.getMetricsOptions();
-                    return metricsOptions.getLabels().containsAll(Set.of(Label.LOCAL, Label.REMOTE, Label.HTTP_METHOD, Label.HTTP_CODE));
-                })
-            )
+        //Check remote label excluded for all categories except http.client
+        final List<MeterFilter> filters = extractPrometheusRegistryMeterFilters(vertxBuilder);
+        verifyGlobalLabels(
+            filters,
+            List.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_NAME, Label.POOL_TYPE, Label.REMOTE)
         );
 
-        verify(registry, atLeastOnce()).config();
+        var httpClientFilter = new ExcludeTagsFilter("http.client", List.of());
+        assertThat(filters).filteredOn(f -> f instanceof ExcludeTagsFilter).containsAll(List.of(httpClientFilter));
 
-        // Check that 'remote' tags has been excluded for all categories except 'http.client'.
-        verify(registryConfig, atLeastOnce())
-            .meterFilter(
-                argThat(filter ->
-                    filter instanceof ExcludeTagsFilter &&
-                    !((ExcludeTagsFilter) filter).getCategory().equals("http.client") &&
-                    ((ExcludeTagsFilter) filter).getExcludedLabels().contains("remote")
-                )
-            );
+        assertThat(filters)
+            .filteredOn(f -> f instanceof ExcludeTagsFilter)
+            .filteredOn(f -> !((ExcludeTagsFilter) f).category().contains("http.client"))
+            .allSatisfy(f -> assertThat(((ExcludeTagsFilter) f).excludedLabels()).isEqualTo(List.of(Label.REMOTE.toString())));
     }
 
     @Test
@@ -246,16 +218,11 @@ class VertxFactoryTest {
 
         cut.getObject();
 
-        vertxStatic.verify(() ->
-            Vertx.vertx(
-                argThat(options -> {
-                    final MicrometerMetricsOptions metricsOptions = (MicrometerMetricsOptions) options.getMetricsOptions();
-                    return metricsOptions.getLabels().containsAll(Set.of(Label.LOCAL, Label.REMOTE));
-                })
-            )
+        final List<MeterFilter> filters = extractPrometheusRegistryMeterFilters(vertxBuilder);
+        verifyGlobalLabels(
+            filters,
+            List.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_NAME, Label.POOL_TYPE, Label.REMOTE)
         );
-
-        verify(registry, atLeastOnce()).config();
     }
 
     @Test
@@ -264,14 +231,87 @@ class VertxFactoryTest {
 
         cut.getObject();
 
-        verify(registry, never()).config();
+        verify(vertxBuilder, never()).withMetrics(any());
+    }
+
+    @Test
+    void should_enable_default_binders() throws Exception {
+        enableMetrics();
+
+        cut.getObject();
+
+        verify(vertxBuilder)
+            .withMetrics(
+                argThat(metricsFactory -> {
+                    MeterRegistry meterRegistry = (MeterRegistry) ReflectionTestUtils.getField(metricsFactory, "micrometerRegistry");
+                    assertThat(meterRegistry).isNotNull();
+                    Set<String> meterNames = meterRegistry
+                        .getMeters()
+                        .stream()
+                        .map(meter -> meter.getId().getName())
+                        .collect(Collectors.toSet());
+
+                    assertThat(meterNames)
+                        .containsExactly(
+                            "system.load.average.1m",
+                            "jvm.gc.max.data.size",
+                            "system.cpu.usage",
+                            "jvm.memory.committed",
+                            "jvm.threads.peak",
+                            "process.cpu.usage",
+                            "jvm.threads.live",
+                            "jvm.gc.live.data.size",
+                            "process.files.max",
+                            "jvm.threads.started",
+                            "jvm.memory.max",
+                            "jvm.gc.memory.promoted",
+                            "jvm.memory.used",
+                            "system.cpu.count",
+                            "process.files.open",
+                            "jvm.gc.memory.allocated",
+                            "jvm.classes.loaded",
+                            "jvm.classes.unloaded",
+                            "jvm.buffer.memory.used",
+                            "jvm.buffer.count",
+                            "jvm.threads.daemon",
+                            "jvm.threads.states",
+                            "jvm.buffer.total.capacity"
+                        );
+                    return true;
+                })
+            );
+    }
+
+    @Test
+    void should_enable_only_specific_binders() throws Exception {
+        enableMetrics();
+
+        environment.setProperty("services.metrics.binder[0]", "FILE_DESCRIPTOR");
+
+        cut.getObject();
+
+        verify(vertxBuilder)
+            .withMetrics(
+                argThat(metricsFactory -> {
+                    MeterRegistry meterRegistry = (MeterRegistry) ReflectionTestUtils.getField(metricsFactory, "micrometerRegistry");
+                    assertThat(meterRegistry).isNotNull();
+                    Set<String> meterNames = meterRegistry
+                        .getMeters()
+                        .stream()
+                        .map(meter -> meter.getId().getName())
+                        .collect(Collectors.toSet());
+
+                    assertThat(meterNames).containsExactly("process.files.open", "process.files.max");
+                    return true;
+                })
+            );
     }
 
     @Test
     void should_enable_native_transport_by_default() throws Exception {
         cut.getObject();
 
-        vertxStatic.verify(() -> Vertx.vertx(argThat(VertxOptions::getPreferNativeTransport)));
+        verify(vertxBuilder).with(argThat(VertxOptions::getPreferNativeTransport));
     }
 
     @Test
@@ -280,12 +320,46 @@ class VertxFactoryTest {
 
         cut.getObject();
 
-        vertxStatic.verify(() -> Vertx.vertx(argThat(options -> !options.getPreferNativeTransport())));
+        verify(vertxBuilder).with(argThat(vertxOptions -> !vertxOptions.getPreferNativeTransport()));
     }
 
     private void enableMetrics() {
         environment.setProperty("services.metrics.enabled", "true");
         when(node.application()).thenReturn("graviteeio-test");
         when(node.hostname()).thenReturn("localhost");
+    }
+
+    private List<MeterFilter> extractPrometheusRegistryMeterFilters(VertxBuilder vertxBuilder) {
+        final ArgumentCaptor<MicrometerMetricsFactory> captor = ArgumentCaptor.forClass(MicrometerMetricsFactory.class);
+        verify(vertxBuilder).withMetrics(captor.capture());
+        final MicrometerMetricsFactory metricsFactory = captor.getValue();
+        MeterRegistry meterRegistry = (MeterRegistry) ReflectionTestUtils.getField(metricsFactory, "micrometerRegistry");
+        assertThat(meterRegistry).isNotNull();
+        assertThat(meterRegistry).isInstanceOf(CompositeMeterRegistry.class);
+
+        CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry) meterRegistry;
+        var prometheusRegistry = compositeMeterRegistry
+            .getRegistries()
+            .stream()
+            .filter(PrometheusMeterRegistry.class::isInstance)
+            .findFirst();
+        assertThat(prometheusRegistry).isPresent();
+
+        return Arrays.asList((MeterFilter[]) ReflectionTestUtils.getField(prometheusRegistry.get(), "filters"));
+    }
+
+    private void verifyGlobalLabels(List<MeterFilter> filters, List<Label> expectedLabels) {
+        //Create a tag list with all labels
+        List<Tag> tagList = Arrays.stream(Label.values()).map(Label::toString).map(name -> Tag.of(name, name)).toList();
+
+        //Use these labels in a Meter
+        Meter.Id filteredMeter = new Meter.Id("test", Tags.of(tagList), "unit", "description", Meter.Type.COUNTER);
+
+        List<Tag> expectedTags = expectedLabels.stream().map(Label::toString).map(name -> Tag.of(name, name)).toList();
+
+        // Verify that the global meter filter only kept the configured labels
+        assertThat(filters)
+            .filteredOn(f -> !(f instanceof ExcludeTagsFilter))
+            .allSatisfy(filter -> assertThat(filter.map(filteredMeter).getTags()).containsExactlyInAnyOrderElementsOf(expectedTags));
     }
 }
