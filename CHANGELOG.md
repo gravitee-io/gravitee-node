@@ -1,3 +1,10 @@
+# [7.12.0](https://github.com/gravitee-io/gravitee-node/compare/7.11.4...7.12.0) (2025-10-10)
+
+
+### Features
+
+* add llm and mcp license for agent mesh ([a8259af](https://github.com/gravitee-io/gravitee-node/commit/a8259af7010c8dc49ee7bddbf9d6dfd6fb9f3672))
+
 ## [7.11.4](https://github.com/gravitee-io/gravitee-node/compare/7.11.3...7.11.4) (2025-10-06)
 
 
