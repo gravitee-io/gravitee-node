@@ -118,6 +118,21 @@ class DefaultLicenseFactoryTest {
     }
 
     @Test
+    void should_return_license_with_enterprise_authorization_engine_pack() throws InvalidLicenseException, MalformedLicenseException {
+        final License license = cut.create(
+            REFERENCE_TYPE_PLATFORM,
+            REFERENCE_ID_PLATFORM,
+            generateBase64License(null, List.of("enterprise-authorization-engine"), null, null)
+        );
+
+        assertThat(license.getTier()).isNull();
+        assertThat(license.getPacks()).containsExactly("enterprise-authorization-engine");
+        assertThat(license.getFeatures()).containsExactly("am-authorizationengine-openfga");
+        assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_PLATFORM);
+        assertThat(license.getReferenceId()).isEqualTo(REFERENCE_ID_PLATFORM);
+    }
+
+    @Test
     void should_return_license_with_features() throws InvalidLicenseException, MalformedLicenseException {
         final License license = cut.create(
             REFERENCE_TYPE_PLATFORM,
