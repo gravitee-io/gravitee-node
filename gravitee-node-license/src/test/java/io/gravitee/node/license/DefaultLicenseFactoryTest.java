@@ -341,7 +341,8 @@ class DefaultLicenseFactoryTest {
                 "enterprise-legacy-upgrade",
                 "observability",
                 "enterprise-policy",
-                "event-native"
+                "event-native",
+                "enterprise-authorization-engine"
             );
 
         final String[] features = {
@@ -425,6 +426,7 @@ class DefaultLicenseFactoryTest {
             "apim-policy-data-cache",
             "apim-en-entrypoint-agent-to-agent",
             "apim-en-endpoint-agent-to-agent",
+            "am-authorizationengine-openfga",
         };
         assertThat(license.getFeatures()).containsExactlyInAnyOrder(features);
 

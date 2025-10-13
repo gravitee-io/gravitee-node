@@ -133,6 +133,7 @@ tiers:
             - observability
             - enterprise-policy
             - enterprise-alert-engine
+            - enterprise-authorization-engine
     universe:
         packs:
             - enterprise-features
@@ -144,3 +145,4 @@ tiers:
             - enterprise-mfa-factor
             - enterprise-secret-manager
             - enterprise-alert-engine
+            - enterprise-authorization-engine
