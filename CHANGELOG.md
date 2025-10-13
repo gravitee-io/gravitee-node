@@ -1,3 +1,10 @@
+## [7.13.1](https://github.com/gravitee-io/gravitee-node/compare/7.13.0...7.13.1) (2025-10-13)
+
+
+### Bug Fixes
+
+* add authorization engine pack to tiers ([179e44d](https://github.com/gravitee-io/gravitee-node/commit/179e44dc46c84ae43755393a3c2fa3eb96152624))
+
 # [7.13.0](https://github.com/gravitee-io/gravitee-node/compare/7.12.0...7.13.0) (2025-10-10)
 
 
