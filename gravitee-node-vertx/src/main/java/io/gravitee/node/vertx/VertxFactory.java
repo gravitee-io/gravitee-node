@@ -249,7 +249,7 @@ public class VertxFactory implements FactoryBean<Vertx> {
     private VertxOptions getVertxOptions() {
         VertxOptions options = new VertxOptions();
 
-        options.setPreferNativeTransport(true);
+        options.setPreferNativeTransport(environment.getProperty("vertx.preferNativeTransport", Boolean.class, true));
 
         Long blockedThreadCheckInterval = Long.getLong("vertx.options.blockedThreadCheckInterval");
         if (blockedThreadCheckInterval != null) {
