@@ -1,3 +1,10 @@
+## [7.9.7](https://github.com/gravitee-io/gravitee-node/compare/7.9.6...7.9.7) (2025-10-14)
+
+
+### Bug Fixes
+
+* allow disabling vertx native transport ([a212d89](https://github.com/gravitee-io/gravitee-node/commit/a212d89eae5abb9efd9b80d78ac99698a1dc0966))
+
 ## [7.9.6](https://github.com/gravitee-io/gravitee-node/compare/7.9.5...7.9.6) (2025-10-06)
 
 
