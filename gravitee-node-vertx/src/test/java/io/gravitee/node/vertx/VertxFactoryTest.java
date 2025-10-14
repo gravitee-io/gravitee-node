@@ -86,7 +86,7 @@ class VertxFactoryTest {
     }
 
     @Test
-    void shouldEnableMetrics() throws Exception {
+    void should_enable_metrics() throws Exception {
         enableMetrics();
 
         cut.getObject();
@@ -95,7 +95,7 @@ class VertxFactoryTest {
     }
 
     @Test
-    void shouldEnableMetricsWithVertxV3Names() throws Exception {
+    void should_enable_metrics_with_vertx_v3_names() throws Exception {
         enableMetrics();
         environment.setProperty("services.metrics.prometheus.naming.version", "3.10");
 
@@ -116,7 +116,7 @@ class VertxFactoryTest {
     }
 
     @Test
-    void shouldEnableMetricsWithLabels() throws Exception {
+    void should_enable_metrics_with_labels() throws Exception {
         enableMetrics();
         environment.setProperty("services.metrics.labels[0]", "local");
         environment.setProperty("services.metrics.labels[1]", "remote");
@@ -138,7 +138,7 @@ class VertxFactoryTest {
     }
 
     @Test
-    void shouldEnableMetricsWithLabelsFromInclude() throws Exception {
+    void should_enable_metrics_with_labels_from_include() throws Exception {
         enableMetrics();
         environment.setProperty("services.metrics.include.http.client[0]", "remote");
         environment.setProperty("services.metrics.include.http.client[1]", "http_method");
@@ -160,7 +160,7 @@ class VertxFactoryTest {
     }
 
     @Test
-    void shouldEnableMetricsWithExcludedLabels() throws Exception {
+    void should_enable_metrics_with_excluded_labels() throws Exception {
         enableMetrics();
         environment.setProperty("services.metrics.labels[0]", "local");
         environment.setProperty("services.metrics.labels[1]", "remote");
@@ -205,7 +205,7 @@ class VertxFactoryTest {
     }
 
     @Test
-    void shouldEnableMetricsWithExcludedLabelsForAllOtherCategoriesWhenLabelIsNotGloballyIncluded() throws Exception {
+    void should_enable_metrics_with_excluded_labels_for_all_other_categories_when_label_is_not_globally_included() throws Exception {
         enableMetrics();
         environment.setProperty("services.metrics.include.http.client[0]", "remote");
 
@@ -238,7 +238,7 @@ class VertxFactoryTest {
     }
 
     @Test
-    void shouldEnableMetricsWithoutLabelsFromUnknownCategory() throws Exception {
+    void should_enable_metrics_without_labels_from_unknown_category() throws Exception {
         enableMetrics();
         environment.setProperty("services.metrics.include.unknown[0]", "label1");
         environment.setProperty("services.metrics.include.http.client[0]", "remote");
@@ -259,12 +259,28 @@ class VertxFactoryTest {
     }
 
     @Test
-    void shouldDisableMetrics() throws Exception {
+    void should_disable_metrics() throws Exception {
         environment.setProperty("services.metrics.enabled", "false");
 
         cut.getObject();
 
         verify(registry, never()).config();
+    }
+
+    @Test
+    void should_enable_native_transport_by_default() throws Exception {
+        cut.getObject();
+
+        vertxStatic.verify(() -> Vertx.vertx(argThat(VertxOptions::getPreferNativeTransport)));
+    }
+
+    @Test
+    void should_disable_native_transport() throws Exception {
+        environment.setProperty("vertx.preferNativeTransport", "false");
+
+        cut.getObject();
+
+        vertxStatic.verify(() -> Vertx.vertx(argThat(options -> !options.getPreferNativeTransport())));
     }
 
     private void enableMetrics() {
