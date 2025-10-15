@@ -15,10 +15,13 @@
  */
 package io.gravitee.node.vertx.server.tcp;
 
+import io.gravitee.node.api.certificate.CRLLoaderFactoryRegistry;
 import io.gravitee.node.api.certificate.KeyStoreLoaderFactoryRegistry;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
 import io.gravitee.node.api.server.ServerFactory;
+import io.gravitee.node.certificates.CRLLoaderManager;
+import io.gravitee.node.certificates.DefaultCRLLoaderFactoryRegistry;
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
 import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import io.gravitee.node.vertx.server.AbstractVertxServerFactory;
@@ -30,18 +33,32 @@ import io.vertx.rxjava3.core.Vertx;
  */
 public class VertxTcpServerFactory extends AbstractVertxServerFactory implements ServerFactory<VertxTcpServer, VertxTcpServerOptions> {
 
+    /**
+     * Constructor without CRL support for backward compatibility.
+     * CRL validation is not supported when using this constructor. Configuring CRL options will result in a startup failure.
+     */
     public VertxTcpServerFactory(
         Vertx vertx,
         KeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry,
         KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry
     ) {
-        super(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry);
+        this(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry, new DefaultCRLLoaderFactoryRegistry());
+    }
+
+    public VertxTcpServerFactory(
+        Vertx vertx,
+        KeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry,
+        KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry,
+        CRLLoaderFactoryRegistry crlLoaderFactoryRegistry
+    ) {
+        super(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry, crlLoaderFactoryRegistry);
     }
 
     @Override
     public VertxTcpServer create(VertxTcpServerOptions options) {
         KeyStoreLoaderManager keyStoreLoaderManager = createKeyManager(options);
         TrustStoreLoaderManager trustStoreLoaderManager = createCertificateManager(options);
-        return new VertxTcpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager);
+        CRLLoaderManager crlLoaderManager = createCRLManager(trustStoreLoaderManager, options.getCrlLoaderOptions());
+        return new VertxTcpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, crlLoaderManager);
     }
 }

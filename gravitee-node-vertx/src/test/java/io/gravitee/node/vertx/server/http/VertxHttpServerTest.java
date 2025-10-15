@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.lenient;
 
+import io.gravitee.node.certificates.CRLLoaderManager;
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
 import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import io.vertx.core.http.HttpServerOptions;
@@ -64,13 +65,16 @@ class VertxHttpServerTest {
     @Mock
     private TrustStoreLoaderManager trustStoreLoaderManager;
 
+    @Mock
+    private CRLLoaderManager crlLoaderManager;
+
     @BeforeEach
     void init() {
         lenient().when(options.createHttpServerOptions(any(KeyCertOptions.class), any(TrustOptions.class))).thenReturn(vertxHttpOptions);
         lenient().when(vertx.createHttpServer(vertxHttpOptions)).thenReturn(delegate);
         lenient().when(keyStoreLoaderManager.getKeyManager()).thenReturn(mock(X509KeyManager.class));
         lenient().when(trustStoreLoaderManager.getCertificateManager()).thenReturn(mock(X509TrustManager.class));
-        cut = new VertxHttpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager);
+        cut = new VertxHttpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, crlLoaderManager);
     }
 
     @Test

@@ -21,7 +21,9 @@ import static org.mockito.Mockito.mock;
 
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
+import io.gravitee.node.certificates.DefaultCRLLoaderFactoryRegistry;
 import io.gravitee.node.certificates.DefaultKeyStoreLoaderFactoryRegistry;
+import io.gravitee.node.certificates.crl.FileCRLLoaderFactory;
 import io.gravitee.node.certificates.file.FileTrustStoreLoaderFactory;
 import io.gravitee.node.certificates.selfsigned.SelfSignedKeyStoreLoaderFactory;
 import io.gravitee.node.vertx.server.http.VertxHttpServerOptions;
@@ -54,6 +56,8 @@ class VertxServerFactoryTest {
         keyStoreLoaderFactoryRegistry.registerFactory(new SelfSignedKeyStoreLoaderFactory());
         DefaultKeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry = new DefaultKeyStoreLoaderFactoryRegistry<>();
         trustStoreLoaderFactoryRegistry.registerFactory(new FileTrustStoreLoaderFactory());
+        DefaultCRLLoaderFactoryRegistry crlLoaderFactoryRegistry = new DefaultCRLLoaderFactoryRegistry();
+        crlLoaderFactoryRegistry.registerFactory(new FileCRLLoaderFactory());
         cut = new VertxServerFactory<>(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry);
     }
 

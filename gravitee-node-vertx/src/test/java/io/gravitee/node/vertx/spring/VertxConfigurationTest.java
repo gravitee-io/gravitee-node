@@ -17,6 +17,7 @@ package io.gravitee.node.vertx.spring;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.gravitee.node.certificates.DefaultCRLLoaderFactoryRegistry;
 import io.gravitee.node.certificates.DefaultKeyStoreLoaderFactoryRegistry;
 import io.gravitee.node.vertx.server.VertxServer;
 import io.gravitee.node.vertx.server.VertxServerFactory;
@@ -42,7 +43,8 @@ class VertxConfigurationTest {
         final VertxServerFactory<VertxServer<Object, VertxServerOptions>, VertxServerOptions> serverFactory = cut.serverFactory(
             vertx,
             new DefaultKeyStoreLoaderFactoryRegistry<>(),
-            new DefaultKeyStoreLoaderFactoryRegistry<>()
+            new DefaultKeyStoreLoaderFactoryRegistry<>(),
+            new DefaultCRLLoaderFactoryRegistry()
         );
 
         assertThat(serverFactory).isNotNull();

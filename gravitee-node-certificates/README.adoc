@@ -117,3 +117,17 @@ keytool -keystore truststore2.jks -deststoretype JKS -alias client2 -importcert 
 keytool -keystore truststore2.jks -deststoretype JKS -alias client3 -importcert -file client3.crt -storepass secret
 
 ----
+
+=== Generate CRLs (Certificate Revocation Lists)
+
+To regenerate all file for the tests associated with CRLs, use the provided script:
+`src/test/resources/crls/regenerate-crls.sh`
+
+The script generates:
+
+- `ca.pem` - Test Certificate Authority (100-year validity)
+- `ca-truststore.jks` - CA truststore for tests
+- `cert-client-revoked.pem` - Client certificate to be revoked
+- `crl-empty.pem` - Empty CRL (no revoked certificates)
+- `crl-with-revocations.pem` - CRL with revoked certificate
+- `crl-with-revocations.der` - CRL with revocations (DER format)

@@ -16,6 +16,7 @@
 package io.gravitee.node.vertx.server;
 
 import io.gravitee.common.utils.UUID;
+import io.gravitee.node.api.certificate.CRLLoaderOptions;
 import io.gravitee.node.api.certificate.CertificateOptions;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
@@ -97,6 +98,7 @@ public class VertxServerOptions implements ServerOptions {
 
     protected KeyStoreLoaderOptions keyStoreLoaderOptions;
     protected TrustStoreLoaderOptions trustStoreLoaderOptions;
+    protected CRLLoaderOptions crlLoaderOptions;
 
     protected String id;
     protected String prefix;
@@ -206,6 +208,14 @@ public class VertxServerOptions implements ServerOptions {
                         .password(environment.getProperty(prefix + ".ssl.truststore.password"))
                         .secretLocation(environment.getProperty(prefix + ".ssl.truststore.secret"))
                         .watch(environment.getProperty(prefix + ".ssl.truststore.watch", Boolean.class, DEFAULT_TRUSTSTORE_WATCH))
+                        .build()
+                );
+
+            this.crlLoaderOptions(
+                    CRLLoaderOptions
+                        .builder()
+                        .path(environment.getProperty(prefix + ".ssl.crl.path"))
+                        .watch(environment.getProperty(prefix + ".ssl.crl.watch", Boolean.class, true))
                         .build()
                 );
             return self();

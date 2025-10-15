@@ -15,9 +15,7 @@
  */
 package io.gravitee.node.vertx.spring;
 
-import io.gravitee.node.api.certificate.KeyStoreLoaderFactoryRegistry;
-import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
-import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
+import io.gravitee.node.api.certificate.*;
 import io.gravitee.node.vertx.VertxFactory;
 import io.gravitee.node.vertx.server.VertxServer;
 import io.gravitee.node.vertx.server.VertxServerFactory;
@@ -55,8 +53,9 @@ public class VertxConfiguration {
     public <T> VertxServerFactory<VertxServer<T, VertxServerOptions>, VertxServerOptions> serverFactory(
         Vertx vertx,
         KeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry,
-        KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry
+        KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry,
+        CRLLoaderFactoryRegistry crlLoaderFactoryRegistry
     ) {
-        return new VertxServerFactory<>(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry);
+        return new VertxServerFactory<>(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry, crlLoaderFactoryRegistry);
     }
 }
