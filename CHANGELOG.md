@@ -1,3 +1,10 @@
+# [7.14.0](https://github.com/gravitee-io/gravitee-node/compare/7.13.2...7.14.0) (2025-10-15)
+
+
+### Features
+
+* replace Prometheus MeterRegistry by a CompositeRegistry ([c342bc5](https://github.com/gravitee-io/gravitee-node/commit/c342bc5f5b82307928074ed4489b398d391a0142))
+
 ## [7.13.2](https://github.com/gravitee-io/gravitee-node/compare/7.13.1...7.13.2) (2025-10-14)
 
 
