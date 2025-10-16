@@ -16,6 +16,7 @@
 package io.gravitee.node.vertx.server;
 
 import io.gravitee.node.api.server.Server;
+import io.gravitee.node.certificates.CRLLoaderManager;
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
 import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import io.vertx.rxjava3.core.Vertx;
@@ -40,6 +41,7 @@ public abstract class VertxServer<T, C extends VertxServerOptions> implements Se
     protected final C options;
     protected final KeyStoreLoaderManager keyStoreLoaderManager;
     protected final TrustStoreLoaderManager trustStoreLoaderManager;
+    protected final CRLLoaderManager crlLoaderManager;
     protected final List<T> delegates = new CopyOnWriteArrayList<>();
 
     @Override
@@ -55,6 +57,7 @@ public abstract class VertxServer<T, C extends VertxServerOptions> implements Se
         try {
             keyStoreLoaderManager.start();
             trustStoreLoaderManager.start();
+            crlLoaderManager.start();
         } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException e) {
             throw new IllegalStateException("cannot start key store managers", e);
         }
@@ -64,6 +67,7 @@ public abstract class VertxServer<T, C extends VertxServerOptions> implements Se
         try {
             keyStoreLoaderManager.stop();
             trustStoreLoaderManager.stop();
+            crlLoaderManager.stop();
         } catch (Exception e) {
             log.error("error stopping key store managers", e);
         }

@@ -4,13 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import io.gravitee.node.certificates.CRLLoaderManager;
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
 import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import io.gravitee.node.vertx.cert.VertxKeyCertOptions;
 import io.gravitee.node.vertx.cert.VertxTrustOptions;
-import io.vertx.core.net.KeyCertOptions;
 import io.vertx.core.net.NetServerOptions;
-import io.vertx.core.net.TrustOptions;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.net.NetServer;
 import javax.net.ssl.X509KeyManager;
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
@@ -54,6 +52,9 @@ class VertxTcpServerTest {
     @Mock
     private TrustStoreLoaderManager trustStoreLoaderManager;
 
+    @Mock
+    private CRLLoaderManager crlLoaderManager;
+
     @BeforeEach
     void init() {
         lenient()
@@ -62,7 +63,7 @@ class VertxTcpServerTest {
         lenient().when(vertx.createNetServer(netServerOptions)).thenReturn(delegate);
         lenient().when(keyStoreLoaderManager.getKeyManager()).thenReturn(mock(X509KeyManager.class));
         lenient().when(trustStoreLoaderManager.getCertificateManager()).thenReturn(mock(X509TrustManager.class));
-        cut = new VertxTcpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager);
+        cut = new VertxTcpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, crlLoaderManager);
     }
 
     @Test
