@@ -1,3 +1,10 @@
+# [7.15.0](https://github.com/gravitee-io/gravitee-node/compare/7.14.0...7.15.0) (2025-10-16)
+
+
+### Features
+
+* enable certificate revocation checks with CRL ([73ff717](https://github.com/gravitee-io/gravitee-node/commit/73ff7178b11194b9d8780e1c286876e21796d67d))
+
 # [7.14.0](https://github.com/gravitee-io/gravitee-node/compare/7.13.2...7.14.0) (2025-10-15)
 
 
