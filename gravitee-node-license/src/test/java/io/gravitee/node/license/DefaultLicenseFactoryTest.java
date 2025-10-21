@@ -127,7 +127,8 @@ class DefaultLicenseFactoryTest {
 
         assertThat(license.getTier()).isNull();
         assertThat(license.getPacks()).containsExactly("enterprise-authorization-engine");
-        assertThat(license.getFeatures()).containsExactly("am-authorizationengine-openfga");
+        assertThat(license.getFeatures())
+            .containsExactlyInAnyOrder("am-authorizationengine-openfga", "am-authorization-gateway-handler-authzen");
         assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_PLATFORM);
         assertThat(license.getReferenceId()).isEqualTo(REFERENCE_ID_PLATFORM);
     }
@@ -427,6 +428,7 @@ class DefaultLicenseFactoryTest {
             "apim-en-entrypoint-agent-to-agent",
             "apim-en-endpoint-agent-to-agent",
             "am-authorizationengine-openfga",
+            "am-authorization-gateway-handler-authzen",
         };
         assertThat(license.getFeatures()).containsExactlyInAnyOrder(features);
 
