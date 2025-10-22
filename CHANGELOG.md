@@ -1,3 +1,10 @@
+# [7.16.0](https://github.com/gravitee-io/gravitee-node/compare/7.15.0...7.16.0) (2025-10-22)
+
+
+### Features
+
+* add authzen feature license ([#471](https://github.com/gravitee-io/gravitee-node/issues/471)) ([b1aac0b](https://github.com/gravitee-io/gravitee-node/commit/b1aac0b23ed28cb90f1ef97b3f56497f9d3327b3))
+
 # [7.15.0](https://github.com/gravitee-io/gravitee-node/compare/7.14.0...7.15.0) (2025-10-16)
 
 
