@@ -16,7 +16,11 @@
 package io.gravitee.node.opentelemetry.tracer.span;
 
 import io.gravitee.node.api.opentelemetry.Span;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Scope;
+import java.util.Map;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +82,40 @@ public class OpenTelemetrySpan<R> implements Span {
             } else {
                 span.setAttribute(name, String.valueOf(value));
             }
+        }
+        return this;
+    }
+
+    @Override
+    public Span inError() {
+        io.opentelemetry.api.trace.Span span = span();
+        span.setStatus(StatusCode.ERROR);
+        return this;
+    }
+
+    @Override
+    public Span addEvent(final String name, final Map<String, Object> attributes) {
+        io.opentelemetry.api.trace.Span span = span();
+        if (attributes != null && !attributes.isEmpty()) {
+            AttributesBuilder attributesBuilder = Attributes.builder();
+            attributes.forEach((key, value) -> {
+                if (value instanceof String stringValue) {
+                    attributesBuilder.put(key, stringValue);
+                } else if (value instanceof Long longValue) {
+                    attributesBuilder.put(key, longValue);
+                } else if (value instanceof Integer integerValue) {
+                    attributesBuilder.put(key, (long) integerValue);
+                } else if (value instanceof Double doubleValue) {
+                    attributesBuilder.put(key, doubleValue);
+                } else if (value instanceof Boolean booleanValue) {
+                    attributesBuilder.put(key, booleanValue);
+                } else if (value != null) {
+                    attributesBuilder.put(key, String.valueOf(value));
+                }
+            });
+            span.addEvent(name, attributesBuilder.build());
+        } else {
+            span.addEvent(name);
         }
         return this;
     }

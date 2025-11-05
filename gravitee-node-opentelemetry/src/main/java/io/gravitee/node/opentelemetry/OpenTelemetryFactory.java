@@ -30,12 +30,14 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.semconv.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,8 +66,26 @@ public class OpenTelemetryFactory implements TracerFactory {
         final String serviceVersion,
         final List<InstrumenterTracerFactory> instrumenterTracerFactories
     ) {
+        return createTracer(serviceInstanceId, serviceName, serviceNamespace, serviceVersion, instrumenterTracerFactories, null);
+    }
+
+    @Override
+    public Tracer createTracer(
+        final String serviceInstanceId,
+        final String serviceName,
+        final String serviceNamespace,
+        final String serviceVersion,
+        final List<InstrumenterTracerFactory> instrumenterTracerFactories,
+        final Map<String, String> additionalResourceAttributes
+    ) {
         if (configuration.isTracesEnabled()) {
-            final Resource resource = createResource(serviceInstanceId, serviceName, serviceNamespace, serviceVersion);
+            final Resource resource = createResource(
+                serviceInstanceId,
+                serviceName,
+                serviceNamespace,
+                serviceVersion,
+                additionalResourceAttributes
+            );
 
             final OpenTelemetrySdkBuilder builder = OpenTelemetrySdk
                 .builder()
@@ -93,7 +113,8 @@ public class OpenTelemetryFactory implements TracerFactory {
         final String serviceInstanceId,
         final String serviceName,
         final String serviceNameSpace,
-        final String serviceVersion
+        final String serviceVersion,
+        final Map<String, String> additionalResourceAttributes
     ) {
         String hostname;
         String ipv4;
@@ -107,7 +128,7 @@ public class OpenTelemetryFactory implements TracerFactory {
             ipv4 = DEFAULT_IP;
         }
 
-        return Resource
+        ResourceBuilder resourceBuilder = Resource
             .getDefault()
             .toBuilder()
             .put(ResourceAttributes.SERVICE_INSTANCE_ID, serviceInstanceId)
@@ -116,7 +137,12 @@ public class OpenTelemetryFactory implements TracerFactory {
             .put(ResourceAttributes.SERVICE_VERSION, serviceVersion)
             .put(ATTRIBUTE_KEY_IP, ipv4)
             .put(ATTRIBUTE_KEY_HOSTNAME, hostname)
-            .putAll(configuration.getExtraAttributes())
-            .build();
+            .putAll(configuration.getExtraAttributes());
+
+        if (additionalResourceAttributes != null) {
+            additionalResourceAttributes.forEach(resourceBuilder::put);
+        }
+
+        return resourceBuilder.build();
     }
 }

@@ -19,6 +19,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
+import io.gravitee.node.api.opentelemetry.Span;
 import io.gravitee.node.api.opentelemetry.internal.InternalRequest;
 import io.gravitee.node.opentelemetry.configuration.OpenTelemetryConfiguration;
 import io.gravitee.node.opentelemetry.configuration.Protocol;
@@ -105,7 +106,7 @@ public class OpenTelemetryTracerIntegrationTest {
             .environment(new MockEnvironment())
             .build();
 
-        var serviceName = "jaeger_grpc_unsecured";
+        final var serviceName = "jaeger_grpc_unsecured";
 
         OpenTelemetryFactory openTelemetryFactory = openTelemetryFactory(vertx, openTelemetryConfiguration);
         var tracer = openTelemetryFactory.createTracer(
@@ -137,7 +138,102 @@ public class OpenTelemetryTracerIntegrationTest {
                     .get();
 
                 assertThat(response.statusCode()).isEqualTo(200);
-                assertData(response.bodyAsJsonObject());
+                assertData(response.bodyAsJsonObject(), false, false, false);
+            });
+    }
+
+    @Test
+    void should_report_traces_with_additional_resource_attributes(Vertx vertx) throws Exception {
+        var openTelemetryConfiguration = OpenTelemetryConfiguration
+            .builder()
+            .endpoint("http://localhost:" + container.getCollectorGrpcPort())
+            .tracesEnabled(true)
+            .protocol(Protocol.GRPC.value())
+            .environment(new MockEnvironment())
+            .build();
+
+        final var serviceName = "jaeger_grpc_additional_attributes";
+
+        OpenTelemetryFactory openTelemetryFactory = openTelemetryFactory(vertx, openTelemetryConfiguration);
+        var tracer = openTelemetryFactory.createTracer(
+            "serviceInstanceId",
+            serviceName,
+            "serviceNamespace",
+            "serviceVersion",
+            List.of(new VertxHttpInstrumenterTracerFactory(), new InternalInstrumenterTracerFactory()),
+            Map.of("custom.attribute", "custom.value")
+        );
+        tracer.start();
+
+        Context vertxContext = vertx.getOrCreateContext();
+        Context duplicatedContext = VertxContext.createNewDuplicatedContext(vertxContext);
+        duplicatedContext.runOnContext(v -> {
+            var span = tracer.startSpanFrom(duplicatedContext, new InternalRequest("my-span", Map.of("custom", "value")));
+            tracer.end(duplicatedContext, span);
+        });
+
+        await()
+            .atMost(30, SECONDS)
+            .untilAsserted(() -> {
+                var client = container.client(vertx);
+                var response = client
+                    .get("/api/traces")
+                    .addQueryParam("service", serviceName)
+                    .send()
+                    .toCompletionStage()
+                    .toCompletableFuture()
+                    .get();
+
+                assertThat(response.statusCode()).isEqualTo(200);
+                assertData(response.bodyAsJsonObject(), true, false, false);
+            });
+    }
+
+    @Test
+    void should_report_traces_with_error_and_events(Vertx vertx) throws Exception {
+        var openTelemetryConfiguration = OpenTelemetryConfiguration
+            .builder()
+            .endpoint("http://localhost:" + container.getCollectorGrpcPort())
+            .tracesEnabled(true)
+            .protocol(Protocol.GRPC.value())
+            .environment(new MockEnvironment())
+            .build();
+
+        final var serviceName = "jaeger_grpc_error_and_events";
+
+        OpenTelemetryFactory openTelemetryFactory = openTelemetryFactory(vertx, openTelemetryConfiguration);
+        var tracer = openTelemetryFactory.createTracer(
+            "serviceInstanceId",
+            serviceName,
+            "serviceNamespace",
+            "serviceVersion",
+            List.of(new VertxHttpInstrumenterTracerFactory(), new InternalInstrumenterTracerFactory())
+        );
+        tracer.start();
+
+        Context vertxContext = vertx.getOrCreateContext();
+        Context duplicatedContext = VertxContext.createNewDuplicatedContext(vertxContext);
+        duplicatedContext.runOnContext(v -> {
+            Span span = tracer.startSpanFrom(duplicatedContext, new InternalRequest("my-span", Map.of("custom", "value")));
+            span.addEvent("my-event", Map.of("event.attribute", "event.value"));
+            span.inError();
+            tracer.end(duplicatedContext, span);
+        });
+
+        await()
+            .atMost(30, SECONDS)
+            .untilAsserted(() -> {
+                var client = container.client(vertx);
+                var response = client
+                    .get("/api/traces")
+                    .addQueryParam("service", serviceName)
+                    .send()
+                    .toCompletionStage()
+                    .toCompletableFuture()
+                    .get();
+
+                assertThat(response.statusCode()).isEqualTo(200);
+                assertData(response.bodyAsJsonObject(), false, true, true);
             });
     }
 
@@ -175,7 +271,7 @@ public class OpenTelemetryTracerIntegrationTest {
             .protocol(Protocol.GRPC.value())
             .build();
 
-        var serviceName = "otel_grpc_" + keyStore.getString("type");
+        final var serviceName = "otel_grpc_" + keyStore.getString("type");
         OpenTelemetryFactory openTelemetryFactory = openTelemetryFactory(vertx, openTelemetryConfiguration);
 
         var tracer = openTelemetryFactory.createTracer(
@@ -207,7 +303,7 @@ public class OpenTelemetryTracerIntegrationTest {
                     .get();
 
                 assertThat(response.statusCode()).isEqualTo(200);
-                assertData(response.bodyAsJsonObject());
+                assertData(response.bodyAsJsonObject(), false, false, false);
             });
     }
 
@@ -221,7 +317,7 @@ public class OpenTelemetryTracerIntegrationTest {
             .environment(new MockEnvironment())
             .build();
 
-        var serviceName = "jaeger_http_unsecured";
+        final var serviceName = "jaeger_http_unsecured";
         OpenTelemetryFactory openTelemetryFactory = openTelemetryFactory(vertx, openTelemetryConfiguration);
         var tracer = openTelemetryFactory.createTracer(
             "serviceInstanceId",
@@ -252,7 +348,7 @@ public class OpenTelemetryTracerIntegrationTest {
                     .get();
 
                 assertThat(response.statusCode()).isEqualTo(200);
-                assertData(response.bodyAsJsonObject());
+                assertData(response.bodyAsJsonObject(), false, false, false);
             });
     }
 
@@ -282,7 +378,7 @@ public class OpenTelemetryTracerIntegrationTest {
             .protocol(Protocol.HTTP_PROTOBUF.value())
             .build();
 
-        var serviceName = "otel_http_" + keyStore.getString("type");
+        final var serviceName = "otel_http_" + keyStore.getString("type");
         OpenTelemetryFactory openTelemetryFactory = openTelemetryFactory(vertx, openTelemetryConfiguration);
         var tracer = openTelemetryFactory.createTracer(
             "serviceInstanceId",
@@ -313,7 +409,7 @@ public class OpenTelemetryTracerIntegrationTest {
                     .get();
 
                 assertThat(response.statusCode()).isEqualTo(200);
-                assertData(response.bodyAsJsonObject());
+                assertData(response.bodyAsJsonObject(), false, false, false);
             });
     }
 
@@ -405,7 +501,7 @@ public class OpenTelemetryTracerIntegrationTest {
         );
     }
 
-    private void assertData(JsonObject json) {
+    private void assertData(JsonObject json, boolean withAdditionalAttributes, boolean withError, boolean withEvents) {
         var data = json.getJsonArray("data");
         assertThat(data).isNotEmpty();
 
@@ -416,11 +512,58 @@ public class OpenTelemetryTracerIntegrationTest {
         var span = spans.getJsonObject(0);
         assertThat(span.getString("operationName")).isEqualTo("my-span");
         JsonArray tags = span.getJsonArray("tags");
-        JsonObject customTags = tags.getJsonObject(0);
-        assertThat(customTags.getString("key")).isEqualTo("custom");
-        assertThat(customTags.getString("value")).isEqualTo("value");
-        JsonObject spanKind = tags.getJsonObject(3);
-        assertThat(spanKind.getString("key")).isEqualTo("span.kind");
-        assertThat(spanKind.getString("value")).isEqualTo("internal");
+
+        assertThat(
+            tags
+                .stream()
+                .anyMatch(t -> ((JsonObject) t).getString("key").equals("custom") && ((JsonObject) t).getString("value").equals("value"))
+        )
+            .isTrue();
+        assertThat(
+            tags
+                .stream()
+                .anyMatch(t ->
+                    ((JsonObject) t).getString("key").equals("span.kind") && ((JsonObject) t).getString("value").equals("internal")
+                )
+        )
+            .isTrue();
+
+        if (withAdditionalAttributes) {
+            var process = trace.getJsonObject("processes").getJsonObject(span.getString("processID"));
+            assertThat(process).isNotNull();
+            assertThat(process.getJsonArray("tags"))
+                .isNotNull()
+                .anyMatch(tag -> {
+                    JsonObject tagJson = (JsonObject) tag;
+                    return (tagJson.getString("key").equals("custom.attribute") && tagJson.getString("value").equals("custom.value"));
+                });
+        }
+
+        if (withError) {
+            assertThat(span.getJsonArray("tags"))
+                .isNotNull()
+                .anyMatch(tag -> {
+                    JsonObject tagJson = (JsonObject) tag;
+                    return tagJson.getString("key").equals("otel.status_code") && tagJson.getString("value").equals("ERROR");
+                })
+                .anyMatch(tag -> {
+                    JsonObject tagJson = (JsonObject) tag;
+                    return tagJson.getString("key").equals("error") && tagJson.getBoolean("value").equals(true);
+                });
+        }
+        if (withEvents) {
+            assertThat(span.getJsonArray("logs"))
+                .isNotNull()
+                .anyMatch(log -> {
+                    JsonObject logJson = (JsonObject) log;
+                    return logJson
+                        .getJsonArray("fields")
+                        .stream()
+                        .anyMatch(field -> {
+                            JsonObject fieldJson = (JsonObject) field;
+                            return fieldJson.getString("key").equals("event") && fieldJson.getString("value").equals("my-event");
+                        });
+                });
+        }
     }
 }
