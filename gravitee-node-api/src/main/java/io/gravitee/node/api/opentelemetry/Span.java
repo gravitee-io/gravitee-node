@@ -15,6 +15,8 @@
  */
 package io.gravitee.node.api.opentelemetry;
 
+import java.util.Map;
+
 /**
  * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
  * @author GraviteeSource Team
@@ -31,4 +33,20 @@ public interface Span {
      * @return current {@link Span}
      */
     <T> Span withAttribute(final String name, final T value);
+
+    /**
+     * Mark the span as being in error state
+     *
+     * @return current {@link Span}
+     */
+    Span inError();
+
+    /**
+     * Adds an event to the {@link Span}.
+     *
+     * @param name the name of the event.
+     * @param attributes the attributes of the event.
+     * @return current {@link Span}
+     */
+    Span addEvent(final String name, final Map<String, Object> attributes);
 }

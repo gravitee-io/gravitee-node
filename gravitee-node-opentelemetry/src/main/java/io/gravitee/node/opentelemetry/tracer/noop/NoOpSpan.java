@@ -16,6 +16,7 @@
 package io.gravitee.node.opentelemetry.tracer.noop;
 
 import io.gravitee.node.api.opentelemetry.Span;
+import java.util.Map;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -43,6 +44,16 @@ public class NoOpSpan implements Span {
 
     @Override
     public <T> Span withAttribute(final String name, final T value) {
+        return this;
+    }
+
+    @Override
+    public Span inError() {
+        return this;
+    }
+
+    @Override
+    public Span addEvent(final String name, final Map<String, Object> attributes) {
         return this;
     }
 }

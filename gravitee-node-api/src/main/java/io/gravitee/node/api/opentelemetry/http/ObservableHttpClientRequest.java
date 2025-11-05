@@ -22,7 +22,6 @@ import io.vertx.core.http.RequestOptions;
 import io.vertx.core.http.impl.HttpRequestHead;
 import io.vertx.core.http.impl.headers.HeadersMultiMap;
 import io.vertx.core.net.SocketAddress;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

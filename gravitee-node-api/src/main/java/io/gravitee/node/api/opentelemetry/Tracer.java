@@ -16,7 +16,6 @@
 package io.gravitee.node.api.opentelemetry;
 
 import io.gravitee.common.service.Service;
-import io.opentelemetry.context.propagation.TextMapSetter;
 import io.vertx.core.Context;
 import java.util.function.BiConsumer;
 

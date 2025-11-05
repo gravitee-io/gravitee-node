@@ -16,6 +16,7 @@
 package io.gravitee.node.api.opentelemetry;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
@@ -34,5 +35,14 @@ public interface TracerFactory {
         final String serviceNamespace,
         final String version,
         final List<InstrumenterTracerFactory> instrumenterTracerFactories
+    );
+
+    Tracer createTracer(
+        final String id,
+        final String serviceName,
+        final String serviceNamespace,
+        final String version,
+        final List<InstrumenterTracerFactory> instrumenterTracerFactories,
+        final Map<String, String> additionalResourceAttributes
     );
 }
