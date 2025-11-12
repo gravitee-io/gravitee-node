@@ -1,3 +1,10 @@
+# [7.17.0](https://github.com/gravitee-io/gravitee-node/compare/7.16.0...7.17.0) (2025-11-12)
+
+
+### Features
+
+* improve tracing feature (span and tracer) ([bde3b46](https://github.com/gravitee-io/gravitee-node/commit/bde3b4644fdf130a12768214716498f65da076f8))
+
 # [7.16.0](https://github.com/gravitee-io/gravitee-node/compare/7.15.0...7.16.0) (2025-10-22)
 
 
