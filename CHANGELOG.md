@@ -1,3 +1,10 @@
+## [7.17.1](https://github.com/gravitee-io/gravitee-node/compare/7.17.0...7.17.1) (2025-11-17)
+
+
+### Bug Fixes
+
+* apply labels on main metric registry ([9df9379](https://github.com/gravitee-io/gravitee-node/commit/9df9379ef1e3d6f8213575723800757fdc806ee3))
+
 # [7.17.0](https://github.com/gravitee-io/gravitee-node/compare/7.16.0...7.17.0) (2025-11-12)
 
 
