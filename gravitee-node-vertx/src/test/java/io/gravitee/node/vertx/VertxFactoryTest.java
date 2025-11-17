@@ -21,13 +21,11 @@ import static org.mockito.Mockito.*;
 
 import io.gravitee.node.api.Node;
 import io.gravitee.node.vertx.metrics.ExcludeTagsFilter;
-import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.config.MeterFilter;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.netty.channel.EventLoopGroup;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxBuilder;
@@ -36,16 +34,9 @@ import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.MicrometerMetricsFactory;
 import io.vertx.micrometer.MicrometerMetricsOptions;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -136,9 +127,7 @@ class VertxFactoryTest {
 
         cut.getObject();
 
-        final List<MeterFilter> filters = extractPrometheusRegistryMeterFilters(vertxBuilder);
-
-        verifyGlobalLabels(filters, List.of(Label.LOCAL, Label.REMOTE, Label.HTTP_METHOD, Label.HTTP_CODE));
+        verifyGlobalLabels(List.of(Label.LOCAL, Label.REMOTE, Label.HTTP_METHOD, Label.HTTP_CODE));
     }
 
     @Test
@@ -151,12 +140,7 @@ class VertxFactoryTest {
 
         cut.getObject();
 
-        final List<MeterFilter> filters = extractPrometheusRegistryMeterFilters(vertxBuilder);
-
-        verifyGlobalLabels(
-            filters,
-            List.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_NAME, Label.POOL_TYPE, Label.REMOTE)
-        );
+        verifyGlobalLabels(List.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_NAME, Label.POOL_TYPE, Label.REMOTE));
     }
 
     @Test
@@ -169,8 +153,8 @@ class VertxFactoryTest {
 
         cut.getObject();
 
-        final List<MeterFilter> filters = extractPrometheusRegistryMeterFilters(vertxBuilder);
-        verifyGlobalLabels(filters, List.of(Label.LOCAL, Label.REMOTE));
+        final List<MeterFilter> filters = extractRegistryMeterFilters();
+        verifyGlobalLabels(List.of(Label.LOCAL, Label.REMOTE));
 
         //Check exclude labels
         var httpClientFilter = new ExcludeTagsFilter("http.client", List.of("local"));
@@ -194,11 +178,8 @@ class VertxFactoryTest {
         cut.getObject();
 
         //Check remote label excluded for all categories except http.client
-        final List<MeterFilter> filters = extractPrometheusRegistryMeterFilters(vertxBuilder);
-        verifyGlobalLabels(
-            filters,
-            List.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_NAME, Label.POOL_TYPE, Label.REMOTE)
-        );
+        final List<MeterFilter> filters = extractRegistryMeterFilters();
+        verifyGlobalLabels(List.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_NAME, Label.POOL_TYPE, Label.REMOTE));
 
         var httpClientFilter = new ExcludeTagsFilter("http.client", List.of());
         assertThat(filters).filteredOn(f -> f instanceof ExcludeTagsFilter).containsAll(List.of(httpClientFilter));
@@ -218,11 +199,7 @@ class VertxFactoryTest {
 
         cut.getObject();
 
-        final List<MeterFilter> filters = extractPrometheusRegistryMeterFilters(vertxBuilder);
-        verifyGlobalLabels(
-            filters,
-            List.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_NAME, Label.POOL_TYPE, Label.REMOTE)
-        );
+        verifyGlobalLabels(List.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_NAME, Label.POOL_TYPE, Label.REMOTE));
     }
 
     @Test
@@ -329,37 +306,40 @@ class VertxFactoryTest {
         when(node.hostname()).thenReturn("localhost");
     }
 
-    private List<MeterFilter> extractPrometheusRegistryMeterFilters(VertxBuilder vertxBuilder) {
+    private List<MeterFilter> extractRegistryMeterFilters() {
+        return Arrays.asList((MeterFilter[]) ReflectionTestUtils.getField(extractMeterRegistry(), "filters"));
+    }
+
+    private void verifyGlobalLabels(List<Label> expectedLabels) {
+        //Create a tag list with all labels
+        List<Tag> tagList = Arrays.stream(Label.values()).map(Label::toString).map(name -> Tag.of(name, name)).toList();
+
+        List<Tag> expectedTags = expectedLabels
+            .stream()
+            .map(Label::toString)
+            .map(name -> Tag.of(name, name))
+            .collect(Collectors.toCollection(ArrayList::new));
+        expectedTags.add(Tag.of("application", "graviteeio-test"));
+        expectedTags.add(Tag.of("instance", "localhost"));
+
+        MeterRegistry meterRegistry = extractMeterRegistry();
+        meterRegistry.counter("test", Tags.of(tagList)).increment();
+
+        // Verify that the global meter filter only kept the configured labels
+        meterRegistry
+            .getMeters()
+            .stream()
+            .filter(meter -> meter.getId().getName().equals("test"))
+            .forEach(m -> assertThat(m.getId().getTags()).containsExactlyInAnyOrderElementsOf(expectedTags));
+    }
+
+    private MeterRegistry extractMeterRegistry() {
         final ArgumentCaptor<MicrometerMetricsFactory> captor = ArgumentCaptor.forClass(MicrometerMetricsFactory.class);
         verify(vertxBuilder).withMetrics(captor.capture());
         final MicrometerMetricsFactory metricsFactory = captor.getValue();
         MeterRegistry meterRegistry = (MeterRegistry) ReflectionTestUtils.getField(metricsFactory, "micrometerRegistry");
         assertThat(meterRegistry).isNotNull();
         assertThat(meterRegistry).isInstanceOf(CompositeMeterRegistry.class);
-
-        CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry) meterRegistry;
-        var prometheusRegistry = compositeMeterRegistry
-            .getRegistries()
-            .stream()
-            .filter(PrometheusMeterRegistry.class::isInstance)
-            .findFirst();
-        assertThat(prometheusRegistry).isPresent();
-
-        return Arrays.asList((MeterFilter[]) ReflectionTestUtils.getField(prometheusRegistry.get(), "filters"));
-    }
-
-    private void verifyGlobalLabels(List<MeterFilter> filters, List<Label> expectedLabels) {
-        //Create a tag list with all labels
-        List<Tag> tagList = Arrays.stream(Label.values()).map(Label::toString).map(name -> Tag.of(name, name)).toList();
-
-        //Use these labels in a Meter
-        Meter.Id filteredMeter = new Meter.Id("test", Tags.of(tagList), "unit", "description", Meter.Type.COUNTER);
-
-        List<Tag> expectedTags = expectedLabels.stream().map(Label::toString).map(name -> Tag.of(name, name)).toList();
-
-        // Verify that the global meter filter only kept the configured labels
-        assertThat(filters)
-            .filteredOn(f -> !(f instanceof ExcludeTagsFilter))
-            .allSatisfy(filter -> assertThat(filter.map(filteredMeter).getTags()).containsExactlyInAnyOrderElementsOf(expectedTags));
+        return meterRegistry;
     }
 }

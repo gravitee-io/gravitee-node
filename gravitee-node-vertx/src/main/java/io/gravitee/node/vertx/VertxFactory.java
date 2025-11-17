@@ -15,8 +15,6 @@
  */
 package io.gravitee.node.vertx;
 
-import static java.util.stream.Collectors.toList;
-
 import io.gravitee.node.api.Node;
 import io.gravitee.node.vertx.metrics.ExcludeTagsFilter;
 import io.gravitee.node.vertx.metrics.RenameVertxFilter;
@@ -41,19 +39,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.buffer.impl.VertxByteBufAllocator;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MetricsNaming;
-import io.vertx.micrometer.MicrometerMetricsFactory;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import io.vertx.micrometer.*;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,13 +92,27 @@ public class VertxFactory implements FactoryBean<Vertx> {
         if (metricsEnabled) {
             configureMetrics(options);
 
+            String[] ignoreLabels = Arrays
+                .stream(Label.values())
+                .filter(label -> !metricsLabels.contains(label))
+                .map(Label::toString)
+                .toArray(String[]::new);
+
             //Global composite registry
             compositeMeterRegistry = new CompositeMeterRegistry();
             compositeMeterRegistry
                 .config()
                 .meterFilter(new RenameVertxFilter())
                 .commonTags("application", node.application())
-                .commonTags("instance", node.hostname());
+                .commonTags("instance", node.hostname())
+                .meterFilter(MeterFilter.ignoreTags(ignoreLabels));
+
+            final CompositeMeterRegistry finalCompositeMeterRegistry = compositeMeterRegistry;
+            metricsExcludedLabelsByCategory.forEach((category, labels) ->
+                finalCompositeMeterRegistry
+                    .config()
+                    .meterFilter(new ExcludeTagsFilter(category, labels.stream().map(String::valueOf).toList()))
+            );
 
             boolean prometheusEnabled = environment.getProperty("services.metrics.prometheus.enabled", Boolean.class, true);
             if (prometheusEnabled) {
@@ -121,19 +122,6 @@ public class VertxFactory implements FactoryBean<Vertx> {
 
                 //Prometheus registry
                 MeterRegistry promRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
-
-                Set<String> ignoreLabels = new HashSet<>();
-                for (Label label : Label.values()) {
-                    if (!metricsLabels.contains(label)) {
-                        ignoreLabels.add(label.toString());
-                    }
-                }
-                promRegistry.config().meterFilter(MeterFilter.ignoreTags(ignoreLabels.toArray(new String[0])));
-                metricsExcludedLabelsByCategory.forEach((category, labels) ->
-                    promRegistry
-                        .config()
-                        .meterFilter(new ExcludeTagsFilter(category, labels.stream().map(String::valueOf).collect(toList())))
-                );
 
                 //Add Prometheus registry to the composite registry
                 compositeMeterRegistry.add(promRegistry);
