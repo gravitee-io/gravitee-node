@@ -134,6 +134,21 @@ class DefaultLicenseFactoryTest {
     }
 
     @Test
+    void should_return_license_with_enterprise_authenticator_pack() throws InvalidLicenseException, MalformedLicenseException {
+        final License license = cut.create(
+            REFERENCE_TYPE_PLATFORM,
+            REFERENCE_ID_PLATFORM,
+            generateBase64License(null, List.of("enterprise-authenticator"), null, null)
+        );
+
+        assertThat(license.getTier()).isNull();
+        assertThat(license.getPacks()).containsExactly("enterprise-authenticator");
+        assertThat(license.getFeatures()).containsExactlyInAnyOrder("am-authenticator-cba");
+        assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_PLATFORM);
+        assertThat(license.getReferenceId()).isEqualTo(REFERENCE_ID_PLATFORM);
+    }
+
+    @Test
     void should_return_license_with_features() throws InvalidLicenseException, MalformedLicenseException {
         final License license = cut.create(
             REFERENCE_TYPE_PLATFORM,
@@ -343,7 +358,8 @@ class DefaultLicenseFactoryTest {
                 "observability",
                 "enterprise-policy",
                 "event-native",
-                "enterprise-authorization-engine"
+                "enterprise-authorization-engine",
+                "enterprise-authenticator"
             );
 
         final String[] features = {
@@ -429,6 +445,7 @@ class DefaultLicenseFactoryTest {
             "apim-en-endpoint-agent-to-agent",
             "am-authorizationengine-openfga",
             "am-authorization-gateway-handler-authzen",
+            "am-authenticator-cba",
         };
         assertThat(license.getFeatures()).containsExactlyInAnyOrder(features);
 

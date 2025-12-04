@@ -52,6 +52,9 @@ packs:
         features:
             - am-authorizationengine-openfga
             - am-authorization-gateway-handler-authzen
+    enterprise-authenticator:
+        features:
+            - am-authenticator-cba
     enterprise-mfa-factor:
         features:
             - am-mfa-recovery-code
@@ -146,3 +149,4 @@ tiers:
             - enterprise-secret-manager
             - enterprise-alert-engine
             - enterprise-authorization-engine
+            - enterprise-authenticator
