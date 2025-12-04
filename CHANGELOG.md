@@ -1,3 +1,10 @@
+# [7.18.0](https://github.com/gravitee-io/gravitee-node/compare/7.17.1...7.18.0) (2025-12-04)
+
+
+### Features
+
+* added CBA authenticator to license model ([d4f7548](https://github.com/gravitee-io/gravitee-node/commit/d4f7548506c4d2d294915b1ed8f4f75a50a07d04))
+
 ## [7.17.1](https://github.com/gravitee-io/gravitee-node/compare/7.17.0...7.17.1) (2025-11-17)
 
 
