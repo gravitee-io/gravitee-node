@@ -1,3 +1,10 @@
+## [7.9.8](https://github.com/gravitee-io/gravitee-node/compare/7.9.7...7.9.8) (2025-12-10)
+
+
+### Bug Fixes
+
+* improve node management endpoints logs ([#477](https://github.com/gravitee-io/gravitee-node/issues/477)) ([281c18e](https://github.com/gravitee-io/gravitee-node/commit/281c18ebcdfabb37dd3d4eca70987e9e0c511cf2))
+
 ## [7.9.7](https://github.com/gravitee-io/gravitee-node/compare/7.9.6...7.9.7) (2025-10-14)
 
 
