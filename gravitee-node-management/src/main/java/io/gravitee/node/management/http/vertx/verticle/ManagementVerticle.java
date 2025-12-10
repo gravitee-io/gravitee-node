@@ -35,8 +35,8 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.AuthenticationHandler;
 import io.vertx.ext.web.handler.BasicAuthHandler;
 import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.HttpException;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,8 +46,9 @@ import org.springframework.core.env.Environment;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
 public class ManagementVerticle extends AbstractVerticle {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagementVerticle.class);
 
     private static final String PATH = "/_node";
     private static final String WEBHOOK_PATH = "/hooks";
@@ -111,23 +112,23 @@ public class ManagementVerticle extends AbstractVerticle {
             doStart(promise);
         } else {
             promise.complete();
-            log.info("Node Management API is disabled, skipping...");
+            LOGGER.info("Node Management API is disabled, skipping...");
         }
     }
 
     @Override
     public void stop(Promise<Void> promise) throws Exception {
         if (httpServerConfiguration.isEnabled()) {
-            log.info("Stopping Management API...");
+            LOGGER.info("Stopping Management API...");
             httpServer.close(
                 new Handler<AsyncResult<Void>>() {
                     @Override
                     public void handle(AsyncResult<Void> event) {
                         if (event.succeeded()) {
-                            log.info("HTTP Server has been correctly stopped");
+                            LOGGER.info("HTTP Server has been correctly stopped");
                             promise.complete();
                         } else {
-                            log.error("Unexpected error while stopping HTTP listener for Node Management API", event.cause());
+                            LOGGER.error("Unexpected error while stopping HTTP listener for Node Management API", event.cause());
                             promise.fail(event.cause());
                         }
                     }
@@ -137,7 +138,7 @@ public class ManagementVerticle extends AbstractVerticle {
     }
 
     private void doStart(Promise<Void> promise) throws Exception {
-        log.info("Start HTTP listener for Node Management API");
+        LOGGER.info("Start HTTP listener for Node Management API");
 
         // Start HTTP server
         Router mainRouter = Router.router(vertx);
@@ -163,25 +164,6 @@ public class ManagementVerticle extends AbstractVerticle {
             nodeRouter.route().order(-1).handler(authHandler);
         }
 
-        mainRouter
-            .route()
-            .failureHandler(ctx -> {
-                if (
-                    ctx.statusCode() == 401 ||
-                    (ctx.failure() instanceof HttpException httpException && httpException.getStatusCode() == 401)
-                ) {
-                    String remoteIP = ctx.request().remoteAddress().host();
-                    String path = ctx.request().path();
-                    log.warn("Authentication failed | IP: {} | Path: {} | Reason: Unauthorized", remoteIP, path);
-
-                    if (!ctx.response().ended()) {
-                        ctx.response().setStatusCode(401).end("Unauthorized");
-                    }
-                } else {
-                    ctx.next();
-                }
-            });
-
         // Set default handler
         mainRouter.route().handler(ctx -> ctx.fail(HttpStatusCode.NOT_FOUND_404));
 
@@ -190,7 +172,7 @@ public class ManagementVerticle extends AbstractVerticle {
             .requestHandler(mainRouter)
             .listen(event -> {
                 if (event.failed()) {
-                    log.error("HTTP listener for Node Management can not be started properly", event.cause());
+                    LOGGER.error("HTTP listener for Node Management can not be started properly", event.cause());
                     promise.fail(event.cause());
                 } else {
                     // Listen to the endpoint manager to set up route when a management endpoint is registered.
@@ -225,14 +207,14 @@ public class ManagementVerticle extends AbstractVerticle {
                             managementEndpointManager.register(prometheusEndpoint);
                         }
                     }
-                    log.info("HTTP listener for Node Management bind to port TCP:{}", event.result().actualPort());
+                    LOGGER.info("HTTP listener for Node Management bind to port TCP:{}", event.result().actualPort());
                     promise.complete();
                 }
             });
     }
 
     private void setupRoute(ManagementEndpoint endpoint) {
-        log.info(
+        LOGGER.info(
             "Register a new endpoint for Management API: {} {} [{}]",
             endpoint.methods(),
             endpoint.path(),
@@ -264,7 +246,7 @@ public class ManagementVerticle extends AbstractVerticle {
     }
 
     private void removeRoute(ManagementEndpoint endpoint) {
-        log.info(
+        LOGGER.info(
             "Unregister an endpoint for Management API: {} {} [{}]",
             endpoint.methods(),
             endpoint.path(),
