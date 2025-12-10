@@ -1,3 +1,10 @@
+## [7.18.1](https://github.com/gravitee-io/gravitee-node/compare/7.18.0...7.18.1) (2025-12-10)
+
+
+### Bug Fixes
+
+* improve apim gateway logs for unauthorized accesses ([#475](https://github.com/gravitee-io/gravitee-node/issues/475)) ([f40b5e0](https://github.com/gravitee-io/gravitee-node/commit/f40b5e02bdb4929a01508030d30ac6fc91a0d0a4))
+
 # [7.18.0](https://github.com/gravitee-io/gravitee-node/compare/7.17.1...7.18.0) (2025-12-04)
 
 
