@@ -1,3 +1,10 @@
+## [7.18.2](https://github.com/gravitee-io/gravitee-node/compare/7.18.1...7.18.2) (2025-12-11)
+
+
+### Bug Fixes
+
+* make authorization engine pack opt-in for universe tier ([b93754c](https://github.com/gravitee-io/gravitee-node/commit/b93754c6abf7e05c29fb743e2614775493f9932e))
+
 ## [7.18.1](https://github.com/gravitee-io/gravitee-node/compare/7.18.0...7.18.1) (2025-12-10)
 
 
