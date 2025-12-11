@@ -148,5 +148,4 @@ tiers:
             - enterprise-mfa-factor
             - enterprise-secret-manager
             - enterprise-alert-engine
-            - enterprise-authorization-engine
             - enterprise-authenticator
