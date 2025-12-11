@@ -358,7 +358,6 @@ class DefaultLicenseFactoryTest {
                 "observability",
                 "enterprise-policy",
                 "event-native",
-                "enterprise-authorization-engine",
                 "enterprise-authenticator"
             );
 
@@ -443,8 +442,6 @@ class DefaultLicenseFactoryTest {
             "apim-policy-data-cache",
             "apim-en-entrypoint-agent-to-agent",
             "apim-en-endpoint-agent-to-agent",
-            "am-authorizationengine-openfga",
-            "am-authorization-gateway-handler-authzen",
             "am-authenticator-cba",
         };
         assertThat(license.getFeatures()).containsExactlyInAnyOrder(features);
