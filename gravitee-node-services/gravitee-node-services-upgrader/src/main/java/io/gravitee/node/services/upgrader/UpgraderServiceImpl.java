@@ -69,7 +69,7 @@ public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> im
                 try {
                     UpgradeRecord upgradeRecord = upgraderRepository.findById(upgrader.identifier()).blockingGet();
                     if (upgradeRecord != null) {
-                        LOGGER.info("{} is already applied. it will be ignored.", name);
+                        LOGGER.debug("{} is already applied. it will be ignored.", name);
                     } else {
                         LOGGER.info("Apply {} ...", name);
                         if (upgrader.upgrade()) {
