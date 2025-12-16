@@ -1,3 +1,10 @@
+## [7.0.17](https://github.com/gravitee-io/gravitee-node/compare/7.0.16...7.0.17) (2025-12-16)
+
+
+### Bug Fixes
+
+* updated INFO log to DEBUG ([98f5f6f](https://github.com/gravitee-io/gravitee-node/commit/98f5f6fc010e02c0109bdf2d76745c2335894c10))
+
 ## [7.0.16](https://github.com/gravitee-io/gravitee-node/compare/7.0.15...7.0.16) (2025-12-10)
 
 
