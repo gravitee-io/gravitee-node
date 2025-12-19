@@ -23,6 +23,7 @@ import io.gravitee.common.util.Version;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.cache.NodeCacheService;
 import io.gravitee.node.cluster.NodeClusterService;
+import io.gravitee.node.logging.NodeLoggerFactory;
 import io.gravitee.node.management.http.ManagementService;
 import io.gravitee.node.monitoring.handler.NodeMonitoringEventHandler;
 import io.gravitee.node.monitoring.healthcheck.NodeHealthCheckService;
@@ -40,7 +41,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
@@ -49,18 +50,35 @@ import org.springframework.core.env.Environment;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
 @SuppressWarnings("rawtypes")
 public abstract class AbstractNode extends AbstractService<Node> implements Node, ApplicationContextAware {
 
+    private final Logger log;
     private String hostname;
 
     protected AbstractNode() {
+        log = initializeNodeLogger();
+
         try {
             hostname = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException uhe) {
             log.warn("Could not get hostname / IP", uhe);
         }
+    }
+
+    /**
+     * Initializes a logger specific to the current node context.
+     * This method configures the {@link NodeLoggerFactory} and retrieves a logger instance
+     * for the class where it is being invoked. The logger may include contextual information
+     * about the current node, as provided by the {@link NodeLoggerFactory}.
+     *
+     * @return a {@link Logger} instance configured for the current class and node context.
+     */
+    private Logger initializeNodeLogger() {
+        final Logger log;
+        NodeLoggerFactory.init(() -> this);
+        log = NodeLoggerFactory.getLogger(this.getClass());
+        return log;
     }
 
     @Override

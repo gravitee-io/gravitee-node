@@ -21,6 +21,7 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.Node;
+import io.gravitee.node.logging.NodeLoggerFactory;
 import java.io.File;
 import org.slf4j.LoggerFactory;
 
