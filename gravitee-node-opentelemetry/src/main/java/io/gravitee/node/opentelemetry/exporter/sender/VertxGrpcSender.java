@@ -34,12 +34,12 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 /**
  * See <a href="https://github.com/quarkusio/quarkus/blob/main/extensions/opentelemetry/runtime/src/main/java/io/quarkus/opentelemetry/runtime/exporter/otlp/sender/VertxGrpcSender.java">VertxGrpcSender.java</a>
  */
-@Slf4j
+@CustomLog
 public final class VertxGrpcSender implements GrpcSender {
 
     public static final String GRPC_TRACE_SERVICE_NAME = "opentelemetry.proto.collector.trace.v1.TraceService";

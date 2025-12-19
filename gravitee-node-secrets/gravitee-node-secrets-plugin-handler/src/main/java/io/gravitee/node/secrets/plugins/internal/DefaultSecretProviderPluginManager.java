@@ -26,12 +26,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 /**
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class DefaultSecretProviderPluginManager
     extends AbstractConfigurablePluginManager<SecretProviderPlugin<?, ?>>

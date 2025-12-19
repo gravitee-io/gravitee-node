@@ -30,14 +30,14 @@ import io.gravitee.node.monitoring.monitor.probe.ProcessProbe;
 import io.gravitee.plugin.alert.AlertEventProducer;
 import io.vertx.core.eventbus.MessageProducer;
 import java.util.Set;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 @RequiredArgsConstructor
 public class NodeMonitorThread implements Runnable {
 

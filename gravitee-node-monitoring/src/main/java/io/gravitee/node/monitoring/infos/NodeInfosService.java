@@ -33,21 +33,18 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.stream.Collectors;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 @RequiredArgsConstructor
 public class NodeInfosService extends AbstractService<NodeInfosService> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NodeInfosService.class);
     public static final String GIO_NODE_INFOS_BUS = "gio:node:infos";
 
     private final PluginRegistry pluginRegistry;
@@ -64,7 +61,7 @@ public class NodeInfosService extends AbstractService<NodeInfosService> {
 
     @Override
     protected void doStart() throws Exception {
-        LOGGER.info("Starting node infos service");
+        log.info("Starting node infos service");
 
         super.doStart();
 
@@ -81,7 +78,7 @@ public class NodeInfosService extends AbstractService<NodeInfosService> {
         nodeInfos.setStatus(NodeStatus.STARTED);
         messageProducer.write(nodeInfos);
 
-        LOGGER.info("Start node infos service: DONE");
+        log.info("Start node infos service: DONE");
     }
 
     public NodeInfosService preStop() {
@@ -97,11 +94,11 @@ public class NodeInfosService extends AbstractService<NodeInfosService> {
 
     @Override
     protected void doStop() throws Exception {
-        LOGGER.info("Stopping node infos service");
+        log.info("Stopping node infos service");
 
         super.doStop();
 
-        LOGGER.info("Stop node infos service : DONE");
+        log.info("Stop node infos service : DONE");
     }
 
     @Override
@@ -126,14 +123,14 @@ public class NodeInfosService extends AbstractService<NodeInfosService> {
         try {
             nodeInfos.setPort(getPort());
         } catch (NumberFormatException nfe) {
-            LOGGER.warn("Could not get http server port.", nfe);
+            log.warn("Could not get http server port.", nfe);
         }
 
         try {
             nodeInfos.setHostname(InetAddress.getLocalHost().getHostName());
             nodeInfos.setIp(InetAddress.getLocalHost().getHostAddress());
         } catch (UnknownHostException uhe) {
-            LOGGER.warn("Could not get hostname / IP", uhe);
+            log.warn("Could not get hostname / IP", uhe);
         }
 
         return nodeInfos;

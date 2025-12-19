@@ -31,16 +31,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class HeapDumpEndpoint implements ManagementEndpoint {
-
-    private final Logger LOGGER = LoggerFactory.getLogger(HeapDumpEndpoint.class);
 
     private final long timeout = TimeUnit.SECONDS.toMillis(10);
 
@@ -101,13 +99,13 @@ public class HeapDumpEndpoint implements ManagementEndpoint {
                                             try {
                                                 Files.delete(file.toPath());
                                             } catch (IOException ex) {
-                                                LOGGER.warn("Failed to delete temporary heap dump file '" + file.toPath() + "'", ex);
+                                                log.warn("Failed to delete temporary heap dump file '" + file.toPath() + "'", ex);
                                             }
                                         }
                                     }
                                 );
                         } else {
-                            LOGGER.error("Unable to generate heap dump.", fileAsyncResult.cause());
+                            log.error("Unable to generate heap dump.", fileAsyncResult.cause());
                             response
                                 .setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500)
                                 .setChunked(true)

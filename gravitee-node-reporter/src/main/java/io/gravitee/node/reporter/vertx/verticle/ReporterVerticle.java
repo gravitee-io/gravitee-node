@@ -24,16 +24,14 @@ import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.MessageProducer;
 import io.vertx.core.tracing.TracingPolicy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class ReporterVerticle extends AbstractVerticle implements ReporterService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReporterVerticle.class);
 
     private static final String EVENT_BUS_ADDRESS = "node:metrics";
 
@@ -63,7 +61,7 @@ public class ReporterVerticle extends AbstractVerticle implements ReporterServic
         if (producer != null) {
             producer.close(event -> {
                 if (event.succeeded()) {
-                    LOGGER.debug("Reporter publisher has been closed successfully.");
+                    log.debug("Reporter publisher has been closed successfully.");
                     promise.complete();
                 } else {
                     promise.fail(event.cause());

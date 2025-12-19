@@ -23,16 +23,14 @@ import java.lang.reflect.Method;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class OsProbe {
-
-    private final Logger logger = LoggerFactory.getLogger(OsProbe.class);
 
     private static final OperatingSystemMXBean osMxBean = ManagementFactory.getOperatingSystemMXBean();
 
@@ -73,7 +71,7 @@ public class OsProbe {
         try {
             return (long) getFreePhysicalMemorySize.invoke(osMxBean);
         } catch (Exception ex) {
-            logger.debug("Unexpected exception", ex);
+            log.debug("Unexpected exception", ex);
             return -1;
         }
     }
@@ -88,7 +86,7 @@ public class OsProbe {
         try {
             return (long) getTotalPhysicalMemorySize.invoke(osMxBean);
         } catch (Exception ex) {
-            logger.debug("Unexpected exception", ex);
+            log.debug("Unexpected exception", ex);
             return -1;
         }
     }
@@ -103,7 +101,7 @@ public class OsProbe {
         try {
             return (long) getFreeSwapSpaceSize.invoke(osMxBean);
         } catch (Exception ex) {
-            logger.debug("Unexpected exception", ex);
+            log.debug("Unexpected exception", ex);
             return -1;
         }
     }
@@ -118,7 +116,7 @@ public class OsProbe {
         try {
             return (long) getTotalSwapSpaceSize.invoke(osMxBean);
         } catch (Exception ex) {
-            logger.debug("Unexpected exception", ex);
+            log.debug("Unexpected exception", ex);
             return -1;
         }
     }
@@ -145,7 +143,7 @@ public class OsProbe {
             double oneMinuteLoadAverage = (double) getSystemLoadAverage.invoke(osMxBean);
             return new double[] { oneMinuteLoadAverage >= 0 ? oneMinuteLoadAverage : -1, -1, -1 };
         } catch (Exception ex) {
-            logger.debug("Unexpected exception", ex);
+            log.debug("Unexpected exception", ex);
             return null;
         }
     }

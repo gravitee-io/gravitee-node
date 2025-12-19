@@ -33,9 +33,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.inject.Inject;
+import lombok.CustomLog;
 import org.reflections.ReflectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -45,9 +44,8 @@ import org.springframework.util.ClassUtils;
  * @author Eric LELEU (eric.leleu at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class NotifierPluginFactoryImpl implements NotifierPluginFactory {
-
-    private final Logger logger = LoggerFactory.getLogger(NotifierPluginFactoryImpl.class);
 
     @Autowired
     private ConfigurablePluginManager<NotifierPlugin> notifierManager;
@@ -63,11 +61,11 @@ public class NotifierPluginFactoryImpl implements NotifierPluginFactory {
 
     @Override
     public Optional<Notifier> create(NotificationDefinition notification) {
-        logger.debug("Create a new notifier instance for {}", notification.getType());
+        log.debug("Create a new notifier instance for {}", notification.getType());
         NotifierPlugin plugin = notifierManager.get(notification.getType());
 
         if (plugin == null) {
-            logger.error("No notifier plugin is available to handle notification's type: {}", notification.getType());
+            log.error("No notifier plugin is available to handle notification's type: {}", notification.getType());
             return Optional.empty();
         }
 
@@ -83,7 +81,7 @@ public class NotifierPluginFactoryImpl implements NotifierPluginFactory {
                 create((Class<? extends Notifier>) ClassUtils.forName(plugin.clazz(), notifierClassLoader), configuration)
             );
         } catch (ClassNotFoundException e) {
-            logger.error("Unable to instantiate the class {}", plugin.clazz(), e);
+            log.error("Unable to instantiate the class {}", plugin.clazz(), e);
         }
 
         return Optional.empty();
@@ -98,7 +96,7 @@ public class NotifierPluginFactoryImpl implements NotifierPluginFactory {
             try {
                 notifierInst = constr.newInstance(notifierConfiguration);
             } catch (IllegalAccessException | InstantiationException | InvocationTargetException ex) {
-                logger.error("Unable to instantiate notifier {}", notifierClass, ex);
+                log.error("Unable to instantiate notifier {}", notifierClass, ex);
             }
         }
 
@@ -120,12 +118,12 @@ public class NotifierPluginFactoryImpl implements NotifierPluginFactory {
                     Optional<?> value = injectables.values().stream().filter(o -> type.isAssignableFrom(o.getClass())).findFirst();
 
                     if (value.isPresent()) {
-                        logger.debug("Inject value into field {} [{}] in {}", field.getName(), type.getName(), notifierClass);
+                        log.debug("Inject value into field {} [{}] in {}", field.getName(), type.getName(), notifierClass);
                         try {
                             field.setAccessible(true);
                             field.set(notifierInst, value.get());
                         } catch (IllegalAccessException iae) {
-                            logger.error("Unable to set field value for {} in {}", field.getName(), notifierClass, iae);
+                            log.error("Unable to set field value for {} in {}", field.getName(), notifierClass, iae);
                         } finally {
                             field.setAccessible(accessible);
                         }
@@ -138,7 +136,7 @@ public class NotifierPluginFactoryImpl implements NotifierPluginFactory {
     }
 
     private Constructor<? extends Notifier> lookingForConstructor(Class<? extends Notifier> notifierClass) {
-        logger.debug("Looking for a constructor to inject notifier configuration");
+        log.debug("Looking for a constructor to inject notifier configuration");
         Constructor<? extends Notifier> constructor = null;
 
         Set<Constructor> resourceConstructors = ReflectionUtils.getConstructors(
@@ -149,19 +147,19 @@ public class NotifierPluginFactoryImpl implements NotifierPluginFactory {
         );
 
         if (resourceConstructors.isEmpty()) {
-            logger.debug(
+            log.debug(
                 "No configuration can be injected for {} because there is no valid constructor. " + "Using default empty constructor.",
                 notifierClass.getName()
             );
             try {
                 constructor = notifierClass.getConstructor();
             } catch (NoSuchMethodException nsme) {
-                logger.error("Unable to find default empty constructor for {}", notifierClass.getName(), nsme);
+                log.error("Unable to find default empty constructor for {}", notifierClass.getName(), nsme);
             }
         } else if (resourceConstructors.size() == 1) {
             constructor = resourceConstructors.iterator().next();
         } else {
-            logger.info("Too much constructors to instantiate notifier {}", notifierClass.getName());
+            log.info("Too much constructors to instantiate notifier {}", notifierClass.getName());
         }
 
         return constructor;

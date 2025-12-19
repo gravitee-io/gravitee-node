@@ -18,11 +18,10 @@ package io.gravitee.node.jetty;
 import io.gravitee.common.component.AbstractLifecycleComponent;
 import io.gravitee.node.jetty.handler.NoContentOutputErrorHandler;
 import io.gravitee.node.jetty.spring.JettyContainerConfiguration;
+import lombok.CustomLog;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 
@@ -31,10 +30,9 @@ import org.springframework.context.annotation.Import;
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 @Import({ JettyContainerConfiguration.class })
 public abstract class JettyHttpServer extends AbstractLifecycleComponent<JettyHttpServer> {
-
-    private final Logger logger = LoggerFactory.getLogger(JettyHttpServer.class);
 
     @Autowired
     protected JettyHttpServerFactory serverFactory;
@@ -64,9 +62,9 @@ public abstract class JettyHttpServer extends AbstractLifecycleComponent<JettyHt
             // Start HTTP server...
             server.start();
 
-            logger.info("HTTP Server is now started and listening on port {}", ((ServerConnector) server.getConnectors()[0]).getPort());
+            log.info("HTTP Server is now started and listening on port {}", ((ServerConnector) server.getConnectors()[0]).getPort());
         } catch (InterruptedException ex) {
-            logger.error("An error occurs while trying to initialize HTTP server", ex);
+            log.error("An error occurs while trying to initialize HTTP server", ex);
             throw ex;
         }
     }

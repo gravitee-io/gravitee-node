@@ -20,16 +20,14 @@ import io.gravitee.node.api.certificate.KeyStoreEvent;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.certificates.AbstractKeyStoreLoader;
 import java.security.KeyStore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class SelfSignedKeyStoreLoader extends AbstractKeyStoreLoader<KeyStoreLoaderOptions> {
-
-    private static final Logger logger = LoggerFactory.getLogger(SelfSignedKeyStoreLoader.class);
 
     public SelfSignedKeyStoreLoader() {
         super(KeyStoreLoaderOptions.builder().build());
@@ -37,7 +35,7 @@ public class SelfSignedKeyStoreLoader extends AbstractKeyStoreLoader<KeyStoreLoa
 
     @Override
     public void start() {
-        logger.debug("Initializing self-signed keystore certificate.");
+        log.debug("Initializing self-signed keystore certificate.");
         final KeyStore keyStore = KeyStoreUtils.initSelfSigned("localhost", getPassword());
         String loaderId = id();
         onEvent(new KeyStoreEvent.LoadEvent(loaderId, keyStore, getPassword()));

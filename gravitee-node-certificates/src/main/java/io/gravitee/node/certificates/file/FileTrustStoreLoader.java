@@ -15,13 +15,13 @@ import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 public class FileTrustStoreLoader extends AbstractFileKeyStoreLoader<TrustStoreLoaderOptions> implements KeyStoreLoader {
 
     public FileTrustStoreLoader(TrustStoreLoaderOptions options) {

@@ -16,8 +16,6 @@
 package io.gravitee.node.monitoring.eventbus;
 
 import io.gravitee.node.api.healthcheck.HealthCheck;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)

@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 /**
  * Default implementation of {@link CRLLoaderFactoryRegistry} that maintains a registry of CRL loader factories
@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Guillaume SALA (guillaume.sala at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 public class DefaultCRLLoaderFactoryRegistry implements CRLLoaderFactoryRegistry {
 
     private static final CRLLoader NO_OP_CRL_LOADER = new NoOpCRLLoader();

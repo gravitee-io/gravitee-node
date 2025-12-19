@@ -15,8 +15,6 @@
  */
 package io.gravitee.node.vertx.server.http;
 
-import io.gravitee.node.vertx.cert.VertxKeyCertOptions;
-import io.gravitee.node.vertx.cert.VertxTrustOptions;
 import io.gravitee.node.vertx.server.VertxServerOptions;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServerOptions;
@@ -25,16 +23,16 @@ import io.vertx.core.net.TrustOptions;
 import io.vertx.core.tracing.TracingPolicy;
 import java.util.Arrays;
 import lombok.Builder;
+import lombok.CustomLog;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 @Getter
 @SuperBuilder
 public class VertxHttpServerOptions extends VertxServerOptions {

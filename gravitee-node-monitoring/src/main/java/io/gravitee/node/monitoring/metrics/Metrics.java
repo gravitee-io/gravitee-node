@@ -18,16 +18,14 @@ package io.gravitee.node.monitoring.metrics;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.micrometer.backends.NoopBackendRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class Metrics {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Metrics.class);
 
     private Metrics() {}
 
@@ -39,7 +37,7 @@ public class Metrics {
     public static MeterRegistry getDefaultRegistry() {
         MeterRegistry registry = BackendRegistries.getDefaultNow();
         if (registry == null) {
-            LOGGER.error("Gravitee metrics is disabled. You need to enable it first (services.metrics.enabled=true)");
+            log.error("Gravitee metrics is disabled. You need to enable it first (services.metrics.enabled=true)");
             return NoopBackendRegistry.INSTANCE.getMeterRegistry();
         }
         return registry;
@@ -58,7 +56,7 @@ public class Metrics {
     public static MeterRegistry getRegistry(String registryName) {
         MeterRegistry registry = BackendRegistries.getNow(registryName);
         if (registry == null) {
-            LOGGER.error("Gravitee metrics is disabled. You need to enable it first (services.metrics.enabled=true)");
+            log.error("Gravitee metrics is disabled. You need to enable it first (services.metrics.enabled=true)");
             return NoopBackendRegistry.INSTANCE.getMeterRegistry();
         }
         return registry;

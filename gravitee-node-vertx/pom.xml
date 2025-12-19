@@ -44,6 +44,11 @@
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-certificates</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-logging</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- Vert.x -->
         <dependency>

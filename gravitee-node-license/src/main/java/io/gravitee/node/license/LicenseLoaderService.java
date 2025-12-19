@@ -19,15 +19,15 @@ import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.license.*;
 import io.gravitee.node.license.management.NodeLicenseManagementEndpoint;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author David Brassely (david.brassely at graviteesource.com)
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 @RequiredArgsConstructor
 public class LicenseLoaderService extends AbstractService<LicenseLoaderService> {
 

@@ -25,8 +25,7 @@ import io.gravitee.node.api.resolver.WatchablePropertyResolver;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import java.util.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
@@ -35,9 +34,8 @@ import org.springframework.util.Assert;
  * @author GraviteeSource Team
  * @since 3.9.11
  */
+@CustomLog
 public class KubernetesPropertyResolver implements WatchablePropertyResolver<Object> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(KubernetesPropertyResolver.class);
 
     @Autowired
     private KubernetesClient kubernetesClient;
@@ -58,7 +56,7 @@ public class KubernetesPropertyResolver implements WatchablePropertyResolver<Obj
             return Maybe.empty();
         }
 
-        LOGGER.debug("Resolve configuration [{}]", location);
+        log.debug("Resolve configuration [{}]", location);
 
         if ("secrets".equals(properties[1])) { // type
             return resolvePropertyFromSecret(generateLocation(properties))
@@ -79,7 +77,7 @@ public class KubernetesPropertyResolver implements WatchablePropertyResolver<Obj
             return Flowable.empty();
         }
 
-        LOGGER.debug("Start watching configuration [{}]", location);
+        log.debug("Start watching configuration [{}]", location);
 
         if ("secrets".equals(properties[1])) { // type
             return kubernetesClient
@@ -105,14 +103,14 @@ public class KubernetesPropertyResolver implements WatchablePropertyResolver<Obj
 
     private String[] parsePropertyName(String currentValue) {
         if (!supports(currentValue)) {
-            LOGGER.error("Does not support scheme {}", currentValue);
+            log.error("Does not support scheme {}", currentValue);
             return new String[0];
         }
 
         String[] properties = currentValue.substring(13).split("/"); // eliminate initial kubernetes://
 
         if (properties.length != 4) {
-            LOGGER.error(
+            log.error(
                 "Wrong property value. A correct format looks like this \"kubernetes://{namespace}/configmaps/{configmap-name}/key\""
             );
             return new String[0];
@@ -139,7 +137,7 @@ public class KubernetesPropertyResolver implements WatchablePropertyResolver<Obj
                 if (configMap != null) {
                     return Maybe.just(configMap.getData().get(query.getResourceKey()));
                 } else {
-                    LOGGER.warn("Key not found in this configuration [{}]", location);
+                    log.warn("Key not found in this configuration [{}]", location);
                     return Maybe.empty();
                 }
             });
@@ -153,7 +151,7 @@ public class KubernetesPropertyResolver implements WatchablePropertyResolver<Obj
                 if (secret != null) {
                     return Maybe.just(secret.getData().get(query.getResourceKey()));
                 } else {
-                    LOGGER.debug("Key not found in this configuration [{}]", location);
+                    log.debug("Key not found in this configuration [{}]", location);
                     return Maybe.empty();
                 }
             });

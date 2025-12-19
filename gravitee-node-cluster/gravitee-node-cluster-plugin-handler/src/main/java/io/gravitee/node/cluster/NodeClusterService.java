@@ -20,7 +20,7 @@ import io.gravitee.node.api.Node;
 import io.gravitee.node.api.cluster.ClusterManager;
 import io.gravitee.node.cluster.endpoint.ClusterEndpoint;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Lazy;
  * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 public class NodeClusterService extends AbstractService<NodeClusterService> {
 
     @Autowired

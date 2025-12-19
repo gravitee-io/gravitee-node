@@ -42,8 +42,7 @@ import io.vertx.core.buffer.impl.VertxByteBufAllocator;
 import io.vertx.micrometer.*;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -52,6 +51,7 @@ import org.springframework.core.env.Environment;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class VertxFactory implements FactoryBean<Vertx> {
 
     private static final EnumSet<Label> DEFAULT_LABELS = EnumSet.of(
@@ -63,8 +63,6 @@ public class VertxFactory implements FactoryBean<Vertx> {
     );
 
     private static final String PROMETHEUS_LABEL_VERSION_3_10 = "3.10";
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(VertxFactory.class);
 
     @Autowired
     private Node node;
@@ -81,7 +79,7 @@ public class VertxFactory implements FactoryBean<Vertx> {
 
     @Override
     public Vertx getObject() throws Exception {
-        LOGGER.debug("Creating a new instance of Vert.x");
+        log.debug("Creating a new instance of Vert.x");
         VertxOptions options = getVertxOptions();
 
         VertxBuilder vertxBuilder = Vertx.builder().with(options);
@@ -116,7 +114,7 @@ public class VertxFactory implements FactoryBean<Vertx> {
 
             boolean prometheusEnabled = environment.getProperty("services.metrics.prometheus.enabled", Boolean.class, true);
             if (prometheusEnabled) {
-                LOGGER.info("Prometheus metrics support is enabled");
+                log.info("Prometheus metrics support is enabled");
                 var micrometerMetricsOptions = (MicrometerMetricsOptions) options.getMetricsOptions();
                 micrometerMetricsOptions.setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true));
 
@@ -142,7 +140,7 @@ public class VertxFactory implements FactoryBean<Vertx> {
     }
 
     private void configureMetrics(VertxOptions options) {
-        LOGGER.info("Metrics support is enabled");
+        log.info("Metrics support is enabled");
 
         //Read configured metrics categories
         Set<MetricsDomain> metricsDomains = loadMetricsDomains();
@@ -327,7 +325,7 @@ public class VertxFactory implements FactoryBean<Vertx> {
     }
 
     private Set<String> readConfiguredLabels() {
-        LOGGER.debug("Looking for metrics labels...");
+        log.debug("Looking for metrics labels...");
         Set<String> labels = null;
 
         boolean found = true;

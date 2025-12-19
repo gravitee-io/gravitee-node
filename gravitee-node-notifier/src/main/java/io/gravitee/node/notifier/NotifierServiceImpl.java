@@ -26,8 +26,7 @@ import io.gravitee.node.notifier.trigger.NotificationTrigger;
 import io.reactivex.rxjava3.core.Completable;
 import io.vertx.core.Vertx;
 import java.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -37,9 +36,8 @@ import org.springframework.stereotype.Component;
  * @author GraviteeSource Team
  */
 @Component
+@CustomLog
 public class NotifierServiceImpl implements NotifierService {
-
-    private final Logger logger = LoggerFactory.getLogger(NotifierServiceImpl.class);
 
     @Autowired
     private Vertx vertx;
@@ -73,7 +71,7 @@ public class NotifierServiceImpl implements NotifierService {
 
             notificationTrigger.start();
         } else {
-            logger.debug("Node notifier service disabled");
+            log.debug("Node notifier service disabled");
         }
     }
 
