@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.*;
 import redis.embedded.RedisServer;
@@ -36,7 +36,7 @@ import redis.embedded.RedisServer;
  * @author Eric LELEU (eric.leleu at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class RedisCacheTest {
 

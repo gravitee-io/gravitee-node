@@ -18,21 +18,17 @@ package io.gravitee.node.reporter.vertx.eventbus;
 import io.gravitee.common.component.Lifecycle;
 import io.gravitee.reporter.api.Reportable;
 import io.gravitee.reporter.api.Reporter;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class EventBusReporterWrapper implements Reporter, Handler<Message<Reportable>> {
-
-    private final Logger logger = LoggerFactory.getLogger(EventBusReporterWrapper.class);
 
     private static final String EVENT_BUS_ADDRESS = "node:metrics";
     private final Reporter reporter;
@@ -62,7 +58,7 @@ public class EventBusReporterWrapper implements Reporter, Handler<Message<Report
                     reporter.start();
                     event.complete(reporter);
                 } catch (Exception ex) {
-                    logger.error("Error while starting reporter", ex);
+                    log.error("Error while starting reporter", ex);
                     event.fail(ex);
                 }
             },

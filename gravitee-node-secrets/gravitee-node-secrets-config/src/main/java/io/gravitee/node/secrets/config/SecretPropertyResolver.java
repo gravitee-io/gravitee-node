@@ -20,15 +20,15 @@ import io.gravitee.secrets.api.core.Secret;
 import io.gravitee.secrets.api.core.SecretURL;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
+import lombok.CustomLog;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 @NoArgsConstructor
 public class SecretPropertyResolver implements WatchablePropertyResolver<Secret> {
 

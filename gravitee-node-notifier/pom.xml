@@ -40,6 +40,10 @@
             <artifactId>gravitee-node-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-logging</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
             <version>${javax-inject.version}</version>

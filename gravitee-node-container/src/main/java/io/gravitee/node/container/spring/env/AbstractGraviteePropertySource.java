@@ -24,8 +24,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.util.Assert;
@@ -34,9 +33,9 @@ import org.springframework.util.Assert;
  * @author Kamiel Ahmadpour (kamiel.ahmadpour at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public abstract class AbstractGraviteePropertySource extends EnumerablePropertySource<Map<String, Object>> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGraviteePropertySource.class);
     private final PropertyResolverFactoriesLoader propertyResolverLoader;
 
     protected AbstractGraviteePropertySource(String name, Map<String, Object> source, ApplicationContext applicationContext) {
@@ -63,7 +62,7 @@ public abstract class AbstractGraviteePropertySource extends EnumerablePropertyS
                 Object resolvedValue = propertyResolver
                     .resolve(value.toString())
                     .doOnError(t -> {
-                        LOGGER.error("Unable to resolve property {}", name, t);
+                        log.error("Unable to resolve property {}", name, t);
                         source.put(name, null);
                     })
                     .blockingGet(); // property must be resolved before continuing with the rest of the code
@@ -87,7 +86,7 @@ public abstract class AbstractGraviteePropertySource extends EnumerablePropertyS
             .watch(value.toString())
             .retryWhen(RxHelper.retryExponentialBackoff(1, TimeUnit.SECONDS))
             .subscribeOn(Schedulers.io())
-            .subscribe(newValue -> source.put(name, newValue), t -> LOGGER.error("Unable to update property {}", name, t));
+            .subscribe(newValue -> source.put(name, newValue), t -> log.error("Unable to update property {}", name, t));
     }
 
     @Override

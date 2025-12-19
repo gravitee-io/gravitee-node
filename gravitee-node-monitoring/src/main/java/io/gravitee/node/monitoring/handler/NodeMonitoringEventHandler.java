@@ -33,8 +33,8 @@ import io.reactivex.rxjava3.core.Completable;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import java.util.Date;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * This handler is responsible to listen to all produced monitoring events and persist them.
@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author GraviteeSource Team
  */
 @RequiredArgsConstructor
-@Slf4j
+@CustomLog
 public class NodeMonitoringEventHandler extends AbstractService<NodeMonitoringEventHandler> {
 
     private final Vertx vertx;

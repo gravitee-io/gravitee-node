@@ -25,16 +25,14 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class ThreadDumpEndpoint implements ManagementEndpoint {
-
-    private final Logger LOGGER = LoggerFactory.getLogger(ThreadDumpEndpoint.class);
 
     private final PlainTextThreadDumpFormatter plainTextFormatter = new PlainTextThreadDumpFormatter();
 
@@ -77,7 +75,7 @@ public class ThreadDumpEndpoint implements ManagementEndpoint {
                                 .setChunked(true)
                                 .send(threadDumpResult.result());
                         } else {
-                            LOGGER.error("Unable to generate thread dump.", threadDumpResult.cause());
+                            log.error("Unable to generate thread dump.", threadDumpResult.cause());
                             context
                                 .response()
                                 .setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500)

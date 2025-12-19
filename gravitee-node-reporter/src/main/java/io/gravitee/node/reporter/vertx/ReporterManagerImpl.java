@@ -24,17 +24,15 @@ import io.gravitee.reporter.api.Reporter;
 import io.vertx.core.Vertx;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class ReporterManagerImpl extends AbstractService<ReporterManager> implements ReporterManager {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReporterManagerImpl.class);
 
     @Autowired
     private Vertx vertx;
@@ -51,37 +49,37 @@ public class ReporterManagerImpl extends AbstractService<ReporterManager> implem
             SpringVerticleFactory.VERTICLE_PREFIX + ':' + ReporterVerticle.class.getName(),
             event -> {
                 if (event.failed()) {
-                    LOGGER.error("Reporter service can not be started", event.cause());
+                    log.error("Reporter service can not be started", event.cause());
                 } else {
                     if (!reporters.isEmpty()) {
                         for (Reporter reporter : reporters) {
                             try {
-                                LOGGER.debug("Pre-starting reporter: {}", reporter);
+                                log.debug("Pre-starting reporter: {}", reporter);
                                 reporter.preStart();
                             } catch (Exception ex) {
-                                LOGGER.error("Unexpected error while pre-starting reporter", ex);
+                                log.error("Unexpected error while pre-starting reporter", ex);
                             }
                         }
 
                         for (Reporter reporter : reporters) {
                             try {
-                                LOGGER.info("Starting reporter: {}", reporter);
+                                log.info("Starting reporter: {}", reporter);
                                 reporter.start();
                             } catch (Exception ex) {
-                                LOGGER.error("Unexpected error while starting reporter", ex);
+                                log.error("Unexpected error while starting reporter", ex);
                             }
                         }
 
                         for (Reporter reporter : reporters) {
                             try {
-                                LOGGER.debug("Port-starting reporter: {}", reporter);
+                                log.debug("Port-starting reporter: {}", reporter);
                                 reporter.postStart();
                             } catch (Exception ex) {
-                                LOGGER.error("Unexpected error while post-starting reporter", ex);
+                                log.error("Unexpected error while post-starting reporter", ex);
                             }
                         }
                     } else {
-                        LOGGER.info("\tThere is no reporter to start");
+                        log.info("\tThere is no reporter to start");
                     }
                 }
 
@@ -105,28 +103,28 @@ public class ReporterManagerImpl extends AbstractService<ReporterManager> implem
                 event -> {
                     for (Reporter reporter : reporters) {
                         try {
-                            LOGGER.debug("Pre-stopping reporter: {}", reporter);
+                            log.debug("Pre-stopping reporter: {}", reporter);
                             reporter.preStop();
                         } catch (Exception ex) {
-                            LOGGER.error("Unexpected error while pre-stopping reporter", ex);
+                            log.error("Unexpected error while pre-stopping reporter", ex);
                         }
                     }
 
                     for (Reporter reporter : reporters) {
                         try {
-                            LOGGER.info("Stopping reporter: {}", reporter);
+                            log.info("Stopping reporter: {}", reporter);
                             reporter.stop();
                         } catch (Exception ex) {
-                            LOGGER.error("Unexpected error while stopping reporter", ex);
+                            log.error("Unexpected error while stopping reporter", ex);
                         }
                     }
 
                     for (Reporter reporter : reporters) {
                         try {
-                            LOGGER.debug("Post-stopping reporter: {}", reporter);
+                            log.debug("Post-stopping reporter: {}", reporter);
                             reporter.postStop();
                         } catch (Exception ex) {
-                            LOGGER.error("Unexpected error while post-stopping reporter", ex);
+                            log.error("Unexpected error while post-stopping reporter", ex);
                         }
                     }
                 }

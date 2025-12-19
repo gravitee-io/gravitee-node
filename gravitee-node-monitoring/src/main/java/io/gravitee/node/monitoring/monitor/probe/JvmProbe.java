@@ -19,16 +19,14 @@ import io.gravitee.node.api.monitor.JvmInfo;
 import java.lang.management.*;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class JvmProbe {
-
-    private final Logger logger = LoggerFactory.getLogger(JvmProbe.class);
 
     private static final RuntimeMXBean runtimeMXBean;
     private static final MemoryMXBean memoryMXBean;
@@ -87,7 +85,7 @@ public class JvmProbe {
             } catch (OutOfMemoryError err) {
                 throw err; // rethrow
             } catch (Exception ex) {
-                logger.debug("Unexpected exception", ex);
+                log.debug("Unexpected exception", ex);
                 /* ignore some JVMs might barf here with:
                  * java.lang.InternalError: Memory Pool not found*/
             }

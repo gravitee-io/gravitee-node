@@ -23,16 +23,14 @@ import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.plugins.service.ServiceManager;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class ServiceManagerImpl extends AbstractService implements ServiceManager {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceManagerImpl.class);
 
     private final List<AbstractService> services = new ArrayList<>();
 
@@ -51,21 +49,21 @@ public class ServiceManagerImpl extends AbstractService implements ServiceManage
             try {
                 service.preStart();
             } catch (Exception ex) {
-                LOGGER.error("Unexpected error while pre-starting service", ex);
+                log.error("Unexpected error while pre-starting service", ex);
             }
         }
         for (AbstractService service : orderedServices) {
             try {
                 service.start();
             } catch (Exception ex) {
-                LOGGER.error("Unexpected error while starting service", ex);
+                log.error("Unexpected error while starting service", ex);
             }
         }
         for (AbstractService service : orderedServices) {
             try {
                 service.postStart();
             } catch (Exception ex) {
-                LOGGER.error("Unexpected error while post-starting service", ex);
+                log.error("Unexpected error while post-starting service", ex);
             }
         }
     }
@@ -83,21 +81,21 @@ public class ServiceManagerImpl extends AbstractService implements ServiceManage
             try {
                 service.preStop();
             } catch (Exception ex) {
-                LOGGER.error("Unexpected error while pre-stopping service", ex);
+                log.error("Unexpected error while pre-stopping service", ex);
             }
         }
         for (AbstractService service : orderedServices) {
             try {
                 service.stop();
             } catch (Exception ex) {
-                LOGGER.error("Unexpected error while stopping service", ex);
+                log.error("Unexpected error while stopping service", ex);
             }
         }
         for (AbstractService service : orderedServices) {
             try {
                 service.postStop();
             } catch (Exception ex) {
-                LOGGER.error("Unexpected error while post-stopping service", ex);
+                log.error("Unexpected error while post-stopping service", ex);
             }
         }
     }

@@ -7,12 +7,11 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import java.util.concurrent.Semaphore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
+@CustomLog
 public class ConcurrencyLimitHandler implements Handler<RoutingContext> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConcurrencyLimitHandler.class);
     private static final int TOO_MANY_REQUESTS = 429;
 
     private final Semaphore semaphore;
@@ -26,7 +25,7 @@ public class ConcurrencyLimitHandler implements Handler<RoutingContext> {
     @Override
     public void handle(RoutingContext context) {
         if (!semaphore.tryAcquire()) {
-            LOGGER.warn(
+            log.warn(
                 "The endpoint rejected request due to concurrency limit of {} for path {} ",
                 maxConcurrentRequests,
                 context.request().path()
@@ -44,7 +43,7 @@ public class ConcurrencyLimitHandler implements Handler<RoutingContext> {
         // Release semaphore when request ends or fails
         response.bodyEndHandler(v -> semaphore.release());
         response.exceptionHandler(e -> {
-            LOGGER.error("Error thrown  ", e);
+            log.error("Error thrown  ", e);
             semaphore.release();
         });
 

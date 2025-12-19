@@ -5,15 +5,15 @@ import io.vertx.core.http.ClientAuth;
 import io.vertx.core.net.KeyCertOptions;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.TrustOptions;
+import lombok.CustomLog;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 @Getter
 @SuperBuilder
 public class VertxTcpServerOptions extends VertxServerOptions {

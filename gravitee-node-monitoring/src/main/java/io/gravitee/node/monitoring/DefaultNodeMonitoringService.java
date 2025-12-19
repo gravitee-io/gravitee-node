@@ -24,18 +24,17 @@ import io.reactivex.rxjava3.core.Single;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 @RequiredArgsConstructor
 public class DefaultNodeMonitoringService implements NodeMonitoringService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNodeMonitoringService.class);
     private static final int CLEANUP_DELAY = 600000;
 
     private final NodeMonitoringRepository repository;
@@ -44,7 +43,7 @@ public class DefaultNodeMonitoringService implements NodeMonitoringService {
     @Override
     public Single<Monitoring> createOrUpdate(Monitoring monitoring) {
         if (repository == null) {
-            LOGGER.debug("There is nowhere to persist the monitoring data {}", monitoring);
+            log.debug("There is nowhere to persist the monitoring data {}", monitoring);
             return Single.just(monitoring);
         }
 

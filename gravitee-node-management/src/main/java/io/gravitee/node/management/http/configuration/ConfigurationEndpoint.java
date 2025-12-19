@@ -30,8 +30,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
@@ -40,9 +39,8 @@ import org.springframework.core.env.EnumerablePropertySource;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class ConfigurationEndpoint implements ManagementEndpoint {
-
-    private final Logger LOGGER = LoggerFactory.getLogger(ConfigurationEndpoint.class);
 
     private static final Set<String> PROPERTY_PREFIXES = new HashSet<>(Arrays.asList("gravitee.", "gravitee_", "GRAVITEE.", "GRAVITEE_"));
 
@@ -115,7 +113,7 @@ public class ConfigurationEndpoint implements ManagementEndpoint {
                 public void handle(AsyncResult<Void> event) {
                     if (event.failed()) {
                         response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
-                        LOGGER.error("Unable to transform data object to JSON", event.cause());
+                        log.error("Unable to transform data object to JSON", event.cause());
                     }
 
                     response.end();

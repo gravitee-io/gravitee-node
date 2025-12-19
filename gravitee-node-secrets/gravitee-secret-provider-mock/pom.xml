@@ -27,7 +27,7 @@
     </parent>
 
     <artifactId>gravitee-secret-provider-mock</artifactId>
-    <name>Gravitee.io - Plugin - Secret Provider - Mock</name>
+    <name>Gravitee.io - Node - Secret Provider - Mock</name>
 
     <properties>
         <maven-plugin-assembly.version>3.7.1</maven-plugin-assembly.version>
@@ -40,6 +40,10 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-logging</artifactId>
         </dependency>
         <dependency>
             <groupId>io.gravitee.secret</groupId>

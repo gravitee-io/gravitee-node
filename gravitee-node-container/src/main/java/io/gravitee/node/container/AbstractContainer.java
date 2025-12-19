@@ -65,7 +65,7 @@ public abstract class AbstractContainer extends AbstractService<Container> imple
             try {
                 configurator.doConfigure(logbackConfigurationfile);
             } catch (JoranException e) {
-                LoggerFactory.getLogger(this.getClass()).error("An error occurs while initializing logging system", e);
+                NodeLoggerFactory.getLogger(this.getClass()).error("An error occurs while initializing logging system", e);
             }
 
             // Internal status data is printed in case of warnings or errors.
@@ -77,7 +77,7 @@ public abstract class AbstractContainer extends AbstractService<Container> imple
     protected void doStart() throws Exception {
         initialize();
 
-        LoggerFactory.getLogger(AbstractContainer.class).info("Starting {}...", name());
+        NodeLoggerFactory.getLogger(AbstractContainer.class).info("Starting {}...", name());
 
         try {
             final Node node = node();
@@ -88,7 +88,7 @@ public abstract class AbstractContainer extends AbstractService<Container> imple
             shutdownHook.setName("graviteeio-finalizer");
             Runtime.getRuntime().addShutdownHook(shutdownHook);
         } catch (Exception ex) {
-            LoggerFactory.getLogger(this.getClass()).error("An unexpected error occurs while starting {}", name(), ex);
+            NodeLoggerFactory.getLogger(this.getClass()).error("An unexpected error occurs while starting {}", name(), ex);
             stop();
         }
     }
@@ -96,7 +96,7 @@ public abstract class AbstractContainer extends AbstractService<Container> imple
     @Override
     public Container preStop() throws Exception {
         if (!stopped) {
-            LoggerFactory.getLogger(this.getClass()).info("Preparing {} for shutting-down...", name());
+            NodeLoggerFactory.getLogger(this.getClass()).info("Preparing {} for shutting-down...", name());
             node().preStop();
         }
         return this;
@@ -105,12 +105,12 @@ public abstract class AbstractContainer extends AbstractService<Container> imple
     @Override
     protected void doStop() throws Exception {
         if (!stopped) {
-            LoggerFactory.getLogger(this.getClass()).info("Shutting-down {}...", name());
+            NodeLoggerFactory.getLogger(this.getClass()).info("Shutting-down {}...", name());
 
             try {
                 node().stop();
             } catch (Exception ex) {
-                LoggerFactory.getLogger(this.getClass()).error("Unexpected error", ex);
+                NodeLoggerFactory.getLogger(this.getClass()).error("Unexpected error", ex);
             } finally {
                 stopped = true;
             }
@@ -132,7 +132,7 @@ public abstract class AbstractContainer extends AbstractService<Container> imple
                     AbstractContainer.this.preStop();
                     AbstractContainer.this.stop();
                 } catch (Exception ex) {
-                    LoggerFactory.getLogger(this.getClass()).error("Unexpected error while stopping {}", name(), ex);
+                    NodeLoggerFactory.getLogger(this.getClass()).error("Unexpected error while stopping {}", name(), ex);
                 }
             }
         }

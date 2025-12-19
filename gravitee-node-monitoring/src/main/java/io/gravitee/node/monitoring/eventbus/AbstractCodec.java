@@ -22,17 +22,15 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 abstract class AbstractCodec<T> implements MessageCodec<T, T> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractCodec.class);
 
     private final String codecName;
 
@@ -54,7 +52,7 @@ abstract class AbstractCodec<T> implements MessageCodec<T, T> {
             buffer.appendInt(length);
             buffer.appendBytes(data);
         } catch (final Exception ex) {
-            LOGGER.error("Error while trying to encode a Monitor object", ex);
+            log.error("Error while trying to encode a Monitor object", ex);
         }
     }
 
@@ -76,7 +74,7 @@ abstract class AbstractCodec<T> implements MessageCodec<T, T> {
             ObjectInputStream is = new ObjectInputStream(in);
             return (T) is.readObject();
         } catch (Exception ex) {
-            LOGGER.error("Error while trying to decode object using codec {}", this.codecName, ex);
+            log.error("Error while trying to decode object using codec {}", this.codecName, ex);
         }
 
         return null;

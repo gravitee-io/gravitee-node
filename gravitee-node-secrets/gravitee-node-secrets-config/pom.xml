@@ -43,6 +43,10 @@
             <artifactId>gravitee-node-secrets-plugin-handler</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-logging</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.gravitee.secret</groupId>
             <artifactId>gravitee-secret-api</artifactId>
         </dependency>

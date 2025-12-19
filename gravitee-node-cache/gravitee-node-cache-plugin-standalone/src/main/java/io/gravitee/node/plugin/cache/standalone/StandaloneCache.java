@@ -17,13 +17,13 @@ package io.gravitee.node.plugin.cache.standalone;
 
 import io.gravitee.node.api.cache.CacheConfiguration;
 import io.gravitee.node.plugin.cache.common.InMemoryCache;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 /**
  * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 public class StandaloneCache<K, V> extends InMemoryCache<K, V> {
 
     public StandaloneCache(String name, CacheConfiguration configuration) {

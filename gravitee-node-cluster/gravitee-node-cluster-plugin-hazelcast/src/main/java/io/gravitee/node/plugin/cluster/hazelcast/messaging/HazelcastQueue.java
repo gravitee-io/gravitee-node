@@ -23,8 +23,8 @@ import io.gravitee.node.api.cluster.messaging.Queue;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
@@ -60,7 +60,7 @@ public class HazelcastQueue<T> implements Queue<T> {
     }
 
     @RequiredArgsConstructor
-    @Slf4j
+    @CustomLog
     public static class QueuePollingThread<T> extends Thread {
 
         private final IQueue<T> queue;
