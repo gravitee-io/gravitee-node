@@ -53,6 +53,7 @@
         <module>gravitee-node-secrets</module>
         <module>gravitee-node-container</module>
         <module>gravitee-node-services</module>
+        <module>gravitee-node-logging</module>
     </modules>
 
     <properties>
@@ -177,6 +178,11 @@
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-license</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-logging</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
