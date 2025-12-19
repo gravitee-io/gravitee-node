@@ -18,7 +18,7 @@ package io.gravitee.node.certificates;
 import io.gravitee.node.api.certificate.CRLLoader;
 import io.gravitee.node.api.certificate.CRLRefreshable;
 import java.util.concurrent.atomic.AtomicBoolean;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 /**
  * Manager responsible for managing a {@link CRLLoader} instance and propagating CRL updates
@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Guillaume SALA (guillaume.sala at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 public class CRLLoaderManager {
 
     private final CRLRefreshable crlRefreshable;

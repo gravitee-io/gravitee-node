@@ -42,6 +42,11 @@
             <artifactId>gravitee-node-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-logging</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- Hazelcast -->
         <dependency>
             <groupId>com.hazelcast</groupId>

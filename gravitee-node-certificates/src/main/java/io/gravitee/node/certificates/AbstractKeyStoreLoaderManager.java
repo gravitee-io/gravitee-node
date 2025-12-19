@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 /**
  *
@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author GraviteeSource Team
  *
  */
-@Slf4j
+@CustomLog
 public class AbstractKeyStoreLoaderManager {
 
     private final Map<String, KeyStoreLoader> loaders;

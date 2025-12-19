@@ -15,9 +15,6 @@
  */
 package io.gravitee.node.vertx.client.http;
 
-import static io.netty.handler.codec.http2.Http2CodecUtil.MAX_FRAME_SIZE_UPPER_BOUND;
-import static io.vertx.core.http.Http2Settings.DEFAULT_MAX_CONCURRENT_STREAMS;
-
 import io.gravitee.node.api.configuration.Configuration;
 import io.gravitee.node.vertx.client.ssl.KeyStore;
 import io.gravitee.node.vertx.client.ssl.SslOptions;
@@ -35,10 +32,10 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import lombok.Builder;
+import lombok.CustomLog;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@CustomLog
 @Builder
 public class VertxHttpClientFactory {
 

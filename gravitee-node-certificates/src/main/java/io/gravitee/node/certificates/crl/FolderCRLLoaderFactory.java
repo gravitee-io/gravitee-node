@@ -19,7 +19,7 @@ import io.gravitee.node.api.certificate.CRLLoader;
 import io.gravitee.node.api.certificate.CRLLoaderFactory;
 import io.gravitee.node.api.certificate.CRLLoaderOptions;
 import java.io.File;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 /**
  * Factory for creating {@link FolderCRLLoader} instances that monitor a directory containing CRL files.
@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Guillaume SALA (guillaume.sala at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 public class FolderCRLLoaderFactory implements CRLLoaderFactory {
 
     @Override

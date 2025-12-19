@@ -3,9 +3,9 @@ package io.gravitee.node.secrets.plugins.internal;
 import io.gravitee.plugin.core.api.AbstractSingleSubTypesFinder;
 import io.gravitee.secrets.api.plugin.SecretManagerConfiguration;
 import java.util.Collection;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
-@Slf4j
+@CustomLog
 public class SecretManagerConfigurationClassFinder extends AbstractSingleSubTypesFinder<SecretManagerConfiguration> {
 
     protected SecretManagerConfigurationClassFinder() {

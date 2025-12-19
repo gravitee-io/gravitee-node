@@ -42,6 +42,10 @@
         </dependency>
         <dependency>
             <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-management</artifactId>
         </dependency>
         <dependency>

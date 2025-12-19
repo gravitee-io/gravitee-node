@@ -24,13 +24,13 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 public class FileKeyStoreLoader extends AbstractFileKeyStoreLoader<KeyStoreLoaderOptions> implements KeyStoreLoader {
 
     public FileKeyStoreLoader(KeyStoreLoaderOptions options) {

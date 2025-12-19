@@ -11,8 +11,8 @@ import java.nio.file.*;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 /**
@@ -27,7 +27,7 @@ import org.springframework.util.StringUtils;
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 @RequiredArgsConstructor
 public class DefaultLicenseFetcher implements LicenseFetcher {
 

@@ -28,16 +28,15 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.security.KeyStore;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public abstract class AbstractKubernetesKeyStoreLoader<T> extends AbstractKeyStoreLoader<KeyStoreLoaderOptions> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractKubernetesKeyStoreLoader.class);
     protected static final int RETRY_DELAY_MILLIS = 10000;
 
     protected final KubernetesClient kubernetesClient;
@@ -71,7 +70,7 @@ public abstract class AbstractKubernetesKeyStoreLoader<T> extends AbstractKeySto
             watch()
                 .observeOn(Schedulers.computation())
                 .flatMapCompletable(t -> loadKeyStore(t).andThen(Completable.fromRunnable(this::emitKeyStoreEvent)))
-                .doOnError(throwable -> logger.error("An error occurred during keystore refresh. Restarting watch.", throwable))
+                .doOnError(throwable -> log.error("An error occurred during keystore refresh. Restarting watch.", throwable))
                 .retry()
                 .subscribe();
     }

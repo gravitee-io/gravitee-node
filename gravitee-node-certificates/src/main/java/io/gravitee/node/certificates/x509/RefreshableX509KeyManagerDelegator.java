@@ -29,16 +29,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.net.ssl.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class RefreshableX509KeyManagerDelegator extends X509ExtendedKeyManager implements RefreshableX509Manager {
-
-    private static final Logger logger = LoggerFactory.getLogger(RefreshableX509KeyManagerDelegator.class);
 
     static final int MAX_SNI_DOMAINS = 10000;
     private final String target;
@@ -89,7 +87,7 @@ public class RefreshableX509KeyManagerDelegator extends X509ExtendedKeyManager i
 
             dataHolder = new KeyManagerDataHolder(sniFallbackAlias, new ConcurrentHashMap<>(newCommonNamesByAlias), keyManager);
 
-            logger.info("Key store has been (re)loaded with {} entries for target: {}", keyStore.size(), target);
+            log.info("Key store has been (re)loaded with {} entries for target: {}", keyStore.size(), target);
         } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
             throw new KeyStoreProcessingException("Unable to initialize key manager keystore", e);
         }

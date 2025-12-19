@@ -8,13 +8,13 @@ import javax.net.ssl.ManagerFactoryParameters;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.TrustManagerFactorySpi;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 class VertxTrustManagerFactory extends TrustManagerFactory {
 
     private static final String TRUST_MANAGER_FACTORY_ALGORITHM = "no-algorithm";
