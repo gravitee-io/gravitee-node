@@ -54,6 +54,7 @@
         <module>gravitee-node-container</module>
         <module>gravitee-node-services</module>
         <module>gravitee-node-logging</module>
+        <module>gravitee-node-archunit</module>
     </modules>
 
     <properties>
