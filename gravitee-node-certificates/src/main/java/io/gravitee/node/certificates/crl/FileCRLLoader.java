@@ -22,7 +22,7 @@ import java.nio.file.Paths;
 import java.security.cert.CRL;
 import java.util.Collections;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 /**
  * CRL loader that monitors a single CRL file for changes. When the file is modified,
@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Guillaume SALA (guillaume.sala at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 public class FileCRLLoader extends AbstractFileCRLLoader {
 
     public FileCRLLoader(CRLLoaderOptions options) {

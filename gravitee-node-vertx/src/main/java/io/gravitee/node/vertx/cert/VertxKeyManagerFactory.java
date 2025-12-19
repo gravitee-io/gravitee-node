@@ -22,16 +22,15 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.KeyManagerFactorySpi;
 import javax.net.ssl.ManagerFactoryParameters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 class VertxKeyManagerFactory extends KeyManagerFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(VertxKeyManagerFactory.class);
     private static final String KEY_MANAGER_FACTORY_ALGORITHM = "no-algorithm";
     private static final Provider PROVIDER = new Provider("", 1.0, "") {};
 
@@ -50,12 +49,12 @@ class VertxKeyManagerFactory extends KeyManagerFactory {
 
         @Override
         protected void engineInit(KeyStore keyStore, char[] keyStorePassword) {
-            LOGGER.info("Ignoring provided KeyStore");
+            log.info("Ignoring provided KeyStore");
         }
 
         @Override
         protected void engineInit(ManagerFactoryParameters managerFactoryParameters) {
-            LOGGER.info("Ignoring provided ManagerFactoryParameters");
+            log.info("Ignoring provided ManagerFactoryParameters");
         }
 
         @Override

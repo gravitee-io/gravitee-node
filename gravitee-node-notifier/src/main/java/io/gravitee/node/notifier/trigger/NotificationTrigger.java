@@ -34,17 +34,15 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 import org.springframework.scheduling.support.CronExpression;
 
 /**
  * @author Eric LELEU (eric.leleu at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class NotificationTrigger implements Handler<Long> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationTrigger.class);
 
     private final Vertx vertx;
 
@@ -107,7 +105,7 @@ public class NotificationTrigger implements Handler<Long> {
             this.vertx.cancelTimer(this.scheduledTaskId);
         }
         this.scheduledTaskId = null;
-        LOGGER.debug("Notification Trigger cancelled !");
+        log.debug("Notification Trigger cancelled !");
     }
 
     private long computeNextAttempt() {
@@ -140,7 +138,7 @@ public class NotificationTrigger implements Handler<Long> {
                             // instantiate the plugin and send notification
                             final Optional<Notifier> optNotifier = notifierFactory.create(definition);
                             if (optNotifier.isPresent()) {
-                                LOGGER.debug(
+                                log.debug(
                                     "Send Notification with notifier type {} to audience {} about resource {}",
                                     definition.getType(),
                                     definition.getAudienceId(),
@@ -154,7 +152,7 @@ public class NotificationTrigger implements Handler<Long> {
                                         .send(buildNotification(definition), definition.getData())
                                         .whenComplete((Void anotherVoid, Throwable throwable) -> {
                                             if (throwable != null) {
-                                                LOGGER.error(
+                                                log.error(
                                                     "An error occurs while sending notification to {}",
                                                     definition.getType(),
                                                     throwable
@@ -162,7 +160,7 @@ public class NotificationTrigger implements Handler<Long> {
                                                 // trigger a new attempt
                                                 this.scheduleNextAttempt();
                                             } else {
-                                                LOGGER.debug("A notification has been sent to {}", definition.getType());
+                                                log.debug("A notification has been sent to {}", definition.getType());
 
                                                 NotificationAcknowledge notificationAcknowledge = notifAck.orElse(
                                                     new NotificationAcknowledge()
@@ -188,7 +186,7 @@ public class NotificationTrigger implements Handler<Long> {
                                                 //trigger a new attempt
                                                 saveAcknowledge
                                                     .onErrorResumeNext(error -> {
-                                                        LOGGER.warn(
+                                                        log.warn(
                                                             "Unable to store acknowledge for notification with audience {} and resource {}",
                                                             definition.getAudienceId(),
                                                             definition.getResourceId(),
@@ -202,7 +200,7 @@ public class NotificationTrigger implements Handler<Long> {
                                         })
                                 );
                             } else {
-                                LOGGER.warn(
+                                log.warn(
                                     "Notifier {} not found, unable to send notification to target {} about resource {}",
                                     definition.getType(),
                                     definition.getAudienceId(),
@@ -210,7 +208,7 @@ public class NotificationTrigger implements Handler<Long> {
                                 );
                             }
                         } else {
-                            LOGGER.debug(
+                            log.debug(
                                 "Notification about resource {} already sent to target {}",
                                 definition.getResourceId(),
                                 definition.getAudienceId()
@@ -225,7 +223,7 @@ public class NotificationTrigger implements Handler<Long> {
                     error -> {
                         //trigger a new attempt
                         this.scheduleNextAttempt();
-                        LOGGER.warn("Notification can't be send : {}", error.getMessage());
+                        log.warn("Notification can't be send : {}", error.getMessage());
                     }
                 );
         } else {

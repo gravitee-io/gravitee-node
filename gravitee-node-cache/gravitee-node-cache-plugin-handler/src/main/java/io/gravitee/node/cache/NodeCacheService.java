@@ -18,7 +18,7 @@ package io.gravitee.node.cache;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.api.cache.CacheManager;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Lazy;
  * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 public class NodeCacheService extends AbstractService<NodeCacheService> {
 
     @Autowired

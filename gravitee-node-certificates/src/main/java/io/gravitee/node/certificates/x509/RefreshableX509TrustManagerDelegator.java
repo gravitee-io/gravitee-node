@@ -27,17 +27,16 @@ import java.util.Objects;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509ExtendedTrustManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class RefreshableX509TrustManagerDelegator extends X509ExtendedTrustManager implements RefreshableX509Manager, CRLRefreshable {
 
     private final String target;
-    private static final Logger logger = LoggerFactory.getLogger(RefreshableX509TrustManagerDelegator.class);
     private X509ExtendedTrustManager delegate;
     private volatile List<CRL> crls = List.of();
 
@@ -58,7 +57,7 @@ public class RefreshableX509TrustManagerDelegator extends X509ExtendedTrustManag
 
             this.delegate = (X509ExtendedTrustManager) trustManagerFactory.getTrustManagers()[0];
 
-            logger.info("Trust store has been (re)loaded with {} entries for target: {}", keyStore.size(), target);
+            log.info("Trust store has been (re)loaded with {} entries for target: {}", keyStore.size(), target);
         } catch (Exception e) {
             throw new IllegalArgumentException("Unable to create trust manager for target: %s".formatted(target), e);
         }
@@ -68,7 +67,7 @@ public class RefreshableX509TrustManagerDelegator extends X509ExtendedTrustManag
     public void refresh(List<CRL> crls) {
         if (crls != null) {
             this.crls = List.copyOf(crls);
-            logger.info("CRL has been (re)loaded with {} entries for target: {}", crls.size(), target);
+            log.info("CRL has been (re)loaded with {} entries for target: {}", crls.size(), target);
         }
     }
 

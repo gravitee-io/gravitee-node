@@ -20,8 +20,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,15 +31,14 @@ import org.springframework.core.io.FileSystemResource;
  * @author GraviteeSource Team
  */
 @Configuration
+@CustomLog
 public class PropertiesConfiguration {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(PropertiesConfiguration.class);
 
     public static final String GRAVITEE_CONFIGURATION = "gravitee.conf";
 
     @Bean(name = "graviteeProperties")
     public Properties graviteeProperties() throws IOException {
-        LOGGER.info("Loading Gravitee configuration.");
+        log.info("Loading Gravitee configuration.");
 
         YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
 
@@ -60,13 +58,13 @@ public class PropertiesConfiguration {
             } else {
                 action = "overridden";
             }
-            LOGGER.info("\tGravitee configuration {} from {}", action, yamlResource.getURL().getPath());
+            log.info("\tGravitee configuration {} from {}", action, yamlResource.getURL().getPath());
         }
 
         yaml.setResources(yamlResources.toArray(new FileSystemResource[] {}));
 
         Properties properties = yaml.getObject();
-        LOGGER.info("Loading Gravitee configuration. DONE");
+        log.info("Loading Gravitee configuration. DONE");
 
         return properties;
     }

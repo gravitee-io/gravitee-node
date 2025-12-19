@@ -9,14 +9,14 @@ import io.gravitee.node.api.cluster.ClusterManager;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Remi Baptiste (remi.baptiste at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 @RequiredArgsConstructor
 public class ClusterEndpoint implements ManagementEndpoint {
 

@@ -18,7 +18,7 @@ package io.gravitee.node.container.spring;
 import io.gravitee.node.container.ContainerInitializer;
 import java.util.List;
 import javax.annotation.Nonnull;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -37,7 +37,7 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 class ContainerInitializerBeanRegistryPostProcessor implements BeanDefinitionRegistryPostProcessor, PriorityOrdered {
 
     @Override

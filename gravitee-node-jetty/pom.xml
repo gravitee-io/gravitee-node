@@ -42,6 +42,11 @@
             <artifactId>gravitee-node-api</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-logging</artifactId>
+        </dependency>
+
         <!-- Spring -->
         <dependency>
             <groupId>org.springframework</groupId>

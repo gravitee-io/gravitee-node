@@ -24,14 +24,14 @@ import io.vertx.redis.client.RedisOptions;
 import io.vertx.redis.client.RedisRole;
 import java.util.List;
 import java.util.UUID;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.springframework.util.StringUtils;
 
 /**
  * @author Eric LELEU (eric.leleu at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 public class RedisOptionsFactory {
 
     private RedisOptionsFactory() {

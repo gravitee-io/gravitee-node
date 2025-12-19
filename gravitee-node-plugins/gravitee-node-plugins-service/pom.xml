@@ -35,5 +35,9 @@
             <groupId>io.gravitee.plugin</groupId>
             <artifactId>gravitee-plugin-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-logging</artifactId>
+        </dependency>
     </dependencies>
 </project>

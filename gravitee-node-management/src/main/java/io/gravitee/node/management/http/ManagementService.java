@@ -19,17 +19,15 @@ import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.management.http.vertx.verticle.ManagementVerticle;
 import io.gravitee.node.vertx.verticle.factory.SpringVerticleFactory;
 import io.vertx.core.Vertx;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class ManagementService extends AbstractService<ManagementService> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ManagementService.class);
 
     @Autowired
     private Vertx vertx;
@@ -44,7 +42,7 @@ public class ManagementService extends AbstractService<ManagementService> {
             SpringVerticleFactory.VERTICLE_PREFIX + ':' + ManagementVerticle.class.getName(),
             event -> {
                 if (event.failed()) {
-                    LOGGER.error("Node Management API service can not be started", event.cause());
+                    log.error("Node Management API service can not be started", event.cause());
                 }
 
                 deploymentId = event.result();

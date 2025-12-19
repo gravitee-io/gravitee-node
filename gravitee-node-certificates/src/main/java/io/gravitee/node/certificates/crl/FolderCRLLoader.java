@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 /**
  * CRL loader that monitors a directory containing CRL files for changes. It loads all CRL files
@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Guillaume SALA (guillaume.sala at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 public class FolderCRLLoader extends AbstractFileCRLLoader {
 
     public FolderCRLLoader(CRLLoaderOptions options) {

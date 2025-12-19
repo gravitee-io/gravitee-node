@@ -27,13 +27,13 @@ import java.io.ByteArrayInputStream;
 import java.util.*;
 import javax.annotation.Nonnull;
 import javax0.license3j.io.LicenseReader;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 /**
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 public class DefaultLicenseFactory implements LicenseFactory {
 
     private static final String LICENSE_TIER_KEY = "tier";

@@ -42,8 +42,8 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
@@ -51,7 +51,7 @@ import lombok.extern.slf4j.Slf4j;
  * @see <a href="https://github.com/quarkusio/quarkus/blob/main/extensions/opentelemetry/runtime/src/main/java/io/quarkus/opentelemetry/runtime/exporter/otlp/OTelExporterRecorder.java">OTelExporterRecorder.java</a>
  */
 @RequiredArgsConstructor
-@Slf4j
+@CustomLog
 public class SpanExporterFactory extends AbstractService<SpanExporterFactory> {
 
     private static final String OTLP_VALUE = "otlp";

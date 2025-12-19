@@ -7,8 +7,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
+import lombok.CustomLog;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * This default {@link LicenseManager} is responsible for keeping a reference on the platform and the organizations licenses.
@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Jeoffrey HAEYAERT (jeoffrey.haeyaert at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 public class DefaultLicenseManager extends AbstractService<LicenseManager> implements LicenseManager {
 
     public static final License OSS_LICENSE = new OSSLicense();

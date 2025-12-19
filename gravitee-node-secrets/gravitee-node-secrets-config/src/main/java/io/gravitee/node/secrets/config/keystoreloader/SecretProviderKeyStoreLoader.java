@@ -12,13 +12,13 @@ import io.gravitee.secrets.api.core.SecretMap;
 import io.gravitee.secrets.api.core.SecretURL;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.security.KeyStore;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 public class SecretProviderKeyStoreLoader extends AbstractKeyStoreLoader<KeyStoreLoaderOptions> {
 
     private final GraviteeConfigurationSecretResolver configurationSecretResolver;

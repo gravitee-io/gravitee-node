@@ -37,6 +37,10 @@
             <artifactId>gravitee-node-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-logging</artifactId>
+        </dependency>
         <!-- Vert.x -->
         <dependency>
             <groupId>io.vertx</groupId>

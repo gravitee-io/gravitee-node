@@ -24,7 +24,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.springframework.stereotype.Component;
 
 /**
@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
  * @author GraviteeSource Team
  */
 @Component
-@Slf4j
+@CustomLog
 public class UpgraderServiceImpl extends AbstractService<UpgraderServiceImpl> implements LifecycleComponent<UpgraderServiceImpl> {
 
     private final Configuration configuration;

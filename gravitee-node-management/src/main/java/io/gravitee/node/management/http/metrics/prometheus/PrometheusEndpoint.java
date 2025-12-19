@@ -29,8 +29,7 @@ import io.vertx.micrometer.backends.BackendRegistries;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * Endpoint used to expose metrics using a Prometheus registry
@@ -40,9 +39,8 @@ import org.slf4j.LoggerFactory;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 public class PrometheusEndpoint implements ManagementEndpoint {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(PrometheusEndpoint.class);
 
     private final PrometheusMeterRegistry prometheusRegistry;
 
@@ -83,7 +81,7 @@ public class PrometheusEndpoint implements ManagementEndpoint {
                 response.end();
             }
         } catch (IOException ioe) {
-            LOGGER.error("Unexpected error while scraping the Prometheus endpoint", ioe);
+            log.error("Unexpected error while scraping the Prometheus endpoint", ioe);
             if (!response.ended()) {
                 response.close();
             }

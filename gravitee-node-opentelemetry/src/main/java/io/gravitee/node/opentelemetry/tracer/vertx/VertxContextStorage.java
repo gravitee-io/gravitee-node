@@ -5,12 +5,12 @@ import io.opentelemetry.context.ContextStorage;
 import io.opentelemetry.context.Scope;
 import io.smallrye.common.vertx.VertxContext;
 import io.vertx.core.Vertx;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 /**
  * See <a href="https://github.com/quarkusio/quarkus/blob/main/extensions/opentelemetry/runtime/src/main/java/io/quarkus/opentelemetry/runtime/QuarkusContextStorage.java">QuarkusContextStorage.java</a>
  */
-@Slf4j
+@CustomLog
 public enum VertxContextStorage implements ContextStorage {
     INSTANCE;
 

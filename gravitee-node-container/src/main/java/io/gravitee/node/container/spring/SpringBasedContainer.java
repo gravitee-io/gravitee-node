@@ -24,6 +24,7 @@ import io.gravitee.node.container.AbstractContainer;
 import io.gravitee.node.container.spring.env.EnvironmentConfiguration;
 import io.gravitee.node.container.spring.env.PropertiesConfiguration;
 import io.gravitee.node.license.LicenseLoaderService;
+import io.gravitee.node.logging.NodeLoggerFactory;
 import io.gravitee.node.management.http.spring.ManagementConfiguration;
 import io.gravitee.node.monitoring.spring.NodeMonitoringConfiguration;
 import io.gravitee.node.opentelemetry.spring.OpenTelemetrySpringConfiguration;
@@ -37,8 +38,7 @@ import io.gravitee.plugin.core.spring.PluginConfiguration;
 import io.gravitee.plugin.core.spring.PluginHandlerBeanRegistryPostProcessor;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -46,7 +46,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 public abstract class SpringBasedContainer extends AbstractContainer {
 
     private AnnotationConfigApplicationContext ctx;
@@ -178,7 +178,7 @@ public abstract class SpringBasedContainer extends AbstractContainer {
                 stopBootstrapComponents(ctx);
                 node().stop();
             } catch (Exception ex) {
-                LoggerFactory.getLogger(this.getClass()).error("Unexpected error", ex);
+                NodeLoggerFactory.getLogger(this.getClass()).error("Unexpected error", ex);
             } finally {
                 ctx.close();
                 stopped = true;

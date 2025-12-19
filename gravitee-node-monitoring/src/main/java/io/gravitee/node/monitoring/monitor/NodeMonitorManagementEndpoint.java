@@ -29,14 +29,14 @@ import io.gravitee.node.monitoring.monitor.probe.OsProbe;
 import io.gravitee.node.monitoring.monitor.probe.ProcessProbe;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Slf4j
+@CustomLog
 @RequiredArgsConstructor
 public class NodeMonitorManagementEndpoint implements ManagementEndpoint {
 

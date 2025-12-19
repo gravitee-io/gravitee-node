@@ -13,10 +13,10 @@ import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.net.NetClient;
 import java.util.concurrent.TimeUnit;
 import lombok.Builder;
+import lombok.CustomLog;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@CustomLog
 @Builder
 public class VertxTcpClientFactory {
 
