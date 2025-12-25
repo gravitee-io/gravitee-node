@@ -48,7 +48,7 @@ public abstract class AbstractInstrumenterTracer<REQ, RESP> extends AbstractServ
             }
         }
         Instrumenter<REQ, RESP> instrumenter;
-        if (parentContext.equals(io.opentelemetry.context.Context.root())) {
+        if (root || parentContext.equals(io.opentelemetry.context.Context.root())) {
             instrumenter = getRootInstrumenter();
         } else {
             instrumenter = getDefaultInstrumenter();
