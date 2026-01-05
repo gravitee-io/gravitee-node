@@ -77,6 +77,19 @@ public class NodeAwareLogger implements Logger {
     private final AtomicReference<Supplier<Node>> nodeSupplierRef;
 
     /**
+     * Extracts the delegate logger from the given logger if it is an instance of {@code NodeAwareLogger}.
+     * If the provided logger is not a {@code NodeAwareLogger}, the method returns the original logger.
+     * It avoids enriching MDC twice when calling {@code withLoggingContext(Runnable logAction)}
+     *
+     * @param logger the logger instance from which to extract the delegate logger
+     * @return the delegate logger if the input logger is an instance of {@code NodeAwareLogger};
+     *         otherwise, returns the original logger
+     */
+    private static Logger extractDelegateLogger(Logger logger) {
+        return logger instanceof NodeAwareLogger nodeAwareLogger ? nodeAwareLogger.delegateLogger : logger;
+    }
+
+    /**
      * Constructs a NodeAwareLogger instance that associates a specific {@link Node}
      * with the provided {@link Logger}. This constructor ensures that the node and
      * logger instances are not null before proceeding. The logger serves as the
@@ -94,7 +107,7 @@ public class NodeAwareLogger implements Logger {
         Objects.requireNonNull(node, "Node must not be null");
         Objects.requireNonNull(logger, "Delegate logger must not be null");
         this.node = node;
-        this.delegateLogger = logger;
+        this.delegateLogger = extractDelegateLogger(logger);
         this.nodeSupplierRef = new AtomicReference<>(() -> node);
         Set<LogEntry<?>> logEntries = new HashSet<>();
         registerLogEntries(logEntries);
@@ -117,7 +130,7 @@ public class NodeAwareLogger implements Logger {
         Objects.requireNonNull(nodeSupplierRef, "Factory supplier provider must not be null");
         Objects.requireNonNull(logger, "Delegate logger must not be null");
         this.nodeSupplierRef = nodeSupplierRef;
-        this.delegateLogger = logger;
+        this.delegateLogger = extractDelegateLogger(logger);
         Set<LogEntry<?>> logEntries = new HashSet<>();
         registerLogEntries(logEntries);
         this.logEntries = Set.copyOf(logEntries);

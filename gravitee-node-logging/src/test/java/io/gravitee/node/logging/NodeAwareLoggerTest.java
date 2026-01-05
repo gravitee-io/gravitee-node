@@ -17,6 +17,9 @@ package io.gravitee.node.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -32,6 +35,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
@@ -129,5 +134,20 @@ public class NodeAwareLoggerTest {
         assertThat(eventWithNodeInfo.getLevel()).isEqualTo(Level.INFO);
         assertThat(eventWithNodeInfo.getFormattedMessage()).isEqualTo("Hello world, with node info");
         assertThat(eventWithNodeInfo.getMDCPropertyMap()).containsEntry("nodeId", "my-node").containsEntry("nodeHostname", "my-host");
+    }
+
+    @Test
+    public void should_enrich_mdc_only_once_when_delegate_is_nodeAwareLogger() {
+        try (MockedStatic<MDC> mdcMock = Mockito.mockStatic(MDC.class)) {
+            Node node = new FakeNode("my-node", "my-host");
+            NodeAwareLogger logger = new NodeAwareLogger(node, new NodeAwareLogger(node, delegate));
+
+            logger.info("Hello {}", "world");
+
+            // When the delegate is a NodeAwareLogger, we want to populate the MDC only once
+            mdcMock.verify(() -> MDC.put(eq("nodeId"), anyString()), times(1));
+            mdcMock.verify(() -> MDC.put(eq("nodeHostname"), anyString()), times(1));
+            mdcMock.verify(() -> MDC.put(eq("nodeApplication"), anyString()), times(1));
+        }
     }
 }
