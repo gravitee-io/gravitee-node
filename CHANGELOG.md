@@ -1,3 +1,18 @@
+# [7.19.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/7.18.3...7.19.0-alpha.1) (2026-01-05)
+
+
+### Bug Fixes
+
+* avoid populating MDC twice when delegate is a NodeAwareLogger ([1fe2fa3](https://github.com/gravitee-io/gravitee-node/commit/1fe2fa3884ced07d801ce0f1de542788d8a2678c))
+
+
+### Features
+
+* configure lombok to inject new NodeAwareLogger when using @CustomLog annotation ([98ac926](https://github.com/gravitee-io/gravitee-node/commit/98ac926a226a38f3baacb315769f9f34a2509ee8))
+* initialize NodeLoggerFactory with current node instance ([df61ad3](https://github.com/gravitee-io/gravitee-node/commit/df61ad3961dd54588feddfd8c59421b3bcc8c77d))
+* introduce node-logging capabilities ([69a09cf](https://github.com/gravitee-io/gravitee-node/commit/69a09cf827379541371a6c0e9945e6ca68d645f6))
+* migrate log calls to use the new NodeAwareLogger ([3ca2b42](https://github.com/gravitee-io/gravitee-node/commit/3ca2b420c687c2de9a94439fdfe1d59e4432f0fa))
+
 ## [7.18.3](https://github.com/gravitee-io/gravitee-node/compare/7.18.2...7.18.3) (2025-12-16)
 
 
