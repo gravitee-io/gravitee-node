@@ -10,7 +10,6 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.lang.ArchRule;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -57,7 +56,6 @@ public final class LoggingArchitectureRules {
     public static final class Builder {
 
         private static final String SLF4J_LOGGER_FACTORY = "org.slf4j.LoggerFactory";
-        private static final String LOMBOK_SLF4J_ANNOTATION = "lombok.extern.slf4j.Slf4j";
 
         private final Set<String> allowList = new HashSet<>();
         private String[] basePackages;
@@ -106,29 +104,6 @@ public final class LoggingArchitectureRules {
                 .as("Classes must not depend on SLF4J LoggerFactory");
 
             rule.check(classes.that(notInAllowList()));
-        }
-
-        /**
-         * Checks the rule: no Lombok {@code @Slf4j} annotation usage, except classes in the allow-list.
-         */
-        public void checkNoLombokSlf4j() {
-            JavaClasses classes = importClasses();
-            ArchRule rule = noClasses()
-                .that()
-                .resideInAnyPackage(this.basePackages)
-                .should()
-                .beAnnotatedWith(LOMBOK_SLF4J_ANNOTATION)
-                .as("Classes must not be annotated with Lombok @Slf4j");
-
-            rule.check(classes.that(notInAllowList()));
-        }
-
-        /**
-         * Checks both rules: no {@code LoggerFactory} dependency and no Lombok {@code @Slf4j} usage.
-         */
-        public void checkAll() {
-            checkNoSlf4jLoggerFactory();
-            checkNoLombokSlf4j();
         }
 
         private JavaClasses importClasses() {
