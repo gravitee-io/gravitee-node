@@ -1,3 +1,10 @@
+# [7.19.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/7.19.0-alpha.2...7.19.0-alpha.3) (2026-01-06)
+
+
+### Bug Fixes
+
+* use unknown value instead of debug log ([2a37392](https://github.com/gravitee-io/gravitee-node/commit/2a37392f53df129c1a203b50f4ff2de810787b2f))
+
 # [7.19.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/7.19.0-alpha.1...7.19.0-alpha.2) (2026-01-06)
 
 
