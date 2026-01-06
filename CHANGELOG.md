@@ -1,3 +1,10 @@
+# [7.19.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/7.19.0-alpha.1...7.19.0-alpha.2) (2026-01-06)
+
+
+### Bug Fixes
+
+* remove useless checkNoLombokSlf4j method ([99170af](https://github.com/gravitee-io/gravitee-node/commit/99170af1d33eff0e7c91a540bcde8648f5ac58c2))
+
 # [7.19.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/7.18.3...7.19.0-alpha.1) (2026-01-05)
 
 
