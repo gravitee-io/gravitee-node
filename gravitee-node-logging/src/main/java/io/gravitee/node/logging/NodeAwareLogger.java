@@ -56,6 +56,7 @@ public class NodeAwareLogger implements Logger {
         LogEntryFactory.cached("nodeHostname", Node.class, Node::hostname),
         LogEntryFactory.cached("nodeApplication", Node.class, Node::application)
     );
+    public static final String UNKNOWN = "unknown";
 
     private Node node;
     protected final Logger delegateLogger;
@@ -197,12 +198,7 @@ public class NodeAwareLogger implements Logger {
      * or an empty {@code Optional} if no matching log source is available.
      */
     private Optional<Object> provideLogSource(LogEntry<?> logEntry, Map<Class<?>, Object> logSources) {
-        return Optional
-            .ofNullable(logSources.get(logEntry.sourceType()))
-            .or(() -> {
-                delegateLogger.debug("No log source found for entry {}. Consider adding it via registerLogSources() method", logEntry);
-                return Optional.empty();
-            });
+        return Optional.ofNullable(logSources.get(logEntry.sourceType()));
     }
 
     private void withLoggingContext(Runnable logAction) {
@@ -212,12 +208,15 @@ public class NodeAwareLogger implements Logger {
 
         logEntries.forEach(logEntry ->
             provideLogSource(logEntry, logSources)
-                .ifPresent(logSource -> {
-                    String logValue = logEntry.resolve(logSource);
-                    if (logValue != null) {
-                        MDC.put(logEntry.getKey(), logValue);
-                    }
-                })
+                .ifPresentOrElse(
+                    logSource -> {
+                        String logValue = logEntry.resolve(logSource);
+                        if (logValue != null) {
+                            MDC.put(logEntry.getKey(), logValue);
+                        }
+                    },
+                    () -> MDC.put(logEntry.getKey(), UNKNOWN)
+                )
         );
         try {
             logAction.run();
