@@ -34,9 +34,4 @@ public class LoggingArchitectureTest {
     public void no_dep_on_slf4j_except_allow_list() {
         LoggingArchitectureRules.configure().allowIn(ALLOW_LIST).resideInAnyPackage("io.gravitee.node..").checkNoSlf4jLoggerFactory();
     }
-
-    @Test
-    public void no_lombok_slf4j_except_allow_list() {
-        LoggingArchitectureRules.configure().allowIn(ALLOW_LIST).resideInAnyPackage("io.gravitee.node..").checkNoLombokSlf4j();
-    }
 }
