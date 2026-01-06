@@ -300,6 +300,16 @@ class VertxHttpServerOptionsTest {
     }
 
     @Test
+    void should_throw_illegal_argument_exception_from_default_port_when_environment_is_set() {
+        VertxHttpServerOptionsBuilder<?, ?> builder = builder();
+        final IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> builder.prefix("servers[0]").environment(environment).defaultPort(8080)
+        );
+        assertThat(exception.getMessage()).isEqualTo("Default port must be set before environment");
+    }
+
+    @Test
     void should_build_with_default() {
         final VertxHttpServerOptions options = VertxHttpServerOptions.builder().build();
 

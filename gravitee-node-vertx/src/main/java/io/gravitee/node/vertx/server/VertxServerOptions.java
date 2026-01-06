@@ -136,6 +136,10 @@ public class VertxServerOptions implements ServerOptions {
          * @return the builder itself to allow fluent chaining.
          */
         public B defaultPort(int defaultPort) {
+            if (environment != null) {
+                throw new IllegalArgumentException("Default port must be set before environment");
+            }
+
             this.defaultPort = defaultPort;
 
             if (!port$set || port$value == DEFAULT_PORT) {

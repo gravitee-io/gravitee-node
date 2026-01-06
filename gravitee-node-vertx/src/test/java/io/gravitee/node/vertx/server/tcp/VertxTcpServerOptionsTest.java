@@ -237,10 +237,20 @@ class VertxTcpServerOptionsTest {
 
     @Test
     void should_throw_illegal_argument_exception_from_environment_configuration_when_prefix_is_not_set() {
-        VertxServerOptionsBuilder<?, ?> builder = builder();
+        VertxServerOptionsBuilder<?, ?> builder = VertxTcpServerOptions.builder();
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> builder.environment(environment));
 
         assertThat(exception.getMessage()).isEqualTo("Prefix must be set before environment");
+    }
+
+    @Test
+    void should_throw_illegal_argument_exception_from_default_port_when_environment_is_set() {
+        VertxServerOptionsBuilder<?, ?> builder = VertxTcpServerOptions.builder();
+        final IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> builder.prefix("servers[0]").environment(environment).defaultPort(8080)
+        );
+        assertThat(exception.getMessage()).isEqualTo("Default port must be set before environment");
     }
 
     @Test
