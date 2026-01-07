@@ -16,6 +16,10 @@ It offers a piece of functionalities that can be selectively used out-of-the-box
 
 The Gravitee Node Api module regroups all the interfaces that are implemented in the other modules.
 
+=== ArchUnit
+
+The Gravitee Node ArchUnit module provides a set of reusable architecture rules to enforce consistency across the codebase using link:https://www.archunit.org/[ArchUnit].
+
 === Cache
 
 The Gravitee Node Cache module regroups all the classes related to cache management plugins, and two plugins implementations: standalone and hazelcast.
@@ -44,6 +48,10 @@ The Gravitee Node Kubernetes module offers useful implementations that work nati
 The Gravitee Node License module provides an out-of-the-box feature allowing the detection and loading of a license key.
 It offers common access to license information.
 Many enterprise plugins are relying on it.
+
+=== Logging
+
+The Gravitee Node Logging module provides a specialized logging infrastructure, including the `NodeAwareLogger` which enriches logs with node-specific contextual information.
 
 === Management
 
