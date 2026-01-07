@@ -8,6 +8,7 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.lang.ArchRule;
+import com.tngtech.archunit.lang.syntax.elements.GivenClassesConjunction;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -23,8 +24,10 @@ import java.util.Set;
  * <p>Notes:</p>
  * <ul>
  *   <li>SLF4J's {@code org.slf4j.Logger} interface is allowed.</li>
- *   <li>Test classes are excluded from the scanned classes.</li>
+ *   <li>Test classes are excluded from the scanned classes by default.</li>
  *   <li>You MUST provide the packages to scan via {@link Builder#resideInAnyPackage(String...)}.</li>
+ *   <li>You MAY provide packages to exclude via {@link Builder#excludePackagesFromScan(String...)}.</li>
+ *   <li>You MAY include test classes via {@link Builder#includeTests(boolean)}.</li>
  *   <li>You MAY provide an allow-list of fully qualified class names via {@link Builder#allowIn(Collection)}
  *       to temporarily exempt legacy classes.</li>
  * </ul>
@@ -58,8 +61,21 @@ public final class LoggingArchitectureRules {
 
         private final Set<String> allowList = new HashSet<>();
         private String[] basePackages;
+        private String[] excludedPackages;
+
+        private boolean includeTests = false;
 
         private Builder() {}
+
+        /**
+         * Whether to include test classes in the scan. Default is false.
+         * @param includeTests true to include tests
+         * @return this builder
+         */
+        public Builder includeTests(boolean includeTests) {
+            this.includeTests = includeTests;
+            return this;
+        }
 
         /**
          * Adds a collection of class names to the allow-list. Classes in this allow-list are exempt
@@ -90,13 +106,30 @@ public final class LoggingArchitectureRules {
         }
 
         /**
+         * Defines the packages to exclude from the scan. Accepts ArchUnit pattern syntax (e.g. {@code "io.gravitee.node.reactive.api.."}).
+         *
+         * @param excludedPackages one or more package patterns
+         * @return this builder
+         */
+        public Builder excludePackagesFromScan(String... excludedPackages) {
+            if (excludedPackages != null && excludedPackages.length > 0) {
+                this.excludedPackages = excludedPackages;
+            }
+            return this;
+        }
+
+        /**
          * Checks the rule: no dependency on SLF4J {@code LoggerFactory}, except classes in the allow-list.
          */
         public void checkNoSlf4jLoggerFactory() {
             JavaClasses classes = importClasses();
-            ArchRule rule = noClasses()
-                .that()
-                .resideInAnyPackage(this.basePackages)
+            GivenClassesConjunction classesThat = noClasses().that().resideInAnyPackage(this.basePackages);
+
+            if (this.excludedPackages != null && this.excludedPackages.length > 0) {
+                classesThat = classesThat.and().resideOutsideOfPackages(this.excludedPackages);
+            }
+
+            ArchRule rule = classesThat
                 .should()
                 .dependOnClassesThat()
                 .haveFullyQualifiedName(SLF4J_LOGGER_FACTORY)
@@ -111,7 +144,11 @@ public final class LoggingArchitectureRules {
                     "Base packages are not configured. Call resideInAnyPackage(String...) before running checks."
                 );
             }
-            return new ClassFileImporter().withImportOption(new ImportOption.DoNotIncludeTests()).importPackages(packagesRoot());
+            ClassFileImporter importer = new ClassFileImporter();
+            if (!includeTests) {
+                importer = importer.withImportOption(new ImportOption.DoNotIncludeTests());
+            }
+            return importer.importPackages(packagesRoot());
         }
 
         private String[] packagesRoot() {
