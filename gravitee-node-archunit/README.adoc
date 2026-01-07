@@ -36,7 +36,7 @@ public void should_use_gravitee_logging() {
 }
 ----
 
-You can also provide an allow-list of classes to exempt from the rule (e.g., for legacy code):
+You can also provide an allow-list of classes to exempt from the rule (e.g., for legacy code), or exclude entire sub-packages:
 
 [source,java]
 ----
@@ -44,5 +44,6 @@ LoggingArchitectureRules
     .configure()
     .allowIn(Set.of("io.gravitee.myproject.LegacyClass"))
     .resideInAnyPackage("io.gravitee.myproject..")
+    .excludePackagesFromScan("io.gravitee.myproject.api..")
     .checkNoSlf4jLoggerFactory();
 ----
