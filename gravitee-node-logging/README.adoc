@@ -1,0 +1,78 @@
+= Gravitee Node Logging
+
+== Description
+
+The *Gravitee Node Logging* module provides a specialized logging infrastructure for Gravitee Node components.
+It introduces the `NodeAwareLogger`, a decorator for SLF4J loggers that automatically enriches the Mapped Diagnostic Context (MDC) with node-specific information for every log call.
+
+== NodeAwareLogger
+
+The `NodeAwareLogger` ensures that important contextual information is always available in your logs, which is crucial for observability in distributed environments.
+By default, it enriches the MDC with the following keys:
+
+* `nodeId`: The unique identifier of the Gravitee Node.
+* `nodeHostname`: The hostname where the node is running.
+* `nodeApplication`: The name of the application.
+
+=== Extensibility
+
+The `NodeAwareLogger` is designed to be extensible. You can create your own specialized loggers by extending `NodeAwareLogger` and overriding the following methods:
+
+* `registerLogSources(Map<Class<?>, Object> logSources)`: To provide additional context objects (e.g., an Execution Context, an HTTP Request, etc.).
+* `registerLogEntries(Set<LogEntry<?>> registeredEntries)`: To define new MDC keys and how their values should be extracted from the registered log sources.
+
+The `LogEntryFactory` provides utility methods to create `LogEntry` instances:
+* `cached`: The value is extracted once and then cached.
+* `refreshable`: The value is re-extracted at each log call.
+* `fixed`: A constant value.
+
+== NodeLoggerFactory
+
+The `NodeLoggerFactory` is the entry point for obtaining `NodeAwareLogger` instances.
+It acts as a singleton factory that manages the `Node` context.
+
+=== Initialization
+
+To benefit from node-specific enrichment, the factory must be initialized with a `Node` instance or a `Supplier<Node>`.
+This is typically done during the node startup phase:
+
+[source,java]
+----
+NodeLoggerFactory.init(node);
+----
+
+=== Obtaining a Logger
+
+Once initialized (or even before, as it handles lazy initialization), you can obtain a logger just like you would with SLF4J's `LoggerFactory`:
+
+[source,java]
+----
+private static final Logger logger = NodeLoggerFactory.getLogger(MyClass.class);
+----
+
+The returned logger will be a `NodeAwareLogger` instance wrapping the standard SLF4J logger.
+If the `Node` context is not yet available at the time of the log call, it will gracefully fallback to standard logging without enrichment.
+
+[TIP]
+.Lombok integration
+====
+You can use Lombok's `@CustomLog` annotation to automatically inject this logger.
+The project is configured via the `lombok.config` file at the root of the repository:
+
+[source,properties]
+----
+lombok.log.custom.declaration = org.slf4j.Logger io.gravitee.node.logging.NodeLoggerFactory.getLogger(TYPE)
+----
+
+Then, simply use the annotation in your class:
+
+[source,java]
+----
+@CustomLog
+public class MyClass {
+    public void myMethod() {
+        log.info("Hello world");
+    }
+}
+----
+====
