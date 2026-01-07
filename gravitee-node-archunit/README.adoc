@@ -1,0 +1,48 @@
+= Gravitee Node ArchUnit
+
+== Description
+
+The *Gravitee Node ArchUnit* module provides a set of reusable architecture rules and associated tests powered by link:https://www.archunit.org/[ArchUnit].
+Its main goal is to enforce architectural consistency across Gravitee Node modules and other Gravitee projects.
+
+By centralizing these rules, we ensure that architectural constraints are defined once and can be easily shared and enforced throughout the codebase.
+
+== Architecture Rules
+
+Rules are organized by categories and are located in `src/main/java` rather than `src/test/java`.
+This allows other projects that depend on this module to reuse the same architectural constraints in their own test suites.
+
+=== Logging
+
+The `LoggingArchitectureRules` class provides a fluent DSL to enforce logging best practices.
+
+It currently enforces that:
+* Classes must NOT depend directly on SLF4J `org.slf4j.LoggerFactory`.
+
+Instead, components should use the `NodeLoggerFactory` provided by the `gravitee-node-logging` module to benefit from node-aware logging enrichment.
+
+==== Usage
+
+To use these rules in your project, add the dependency to your `pom.xml` and call the rules from a test:
+
+[source,java]
+----
+@Test
+public void should_use_gravitee_logging() {
+    LoggingArchitectureRules
+        .configure()
+        .resideInAnyPackage("io.gravitee.myproject..")
+        .checkNoSlf4jLoggerFactory();
+}
+----
+
+You can also provide an allow-list of classes to exempt from the rule (e.g., for legacy code):
+
+[source,java]
+----
+LoggingArchitectureRules
+    .configure()
+    .allowIn(Set.of("io.gravitee.myproject.LegacyClass"))
+    .resideInAnyPackage("io.gravitee.myproject..")
+    .checkNoSlf4jLoggerFactory();
+----
