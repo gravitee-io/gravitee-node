@@ -1,3 +1,18 @@
+# [8.0.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/7.19.0-alpha.3...8.0.0-alpha.1) (2026-01-07)
+
+
+### Bug Fixes
+
+* ensure defaultPort is set before environment ([7e0f45b](https://github.com/gravitee-io/gravitee-node/commit/7e0f45b97da93c717f53dc3aa3cf01af5d0eeb6f))
+
+
+### BREAKING CHANGES
+
+* IllegalArgumentException will be thrown if a 'defaultPort'
+is assigned after the environment.
+
+https://gravitee.atlassian.net/browse/ARCHI-639
+
 # [7.19.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/7.19.0-alpha.2...7.19.0-alpha.3) (2026-01-06)
 
 
