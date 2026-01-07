@@ -18,7 +18,6 @@ import java.util.Set;
  * <p>Rules enforced:</p>
  * <ul>
  *   <li>No direct dependency on SLF4J {@code org.slf4j.LoggerFactory}</li>
- *   <li>No usage of Lombok {@code @lombok.extern.slf4j.Slf4j}</li>
  * </ul>
  *
  * <p>Notes:</p>
