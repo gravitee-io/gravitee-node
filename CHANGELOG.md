@@ -1,3 +1,10 @@
+# [8.0.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.1...8.0.0-alpha.2) (2026-01-07)
+
+
+### Features
+
+* allow to exclude packages from scan ([b1cf087](https://github.com/gravitee-io/gravitee-node/commit/b1cf087a5ea93f03c0a20133b80d1f63648ce8b2))
+
 # [8.0.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/7.19.0-alpha.3...8.0.0-alpha.1) (2026-01-07)
 
 
