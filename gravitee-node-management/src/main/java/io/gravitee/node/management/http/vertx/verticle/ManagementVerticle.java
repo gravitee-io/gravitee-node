@@ -30,7 +30,7 @@ import io.gravitee.node.management.http.vertx.configuration.HttpServerConfigurat
 import io.vertx.core.*;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
-import io.vertx.ext.auth.AuthProvider;
+import io.vertx.ext.auth.authentication.AuthenticationProvider;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.AuthenticationHandler;
 import io.vertx.ext.web.handler.BasicAuthHandler;
@@ -76,7 +76,7 @@ public class ManagementVerticle extends AbstractVerticle {
 
     @Autowired
     @Qualifier("managementAuthProvider")
-    private AuthProvider authProvider;
+    private AuthenticationProvider authProvider;
 
     @Autowired
     private HttpServerConfiguration httpServerConfiguration;
@@ -119,20 +119,17 @@ public class ManagementVerticle extends AbstractVerticle {
     public void stop(Promise<Void> promise) throws Exception {
         if (httpServerConfiguration.isEnabled()) {
             log.info("Stopping Management API...");
-            httpServer.close(
-                new Handler<AsyncResult<Void>>() {
-                    @Override
-                    public void handle(AsyncResult<Void> event) {
-                        if (event.succeeded()) {
-                            log.info("HTTP Server has been correctly stopped");
-                            promise.complete();
-                        } else {
-                            log.error("Unexpected error while stopping HTTP listener for Node Management API", event.cause());
-                            promise.fail(event.cause());
-                        }
+            httpServer
+                .close()
+                .onComplete(event -> {
+                    if (event.succeeded()) {
+                        log.info("HTTP Server has been correctly stopped");
+                        promise.complete();
+                    } else {
+                        log.error("Unexpected error while stopping HTTP listener for Node Management API", event.cause());
+                        promise.fail(event.cause());
                     }
-                }
-            );
+                });
         }
     }
 
@@ -188,7 +185,8 @@ public class ManagementVerticle extends AbstractVerticle {
         // Add request handler
         httpServer
             .requestHandler(mainRouter)
-            .listen(event -> {
+            .listen()
+            .onComplete(event -> {
                 if (event.failed()) {
                     log.error("HTTP listener for Node Management can not be started properly", event.cause());
                     promise.fail(event.cause());
@@ -248,12 +246,7 @@ public class ManagementVerticle extends AbstractVerticle {
                     nodeRouter
                         .route(convert(endpoint.method()), endpoint.path())
                         .handler(new ConcurrencyLimitHandler(configuredConcurrentLimit))
-                        .handler(
-                            OffloadHandler.ofCtx((ctx, promise) -> {
-                                endpoint.handle(ctx);
-                                promise.complete();
-                            })
-                        );
+                        .handler(OffloadHandler.ofCtx(endpoint::handle));
                 } else {
                     if (method.equals(io.gravitee.common.http.HttpMethod.POST)) {
                         nodeRouter.route(convert(method), endpoint.path()).handler(BodyHandler.create()).handler(endpoint::handle);
