@@ -1,7 +1,7 @@
 package io.gravitee.node.management.http.utils;
 
 import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
-import static io.prometheus.client.exporter.common.TextFormat.CONTENT_TYPE_004;
+import static io.gravitee.node.management.http.metrics.prometheus.PrometheusEndpoint.CONTENT_TYPE_004;
 
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerResponse;

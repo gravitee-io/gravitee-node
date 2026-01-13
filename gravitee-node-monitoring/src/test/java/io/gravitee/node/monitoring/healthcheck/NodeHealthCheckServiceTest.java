@@ -8,7 +8,7 @@ import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.monitoring.DefaultProbeEvaluator;
 import io.gravitee.node.monitoring.spring.HealthConfiguration;
 import io.gravitee.plugin.alert.AlertEventProducer;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.micrometer.backends.BackendRegistries;
 import lombok.SneakyThrows;
