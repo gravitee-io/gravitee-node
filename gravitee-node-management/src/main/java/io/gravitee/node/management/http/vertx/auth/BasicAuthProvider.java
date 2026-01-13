@@ -15,12 +15,11 @@
  */
 package io.gravitee.node.management.http.vertx.auth;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
+import io.vertx.ext.auth.authentication.AuthenticationProvider;
+import io.vertx.ext.auth.authentication.Credentials;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
@@ -28,7 +27,7 @@ import org.springframework.core.env.Environment;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class BasicAuthProvider implements AuthProvider {
+public class BasicAuthProvider implements AuthenticationProvider {
 
     private static final String USERS_PREFIX_KEY = "services.core.http.authentication.users.";
 
@@ -36,7 +35,8 @@ public class BasicAuthProvider implements AuthProvider {
     private Environment environment;
 
     @Override
-    public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
+    public Future<User> authenticate(Credentials credentials) {
+        JsonObject authInfo = credentials.toJson();
         String password = environment.getProperty(USERS_PREFIX_KEY + authInfo.getString("username"));
 
         if (password != null) {
@@ -44,11 +44,10 @@ public class BasicAuthProvider implements AuthProvider {
             String presentedPassword = authInfo.getString("password");
 
             if (password.equals(presentedPassword)) {
-                resultHandler.handle(Future.succeededFuture(User.fromName(authInfo.getString("username"))));
-                return;
+                return Future.succeededFuture(User.fromName(authInfo.getString("username")));
             }
         }
 
-        resultHandler.handle(Future.failedFuture("Unauthorized user"));
+        return Future.failedFuture("Unauthorized user");
     }
 }

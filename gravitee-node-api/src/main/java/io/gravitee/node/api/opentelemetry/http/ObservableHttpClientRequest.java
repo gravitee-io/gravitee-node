@@ -82,14 +82,21 @@ public class ObservableHttpClientRequest implements ObservableHttpRequest {
             headers = requestOptions.getHeaders();
         }
         if (headers == null) {
-            return HeadersMultiMap.headers();
+            return MultiMap.caseInsensitiveMultiMap();
         }
         return headers;
     }
 
     @Override
     public SocketAddress remoteAddress() {
-        return requestOptions.getServer();
+        SocketAddress remoteAddress = null;
+        if (httpClientRequest != null) {
+            remoteAddress = httpClientRequest.connection().remoteAddress();
+        }
+        if (remoteAddress == null) {
+            remoteAddress = (SocketAddress) requestOptions.getServer();
+        }
+        return remoteAddress;
     }
 
     public String traceOperation() {

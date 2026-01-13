@@ -334,13 +334,9 @@ class VertxTcpServerOptionsTest {
         assertThat(netServerOptions.getEnabledSecureTransportProtocols()).isEqualTo(Set.of(TLS_PROTOCOLS));
         assertThat(netServerOptions.getEnabledCipherSuites()).containsExactlyElementsOf(TLS_CIPHERS);
         assertThat(netServerOptions.getKeyCertOptions()).isNotNull();
-        assertThat(netServerOptions.getKeyStoreOptions()).isNull();
         assertThat(netServerOptions.getTrustOptions()).isNotNull();
-        assertThat(netServerOptions.getPfxTrustOptions()).isNull();
-        assertThat(netServerOptions.getTrustStoreOptions()).isNull();
         assertThat(netServerOptions.isSsl()).isEqualTo(Boolean.valueOf(SECURED));
         assertThat(netServerOptions.isSni()).isEqualTo(Boolean.valueOf(SNI));
-        assertThat(netServerOptions.getOpenSslEngineOptions()).isNotNull();
         assertThat(netServerOptions.isUseProxyProtocol()).isEqualTo(Boolean.valueOf(HAPROXY_PROTOCOL));
         assertThat(netServerOptions.getProxyProtocolTimeout()).isEqualTo(Long.valueOf(HAPROXY_PROTOCOL_TIMEOUT));
     }
@@ -356,7 +352,6 @@ class VertxTcpServerOptionsTest {
         assertThat(netServerOptions.getTrustOptions()).isNull();
         assertThat(netServerOptions.getClientAuth()).isEqualTo(ClientAuth.NONE);
         assertThat(netServerOptions.getEnabledCipherSuites()).isEmpty();
-        assertThat(netServerOptions.getOpenSslEngineOptions()).isNull();
         assertThat(netServerOptions.isSsl()).isFalse();
         assertThat(netServerOptions.isSni()).isFalse();
     }
