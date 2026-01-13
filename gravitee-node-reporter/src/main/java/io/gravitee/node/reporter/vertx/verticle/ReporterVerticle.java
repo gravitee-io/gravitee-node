@@ -57,16 +57,18 @@ public class ReporterVerticle extends AbstractVerticle implements ReporterServic
     }
 
     @Override
-    public void stop(Promise<Void> promise) throws Exception {
+    public void stop(Promise<Void> promise) {
         if (producer != null) {
-            producer.close(event -> {
-                if (event.succeeded()) {
-                    log.debug("Reporter publisher has been closed successfully.");
-                    promise.complete();
-                } else {
-                    promise.fail(event.cause());
-                }
-            });
+            producer
+                .close()
+                .onComplete(event -> {
+                    if (event.succeeded()) {
+                        log.debug("Reporter publisher has been closed successfully.");
+                        promise.complete();
+                    } else {
+                        promise.fail(event.cause());
+                    }
+                });
         } else {
             promise.complete();
         }

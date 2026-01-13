@@ -56,12 +56,10 @@ public class StandaloneQueue<T> implements Queue<T> {
             .eventBus()
             .<T>localConsumer(queueName)
             .handler(event ->
-                vertx.executeBlocking(
-                    (Handler<Promise<Void>>) promise -> {
-                        messageListener.onMessage(new Message<>(queueName, event.body()));
-                        promise.handle(null);
-                    }
-                )
+                vertx.executeBlocking(() -> {
+                    messageListener.onMessage(new Message<>(queueName, event.body()));
+                    return null;
+                })
             );
         consumerMap.put(subscriptionId, vertxConsumer);
 

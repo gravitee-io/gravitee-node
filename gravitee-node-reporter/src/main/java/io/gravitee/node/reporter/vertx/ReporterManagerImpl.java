@@ -45,9 +45,9 @@ public class ReporterManagerImpl extends AbstractService<ReporterManager> implem
     protected void doStart() throws Exception {
         super.doStart();
 
-        vertx.deployVerticle(
-            SpringVerticleFactory.VERTICLE_PREFIX + ':' + ReporterVerticle.class.getName(),
-            event -> {
+        vertx
+            .deployVerticle(SpringVerticleFactory.VERTICLE_PREFIX + ':' + ReporterVerticle.class.getName())
+            .onComplete(event -> {
                 if (event.failed()) {
                     log.error("Reporter service can not be started", event.cause());
                 } else {
@@ -84,8 +84,7 @@ public class ReporterManagerImpl extends AbstractService<ReporterManager> implem
                 }
 
                 deploymentId = event.result();
-            }
-        );
+            });
     }
 
     @Override
@@ -98,9 +97,9 @@ public class ReporterManagerImpl extends AbstractService<ReporterManager> implem
         super.doStop();
 
         if (deploymentId != null) {
-            vertx.undeploy(
-                deploymentId,
-                event -> {
+            vertx
+                .undeploy(deploymentId)
+                .onComplete(event -> {
                     for (Reporter reporter : reporters) {
                         try {
                             log.debug("Pre-stopping reporter: {}", reporter);
@@ -127,8 +126,7 @@ public class ReporterManagerImpl extends AbstractService<ReporterManager> implem
                             log.error("Unexpected error while post-stopping reporter", ex);
                         }
                     }
-                }
-            );
+                });
         }
     }
 

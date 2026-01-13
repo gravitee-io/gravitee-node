@@ -30,6 +30,7 @@ import io.netty.channel.EventLoopGroup;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.internal.VertxInternal;
 import io.vertx.micrometer.Label;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.MicrometerMetricsFactory;
@@ -63,7 +64,7 @@ class VertxFactoryTest {
     private MockEnvironment environment = new MockEnvironment();
 
     @Mock
-    private Vertx vertx;
+    private VertxInternal vertx;
 
     @Mock
     private VertxBuilder vertxBuilder;
@@ -82,7 +83,7 @@ class VertxFactoryTest {
         vertxStatic.when(Vertx::builder).thenReturn(vertxBuilder);
 
         EventLoopGroup eventLoopGroup = mock(EventLoopGroup.class);
-        lenient().when(vertx.nettyEventLoopGroup()).thenReturn(eventLoopGroup);
+        lenient().when(((VertxInternal) vertx).nettyEventLoopGroup()).thenReturn(eventLoopGroup);
 
         environment.setProperty("services.metrics.enabled", "false");
         environment.setProperty("services.opentelemetry.enabled", "false");
@@ -288,7 +289,8 @@ class VertxFactoryTest {
                             "jvm.buffer.count",
                             "jvm.threads.daemon",
                             "jvm.threads.states",
-                            "jvm.buffer.total.capacity"
+                            "jvm.buffer.total.capacity",
+                            "process.cpu.time"
                         );
                     return true;
                 })

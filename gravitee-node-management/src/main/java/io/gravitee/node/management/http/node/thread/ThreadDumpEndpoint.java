@@ -50,40 +50,26 @@ public class ThreadDumpEndpoint implements ManagementEndpoint {
     public void handle(RoutingContext context) {
         context
             .vertx()
-            .executeBlocking(
-                new Handler<Promise<String>>() {
-                    @Override
-                    public void handle(Promise<String> promise) {
-                        try {
-                            ThreadInfo[] threadInfos = ManagementFactory.getThreadMXBean().dumpAllThreads(true, true);
-                            String dump = plainTextFormatter.format(threadInfos);
-
-                            promise.complete(dump);
-                        } catch (Exception ex) {
-                            promise.fail(ex);
-                        }
-                    }
-                },
-                new Handler<AsyncResult<String>>() {
-                    @Override
-                    public void handle(AsyncResult<String> threadDumpResult) {
-                        if (threadDumpResult.succeeded()) {
-                            context
-                                .response()
-                                .setStatusCode(HttpStatusCode.OK_200)
-                                .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain;charset=UTF-8")
-                                .setChunked(true)
-                                .send(threadDumpResult.result());
-                        } else {
-                            log.error("Unable to generate thread dump.", threadDumpResult.cause());
-                            context
-                                .response()
-                                .setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500)
-                                .setChunked(true)
-                                .send(threadDumpResult.cause().getMessage());
-                        }
-                    }
+            .executeBlocking(() -> {
+                ThreadInfo[] threadInfos = ManagementFactory.getThreadMXBean().dumpAllThreads(true, true);
+                return plainTextFormatter.format(threadInfos);
+            })
+            .onComplete(threadDumpResult -> {
+                if (threadDumpResult.succeeded() && threadDumpResult.result() != null) {
+                    context
+                        .response()
+                        .setStatusCode(HttpStatusCode.OK_200)
+                        .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain;charset=UTF-8")
+                        .setChunked(true)
+                        .send(threadDumpResult.result());
+                } else {
+                    log.error("Unable to generate thread dump.", threadDumpResult.cause());
+                    context
+                        .response()
+                        .setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500)
+                        .setChunked(true)
+                        .send(threadDumpResult.cause().getMessage());
                 }
-            );
+            });
     }
 }

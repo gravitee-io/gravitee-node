@@ -16,18 +16,19 @@
  */
 package io.gravitee.node.management.http.metrics.prometheus;
 
-import static io.prometheus.client.exporter.common.TextFormat.CONTENT_TYPE_004;
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
 import io.gravitee.node.management.http.utils.SafeBufferedWriter;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.micrometer.backends.BackendRegistries;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Optional;
 import lombok.CustomLog;
@@ -42,6 +43,8 @@ import lombok.CustomLog;
  */
 @CustomLog
 public class PrometheusEndpoint implements ManagementEndpoint {
+
+    public static final String CONTENT_TYPE_004 = "text/plain; version=0.0.4; charset=utf-8";
 
     private final PrometheusMeterRegistry prometheusRegistry;
 
@@ -79,19 +82,19 @@ public class PrometheusEndpoint implements ManagementEndpoint {
         response.putHeader(CONTENT_TYPE, CONTENT_TYPE_004);
         response.setChunked(true);
 
-        try (
-            SafeBufferedWriter safeBufferedWriter = new SafeBufferedWriter(response);
-            BufferedWriter writer = new BufferedWriter(safeBufferedWriter)
-        ) {
-            prometheusRegistry.scrape(writer);
-            writer.flush();
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            prometheusRegistry.scrape(baos);
+            response.write(Buffer.buffer(baos.toByteArray()));
+            if (!response.ended()) {
+                response.end();
+            }
         } catch (IOException ioe) {
             // On write-queue drain timeout, abort the TCP connection so the client
             // gets a clean error instead of hanging. close() fires the closeHandler
             // in ConcurrencyLimitHandler which releases the semaphore permit.
             log.error("Unexpected error while scraping the Prometheus endpoint", ioe);
-            if (!response.ended() && !response.closed()) {
-                response.close();
+            if (!response.ended()) {
+                routingContext.request().connection().close();
             }
         } finally {
             // Ensure the response is always terminated. The closed() guard prevents
@@ -101,5 +104,17 @@ public class PrometheusEndpoint implements ManagementEndpoint {
                 response.end();
             }
         }
+        //        try (BufferedWriter writer = new BufferedWriter(new SafeBufferedWriter(response))) {
+        //            prometheusRegistry.scrape(writer);
+        //            writer.flush();
+        //            if (!response.ended()) {
+        //                response.end();
+        //            }
+        //        } catch (IOException ioe) {
+        //            LOGGER.error("Unexpected error while scraping the Prometheus endpoint", ioe);
+        //            if (!response.ended()) {
+        //                routingContext.request().connection().close();
+        //            }
+        //        }
     }
 }
