@@ -19,13 +19,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.gravitee.node.api.opentelemetry.Span;
 import io.gravitee.node.api.opentelemetry.internal.InternalRequest;
+import io.gravitee.node.opentelemetry.tracer.vertx.VertxContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.smallrye.common.vertx.VertxContext;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import java.util.List;

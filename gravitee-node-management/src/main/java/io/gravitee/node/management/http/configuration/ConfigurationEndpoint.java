@@ -16,6 +16,7 @@
 package io.gravitee.node.management.http.configuration;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.gravitee.common.http.HttpHeaders;
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.common.http.HttpStatusCode;
@@ -25,6 +26,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.RoutingContext;
 import java.util.*;
 import java.util.function.Function;
@@ -104,22 +106,26 @@ public class ConfigurationEndpoint implements ManagementEndpoint {
 
         nodeProperties.putAll(prefixlessSystemEnvironment);
 
-        io.vertx.core.json.jackson.DatabindCodec codec = (io.vertx.core.json.jackson.DatabindCodec) io.vertx.core.json.Json.CODEC;
-        codec.prettyMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        response.write(
-            Json.CODEC.toString(nodeProperties, true),
-            new Handler<AsyncResult<Void>>() {
-                @Override
-                public void handle(AsyncResult<Void> event) {
+        try {
+            response
+                .write(
+                    DatabindCodec
+                        .mapper()
+                        .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                        .writerWithDefaultPrettyPrinter()
+                        .writeValueAsString(nodeProperties)
+                )
+                .onComplete(event -> {
                     if (event.failed()) {
                         response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
                         log.error("Unable to transform data object to JSON", event.cause());
                     }
 
                     response.end();
-                }
-            }
-        );
+                });
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public class Property implements Comparable {
