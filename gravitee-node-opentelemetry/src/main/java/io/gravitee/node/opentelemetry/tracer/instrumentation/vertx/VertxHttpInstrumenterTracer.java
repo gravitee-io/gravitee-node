@@ -27,6 +27,7 @@ import io.gravitee.node.opentelemetry.tracer.instrumentation.vertx.extractor.Htt
 import io.gravitee.node.opentelemetry.tracer.instrumentation.vertx.extractor.RouteGetter;
 import io.gravitee.node.opentelemetry.tracer.instrumentation.vertx.extractor.ServerAttributesExtractor;
 import io.gravitee.node.opentelemetry.tracer.span.OpenTelemetrySpan;
+import io.gravitee.node.opentelemetry.tracer.vertx.VertxContext;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.api.instrumenter.InstrumenterBuilder;
@@ -35,8 +36,8 @@ import io.opentelemetry.instrumentation.api.instrumenter.http.HttpServerRoute;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpServerRouteSource;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpSpanStatusExtractor;
-import io.smallrye.common.vertx.VertxContext;
 import io.vertx.core.Context;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.spi.observability.HttpRequest;
 import lombok.RequiredArgsConstructor;
 
@@ -69,7 +70,7 @@ public class VertxHttpInstrumenterTracer extends AbstractInstrumenterTracer<Obse
         if (span instanceof OpenTelemetrySpan<?> requestSpan) {
             Context runningCtx = requestSpan.vertxContext();
             if (VertxContext.isDuplicatedContext(runningCtx)) {
-                String pathTemplate = runningCtx.getLocal("ClientUrlPathTemplate");
+                String pathTemplate = ((ContextInternal) runningCtx).getLocal("ClientUrlPathTemplate");
                 if (pathTemplate != null && !pathTemplate.isEmpty()) {
                     io.opentelemetry.api.trace.Span
                         .fromContext(requestSpan.otelContext())

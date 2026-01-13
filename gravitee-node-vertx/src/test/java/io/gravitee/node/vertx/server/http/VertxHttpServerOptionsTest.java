@@ -414,7 +414,6 @@ class VertxHttpServerOptionsTest {
         assertThat(httpServerOptions.getTrustOptions()).isNotNull();
         assertThat(httpServerOptions.isSsl()).isEqualTo(Boolean.valueOf(SECURED));
         assertThat(httpServerOptions.isSni()).isEqualTo(Boolean.valueOf(SNI));
-        assertThat(httpServerOptions.getOpenSslEngineOptions()).isNotNull();
         assertThat(httpServerOptions.getWebSocketSubProtocols()).containsAll(List.of(WEBSOCKET_SUB_PROTOCOLS.split(",\\s?")));
         assertThat(httpServerOptions.getPerMessageWebSocketCompressionSupported())
             .isEqualTo(Boolean.valueOf(WEBSOCKET_PER_MESSAGE_COMPRESSION_SUPPORTED));
@@ -444,8 +443,6 @@ class VertxHttpServerOptionsTest {
 
         assertThat(httpServerOptions).isNotNull();
         assertThat(httpServerOptions.getTrustOptions()).isNotNull();
-        assertThat(httpServerOptions.getPemTrustOptions()).isNull();
-        assertThat(httpServerOptions.getPfxTrustOptions()).isNull();
     }
 
     @Test
