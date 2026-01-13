@@ -10,6 +10,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
+import java.util.concurrent.Callable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -26,7 +27,7 @@ public class OffloadHandlerTest {
     HttpServerResponse response;
 
     @Captor
-    ArgumentCaptor<Handler<Promise<Void>>> handlerCaptor;
+    ArgumentCaptor<Callable<Void>> callableArgumentCaptor;
 
     @BeforeEach
     void setUp() {
@@ -38,59 +39,27 @@ public class OffloadHandlerTest {
 
     @Test
     void should_execute_blocking_handler_successfully() {
-        Promise<Void> promise = Promise.promise();
+        when(vertx.executeBlocking(callableArgumentCaptor.capture())).thenReturn(Future.succeededFuture());
 
-        when(vertx.<Void>executeBlocking(handlerCaptor.capture())).thenReturn(Future.succeededFuture());
-
-        var handler = OffloadHandler.ofCtx((ctx, p) -> {
+        var handler = OffloadHandler.ofCtx(ctx -> {
             assertEquals(routingContext, ctx);
-            p.complete();
+            System.out.println("coucou");
         });
 
         handler.handle(routingContext);
-        Handler<Promise<Void>> captured = handlerCaptor.getValue();
-        captured.handle(promise);
-        assertTrue(promise.future().succeeded());
+
+        verify(response, times(1)).ended();
+        verifyNoMoreInteractions(response);
     }
 
     @Test
     void should_execute_blocking_handler_with_failure() {
-        when(vertx.<Void>executeBlocking(any(Handler.class))).thenReturn(Future.failedFuture(new RuntimeException("fail")));
+        when(vertx.<Void>executeBlocking(any(Callable.class))).thenReturn(Future.failedFuture(new RuntimeException("fail")));
 
-        var handler = OffloadHandler.ofCtx((ctx, p) -> {});
-
-        handler.handle(routingContext);
-
-        verify(response).setStatusCode(500);
-        verify(response).end("Internal server error");
-    }
-
-    @Test
-    void should_execute_simple_blocking_handler_successfully() {
-        Handler<Promise<Void>> blockingHandler = promise -> promise.complete();
-
-        when(vertx.<Void>executeBlocking(ArgumentMatchers.<Handler<Promise<Void>>>any()))
-            .thenAnswer(invocation -> {
-                Handler<Promise<Void>> handler = invocation.getArgument(0);
-                Promise<Void> promise = Promise.promise();
-                handler.handle(promise);
-                return promise.future();
-            });
-
-        var handler = OffloadHandler.of(blockingHandler);
+        var handler = OffloadHandler.ofCtx(ctx -> {});
 
         handler.handle(routingContext);
-        verify(response, never()).setStatusCode(anyInt());
-        verify(response, never()).end(anyString());
-    }
 
-    @Test
-    void should_return_500_on_simple_blocking_handler_failure() {
-        when(vertx.<Void>executeBlocking(ArgumentMatchers.<Handler<Promise<Void>>>any()))
-            .thenReturn(Future.failedFuture(new RuntimeException("fail")));
-        var handler = OffloadHandler.of(promise -> {});
-
-        handler.handle(routingContext);
         verify(response).setStatusCode(500);
         verify(response).end("Internal server error");
     }

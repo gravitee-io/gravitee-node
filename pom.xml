@@ -58,7 +58,7 @@
     </modules>
 
     <properties>
-        <gravitee-bom.version>8.3.41</gravitee-bom.version>
+        <gravitee-bom.version>9.0.0-alpha-vertx5-SNAPSHOT</gravitee-bom.version>
         <gravitee-common.version>4.6.0</gravitee-common.version>
         <gravitee-plugin.version>4.2.1</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.33.0</gravitee-reporter-api.version>
@@ -77,7 +77,7 @@
         <awaitability.version>4.2.2</awaitability.version>
 
         <!-- WARNING: the next two dependencies versions must be kept in sync regarding vertx-micrometer-metrics -->
-        <micrometer-registry-prometheus.version>1.12.4</micrometer-registry-prometheus.version>
+        <micrometer-registry-prometheus.version>1.15.7</micrometer-registry-prometheus.version>
         <LatencyUtils.version>2.0.3</LatencyUtils.version>
         <guava.version>32.0.1-jre</guava.version>
         <license3j.version>3.2.0</license3j.version>

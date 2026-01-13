@@ -25,7 +25,7 @@ import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.core.net.PfxOptions;
-import io.vertx.ext.auth.AuthProvider;
+import io.vertx.ext.auth.authentication.AuthenticationProvider;
 import io.vertx.ext.web.Router;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -83,15 +83,15 @@ public class HttpServerSpringConfiguration {
                     httpServerConfiguration.getTrustStoreType().isEmpty() ||
                     httpServerConfiguration.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)
                 ) {
-                    options.setTrustStoreOptions(
+                    options.setTrustOptions(
                         new JksOptions()
                             .setPath(httpServerConfiguration.getTrustStorePath())
                             .setPassword(httpServerConfiguration.getTrustStorePassword())
                     );
                 } else if (httpServerConfiguration.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)) {
-                    options.setPemTrustOptions(new PemTrustOptions().addCertPath(httpServerConfiguration.getTrustStorePath()));
+                    options.setTrustOptions(new PemTrustOptions().addCertPath(httpServerConfiguration.getTrustStorePath()));
                 } else if (httpServerConfiguration.getTrustStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)) {
-                    options.setPfxTrustOptions(
+                    options.setTrustOptions(
                         new PfxOptions()
                             .setPath(httpServerConfiguration.getTrustStorePath())
                             .setPassword(httpServerConfiguration.getTrustStorePassword())
@@ -105,15 +105,15 @@ public class HttpServerSpringConfiguration {
                     httpServerConfiguration.getKeyStoreType().isEmpty() ||
                     httpServerConfiguration.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS)
                 ) {
-                    options.setKeyStoreOptions(
+                    options.setKeyCertOptions(
                         new JksOptions()
                             .setPath(httpServerConfiguration.getKeyStorePath())
                             .setPassword(httpServerConfiguration.getKeyStorePassword())
                     );
                 } else if (httpServerConfiguration.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)) {
-                    options.setPemKeyCertOptions(new PemKeyCertOptions().addCertPath(httpServerConfiguration.getKeyStorePath()));
+                    options.setKeyCertOptions(new PemKeyCertOptions().addCertPath(httpServerConfiguration.getKeyStorePath()));
                 } else if (httpServerConfiguration.getKeyStoreType().equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)) {
-                    options.setPfxKeyCertOptions(
+                    options.setKeyCertOptions(
                         new PfxOptions()
                             .setPath(httpServerConfiguration.getKeyStorePath())
                             .setPassword(httpServerConfiguration.getKeyStorePassword())
@@ -127,7 +127,7 @@ public class HttpServerSpringConfiguration {
     }
 
     @Bean("managementAuthProvider")
-    public AuthProvider authProvider() {
+    public AuthenticationProvider authProvider() {
         return new BasicAuthProvider();
     }
 

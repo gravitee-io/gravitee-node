@@ -7,7 +7,6 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -238,82 +237,67 @@ public final class VertxHttpSender implements HttpSender {
         }
 
         @Override
-        public void handle(HttpClientRequest request) {
-            HttpClientRequest clientRequest = request
-                .response(
-                    new Handler<>() {
-                        @Override
-                        public void handle(AsyncResult<HttpClientResponse> callResult) {
-                            if (callResult.succeeded()) {
-                                HttpClientResponse clientResponse = callResult.result();
-                                Throwable cause = callResult.cause();
-                                clientResponse.body(
-                                    new Handler<>() {
-                                        @Override
-                                        public void handle(AsyncResult<Buffer> bodyResult) {
-                                            if (bodyResult.succeeded()) {
-                                                if (clientResponse.statusCode() >= 500) {
-                                                    if (attemptNumber <= MAX_ATTEMPTS && !isShutdown.get()) {
-                                                        // we should retry for 5xx error as they might be recoverable
-                                                        initiateSend(
-                                                            client,
-                                                            requestURI,
-                                                            MAX_ATTEMPTS - attemptNumber,
-                                                            newAttempt(),
-                                                            onError,
-                                                            isShutdown
-                                                        );
-                                                        return;
-                                                    }
-                                                }
-                                                onHttpResponseRead.accept(
-                                                    new Response() {
-                                                        @Override
-                                                        public int statusCode() {
-                                                            return clientResponse.statusCode();
-                                                        }
-
-                                                        @Override
-                                                        public String statusMessage() {
-                                                            return clientResponse.statusMessage();
-                                                        }
-
-                                                        @Override
-                                                        public byte[] responseBody() {
-                                                            return bodyResult.result().getBytes();
-                                                        }
-                                                    }
-                                                );
-                                            } else {
-                                                if (attemptNumber <= MAX_ATTEMPTS && !isShutdown.get()) {
-                                                    // retry
-                                                    initiateSend(
-                                                        client,
-                                                        requestURI,
-                                                        MAX_ATTEMPTS - attemptNumber,
-                                                        newAttempt(),
-                                                        onError,
-                                                        isShutdown
-                                                    );
-                                                } else {
-                                                    onError.accept(bodyResult.cause());
-                                                }
-                                            }
+        public void handle(HttpClientRequest clientRequest) {
+            clientRequest
+                .response()
+                .onComplete(callResult -> {
+                    if (callResult.succeeded()) {
+                        HttpClientResponse clientResponse = callResult.result();
+                        clientResponse
+                            .body()
+                            .onComplete(bodyResult -> {
+                                if (bodyResult.succeeded()) {
+                                    if (clientResponse.statusCode() >= 500) {
+                                        if (attemptNumber <= MAX_ATTEMPTS && !isShutdown.get()) {
+                                            // we should retry for 5xx error as they might be recoverable
+                                            initiateSend(
+                                                client,
+                                                requestURI,
+                                                MAX_ATTEMPTS - attemptNumber,
+                                                newAttempt(),
+                                                onError,
+                                                isShutdown
+                                            );
+                                            return;
                                         }
                                     }
-                                );
-                            } else {
-                                if (attemptNumber <= MAX_ATTEMPTS && !isShutdown.get()) {
-                                    // retry
-                                    initiateSend(client, requestURI, MAX_ATTEMPTS - attemptNumber, newAttempt(), onError, isShutdown);
+                                    onHttpResponseRead.accept(
+                                        new Response() {
+                                            @Override
+                                            public int statusCode() {
+                                                return clientResponse.statusCode();
+                                            }
+
+                                            @Override
+                                            public String statusMessage() {
+                                                return clientResponse.statusMessage();
+                                            }
+
+                                            @Override
+                                            public byte[] responseBody() {
+                                                return bodyResult.result().getBytes();
+                                            }
+                                        }
+                                    );
                                 } else {
-                                    onError.accept(callResult.cause());
+                                    if (attemptNumber <= MAX_ATTEMPTS && !isShutdown.get()) {
+                                        // retry
+                                        initiateSend(client, requestURI, MAX_ATTEMPTS - attemptNumber, newAttempt(), onError, isShutdown);
+                                    } else {
+                                        onError.accept(bodyResult.cause());
+                                    }
                                 }
-                            }
+                            });
+                    } else {
+                        if (attemptNumber <= MAX_ATTEMPTS && !isShutdown.get()) {
+                            // retry
+                            initiateSend(client, requestURI, MAX_ATTEMPTS - attemptNumber, newAttempt(), onError, isShutdown);
+                        } else {
+                            onError.accept(callResult.cause());
                         }
                     }
-                )
-                .putHeader("Content-Type", contentType);
+                });
+            clientRequest.putHeader("Content-Type", contentType);
 
             Buffer buffer = Buffer.buffer(contentLength);
             OutputStream os = new BufferOutputStream(buffer);
