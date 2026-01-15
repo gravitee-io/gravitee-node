@@ -31,62 +31,120 @@ public class ServiceManagerImplTest {
     private final ServiceManagerImpl serviceManager = new ServiceManagerImpl();
 
     @Mock
-    private AbstractService<?> service1, service2, service3, service4;
+    private AbstractService<?> service1, service2, service3, service4, service5;
 
     @Before
     public void setup() {
-        doReturn(700).when(service1).getOrder();
-        doReturn(900).when(service2).getOrder();
-        doReturn(750).when(service3).getOrder();
         doReturn(699).when(service4).getOrder();
+        doReturn(700).when(service1).getOrder();
+        doReturn(700).when(service5).getOrder();
+        doReturn(750).when(service3).getOrder();
+        doReturn(900).when(service2).getOrder();
 
         serviceManager.register(service1);
         serviceManager.register(service2);
         serviceManager.register(service3);
         serviceManager.register(service4);
+        serviceManager.register(service5);
     }
 
     @Test
-    public void doStart_should_prestart_start_and_poststart_in_order() throws Exception {
+    public void doStart_should_run_all_preStart_then_start_then_postStart_for_each_group() throws Exception {
         serviceManager.doStart();
 
-        InOrder inOrder = inOrder(service4, service1, service3, service2);
+        verify(service1, times(1)).preStart();
+        verify(service1, times(1)).start();
+        verify(service1, times(1)).postStart();
 
-        inOrder.verify(service4, times(1)).preStart();
-        inOrder.verify(service1, times(1)).preStart();
-        inOrder.verify(service3, times(1)).preStart();
-        inOrder.verify(service2, times(1)).preStart();
+        verify(service2, times(1)).preStart();
+        verify(service2, times(1)).start();
+        verify(service2, times(1)).postStart();
 
-        inOrder.verify(service4, times(1)).start();
-        inOrder.verify(service1, times(1)).start();
-        inOrder.verify(service3, times(1)).start();
-        inOrder.verify(service2, times(1)).start();
+        verify(service3, times(1)).preStart();
+        verify(service3, times(1)).start();
+        verify(service3, times(1)).postStart();
 
-        inOrder.verify(service4, times(1)).postStart();
-        inOrder.verify(service1, times(1)).postStart();
-        inOrder.verify(service3, times(1)).postStart();
-        inOrder.verify(service2, times(1)).postStart();
+        verify(service4, times(1)).preStart();
+        verify(service4, times(1)).start();
+        verify(service4, times(1)).postStart();
+
+        verify(service5, times(1)).preStart();
+        verify(service5, times(1)).start();
+        verify(service5, times(1)).postStart();
     }
 
     @Test
-    public void doStop_should_prestop_stop_and_poststop_in_reverse_order() throws Exception {
+    public void doStart_should_respect_group_order() throws Exception {
+        serviceManager.doStart();
+
+        InOrder groupOrder = inOrder(service4, service1, service5, service3, service2);
+
+        groupOrder.verify(service4).postStart();
+        groupOrder.verify(service1).postStart();
+        groupOrder.verify(service3).postStart();
+        groupOrder.verify(service2).postStart();
+    }
+
+    @Test
+    public void doStart_should_run_all_preStart_before_all_start_within_same_group() throws Exception {
+        serviceManager.doStart();
+
+        InOrder phaseOrder = inOrder(service1, service5);
+        phaseOrder.verify(service1).preStart();
+        phaseOrder.verify(service5).preStart();
+        phaseOrder.verify(service1).start();
+        phaseOrder.verify(service5).start();
+        phaseOrder.verify(service1).postStart();
+        phaseOrder.verify(service5).postStart();
+    }
+
+    @Test
+    public void doStop_should_run_all_preStop_then_stop_then_postStop_for_each_group() throws Exception {
         serviceManager.doStop();
 
-        InOrder inOrder = inOrder(service4, service1, service3, service2);
+        verify(service1, times(1)).preStop();
+        verify(service1, times(1)).stop();
+        verify(service1, times(1)).postStop();
 
-        inOrder.verify(service2, times(1)).preStop();
-        inOrder.verify(service3, times(1)).preStop();
-        inOrder.verify(service1, times(1)).preStop();
-        inOrder.verify(service4, times(1)).preStop();
+        verify(service2, times(1)).preStop();
+        verify(service2, times(1)).stop();
+        verify(service2, times(1)).postStop();
 
-        inOrder.verify(service2, times(1)).stop();
-        inOrder.verify(service3, times(1)).stop();
-        inOrder.verify(service1, times(1)).stop();
-        inOrder.verify(service4, times(1)).stop();
+        verify(service3, times(1)).preStop();
+        verify(service3, times(1)).stop();
+        verify(service3, times(1)).postStop();
 
-        inOrder.verify(service2, times(1)).postStop();
-        inOrder.verify(service3, times(1)).postStop();
-        inOrder.verify(service1, times(1)).postStop();
-        inOrder.verify(service4, times(1)).postStop();
+        verify(service4, times(1)).preStop();
+        verify(service4, times(1)).stop();
+        verify(service4, times(1)).postStop();
+
+        verify(service5, times(1)).preStop();
+        verify(service5, times(1)).stop();
+        verify(service5, times(1)).postStop();
+    }
+
+    @Test
+    public void doStop_should_respect_reverse_group_order() throws Exception {
+        serviceManager.doStop();
+
+        InOrder groupOrder = inOrder(service2, service3, service1, service5, service4);
+
+        groupOrder.verify(service2).postStop();
+        groupOrder.verify(service3).postStop();
+        groupOrder.verify(service1).postStop();
+        groupOrder.verify(service4).postStop();
+    }
+
+    @Test
+    public void doStop_should_run_all_preStop_before_all_stop_within_same_group() throws Exception {
+        serviceManager.doStop();
+
+        InOrder phaseOrder = inOrder(service1, service5);
+        phaseOrder.verify(service1).preStop();
+        phaseOrder.verify(service5).preStop();
+        phaseOrder.verify(service1).stop();
+        phaseOrder.verify(service5).stop();
+        phaseOrder.verify(service1).postStop();
+        phaseOrder.verify(service5).postStop();
     }
 }

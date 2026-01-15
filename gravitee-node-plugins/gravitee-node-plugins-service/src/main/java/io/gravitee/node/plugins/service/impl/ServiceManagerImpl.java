@@ -15,14 +15,19 @@
  */
 package io.gravitee.node.plugins.service.impl;
 
-import static java.util.Comparator.comparing;
-import static java.util.Comparator.reverseOrder;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.plugins.service.ServiceManager;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,28 +50,25 @@ public class ServiceManagerImpl extends AbstractService implements ServiceManage
     protected void doStart() throws Exception {
         super.doStart();
 
-        List<AbstractService> orderedServices = services.stream().sorted(comparing(AbstractService::getOrder)).collect(toList());
+        Map<Integer, List<AbstractService>> servicesByOrder = services
+            .stream()
+            .collect(groupingBy(AbstractService::getOrder, TreeMap::new, toList()));
 
-        for (AbstractService service : orderedServices) {
-            try {
-                service.preStart();
-            } catch (Exception ex) {
-                LOGGER.error("Unexpected error while pre-starting service", ex);
-            }
-        }
-        for (AbstractService service : orderedServices) {
-            try {
-                service.start();
-            } catch (Exception ex) {
-                LOGGER.error("Unexpected error while starting service", ex);
-            }
-        }
-        for (AbstractService service : orderedServices) {
-            try {
-                service.postStart();
-            } catch (Exception ex) {
-                LOGGER.error("Unexpected error while post-starting service", ex);
-            }
+        for (Map.Entry<Integer, List<AbstractService>> entry : servicesByOrder.entrySet()) {
+            List<AbstractService> servicesInGroup = entry.getValue();
+
+            executePhaseInParallel(servicesInGroup, AbstractService::preStart, "pre-starting");
+
+            executePhaseInParallel(
+                servicesInGroup,
+                service -> {
+                    LOGGER.info("Starting service: {}", service.getClass().getSimpleName());
+                    service.start();
+                },
+                "starting"
+            );
+
+            executePhaseInParallel(servicesInGroup, AbstractService::postStart, "post-starting");
         }
     }
 
@@ -74,32 +76,57 @@ public class ServiceManagerImpl extends AbstractService implements ServiceManage
     protected void doStop() throws Exception {
         super.doStop();
 
-        List<AbstractService> orderedServices = services
+        Map<Integer, List<AbstractService>> servicesByOrder = services
             .stream()
-            .sorted(comparing(AbstractService::getOrder, reverseOrder()))
-            .collect(toList());
+            .collect(groupingBy(AbstractService::getOrder, TreeMap::new, toList()));
 
-        for (AbstractService service : orderedServices) {
-            try {
-                service.preStop();
-            } catch (Exception ex) {
-                LOGGER.error("Unexpected error while pre-stopping service", ex);
-            }
+        List<Integer> reversedKeys = new ArrayList<>(servicesByOrder.keySet());
+        Collections.reverse(reversedKeys);
+
+        for (Integer key : reversedKeys) {
+            List<AbstractService> servicesInGroup = servicesByOrder.get(key);
+
+            executePhaseInParallel(servicesInGroup, AbstractService::preStop, "pre-stopping");
+
+            executePhaseInParallel(
+                servicesInGroup,
+                service -> {
+                    LOGGER.info("Stopping service: {}", service.getClass().getSimpleName());
+                    service.stop();
+                },
+                "stopping"
+            );
+
+            executePhaseInParallel(servicesInGroup, AbstractService::postStop, "post-stopping");
         }
-        for (AbstractService service : orderedServices) {
-            try {
-                service.stop();
-            } catch (Exception ex) {
-                LOGGER.error("Unexpected error while stopping service", ex);
-            }
+    }
+
+    private void executePhaseInParallel(List<AbstractService> services, ServiceAction action, String phaseName) {
+        List<Callable<Void>> tasks = services
+            .stream()
+            .map(service ->
+                (Callable<Void>) () -> {
+                    try {
+                        action.execute(service);
+                    } catch (Exception ex) {
+                        LOGGER.error("Unexpected error while {} service {}", phaseName, service.getClass().getSimpleName(), ex);
+                    }
+                    return null;
+                }
+            )
+            .toList();
+
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            executor.invokeAll(tasks);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            LOGGER.error("Interrupted while waiting for {} phase", phaseName, ex);
         }
-        for (AbstractService service : orderedServices) {
-            try {
-                service.postStop();
-            } catch (Exception ex) {
-                LOGGER.error("Unexpected error while post-stopping service", ex);
-            }
-        }
+    }
+
+    @FunctionalInterface
+    private interface ServiceAction {
+        void execute(AbstractService service) throws Exception;
     }
 
     @Override
