@@ -47,24 +47,25 @@ public class ServiceManagerImplTest {
     }
 
     @Test
-    public void doStart_should_prestart_start_and_poststart_in_order() throws Exception {
+    public void doStart_should_fully_start_each_service_group_before_next() throws Exception {
         serviceManager.doStart();
 
         InOrder inOrder = inOrder(service4, service1, service3, service2);
 
         inOrder.verify(service4, times(1)).preStart();
-        inOrder.verify(service1, times(1)).preStart();
-        inOrder.verify(service3, times(1)).preStart();
-        inOrder.verify(service2, times(1)).preStart();
-
         inOrder.verify(service4, times(1)).start();
-        inOrder.verify(service1, times(1)).start();
-        inOrder.verify(service3, times(1)).start();
-        inOrder.verify(service2, times(1)).start();
-
         inOrder.verify(service4, times(1)).postStart();
+
+        inOrder.verify(service1, times(1)).preStart();
+        inOrder.verify(service1, times(1)).start();
         inOrder.verify(service1, times(1)).postStart();
+
+        inOrder.verify(service3, times(1)).preStart();
+        inOrder.verify(service3, times(1)).start();
         inOrder.verify(service3, times(1)).postStart();
+
+        inOrder.verify(service2, times(1)).preStart();
+        inOrder.verify(service2, times(1)).start();
         inOrder.verify(service2, times(1)).postStart();
     }
 

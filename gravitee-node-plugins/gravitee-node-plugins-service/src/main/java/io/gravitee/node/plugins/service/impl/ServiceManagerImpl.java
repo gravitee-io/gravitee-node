@@ -17,12 +17,18 @@ package io.gravitee.node.plugins.service.impl;
 
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.reverseOrder;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.plugins.service.ServiceManager;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,28 +51,44 @@ public class ServiceManagerImpl extends AbstractService implements ServiceManage
     protected void doStart() throws Exception {
         super.doStart();
 
-        List<AbstractService> orderedServices = services.stream().sorted(comparing(AbstractService::getOrder)).collect(toList());
+        Map<Integer, List<AbstractService>> servicesByOrder = services
+            .stream()
+            .collect(groupingBy(AbstractService::getOrder, TreeMap::new, toList()));
 
-        for (AbstractService service : orderedServices) {
-            try {
-                service.preStart();
-            } catch (Exception ex) {
-                LOGGER.error("Unexpected error while pre-starting service", ex);
-            }
+        for (Map.Entry<Integer, List<AbstractService>> entry : servicesByOrder.entrySet()) {
+            List<AbstractService> servicesInGroup = entry.getValue();
+            startServicesInParallel(servicesInGroup);
         }
-        for (AbstractService service : orderedServices) {
-            try {
-                service.start();
-            } catch (Exception ex) {
-                LOGGER.error("Unexpected error while starting service", ex);
-            }
+    }
+
+    private void startServicesInParallel(List<AbstractService> services) {
+        List<Callable<Void>> tasks = services
+            .stream()
+            .map(service ->
+                (Callable<Void>) () -> {
+                    startService(service);
+                    return null;
+                }
+            )
+            .toList();
+
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            executor.invokeAll(tasks);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            LOGGER.error("Interrupted while waiting for services to start", ex);
         }
-        for (AbstractService service : orderedServices) {
-            try {
-                service.postStart();
-            } catch (Exception ex) {
-                LOGGER.error("Unexpected error while post-starting service", ex);
-            }
+    }
+
+    private void startService(AbstractService service) {
+        String serviceName = service.getClass().getSimpleName();
+        try {
+            service.preStart();
+            LOGGER.info("Starting service: {}", serviceName);
+            service.start();
+            service.postStart();
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected error while starting service {}", serviceName, ex);
         }
     }
 
