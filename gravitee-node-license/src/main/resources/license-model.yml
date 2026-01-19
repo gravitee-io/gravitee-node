@@ -120,8 +120,13 @@ packs:
             - apim-native-kafka-policy-virtual-topics
     agent-mesh:
         features:
+            - apim-ai-policy-semantic-cache
+            - apim-ai-resource-text-embedding
+            - apim-ai-resource-token-classification
+            - apim-ai-resource-vector-store-redis
             - apim-llm-proxy-reactor
             - apim-mcp-proxy-reactor
+            - apim-policy-pii-filtering
 
 tiers:
     planet:
