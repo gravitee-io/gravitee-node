@@ -1,3 +1,10 @@
+# [7.19.0](https://github.com/gravitee-io/gravitee-node/compare/7.18.3...7.19.0) (2026-01-19)
+
+
+### Features
+
+* add new AI policies & resources features ([5bdff54](https://github.com/gravitee-io/gravitee-node/commit/5bdff544d8fd6c3bbb376f0fdb8dd4a94ff79afe))
+
 ## [7.18.3](https://github.com/gravitee-io/gravitee-node/compare/7.18.2...7.18.3) (2025-12-16)
 
 
