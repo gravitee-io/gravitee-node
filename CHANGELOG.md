@@ -1,3 +1,10 @@
+# [8.0.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.2...8.0.0-alpha.3) (2026-01-19)
+
+
+### Features
+
+* add new AI policies & resources features ([6193555](https://github.com/gravitee-io/gravitee-node/commit/61935551cd07dda0ed827cd34240a570e69261b7))
+
 # [8.0.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.1...8.0.0-alpha.2) (2026-01-07)
 
 
