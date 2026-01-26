@@ -23,6 +23,7 @@ import io.gravitee.node.certificates.spring.NodeCertificatesConfiguration;
 import io.gravitee.node.container.AbstractContainer;
 import io.gravitee.node.container.spring.env.EnvironmentConfiguration;
 import io.gravitee.node.container.spring.env.PropertiesConfiguration;
+import io.gravitee.node.kubernetes.spring.NodeKubernetesConfiguration;
 import io.gravitee.node.license.LicenseLoaderService;
 import io.gravitee.node.management.http.spring.ManagementConfiguration;
 import io.gravitee.node.monitoring.spring.NodeMonitoringConfiguration;
@@ -137,6 +138,7 @@ public abstract class SpringBasedContainer extends AbstractContainer {
         bootstrapClasses.add(ConfigurationLevelSecretBeanFactory.class);
         bootstrapClasses.add(NodeCertificatesConfiguration.class);
         bootstrapClasses.add(KubernetesClientConfiguration.class);
+        bootstrapClasses.add(NodeKubernetesConfiguration.class);
 
         // Bean registry post processors need to be manually registered as it MUST be taken in account before spring context is refreshed.
         bootstrapClasses.add(ContainerInitializerBeanRegistryPostProcessor.class);
