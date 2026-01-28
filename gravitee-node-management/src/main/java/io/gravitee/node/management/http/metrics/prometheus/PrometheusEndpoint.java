@@ -20,16 +20,13 @@ import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
-import io.gravitee.node.management.http.utils.SafeBufferedWriter;
+import io.gravitee.node.management.http.utils.ResponseOutputStream;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.micrometer.backends.BackendRegistries;
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Optional;
 import lombok.CustomLog;
 
@@ -61,6 +58,11 @@ public class PrometheusEndpoint implements ManagementEndpoint {
                 .orElse(null);
     }
 
+    // Package-private constructor for testing
+    PrometheusEndpoint(PrometheusMeterRegistry prometheusRegistry) {
+        this.prometheusRegistry = prometheusRegistry;
+    }
+
     @Override
     public HttpMethod method() {
         return HttpMethod.GET;
@@ -82,39 +84,25 @@ public class PrometheusEndpoint implements ManagementEndpoint {
         response.putHeader(CONTENT_TYPE, CONTENT_TYPE_004);
         response.setChunked(true);
 
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            prometheusRegistry.scrape(baos);
-            response.write(Buffer.buffer(baos.toByteArray()));
-            if (!response.ended()) {
-                response.end();
-            }
-        } catch (IOException ioe) {
-            // On write-queue drain timeout, abort the TCP connection so the client
-            // gets a clean error instead of hanging. close() fires the closeHandler
-            // in ConcurrencyLimitHandler which releases the semaphore permit.
-            log.error("Unexpected error while scraping the Prometheus endpoint", ioe);
-            if (!response.ended()) {
-                routingContext.request().connection().close();
-            }
-        } finally {
-            // Ensure the response is always terminated. The closed() guard prevents
-            // calling end() on an already-aborted connection (which would throw in
-            // some Vert.x versions).
-            if (!response.ended() && !response.closed()) {
-                response.end();
-            }
-        }
-        //        try (BufferedWriter writer = new BufferedWriter(new SafeBufferedWriter(response))) {
-        //            prometheusRegistry.scrape(writer);
-        //            writer.flush();
-        //            if (!response.ended()) {
-        //                response.end();
-        //            }
-        //        } catch (IOException ioe) {
-        //            LOGGER.error("Unexpected error while scraping the Prometheus endpoint", ioe);
-        //            if (!response.ended()) {
-        //                routingContext.request().connection().close();
-        //            }
-        //        }
+        routingContext
+            .vertx()
+            .executeBlocking(() -> {
+                try (OutputStream os = new ResponseOutputStream(response)) {
+                    prometheusRegistry.scrape(os);
+                }
+                return null;
+            })
+            .onComplete(ar -> {
+                if (ar.failed()) {
+                    log.error("Unexpected error while scraping the Prometheus endpoint", ar.cause());
+                    if (!response.ended()) {
+                        routingContext.request().connection().close();
+                    }
+                } else {
+                    if (!response.ended()) {
+                        response.end();
+                    }
+                }
+            });
     }
 }

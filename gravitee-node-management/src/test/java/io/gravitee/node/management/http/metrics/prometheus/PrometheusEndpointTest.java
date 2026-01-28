@@ -1,130 +1,204 @@
+/**
+ * Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.gravitee.node.management.http.metrics.prometheus;
 
-import static org.mockito.ArgumentMatchers.*;
+import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpConnection;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.micrometer.backends.BackendRegistries;
 import java.io.IOException;
-import java.io.Writer;
+import java.io.OutputStream;
+import java.util.concurrent.Callable;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class PrometheusEndpointTest {
 
-    @Test
-    void should_end_response_after_successful_scrape() {
-        PrometheusMeterRegistry mockRegistry = mock(PrometheusMeterRegistry.class);
-        PrometheusEndpoint endpoint = createEndpointWith(mockRegistry);
+    private PrometheusEndpoint cut;
 
-        HttpServerResponse mockResponse = createMockResponse();
-        RoutingContext mockContext = createMockContext(mockResponse);
-        when(mockResponse.ended()).thenReturn(false);
-        when(mockResponse.closed()).thenReturn(false);
+    @Mock
+    private RoutingContext routingContext;
 
-        endpoint.handle(mockContext);
+    @Mock
+    private HttpServerResponse httpServerResponse;
 
-        verify(mockResponse).end();
-        verify(mockResponse, never()).close();
+    @Mock
+    private HttpServerRequest httpServerRequest;
+
+    @Mock
+    private HttpConnection httpConnection;
+
+    @Mock
+    private Vertx vertx;
+
+    @BeforeEach
+    void init() {
+        PrometheusMeterRegistry prometheusRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+        // Add a sample metric for testing
+        prometheusRegistry.counter("test_counter", "env", "test").increment();
+
+        cut = new PrometheusEndpoint(prometheusRegistry);
+    }
+
+    private void setupHandleMocks() {
+        when(routingContext.response()).thenReturn(httpServerResponse);
+        when(routingContext.vertx()).thenReturn(vertx);
+        when(httpServerResponse.putHeader(any(CharSequence.class), any(CharSequence.class))).thenReturn(httpServerResponse);
+        when(httpServerResponse.setChunked(anyBoolean())).thenReturn(httpServerResponse);
     }
 
     @Test
-    void should_close_response_on_scrape_IOException() throws Exception {
-        PrometheusMeterRegistry mockRegistry = mock(PrometheusMeterRegistry.class);
-        doThrow(new IOException("Timeout while waiting for write queue to drain")).when(mockRegistry).scrape(any(Writer.class));
-        PrometheusEndpoint endpoint = createEndpointWith(mockRegistry);
-
-        HttpServerResponse mockResponse = createMockResponse();
-        RoutingContext mockContext = createMockContext(mockResponse);
-        when(mockResponse.ended()).thenReturn(false);
-        when(mockResponse.closed()).thenReturn(false);
-        doAnswer(inv -> {
-                when(mockResponse.closed()).thenReturn(true);
-                return null;
-            })
-            .when(mockResponse)
-            .close();
-
-        endpoint.handle(mockContext);
-
-        verify(mockResponse).close();
-        verify(mockResponse, never()).end();
+    void should_return_correct_path() {
+        assertThat(cut.path()).isEqualTo("/metrics/prometheus");
     }
 
     @Test
-    void should_not_call_close_or_end_if_response_already_ended() throws Exception {
-        PrometheusMeterRegistry mockRegistry = mock(PrometheusMeterRegistry.class);
-        doThrow(new IOException("write error")).when(mockRegistry).scrape(any(Writer.class));
-        PrometheusEndpoint endpoint = createEndpointWith(mockRegistry);
-
-        HttpServerResponse mockResponse = createMockResponse();
-        RoutingContext mockContext = createMockContext(mockResponse);
-        when(mockResponse.ended()).thenReturn(true);
-
-        endpoint.handle(mockContext);
-
-        verify(mockResponse, never()).close();
-        verify(mockResponse, never()).end();
+    void should_return_get_method() {
+        assertThat(cut.method()).isEqualTo(io.gravitee.common.http.HttpMethod.GET);
     }
 
     @Test
-    void should_set_chunked_and_content_type() {
-        PrometheusMeterRegistry mockRegistry = mock(PrometheusMeterRegistry.class);
-        PrometheusEndpoint endpoint = createEndpointWith(mockRegistry);
+    void should_set_correct_content_type_and_chunked_mode() {
+        setupHandleMocks();
+        when(vertx.executeBlocking(any(Callable.class))).thenReturn(Future.succeededFuture());
 
-        HttpServerResponse mockResponse = createMockResponse();
-        RoutingContext mockContext = createMockContext(mockResponse);
-        when(mockResponse.ended()).thenReturn(false);
-        when(mockResponse.closed()).thenReturn(false);
+        cut.handle(routingContext);
 
-        endpoint.handle(mockContext);
-
-        verify(mockResponse).setChunked(true);
-        verify(mockResponse).putHeader(any(CharSequence.class), any(CharSequence.class));
+        verify(httpServerResponse).putHeader(CONTENT_TYPE, PrometheusEndpoint.CONTENT_TYPE_004);
+        verify(httpServerResponse).setChunked(true);
     }
 
     @Test
-    void should_return_501_when_registry_is_null() {
-        PrometheusEndpoint endpoint = createEndpointWith(null);
+    void should_scrape_metrics_and_end_response_on_success() {
+        setupHandleMocks();
+        // Capture the callable passed to executeBlocking
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Callable<Void>> callableCaptor = ArgumentCaptor.forClass(Callable.class);
 
-        HttpServerResponse mockResponse = createMockResponse();
-        when(mockResponse.setStatusCode(anyInt())).thenReturn(mockResponse);
-        RoutingContext mockContext = createMockContext(mockResponse);
+        when(vertx.executeBlocking(callableCaptor.capture()))
+            .thenAnswer(invocation -> {
+                // Execute the callable synchronously for testing
+                try {
+                    callableCaptor.getValue().call();
+                    return Future.succeededFuture();
+                } catch (Exception e) {
+                    return Future.failedFuture(e);
+                }
+            });
+        when(httpServerResponse.ended()).thenReturn(false);
+        when(httpServerResponse.write(any(io.vertx.core.buffer.Buffer.class))).thenReturn(Future.succeededFuture());
 
-        endpoint.handle(mockContext);
+        cut.handle(routingContext);
 
-        verify(mockResponse).setStatusCode(501);
-        verify(mockResponse).end("Prometheus metrics are not enabled");
+        // Verify that data was written to the response (metrics were scraped)
+        verify(httpServerResponse, atLeastOnce()).write(any(io.vertx.core.buffer.Buffer.class));
+        // Verify that end was called
+        verify(httpServerResponse).end();
     }
 
-    // --- Helpers ---
+    @Test
+    void should_not_call_end_if_response_already_ended() {
+        setupHandleMocks();
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Callable<Void>> callableCaptor = ArgumentCaptor.forClass(Callable.class);
 
-    private PrometheusEndpoint createEndpointWith(PrometheusMeterRegistry registry) {
-        try (MockedStatic<BackendRegistries> mocked = Mockito.mockStatic(BackendRegistries.class)) {
-            CompositeMeterRegistry composite = null;
-            if (registry != null) {
-                composite = new CompositeMeterRegistry();
-                composite.add(registry);
-            }
-            mocked.when(BackendRegistries::getDefaultNow).thenReturn(composite);
-            return new PrometheusEndpoint();
-        }
+        when(vertx.executeBlocking(callableCaptor.capture()))
+            .thenAnswer(invocation -> {
+                try {
+                    callableCaptor.getValue().call();
+                    return Future.succeededFuture();
+                } catch (Exception e) {
+                    return Future.failedFuture(e);
+                }
+            });
+        when(httpServerResponse.ended()).thenReturn(true);
+        when(httpServerResponse.write(any(io.vertx.core.buffer.Buffer.class))).thenReturn(Future.succeededFuture());
+
+        cut.handle(routingContext);
+
+        verify(httpServerResponse, never()).end();
     }
 
-    private HttpServerResponse createMockResponse() {
-        HttpServerResponse resp = mock(HttpServerResponse.class);
-        when(resp.putHeader(any(CharSequence.class), any(CharSequence.class))).thenReturn(resp);
-        when(resp.setChunked(anyBoolean())).thenReturn(resp);
-        return resp;
+    @Test
+    void should_close_connection_on_scrape_failure() {
+        setupHandleMocks();
+        when(vertx.executeBlocking(any(Callable.class))).thenReturn(Future.failedFuture(new IOException("Scrape failed")));
+        when(httpServerResponse.ended()).thenReturn(false);
+        when(routingContext.request()).thenReturn(httpServerRequest);
+        when(httpServerRequest.connection()).thenReturn(httpConnection);
+
+        cut.handle(routingContext);
+
+        verify(httpConnection).close();
+        verify(httpServerResponse, never()).end();
     }
 
-    private RoutingContext createMockContext(HttpServerResponse response) {
-        RoutingContext ctx = mock(RoutingContext.class);
-        when(ctx.response()).thenReturn(response);
-        return ctx;
+    @Test
+    void should_not_close_connection_if_response_already_ended_on_failure() {
+        setupHandleMocks();
+        when(vertx.executeBlocking(any(Callable.class))).thenReturn(Future.failedFuture(new IOException("Scrape failed")));
+        when(httpServerResponse.ended()).thenReturn(true);
+
+        cut.handle(routingContext);
+
+        verify(routingContext, never()).request();
+        verify(httpServerResponse, never()).end();
+    }
+
+    @Test
+    void should_stream_metrics_content() {
+        setupHandleMocks();
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Callable<Void>> callableCaptor = ArgumentCaptor.forClass(Callable.class);
+        ArgumentCaptor<io.vertx.core.buffer.Buffer> bufferCaptor = ArgumentCaptor.forClass(io.vertx.core.buffer.Buffer.class);
+
+        when(vertx.executeBlocking(callableCaptor.capture()))
+            .thenAnswer(invocation -> {
+                try {
+                    callableCaptor.getValue().call();
+                    return Future.succeededFuture();
+                } catch (Exception e) {
+                    return Future.failedFuture(e);
+                }
+            });
+        when(httpServerResponse.ended()).thenReturn(false);
+        when(httpServerResponse.write(bufferCaptor.capture())).thenReturn(Future.succeededFuture());
+
+        cut.handle(routingContext);
+
+        // Verify that the scraped content contains our test metric
+        String writtenContent = bufferCaptor.getAllValues().stream().map(buffer -> buffer.toString()).reduce("", String::concat);
+
+        assertThat(writtenContent).contains("test_counter");
     }
 }
