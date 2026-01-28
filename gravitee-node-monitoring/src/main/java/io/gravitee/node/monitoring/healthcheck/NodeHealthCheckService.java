@@ -25,7 +25,7 @@ import io.gravitee.node.monitoring.healthcheck.micrometer.NodeHealthCheckMicrome
 import io.gravitee.node.monitoring.spring.HealthConfiguration;
 import io.gravitee.plugin.alert.AlertEventProducer;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.MessageProducer;

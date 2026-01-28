@@ -52,10 +52,9 @@ public class JettyHttpServerProbe implements Probe {
         NetClientOptions options = new NetClientOptions().setConnectTimeout(500);
         NetClient client = vertx.createNetClient(options);
 
-        client.connect(
-            port(),
-            host(),
-            res -> {
+        client
+            .connect(port(), host())
+            .onComplete(res -> {
                 if (res.succeeded()) {
                     promise.complete(Result.healthy());
                 } else {
@@ -63,8 +62,7 @@ public class JettyHttpServerProbe implements Probe {
                 }
 
                 client.close();
-            }
-        );
+            });
 
         return promise.future().toCompletionStage();
     }

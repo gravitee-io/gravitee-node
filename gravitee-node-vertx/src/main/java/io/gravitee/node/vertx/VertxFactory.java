@@ -30,15 +30,16 @@ import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.config.MeterFilter;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.netty.buffer.ByteBufAllocatorMetricProvider;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.buffer.impl.VertxByteBufAllocator;
+import io.vertx.core.impl.buffer.VertxByteBufAllocator;
+import io.vertx.core.internal.VertxInternal;
 import io.vertx.micrometer.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -293,10 +294,11 @@ public class VertxFactory implements FactoryBean<Vertx> {
 
                     new NettyAllocatorMetrics((ByteBufAllocatorMetricProvider) VertxByteBufAllocator.POOLED_ALLOCATOR)
                         .bindTo(compositeMeterRegistry);
-                    new NettyAllocatorMetrics((ByteBufAllocatorMetricProvider) VertxByteBufAllocator.UNPOOLED_ALLOCATOR)
+                    new NettyAllocatorMetrics((ByteBufAllocatorMetricProvider) VertxByteBufAllocator.DEFAULT)
                         .bindTo(compositeMeterRegistry);
                 }
-                case NETTY_EVENT_EXECUTOR -> new NettyEventExecutorMetrics(instance.nettyEventLoopGroup()).bindTo(compositeMeterRegistry);
+                case NETTY_EVENT_EXECUTOR -> new NettyEventExecutorMetrics(((VertxInternal) instance).nettyEventLoopGroup())
+                    .bindTo(compositeMeterRegistry);
             }
         }
     }

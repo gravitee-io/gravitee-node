@@ -17,6 +17,7 @@ package io.gravitee.node.vertx.cert;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.net.KeyCertOptions;
+import java.util.function.Function;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.X509KeyManager;
 
@@ -51,5 +52,10 @@ public class VertxKeyCertOptions implements KeyCertOptions {
     @Override
     public KeyManagerFactory getKeyManagerFactory(Vertx vertx) {
         return keyManagerFactory;
+    }
+
+    @Override
+    public Function<String, KeyManagerFactory> keyManagerFactoryMapper(Vertx vertx) throws Exception {
+        return alias -> keyManagerFactory;
     }
 }

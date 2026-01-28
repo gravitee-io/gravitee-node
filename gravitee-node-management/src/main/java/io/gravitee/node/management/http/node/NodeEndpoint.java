@@ -16,6 +16,7 @@
 package io.gravitee.node.management.http.node;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.gravitee.common.http.HttpMethod;
 import io.gravitee.common.http.HttpStatusCode;
 import io.gravitee.common.http.MediaType;
@@ -55,7 +56,6 @@ public class NodeEndpoint implements ManagementEndpoint {
         HttpServerResponse response = ctx.response();
         response.setStatusCode(HttpStatusCode.OK_200);
         response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-        response.setChunked(true);
 
         NodeInfos data = new NodeInfos();
 
@@ -64,19 +64,19 @@ public class NodeEndpoint implements ManagementEndpoint {
         data.setVersion(Version.RUNTIME_VERSION);
         data.setMetadata(node.metadata());
 
-        io.vertx.core.json.jackson.DatabindCodec codec = (io.vertx.core.json.jackson.DatabindCodec) io.vertx.core.json.Json.CODEC;
-        DatabindCodec.prettyMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        response.write(
-            codec.toString(data, true),
-            event -> {
-                if (event.failed()) {
-                    response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
-                    log.error("Unable to transform data object to JSON", event.cause());
-                }
+        try {
+            var body = DatabindCodec
+                .mapper()
+                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                .writerWithDefaultPrettyPrinter()
+                .writeValueAsString(data);
 
-                response.end();
-            }
-        );
+            response.end(body);
+        } catch (JsonProcessingException e) {
+            log.error("Unable to transform data object to JSON", e);
+            response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+            response.end();
+        }
     }
 
     public static class NodeInfos {

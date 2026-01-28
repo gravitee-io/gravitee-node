@@ -19,9 +19,13 @@ import io.gravitee.node.vertx.client.ssl.pem.PEMTrustStore;
 import io.gravitee.node.vertx.client.ssl.pkcs12.PKCS12KeyStore;
 import io.gravitee.node.vertx.client.ssl.pkcs12.PKCS12TrustStore;
 import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.impl.HttpClientImpl;
+import io.vertx.core.http.WebSocketClientOptions;
+import io.vertx.core.http.impl.CleanableHttpClient;
+import io.vertx.core.http.impl.CleanableWebSocketClient;
+import io.vertx.core.http.impl.WebSocketClientImpl;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.http.HttpClient;
+import io.vertx.rxjava3.core.http.WebSocketClient;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Base64;
@@ -97,14 +101,41 @@ class VertxHttpClientFactoryTest {
         final HttpClient httpClient = builder.build().createHttpClient();
 
         assertThat(httpClient).isNotNull();
-
-        final HttpClientOptions httpClientOptions = extractHttpClientOptions(httpClient);
+        HttpClientOptions httpClientOptions = ((CleanableHttpClient) httpClient.getDelegate()).options();
         assertThat(httpClientOptions).isNotNull();
         assertThat(httpClientOptions.getHttp2MultiplexingLimit()).isEqualTo(DEFAULT_HTTP2_MULTIPLEXING_LIMIT);
         assertThat(httpClientOptions.getHttp2ConnectionWindowSize()).isEqualTo(DEFAULT_HTTP2_CONNECTION_WINDOW_SIZE);
         assertThat(httpClientOptions.getInitialSettings().getInitialWindowSize()).isEqualTo(DEFAULT_INITIAL_WINDOW_SIZE);
         assertThat(httpClientOptions.getInitialSettings().getMaxConcurrentStreams()).isEqualTo(DEFAULT_MAX_CONCURRENT_STREAMS);
         assertThat(httpClientOptions.getInitialSettings().getMaxFrameSize()).isEqualTo(DEFAULT_MAX_FRAME_SIZE);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_build_websocket_client_with_default_settings() {
+        VertxHttpClientFactory.VertxHttpClientFactoryBuilder builder = builder();
+
+        builder.httpOptions(VertxHttpClientOptions.builder().build());
+        final WebSocketClient webSocketClient = builder.build().createWebSocketClient();
+
+        assertThat(webSocketClient).isNotNull();
+        final WebSocketClientOptions webSocketClientOptions = extractWebSocketClientOptions(webSocketClient);
+        assertThat(webSocketClientOptions).isNotNull();
+        assertThat(webSocketClientOptions.getTryUsePerFrameCompression()).isTrue();
+    }
+
+    private static WebSocketClientOptions extractWebSocketClientOptions(WebSocketClient webSocketClient) throws IllegalAccessException {
+        Field webSocketClientImplField = ReflectionUtils.findField(
+            CleanableWebSocketClient.class,
+            "delegate",
+            io.vertx.core.http.WebSocketClient.class
+        );
+        webSocketClientImplField.setAccessible(true);
+        WebSocketClientImpl webSocketClientImpl = (WebSocketClientImpl) webSocketClientImplField.get(webSocketClient.getDelegate());
+
+        Field websocketClientOptions = ReflectionUtils.findField(WebSocketClientImpl.class, "options", WebSocketClientOptions.class);
+        websocketClientOptions.setAccessible(true);
+        return (WebSocketClientOptions) websocketClientOptions.get(webSocketClientImpl);
     }
 
     @Test
@@ -125,20 +156,14 @@ class VertxHttpClientFactoryTest {
         final HttpClient httpClient = builder.build().createHttpClient();
 
         assertThat(httpClient).isNotNull();
+        HttpClientOptions httpClientOptions = ((CleanableHttpClient) httpClient.getDelegate()).options();
 
-        final HttpClientOptions httpClientOptions = extractHttpClientOptions(httpClient);
         assertThat(httpClientOptions).isNotNull();
         assertThat(httpClientOptions.getHttp2MultiplexingLimit()).isEqualTo(13);
         assertThat(httpClientOptions.getHttp2ConnectionWindowSize()).isEqualTo(128000);
         assertThat(httpClientOptions.getInitialSettings().getInitialWindowSize()).isEqualTo(72000);
         assertThat(httpClientOptions.getInitialSettings().getMaxConcurrentStreams()).isEqualTo(13);
         assertThat(httpClientOptions.getInitialSettings().getMaxFrameSize()).isEqualTo(32000);
-    }
-
-    private static HttpClientOptions extractHttpClientOptions(HttpClient httpClient) throws IllegalAccessException {
-        Field httpOptionsFields = ReflectionUtils.findField(HttpClientImpl.class, "options", HttpClientOptions.class);
-        httpOptionsFields.setAccessible(true);
-        return (HttpClientOptions) httpOptionsFields.get(httpClient.getDelegate());
     }
 
     @Test

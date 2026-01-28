@@ -38,16 +38,15 @@ public class ManagementService extends AbstractService<ManagementService> {
     protected void doStart() throws Exception {
         super.doStart();
 
-        vertx.deployVerticle(
-            SpringVerticleFactory.VERTICLE_PREFIX + ':' + ManagementVerticle.class.getName(),
-            event -> {
+        vertx
+            .deployVerticle(SpringVerticleFactory.VERTICLE_PREFIX + ':' + ManagementVerticle.class.getName())
+            .onComplete(event -> {
                 if (event.failed()) {
                     log.error("Node Management API service can not be started", event.cause());
                 }
 
                 deploymentId = event.result();
-            }
-        );
+            });
     }
 
     @Override

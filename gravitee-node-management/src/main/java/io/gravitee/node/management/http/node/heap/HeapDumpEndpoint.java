@@ -20,7 +20,6 @@ import io.gravitee.common.http.HttpStatusCode;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import java.io.File;
@@ -63,57 +62,34 @@ public class HeapDumpEndpoint implements ManagementEndpoint {
 
         ctx
             .vertx()
-            .executeBlocking(
-                new Handler<Promise<File>>() {
-                    @Override
-                    public void handle(Promise<File> promise) {
-                        try {
-                            if (HeapDumpEndpoint.this.lock.tryLock(HeapDumpEndpoint.this.timeout, TimeUnit.MILLISECONDS)) {
-                                try {
-                                    File dumpFile = dump(live);
-                                    promise.complete(dumpFile);
-                                } catch (Exception e) {
-                                    promise.fail(e);
-                                }
-                            }
-                        } catch (InterruptedException ex) {
-                            promise.fail(ex);
-                        } finally {
-                            HeapDumpEndpoint.this.lock.unlock();
-                        }
+            .executeBlocking(() -> {
+                try {
+                    if (HeapDumpEndpoint.this.lock.tryLock(HeapDumpEndpoint.this.timeout, TimeUnit.MILLISECONDS)) {
+                        return dump(live);
                     }
-                },
-                new Handler<AsyncResult<File>>() {
-                    @Override
-                    public void handle(AsyncResult<File> fileAsyncResult) {
-                        if (fileAsyncResult.succeeded()) {
-                            File file = fileAsyncResult.result();
-                            response
-                                .setStatusCode(HttpStatusCode.OK_200)
-                                .setChunked(true)
-                                .sendFile(file.getAbsolutePath())
-                                .onComplete(
-                                    new Handler<AsyncResult<Void>>() {
-                                        @Override
-                                        public void handle(AsyncResult<Void> voidAsyncResult) {
-                                            try {
-                                                Files.delete(file.toPath());
-                                            } catch (IOException ex) {
-                                                log.warn("Failed to delete temporary heap dump file '" + file.toPath() + "'", ex);
-                                            }
-                                        }
-                                    }
-                                );
-                        } else {
-                            log.error("Unable to generate heap dump.", fileAsyncResult.cause());
-                            response
-                                .setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500)
-                                .setChunked(true)
-                                .send(fileAsyncResult.cause().getMessage());
-                        }
-                    }
+                } finally {
+                    HeapDumpEndpoint.this.lock.unlock();
                 }
-            );
+                return null;
+            })
+            .onComplete(fileAsyncResult -> {
+                if (fileAsyncResult.succeeded() && fileAsyncResult.result() != null) {
+                    File file = fileAsyncResult.result();
+                    response
+                        .setStatusCode(HttpStatusCode.OK_200)
+                        .sendFile(file.getAbsolutePath())
+                        .onComplete(ar -> {
+                            try {
+                                Files.delete(file.toPath());
+                            } catch (IOException ex) {
+                                log.warn("Failed to delete temporary heap dump file '" + file.toPath() + "'", ex);
+                            }
+                        });
+                } else {
+                    log.error("Unable to generate heap dump.", fileAsyncResult.cause());
+                    response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500).send(fileAsyncResult.cause().getMessage());
+                }
+            });
     }
 
     private File dump(boolean live) throws IOException, InterruptedException {

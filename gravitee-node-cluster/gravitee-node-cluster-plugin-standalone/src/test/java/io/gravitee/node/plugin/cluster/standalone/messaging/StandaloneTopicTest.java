@@ -42,13 +42,11 @@ class StandaloneTopicTest {
             .eventBus()
             .<String>localConsumer(TOPIC_NAME)
             .handler(event ->
-                vertx.executeBlocking(
-                    (Handler<Promise<Void>>) promise -> {
-                        itemReceived.flag();
-                        assertThat(event.body()).isEqualTo("message");
-                        promise.handle(null);
-                    }
-                )
+                vertx.executeBlocking(() -> {
+                    itemReceived.flag();
+                    assertThat(event.body()).isEqualTo("message");
+                    return null;
+                })
             );
 
         cut.publish("message");

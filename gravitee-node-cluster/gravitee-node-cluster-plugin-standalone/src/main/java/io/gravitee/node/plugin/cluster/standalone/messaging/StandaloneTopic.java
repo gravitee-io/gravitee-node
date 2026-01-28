@@ -56,12 +56,10 @@ public class StandaloneTopic<T> implements Topic<T> {
             .eventBus()
             .<T>localConsumer(topicName)
             .handler(event ->
-                vertx.executeBlocking(
-                    (Handler<Promise<Void>>) promise -> {
-                        messageListener.onMessage(new Message<>(topicName, event.body()));
-                        promise.handle(null);
-                    }
-                )
+                vertx.executeBlocking(() -> {
+                    messageListener.onMessage(new Message<>(topicName, event.body()));
+                    return null;
+                })
             );
         consumerMap.put(subscriptionId, vertxConsumer);
 

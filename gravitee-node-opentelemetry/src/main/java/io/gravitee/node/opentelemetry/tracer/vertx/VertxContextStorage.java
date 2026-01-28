@@ -3,9 +3,10 @@ package io.gravitee.node.opentelemetry.tracer.vertx;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextStorage;
 import io.opentelemetry.context.Scope;
-import io.smallrye.common.vertx.VertxContext;
 import io.vertx.core.Vertx;
+import io.vertx.core.internal.ContextInternal;
 import lombok.CustomLog;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * See <a href="https://github.com/quarkusio/quarkus/blob/main/extensions/opentelemetry/runtime/src/main/java/io/quarkus/opentelemetry/runtime/QuarkusContextStorage.java">QuarkusContextStorage.java</a>
@@ -53,13 +54,13 @@ public enum VertxContextStorage implements ContextStorage {
         if (toAttach == beforeAttach) {
             return Scope.noop();
         }
-        vertxContext.putLocal(OTEL_CONTEXT, toAttach);
+        ((ContextInternal) vertxContext).putLocal(OTEL_CONTEXT, toAttach);
 
         return () -> {
             if (beforeAttach == null) {
-                vertxContext.removeLocal(OTEL_CONTEXT);
+                ((ContextInternal) vertxContext).removeLocal(OTEL_CONTEXT);
             } else {
-                vertxContext.putLocal(OTEL_CONTEXT, beforeAttach);
+                ((ContextInternal) vertxContext).putLocal(OTEL_CONTEXT, beforeAttach);
             }
         };
     }
@@ -74,7 +75,7 @@ public enum VertxContextStorage implements ContextStorage {
     public Context current() {
         io.vertx.core.Context current = getVertxContext();
         if (current != null) {
-            return current.getLocal(OTEL_CONTEXT);
+            return ((ContextInternal) current).getLocal(OTEL_CONTEXT);
         } else {
             return ContextStorage.defaultStorage().current();
         }
@@ -87,7 +88,9 @@ public enum VertxContextStorage implements ContextStorage {
      * @return the OpenTelemetry Context if exists in the Vert.x Context or null.
      */
     public static Context getContext(io.vertx.core.Context vertxContext) {
-        return vertxContext != null && VertxContext.isDuplicatedContext(vertxContext) ? vertxContext.getLocal(OTEL_CONTEXT) : null;
+        return vertxContext != null && VertxContext.isDuplicatedContext(vertxContext)
+            ? ((ContextInternal) vertxContext).getLocal(OTEL_CONTEXT)
+            : null;
     }
 
     /**
