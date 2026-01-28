@@ -77,26 +77,17 @@ public class HeapDumpEndpoint implements ManagementEndpoint {
                     File file = fileAsyncResult.result();
                     response
                         .setStatusCode(HttpStatusCode.OK_200)
-                        .setChunked(true)
                         .sendFile(file.getAbsolutePath())
-                        .onComplete(
-                            new Handler<AsyncResult<Void>>() {
-                                @Override
-                                public void handle(AsyncResult<Void> voidAsyncResult) {
-                                    try {
-                                        Files.delete(file.toPath());
-                                    } catch (IOException ex) {
-                                        log.warn("Failed to delete temporary heap dump file '" + file.toPath() + "'", ex);
-                                    }
-                                }
+                        .onComplete(ar -> {
+                            try {
+                                Files.delete(file.toPath());
+                            } catch (IOException ex) {
+                                log.warn("Failed to delete temporary heap dump file '" + file.toPath() + "'", ex);
                             }
-                        );
+                        });
                 } else {
                     log.error("Unable to generate heap dump.", fileAsyncResult.cause());
-                    response
-                        .setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500)
-                        .setChunked(true)
-                        .send(fileAsyncResult.cause().getMessage());
+                    response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500).send(fileAsyncResult.cause().getMessage());
                 }
             });
     }

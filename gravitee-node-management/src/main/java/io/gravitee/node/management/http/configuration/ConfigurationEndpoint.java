@@ -22,10 +22,7 @@ import io.gravitee.common.http.HttpMethod;
 import io.gravitee.common.http.HttpStatusCode;
 import io.gravitee.common.http.MediaType;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.RoutingContext;
 import java.util.*;
@@ -68,7 +65,6 @@ public class ConfigurationEndpoint implements ManagementEndpoint {
         HttpServerResponse response = ctx.response();
         response.setStatusCode(HttpStatusCode.OK_200);
         response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-        response.setChunked(true);
 
         // Configuration is coming from gravitee.yml
         EnumerablePropertySource nodeConfiguration = (EnumerablePropertySource) environment
@@ -107,24 +103,17 @@ public class ConfigurationEndpoint implements ManagementEndpoint {
         nodeProperties.putAll(prefixlessSystemEnvironment);
 
         try {
-            response
-                .write(
-                    DatabindCodec
-                        .mapper()
-                        .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                        .writerWithDefaultPrettyPrinter()
-                        .writeValueAsString(nodeProperties)
-                )
-                .onComplete(event -> {
-                    if (event.failed()) {
-                        response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
-                        log.error("Unable to transform data object to JSON", event.cause());
-                    }
+            var body = DatabindCodec
+                .mapper()
+                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                .writerWithDefaultPrettyPrinter()
+                .writeValueAsString(nodeProperties);
 
-                    response.end();
-                });
+            response.end(body);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            log.error("Unable to transform data object to JSON", e);
+            response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+            response.end();
         }
     }
 

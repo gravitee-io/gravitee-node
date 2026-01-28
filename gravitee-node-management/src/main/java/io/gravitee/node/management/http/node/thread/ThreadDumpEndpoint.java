@@ -60,15 +60,10 @@ public class ThreadDumpEndpoint implements ManagementEndpoint {
                         .response()
                         .setStatusCode(HttpStatusCode.OK_200)
                         .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain;charset=UTF-8")
-                        .setChunked(true)
                         .send(threadDumpResult.result());
                 } else {
                     log.error("Unable to generate thread dump.", threadDumpResult.cause());
-                    context
-                        .response()
-                        .setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500)
-                        .setChunked(true)
-                        .send(threadDumpResult.cause().getMessage());
+                    context.response().setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500).send(threadDumpResult.cause().getMessage());
                 }
             });
     }
