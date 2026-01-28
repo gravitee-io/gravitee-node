@@ -56,7 +56,6 @@ public class NodeEndpoint implements ManagementEndpoint {
         HttpServerResponse response = ctx.response();
         response.setStatusCode(HttpStatusCode.OK_200);
         response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-        response.setChunked(true);
 
         NodeInfos data = new NodeInfos();
 
@@ -72,11 +71,10 @@ public class NodeEndpoint implements ManagementEndpoint {
                 .writerWithDefaultPrettyPrinter()
                 .writeValueAsString(data);
 
-            response.write(body);
+            response.end(body);
         } catch (JsonProcessingException e) {
             log.error("Unable to transform data object to JSON", e);
             response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
-        } finally {
             response.end();
         }
     }

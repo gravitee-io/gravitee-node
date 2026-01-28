@@ -41,10 +41,7 @@ public class OffloadHandlerTest {
     void should_execute_blocking_handler_successfully() {
         when(vertx.executeBlocking(callableArgumentCaptor.capture())).thenReturn(Future.succeededFuture());
 
-        var handler = OffloadHandler.ofCtx(ctx -> {
-            assertEquals(routingContext, ctx);
-            System.out.println("coucou");
-        });
+        var handler = OffloadHandler.ofCtx(ctx -> assertEquals(routingContext, ctx));
 
         handler.handle(routingContext);
 
