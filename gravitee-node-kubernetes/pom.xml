@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.gravitee.node</groupId>
         <artifactId>gravitee-node</artifactId>
-        <version>8.0.0-alpha.3</version>
+        <version>8.0.0-alpha.4</version>
     </parent>
 
     <artifactId>gravitee-node-kubernetes</artifactId>

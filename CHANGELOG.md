@@ -1,3 +1,10 @@
+# [8.0.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.3...8.0.0-alpha.4) (2026-02-02)
+
+
+### Bug Fixes
+
+* add missing NodeKubernetesConfiguration ([b21b580](https://github.com/gravitee-io/gravitee-node/commit/b21b580bb95d80c91a397246926bee91573e45e0))
+
 # [8.0.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.2...8.0.0-alpha.3) (2026-01-19)
 
 
