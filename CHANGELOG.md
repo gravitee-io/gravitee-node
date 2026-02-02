@@ -1,3 +1,10 @@
+## [7.9.10](https://github.com/gravitee-io/gravitee-node/compare/7.9.9...7.9.10) (2026-02-02)
+
+
+### Bug Fixes
+
+* add missing NodeKubernetesConfiguration ([3dbc4e8](https://github.com/gravitee-io/gravitee-node/commit/3dbc4e8229e5f5c10e232ffd0558f13df6397ba3))
+
 ## [7.9.9](https://github.com/gravitee-io/gravitee-node/compare/7.9.8...7.9.9) (2025-12-16)
 
 
