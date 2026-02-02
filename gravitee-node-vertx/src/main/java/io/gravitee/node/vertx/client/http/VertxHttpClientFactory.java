@@ -113,7 +113,9 @@ public class VertxHttpClientFactory {
             .setTryUsePerFrameWebSocketCompression(httpOptions.isUseCompression())
             .setTryUsePerMessageWebSocketCompression(httpOptions.isUseCompression())
             .setWebSocketCompressionAllowClientNoContext(httpOptions.isUseCompression())
-            .setWebSocketCompressionRequestServerNoContext(httpOptions.isUseCompression());
+            .setWebSocketCompressionRequestServerNoContext(httpOptions.isUseCompression())
+            .setMaxWebSocketFrameSize(httpOptions.getMaxWebSocketFrameSize())
+            .setMaxWebSocketMessageSize(httpOptions.getMaxWebSocketMessageSize());
 
         if (httpOptions.getVersion() == VertxHttpProtocolVersion.HTTP_2) {
             options
