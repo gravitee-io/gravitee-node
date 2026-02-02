@@ -15,6 +15,9 @@
  */
 package io.gravitee.node.vertx.client.http;
 
+import static io.vertx.core.http.HttpClientOptions.DEFAULT_MAX_WEBSOCKET_FRAME_SIZE;
+
+import io.vertx.core.http.HttpClientOptions;
 import java.io.Serial;
 import java.io.Serializable;
 import lombok.AllArgsConstructor;
@@ -53,6 +56,8 @@ public class VertxHttpClientOptions implements Serializable {
     public static final boolean DEFAULT_FOLLOW_REDIRECTS = false;
     public static final boolean DEFAULT_CLEAR_TEXT_UPGRADE = true;
     public static final VertxHttpProtocolVersion DEFAULT_PROTOCOL_VERSION = VertxHttpProtocolVersion.HTTP_1_1;
+    public static final int DEFAULT_MAX_WEBSOCKET_FRAME_SIZE = HttpClientOptions.DEFAULT_MAX_WEBSOCKET_FRAME_SIZE;
+    public static final int DEFAULT_MAX_WEBSOCKET_MESSAGE_SIZE = HttpClientOptions.DEFAULT_MAX_WEBSOCKET_MESSAGE_SIZE;
 
     @Builder.Default
     private int http2MultiplexingLimit = DEFAULT_HTTP2_MULTIPLEXING_LIMIT;
@@ -109,4 +114,10 @@ public class VertxHttpClientOptions implements Serializable {
 
     @Builder.Default
     private VertxHttpProtocolVersion version = DEFAULT_PROTOCOL_VERSION;
+
+    @Builder.Default
+    private int maxWebSocketFrameSize = DEFAULT_MAX_WEBSOCKET_FRAME_SIZE;
+
+    @Builder.Default
+    private int maxWebSocketMessageSize = DEFAULT_MAX_WEBSOCKET_MESSAGE_SIZE;
 }
