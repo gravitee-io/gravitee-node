@@ -1,3 +1,10 @@
+## [7.19.1](https://github.com/gravitee-io/gravitee-node/compare/7.19.0...7.19.1) (2026-02-05)
+
+
+### Bug Fixes
+
+* update TCP server options to set default port before env ([24a9809](https://github.com/gravitee-io/gravitee-node/commit/24a9809b64d6b23565ab149187f2d289a69f7537))
+
 # [7.19.0](https://github.com/gravitee-io/gravitee-node/compare/7.18.3...7.19.0) (2026-01-19)
 
 
