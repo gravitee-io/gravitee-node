@@ -113,7 +113,7 @@ public class VertxServerOptions implements ServerOptions {
         if (type == null || "http".equals(type)) {
             return VertxHttpServerOptions.builder().prefix(prefix).environment(environment);
         } else if ("tcp".equals(type)) {
-            return VertxTcpServerOptions.builder().prefix(prefix).environment(environment).defaultPort(TCP_DEFAULT_PORT);
+            return VertxTcpServerOptions.builder().prefix(prefix).defaultPort(TCP_DEFAULT_PORT).environment(environment);
         } else {
             throw new IllegalArgumentException("Server type [" + type + "] is not supported");
         }
