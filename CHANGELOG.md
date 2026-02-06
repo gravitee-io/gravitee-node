@@ -1,3 +1,10 @@
+# [8.0.0-alpha.5](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.4...8.0.0-alpha.5) (2026-02-06)
+
+
+### Bug Fixes
+
+* update TCP server options to set default port before env ([ee01356](https://github.com/gravitee-io/gravitee-node/commit/ee01356a0726d50cac63ce17e0e49274d6b1248d))
+
 # [8.0.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.3...8.0.0-alpha.4) (2026-02-02)
 
 
