@@ -124,6 +124,7 @@ packs:
             - apim-ai-resource-text-embedding
             - apim-ai-resource-token-classification
             - apim-ai-resource-vector-store-redis
+            - apim-a2a-proxy-reactor
             - apim-llm-proxy-reactor
             - apim-mcp-proxy-reactor
             - apim-policy-pii-filtering
