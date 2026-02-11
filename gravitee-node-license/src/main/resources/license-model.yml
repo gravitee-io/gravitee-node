@@ -127,6 +127,7 @@ packs:
             - apim-a2a-proxy-reactor
             - apim-llm-proxy-reactor
             - apim-mcp-proxy-reactor
+            - apim-mcp-tool-server
             - apim-policy-pii-filtering
 
 tiers:
