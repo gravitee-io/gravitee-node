@@ -1,3 +1,11 @@
+# [7.20.0](https://github.com/gravitee-io/gravitee-node/compare/7.19.1...7.20.0) (2026-02-11)
+
+
+### Features
+
+* add `apim-a2a-proxy-reactor` to license model ([1006849](https://github.com/gravitee-io/gravitee-node/commit/1006849d08eea79336d996e161c71c0d3799cf53))
+* add `apim-mcp-tool-server` to license model ([7378eef](https://github.com/gravitee-io/gravitee-node/commit/7378eef6b0241e5b894710e91a869209630f14df))
+
 ## [7.19.1](https://github.com/gravitee-io/gravitee-node/compare/7.19.0...7.19.1) (2026-02-05)
 
 
