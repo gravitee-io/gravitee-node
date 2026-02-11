@@ -3,14 +3,25 @@ package io.gravitee.node.secrets.config.keystoreloader;
 import static io.gravitee.node.secrets.config.test.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.gravitee.node.api.certificate.KeyStoreEvent;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.secrets.config.GraviteeConfigurationSecretResolver;
 import io.gravitee.node.secrets.plugins.internal.DefaultSecretProviderPluginManager;
+import io.gravitee.secrets.api.core.Secret;
+import io.gravitee.secrets.api.core.SecretEvent;
+import io.gravitee.secrets.api.core.SecretMap;
+import io.gravitee.secrets.api.core.SecretURL;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Single;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.*;
 import org.springframework.mock.env.MockEnvironment;
@@ -196,5 +207,40 @@ class SecretProviderKeyStoreLoaderTest {
         this.cut.setEventHandler(keyStores::add);
         this.cut.start();
         await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> assertThat(keyStores).hasSize(2));
+    }
+
+    @Test
+    void should_keep_watching_after_error_in_keystore_creation() {
+        SecretURL secretURL = SecretURL.from("secret://test/test?keymap=certificate:tlscert&keymap=private_key:tlskey");
+
+        // Valid secret map with cert + key
+        SecretMap validSecretMap = new SecretMap(Map.of("tlscert", new Secret(CERT, false), "tlskey", new Secret(KEY, false)))
+            .handleWellKnownSecretKeys(secretURL.wellKnowKeyMap());
+
+        // Invalid secret map - missing certificate will cause IllegalArgumentException in createBundleAndNotify
+        SecretMap invalidSecretMap = new SecretMap(Map.of("tlskey", new Secret(KEY, false)))
+            .handleWellKnownSecretKeys(secretURL.wellKnowKeyMap());
+
+        GraviteeConfigurationSecretResolver mockResolver = mock(GraviteeConfigurationSecretResolver.class);
+        when(mockResolver.asSecretURL(anyString())).thenReturn(secretURL);
+        when(mockResolver.resolve(any(SecretURL.class))).thenReturn(Single.just(validSecretMap));
+        // Watch emits: valid (skipped via skip(1)), invalid (error caught), valid (should still be received)
+        when(mockResolver.watch(any(SecretURL.class), any(SecretEvent.Type[].class)))
+            .thenReturn(Flowable.just(validSecretMap, invalidSecretMap, validSecretMap));
+
+        KeyStoreLoaderOptions options = KeyStoreLoaderOptions
+            .builder()
+            .type("pem")
+            .watch(true)
+            .secretLocation("secret://test/test?keymap=certificate:tlscert&keymap=private_key:tlskey")
+            .build();
+
+        this.cut = new SecretProviderKeyStoreLoader(mockResolver, options);
+        this.cut.setEventHandler(keyStores::add);
+        this.cut.start();
+
+        // Expect 2 events: 1 from initial resolve + 1 from the valid watch event after the error
+        // Without the fix, the error would terminate the subscription and we'd only get 1
+        await().atMost(Duration.ofSeconds(2)).untilAsserted(() -> assertThat(keyStores).hasSize(2));
     }
 }
