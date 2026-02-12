@@ -1,3 +1,16 @@
+# [8.0.0-alpha.6](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.5...8.0.0-alpha.6) (2026-02-12)
+
+
+### Bug Fixes
+
+* Keystore watch stop working after KeyStore failed to load ([2d44bf6](https://github.com/gravitee-io/gravitee-node/commit/2d44bf6c9f8a54020e517298109c7c4edcee7315))
+
+
+### Features
+
+* add `apim-a2a-proxy-reactor` to license model ([643bae3](https://github.com/gravitee-io/gravitee-node/commit/643bae36a6857d6736cf69cc3ed5603d5c24afa0))
+* add `apim-mcp-tool-server` to license model ([1c24b1e](https://github.com/gravitee-io/gravitee-node/commit/1c24b1e5fe25750b76a28292abae554b122ab361))
+
 # [8.0.0-alpha.5](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.4...8.0.0-alpha.5) (2026-02-06)
 
 
