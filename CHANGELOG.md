@@ -1,3 +1,10 @@
+## [7.20.1](https://github.com/gravitee-io/gravitee-node/compare/7.20.0...7.20.1) (2026-02-12)
+
+
+### Bug Fixes
+
+* Keystore watch stop working after KeyStore failed to load ([1710ac3](https://github.com/gravitee-io/gravitee-node/commit/1710ac3f3d50bba3f6c89ba349b886b9421711b4))
+
 # [7.20.0](https://github.com/gravitee-io/gravitee-node/compare/7.19.1...7.20.0) (2026-02-11)
 
 
