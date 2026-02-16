@@ -11,6 +11,7 @@ packs:
             - gravitee-risk-assessment
             - risk-assessment # for removal
             - apim-bridge-gateway
+            - apim-api-products
     enterprise-legacy-upgrade:
         features:
             - apim-policy-xslt
