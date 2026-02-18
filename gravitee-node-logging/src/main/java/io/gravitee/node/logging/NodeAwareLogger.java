@@ -25,6 +25,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.Marker;
@@ -57,6 +59,7 @@ public class NodeAwareLogger implements Logger {
         LogEntryFactory.cached("nodeApplication", Node.class, Node::application)
     );
     public static final String UNKNOWN = "unknown";
+    private final Set<LogEntry<?>> logEntriesWithoutNodeEntries;
 
     private Node node;
     protected final Logger delegateLogger;
@@ -113,6 +116,7 @@ public class NodeAwareLogger implements Logger {
         Set<LogEntry<?>> logEntries = new HashSet<>();
         registerLogEntries(logEntries);
         this.logEntries = Set.copyOf(logEntries);
+        this.logEntriesWithoutNodeEntries = filterOutNodeLogEntries(logEntries);
     }
 
     /**
@@ -135,6 +139,11 @@ public class NodeAwareLogger implements Logger {
         Set<LogEntry<?>> logEntries = new HashSet<>();
         registerLogEntries(logEntries);
         this.logEntries = Set.copyOf(logEntries);
+        this.logEntriesWithoutNodeEntries = filterOutNodeLogEntries(logEntries);
+    }
+
+    private static @NonNull Set<LogEntry<?>> filterOutNodeLogEntries(Set<LogEntry<?>> logEntries) {
+        return Set.copyOf(logEntries.stream().filter(l -> !NODE_LOG_ENTRIES.contains(l)).collect(Collectors.toSet()));
     }
 
     /**
@@ -221,7 +230,7 @@ public class NodeAwareLogger implements Logger {
         try {
             logAction.run();
         } finally {
-            logEntries.forEach(entry -> MDC.remove(entry.getKey()));
+            logEntriesWithoutNodeEntries.forEach(entry -> MDC.remove(entry.getKey()));
         }
     }
 
