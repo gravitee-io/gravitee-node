@@ -1,3 +1,10 @@
+# [7.21.0](https://github.com/gravitee-io/gravitee-node/compare/7.20.1...7.21.0) (2026-02-19)
+
+
+### Features
+
+* add apim-api-products to license model ([#513](https://github.com/gravitee-io/gravitee-node/issues/513)) ([1ff969f](https://github.com/gravitee-io/gravitee-node/commit/1ff969f8879de8d7d6d388cc85cfa02c200d9b84))
+
 ## [7.20.1](https://github.com/gravitee-io/gravitee-node/compare/7.20.0...7.20.1) (2026-02-12)
 
 
