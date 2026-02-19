@@ -1,3 +1,10 @@
+# [8.0.0-alpha.7](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.6...8.0.0-alpha.7) (2026-02-19)
+
+
+### Features
+
+* do not clear MDC for node logging entries ([112f86e](https://github.com/gravitee-io/gravitee-node/commit/112f86ec499c8b2279a2bfb036873968bcee66f8))
+
 # [8.0.0-alpha.6](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.5...8.0.0-alpha.6) (2026-02-12)
 
 
