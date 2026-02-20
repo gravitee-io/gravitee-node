@@ -143,7 +143,7 @@ class DefaultLicenseFactoryTest {
 
         assertThat(license.getTier()).isNull();
         assertThat(license.getPacks()).containsExactly("enterprise-authenticator");
-        assertThat(license.getFeatures()).containsExactlyInAnyOrder("am-authenticator-cba");
+        assertThat(license.getFeatures()).containsExactlyInAnyOrder("am-authenticator-cba", "am-authenticator-magic-link");
         assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_PLATFORM);
         assertThat(license.getReferenceId()).isEqualTo(REFERENCE_ID_PLATFORM);
     }
@@ -445,6 +445,7 @@ class DefaultLicenseFactoryTest {
             "apim-en-entrypoint-agent-to-agent",
             "apim-en-endpoint-agent-to-agent",
             "am-authenticator-cba",
+            "am-authenticator-magic-link",
         };
         assertThat(license.getFeatures()).containsExactlyInAnyOrder(features);
 
