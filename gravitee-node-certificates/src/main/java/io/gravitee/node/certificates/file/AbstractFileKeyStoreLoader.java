@@ -184,7 +184,11 @@ public abstract class AbstractFileKeyStoreLoader<O extends AbstractStoreLoaderOp
 
                         if (optionalPath.isPresent()) {
                             // In case of any changes, just reload the complete keystore.
-                            load();
+                            try {
+                                load();
+                            } catch (Exception e) {
+                                log.warn("Failed to reload keystore, will retry on next change", e);
+                            }
                         }
 
                         if (!watchKey.reset()) {
