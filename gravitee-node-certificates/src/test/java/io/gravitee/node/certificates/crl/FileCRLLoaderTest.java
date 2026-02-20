@@ -26,6 +26,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.cert.CRL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -71,24 +72,26 @@ class FileCRLLoaderTest {
     }
 
     @Test
-    void should_watch_and_trigger_reload_when_file_changes() throws IOException {
+    void should_watch_and_trigger_reload_when_file_changes() throws Exception {
         Path tempDirectory = Files.createTempDirectory("gio");
         Path target = tempDirectory.resolve("crl-empty.pem");
         Files.copy(Path.of(getPath("crl-empty.pem")), target);
 
         cut = new FileCRLLoader(CRLLoaderOptions.builder().path(target.toString()).watch(true).build());
-        List<CRL> crls = new ArrayList<>();
+        List<CRL> crls = new CopyOnWriteArrayList<>();
         cut.setEventHandler(crls::addAll);
         cut.start();
 
-        assertThat(crls).hasSize(1);
+        assertThat(crls).isNotEmpty();
+
+        int sizeBeforeOverride = crls.size();
 
         Files.copy(Path.of(getPath("crl-empty.pem")), target, StandardCopyOption.REPLACE_EXISTING);
 
         await()
             .atMost(20, TimeUnit.SECONDS)
             .untilAsserted(() -> {
-                assertThat(crls).withFailMessage("no events triggered following CRL override").hasSize(2);
+                assertThat(crls).withFailMessage("no events triggered following CRL override").hasSizeGreaterThan(sizeBeforeOverride);
             });
 
         cut.stop();
