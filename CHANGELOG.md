@@ -1,3 +1,15 @@
+# [8.0.0-alpha.9](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.8...8.0.0-alpha.9) (2026-02-20)
+
+
+### Bug Fixes
+
+* handle exceptions when reloading keystore in AbstractFileKeyStoreLoader ([2d1f33d](https://github.com/gravitee-io/gravitee-node/commit/2d1f33d2e5e4d8ea2f5e0204499d2e9a70d1d0b4))
+
+
+### Features
+
+* add new Kafka Explorer features ([c90a41f](https://github.com/gravitee-io/gravitee-node/commit/c90a41fd480e234cef2cad076364efd1e29f90e5))
+
 # [8.0.0-alpha.8](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.7...8.0.0-alpha.8) (2026-02-19)
 
 
