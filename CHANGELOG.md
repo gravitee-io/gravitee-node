@@ -1,3 +1,10 @@
+# [7.22.0](https://github.com/gravitee-io/gravitee-node/compare/7.21.0...7.22.0) (2026-02-20)
+
+
+### Features
+
+* definition of magic link authenticator plugin in license model ([6188e70](https://github.com/gravitee-io/gravitee-node/commit/6188e707cbe7b02b7662a009a451460498cf5b71))
+
 # [7.21.0](https://github.com/gravitee-io/gravitee-node/compare/7.20.1...7.21.0) (2026-02-19)
 
 
