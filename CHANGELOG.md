@@ -1,3 +1,10 @@
+# [7.23.0](https://github.com/gravitee-io/gravitee-node/compare/7.22.0...7.23.0) (2026-02-20)
+
+
+### Features
+
+* add new Kafka Explorer features ([d71567d](https://github.com/gravitee-io/gravitee-node/commit/d71567dfd447af5f5d64e892df906fddd9eb1237))
+
 # [7.22.0](https://github.com/gravitee-io/gravitee-node/compare/7.21.0...7.22.0) (2026-02-20)
 
 
