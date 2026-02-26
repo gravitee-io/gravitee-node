@@ -1,3 +1,11 @@
+# [7.24.0](https://github.com/gravitee-io/gravitee-node/compare/7.23.0...7.24.0) (2026-02-26)
+
+
+### Features
+
+* add apim-native-kafka-policy-encryption feature ([40bfcda](https://github.com/gravitee-io/gravitee-node/commit/40bfcda836a787b9f73681a52ab50b6d7bc9f4be))
+* add apim-native-policy-ip-filtering feature ([ca2f2fc](https://github.com/gravitee-io/gravitee-node/commit/ca2f2fc5c4a36095d7c7cdb53c0aee95a780cc0a))
+
 # [7.23.0](https://github.com/gravitee-io/gravitee-node/compare/7.22.0...7.23.0) (2026-02-20)
 
 
