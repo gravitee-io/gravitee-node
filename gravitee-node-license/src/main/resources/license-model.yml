@@ -120,6 +120,9 @@ packs:
             - apim-native-kafka-policy-offloading
             - apim-native-kafka-policy-transform-key
             - apim-native-kafka-policy-virtual-topics
+            - apim-native-kafka-policy-encryption
+            - apim-native-kafka-policy-rules
+            - apim-native-policy-ip-filtering
     agent-mesh:
         features:
             - apim-ai-policy-semantic-cache
