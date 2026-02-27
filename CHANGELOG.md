@@ -1,3 +1,10 @@
+# [7.25.0](https://github.com/gravitee-io/gravitee-node/compare/7.24.0...7.25.0) (2026-02-27)
+
+
+### Features
+
+* add apim-native-kafka-policy-rules feature to license ([c82a588](https://github.com/gravitee-io/gravitee-node/commit/c82a5889d327c3f50d677ba531391d25cbcdbfb4))
+
 # [7.24.0](https://github.com/gravitee-io/gravitee-node/compare/7.23.0...7.24.0) (2026-02-26)
 
 
