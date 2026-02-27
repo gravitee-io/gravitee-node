@@ -1,3 +1,10 @@
+# [8.0.0-alpha.10](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.9...8.0.0-alpha.10) (2026-02-27)
+
+
+### Features
+
+* kafka features ([#522](https://github.com/gravitee-io/gravitee-node/issues/522)) ([15b1566](https://github.com/gravitee-io/gravitee-node/commit/15b1566c1da2c6e99b1aad9ae9839d43aaeccbd4))
+
 # [8.0.0-alpha.9](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.8...8.0.0-alpha.9) (2026-02-20)
 
 
