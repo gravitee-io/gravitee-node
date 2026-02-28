@@ -4,7 +4,7 @@ import static io.gravitee.node.vertx.client.http.VertxHttpClientFactory.HTTP_SSL
 import static io.gravitee.node.vertx.client.http.VertxHttpProtocolVersion.HTTP_2;
 import static io.gravitee.node.vertx.client.http.VertxHttpProxyType.HTTP;
 import static io.vertx.core.http.Http2Settings.*;
-import static io.vertx.core.http.HttpClientOptions.DEFAULT_HTTP2_MULTIPLEXING_LIMIT;
+import static io.vertx.core.http.HttpClientOptions.*;
 import static io.vertx.core.http.HttpServerOptions.DEFAULT_HTTP2_CONNECTION_WINDOW_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -133,6 +133,38 @@ class VertxHttpClientFactoryTest {
         assertThat(httpClientOptions.getInitialSettings().getInitialWindowSize()).isEqualTo(72000);
         assertThat(httpClientOptions.getInitialSettings().getMaxConcurrentStreams()).isEqualTo(13);
         assertThat(httpClientOptions.getInitialSettings().getMaxFrameSize()).isEqualTo(32000);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_build_client_with_default_websocket_settings() {
+        VertxHttpClientFactory.VertxHttpClientFactoryBuilder builder = builder();
+
+        final HttpClient httpClient = builder.build().createHttpClient();
+
+        assertThat(httpClient).isNotNull();
+
+        final HttpClientOptions httpClientOptions = extractHttpClientOptions(httpClient);
+        assertThat(httpClientOptions).isNotNull();
+        assertThat(httpClientOptions.getMaxWebSocketFrameSize()).isEqualTo(DEFAULT_MAX_WEBSOCKET_FRAME_SIZE);
+        assertThat(httpClientOptions.getMaxWebSocketMessageSize()).isEqualTo(DEFAULT_MAX_WEBSOCKET_MESSAGE_SIZE);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_build_client_with_custom_websocket_settings() {
+        VertxHttpClientFactory.VertxHttpClientFactoryBuilder builder = builder()
+            .httpOptions(
+                VertxHttpClientOptions.builder().version(HTTP_2).maxWebSocketFrameSize(1345).maxWebSocketMessageSize(1345 * 2).build()
+            );
+        final HttpClient httpClient = builder.build().createHttpClient();
+
+        assertThat(httpClient).isNotNull();
+
+        final HttpClientOptions httpClientOptions = extractHttpClientOptions(httpClient);
+        assertThat(httpClientOptions).isNotNull();
+        assertThat(httpClientOptions.getMaxWebSocketFrameSize()).isEqualTo(1345);
+        assertThat(httpClientOptions.getMaxWebSocketMessageSize()).isEqualTo(1345 * 2);
     }
 
     private static HttpClientOptions extractHttpClientOptions(HttpClient httpClient) throws IllegalAccessException {
