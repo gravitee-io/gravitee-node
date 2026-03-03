@@ -1,3 +1,41 @@
+# [8.0.0-beta.1](https://github.com/gravitee-io/gravitee-node/compare/7.18.3...8.0.0-beta.1) (2026-03-03)
+
+
+### Bug Fixes
+
+* add missing NodeKubernetesConfiguration ([b21b580](https://github.com/gravitee-io/gravitee-node/commit/b21b580bb95d80c91a397246926bee91573e45e0))
+* avoid populating MDC twice when delegate is a NodeAwareLogger ([1fe2fa3](https://github.com/gravitee-io/gravitee-node/commit/1fe2fa3884ced07d801ce0f1de542788d8a2678c))
+* ensure defaultPort is set before environment ([7e0f45b](https://github.com/gravitee-io/gravitee-node/commit/7e0f45b97da93c717f53dc3aa3cf01af5d0eeb6f))
+* handle exceptions when reloading keystore in AbstractFileKeyStoreLoader ([2d1f33d](https://github.com/gravitee-io/gravitee-node/commit/2d1f33d2e5e4d8ea2f5e0204499d2e9a70d1d0b4))
+* Keystore watch stop working after KeyStore failed to load ([2d44bf6](https://github.com/gravitee-io/gravitee-node/commit/2d44bf6c9f8a54020e517298109c7c4edcee7315))
+* remove useless checkNoLombokSlf4j method ([99170af](https://github.com/gravitee-io/gravitee-node/commit/99170af1d33eff0e7c91a540bcde8648f5ac58c2))
+* update TCP server options to set default port before env ([ee01356](https://github.com/gravitee-io/gravitee-node/commit/ee01356a0726d50cac63ce17e0e49274d6b1248d))
+* use unknown value instead of debug log ([2a37392](https://github.com/gravitee-io/gravitee-node/commit/2a37392f53df129c1a203b50f4ff2de810787b2f))
+
+
+### Features
+
+* add `apim-a2a-proxy-reactor` to license model ([643bae3](https://github.com/gravitee-io/gravitee-node/commit/643bae36a6857d6736cf69cc3ed5603d5c24afa0))
+* add `apim-mcp-tool-server` to license model ([1c24b1e](https://github.com/gravitee-io/gravitee-node/commit/1c24b1e5fe25750b76a28292abae554b122ab361))
+* add apim-api-products to license model ([#512](https://github.com/gravitee-io/gravitee-node/issues/512)) ([d21a274](https://github.com/gravitee-io/gravitee-node/commit/d21a2744321ae2ebded90b6cb5e5ed90ff04717f))
+* add new AI policies & resources features ([6193555](https://github.com/gravitee-io/gravitee-node/commit/61935551cd07dda0ed827cd34240a570e69261b7))
+* add new Kafka Explorer features ([c90a41f](https://github.com/gravitee-io/gravitee-node/commit/c90a41fd480e234cef2cad076364efd1e29f90e5))
+* allow to exclude packages from scan ([b1cf087](https://github.com/gravitee-io/gravitee-node/commit/b1cf087a5ea93f03c0a20133b80d1f63648ce8b2))
+* configure lombok to inject new NodeAwareLogger when using @CustomLog annotation ([98ac926](https://github.com/gravitee-io/gravitee-node/commit/98ac926a226a38f3baacb315769f9f34a2509ee8))
+* do not clear MDC for node logging entries ([112f86e](https://github.com/gravitee-io/gravitee-node/commit/112f86ec499c8b2279a2bfb036873968bcee66f8))
+* initialize NodeLoggerFactory with current node instance ([df61ad3](https://github.com/gravitee-io/gravitee-node/commit/df61ad3961dd54588feddfd8c59421b3bcc8c77d))
+* introduce node-logging capabilities ([69a09cf](https://github.com/gravitee-io/gravitee-node/commit/69a09cf827379541371a6c0e9945e6ca68d645f6))
+* kafka features ([#522](https://github.com/gravitee-io/gravitee-node/issues/522)) ([15b1566](https://github.com/gravitee-io/gravitee-node/commit/15b1566c1da2c6e99b1aad9ae9839d43aaeccbd4))
+* migrate log calls to use the new NodeAwareLogger ([3ca2b42](https://github.com/gravitee-io/gravitee-node/commit/3ca2b420c687c2de9a94439fdfe1d59e4432f0fa))
+
+
+### BREAKING CHANGES
+
+* IllegalArgumentException will be thrown if a 'defaultPort'
+is assigned after the environment.
+
+https://gravitee.atlassian.net/browse/ARCHI-639
+
 # [8.0.0-alpha.10](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.9...8.0.0-alpha.10) (2026-02-27)
 
 
