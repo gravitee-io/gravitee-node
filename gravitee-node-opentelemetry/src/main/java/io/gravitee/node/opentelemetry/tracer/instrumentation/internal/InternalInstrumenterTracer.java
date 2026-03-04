@@ -53,6 +53,6 @@ public class InternalInstrumenterTracer extends AbstractInstrumenterTracer<Inter
             new InternalSpanNameExtractor()
         );
 
-        return serverBuilder.addAttributesExtractor(new InternalAttributesExtractor()).buildInstrumenter();
+        return serverBuilder.addAttributesExtractor(new InternalAttributesExtractor()).buildInstrumenter(req -> req.spanKind());
     }
 }
