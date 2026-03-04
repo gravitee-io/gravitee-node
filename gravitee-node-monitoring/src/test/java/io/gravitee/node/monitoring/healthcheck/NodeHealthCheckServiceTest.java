@@ -8,6 +8,7 @@ import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.monitoring.DefaultProbeEvaluator;
 import io.gravitee.node.monitoring.spring.HealthConfiguration;
 import io.gravitee.plugin.alert.AlertEventProducer;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.micrometer.backends.BackendRegistries;
@@ -57,7 +58,7 @@ class NodeHealthCheckServiceTest {
         );
 
         try (MockedStatic<BackendRegistries> backendRegistries = Mockito.mockStatic(BackendRegistries.class)) {
-            backendRegistries.when(BackendRegistries::getDefaultNow).thenReturn(mock(PrometheusMeterRegistry.class));
+            backendRegistries.when(BackendRegistries::getDefaultNow).thenReturn(mock(CompositeMeterRegistry.class));
 
             cut.doStart();
 

@@ -92,9 +92,7 @@ public class NodeHealthCheckService extends AbstractService {
 
             MeterRegistry micrometerRegistry = BackendRegistries.getDefaultNow();
 
-            if (micrometerRegistry instanceof PrometheusMeterRegistry) {
-                new NodeHealthCheckMicrometerHandler(probeRegistry).bindTo(micrometerRegistry);
-            }
+            new NodeHealthCheckMicrometerHandler(probeRegistry).bindTo(micrometerRegistry);
 
             ((ScheduledExecutorService) executorService).scheduleWithFixedDelay(
                     nodeHealthCheckThread,
