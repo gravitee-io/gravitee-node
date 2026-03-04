@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.api.opentelemetry.internal;
 
+import io.opentelemetry.api.trace.SpanKind;
 import java.util.Map;
 import lombok.Builder;
 
@@ -23,4 +24,14 @@ import lombok.Builder;
  * @author GraviteeSource Team
  */
 @Builder
-public record InternalRequest(String name, Map<String, String> attributes) {}
+public record InternalRequest(String name, Map<String, String> attributes, SpanKind spanKind) {
+    public InternalRequest {
+        if (spanKind == null) {
+            spanKind = SpanKind.INTERNAL;
+        }
+    }
+
+    public InternalRequest(String name, Map<String, String> attributes) {
+        this(name, attributes, SpanKind.INTERNAL);
+    }
+}
