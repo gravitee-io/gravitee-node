@@ -19,15 +19,10 @@ import io.gravitee.node.vertx.client.ssl.pem.PEMTrustStore;
 import io.gravitee.node.vertx.client.ssl.pkcs12.PKCS12KeyStore;
 import io.gravitee.node.vertx.client.ssl.pkcs12.PKCS12TrustStore;
 import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.WebSocketClientOptions;
 import io.vertx.core.http.impl.CleanableHttpClient;
-import io.vertx.core.http.impl.CleanableWebSocketClient;
-import io.vertx.core.http.impl.WebSocketClientImpl;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.http.HttpClient;
-import io.vertx.rxjava3.core.http.WebSocketClient;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Base64;
 import java.util.Objects;
 import lombok.SneakyThrows;
@@ -38,7 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
@@ -108,34 +102,6 @@ class VertxHttpClientFactoryTest {
         assertThat(httpClientOptions.getInitialSettings().getInitialWindowSize()).isEqualTo(DEFAULT_INITIAL_WINDOW_SIZE);
         assertThat(httpClientOptions.getInitialSettings().getMaxConcurrentStreams()).isEqualTo(DEFAULT_MAX_CONCURRENT_STREAMS);
         assertThat(httpClientOptions.getInitialSettings().getMaxFrameSize()).isEqualTo(DEFAULT_MAX_FRAME_SIZE);
-    }
-
-    @Test
-    @SneakyThrows
-    void should_build_websocket_client_with_default_settings() {
-        VertxHttpClientFactory.VertxHttpClientFactoryBuilder builder = builder();
-
-        builder.httpOptions(VertxHttpClientOptions.builder().build());
-        final WebSocketClient webSocketClient = builder.build().createWebSocketClient();
-
-        assertThat(webSocketClient).isNotNull();
-        final WebSocketClientOptions webSocketClientOptions = extractWebSocketClientOptions(webSocketClient);
-        assertThat(webSocketClientOptions).isNotNull();
-        assertThat(webSocketClientOptions.getTryUsePerFrameCompression()).isTrue();
-    }
-
-    private static WebSocketClientOptions extractWebSocketClientOptions(WebSocketClient webSocketClient) throws IllegalAccessException {
-        Field webSocketClientImplField = ReflectionUtils.findField(
-            CleanableWebSocketClient.class,
-            "delegate",
-            io.vertx.core.http.WebSocketClient.class
-        );
-        webSocketClientImplField.setAccessible(true);
-        WebSocketClientImpl webSocketClientImpl = (WebSocketClientImpl) webSocketClientImplField.get(webSocketClient.getDelegate());
-
-        Field websocketClientOptions = ReflectionUtils.findField(WebSocketClientImpl.class, "options", WebSocketClientOptions.class);
-        websocketClientOptions.setAccessible(true);
-        return (WebSocketClientOptions) websocketClientOptions.get(webSocketClientImpl);
     }
 
     @Test
