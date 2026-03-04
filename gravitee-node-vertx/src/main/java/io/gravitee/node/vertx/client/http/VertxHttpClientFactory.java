@@ -23,13 +23,11 @@ import io.gravitee.node.vertx.proxy.VertxProxyOptionsUtils;
 import io.vertx.core.http.HttpVersion;
 import io.vertx.core.http.PoolOptions;
 import io.vertx.core.http.RequestOptions;
-import io.vertx.core.http.WebSocketClientOptions;
 import io.vertx.core.net.OpenSSLEngineOptions;
 import io.vertx.core.net.ProxyOptions;
 import io.vertx.core.net.ProxyType;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.http.HttpClient;
-import io.vertx.rxjava3.core.http.WebSocketClient;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -72,13 +70,6 @@ public class VertxHttpClientFactory {
             httpOptions = new VertxHttpClientOptions();
         }
         return vertx.createHttpClient(createHttpClientOptions(), createPoolOptions());
-    }
-
-    public WebSocketClient createWebSocketClient() {
-        if (httpOptions == null) {
-            httpOptions = new VertxHttpClientOptions();
-        }
-        return vertx.createWebSocketClient(createWebSocketClientOptions());
     }
 
     public static boolean isSecureProtocol(String protocol) {
@@ -171,51 +162,7 @@ public class VertxHttpClientFactory {
             .setDefaultHost(target.getHost());
     }
 
-    private WebSocketClientOptions createWebSocketClientOptions() {
-        WebSocketClientOptions options = new WebSocketClientOptions();
-
-        options
-            .setIdleTimeout((int) (httpOptions.getIdleTimeout() / 1000))
-            .setConnectTimeout((int) httpOptions.getConnectTimeout())
-            .setMaxConnections(httpOptions.getMaxConcurrentConnections())
-            .setTryUsePerFrameCompression(httpOptions.isUseCompression())
-            .setTryUsePerMessageCompression(httpOptions.isUseCompression())
-            .setCompressionAllowClientNoContext(httpOptions.isUseCompression())
-            .setCompressionRequestServerNoContext(httpOptions.isUseCompression());
-
-        final URL target = buildUrl(defaultTarget);
-
-        configureHttpProxy(options);
-        configureSsl(options, target);
-
-        if (name != null) {
-            options.setName(name);
-        }
-
-        return options
-            .setShared(shared)
-            .setDefaultPort(getPort(target, isSecureProtocol(target.getProtocol())))
-            .setDefaultHost(target.getHost());
-    }
-
     private void configureHttpProxy(final io.vertx.core.http.HttpClientOptions options) {
-        if (proxyOptions != null && proxyOptions.isEnabled()) {
-            if (proxyOptions.isUseSystemProxy()) {
-                setSystemProxy(options);
-            } else {
-                ProxyOptions vertxProxyOptions;
-                vertxProxyOptions = new ProxyOptions();
-                vertxProxyOptions.setHost(this.proxyOptions.getHost());
-                vertxProxyOptions.setPort(this.proxyOptions.getPort());
-                vertxProxyOptions.setUsername(this.proxyOptions.getUsername());
-                vertxProxyOptions.setPassword(this.proxyOptions.getPassword());
-                vertxProxyOptions.setType(ProxyType.valueOf(this.proxyOptions.getType().name()));
-                options.setProxyOptions(vertxProxyOptions);
-            }
-        }
-    }
-
-    private void configureHttpProxy(final WebSocketClientOptions options) {
         if (proxyOptions != null && proxyOptions.isEnabled()) {
             if (proxyOptions.isUseSystemProxy()) {
                 setSystemProxy(options);
@@ -259,53 +206,12 @@ public class VertxHttpClientFactory {
         options.setUseAlpn(true);
     }
 
-    private void configureSsl(final WebSocketClientOptions options, final URL target) {
-        if (isSecureProtocol(target.getProtocol())) {
-            // Configure SSL.
-            options.setSsl(true);
-
-            if (Boolean.TRUE.equals(nodeConfiguration.getProperty(HTTP_SSL_OPENSSL_CONFIGURATION, Boolean.class, false))) {
-                options.setSslEngineOptions(new OpenSSLEngineOptions());
-            }
-
-            if (sslOptions != null) {
-                options.setVerifyHost(sslOptions.isHostnameVerifier()).setTrustAll(sslOptions.isTrustAll());
-
-                try {
-                    // Client truststore configuration (trust server certificate).
-                    sslOptions.trustStore().flatMap(TrustStore::trustOptions).ifPresent(options::setTrustOptions);
-
-                    // Client keystore configuration (client certificate for mtls).
-                    sslOptions.keyStore().flatMap(KeyStore::keyCertOptions).ifPresent(options::setKeyCertOptions);
-                } catch (KeyStore.KeyStoreCertOptionsException | TrustStore.TrustOptionsException e) {
-                    throw new IllegalArgumentException(e.getMessage() + " for " + target);
-                }
-            }
-        }
-
-        options.setUseAlpn(true);
-    }
-
     private void setSystemProxy(final io.vertx.core.http.HttpClientOptions options) {
         try {
             options.setProxyOptions(VertxProxyOptionsUtils.buildProxyOptions(nodeConfiguration));
         } catch (Exception e) {
             log.warn(
                 "HttpClient (name[{}] target[{}]) requires a system proxy to be defined but some configurations are missing or not well defined: {}",
-                name,
-                defaultTarget,
-                e.getMessage()
-            );
-            log.warn("Ignoring system proxy");
-        }
-    }
-
-    private void setSystemProxy(final WebSocketClientOptions options) {
-        try {
-            options.setProxyOptions(VertxProxyOptionsUtils.buildProxyOptions(nodeConfiguration));
-        } catch (Exception e) {
-            log.warn(
-                "WebSocketClient (name[{}] target[{}]) requires a system proxy to be defined but some configurations are missing or not well defined: {}",
                 name,
                 defaultTarget,
                 e.getMessage()
