@@ -1,3 +1,10 @@
+# [8.0.0-alpha.11](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.10...8.0.0-alpha.11) (2026-03-04)
+
+
+### Features
+
+* add apim-en-endpoint-jms feature ([a1619b3](https://github.com/gravitee-io/gravitee-node/commit/a1619b31fc132333950f8947a4a64dad136c3fe5))
+
 # [8.0.0-alpha.10](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.9...8.0.0-alpha.10) (2026-02-27)
 
 
