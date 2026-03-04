@@ -1,3 +1,10 @@
+# [7.26.0](https://github.com/gravitee-io/gravitee-node/compare/7.25.0...7.26.0) (2026-03-04)
+
+
+### Features
+
+* add apim-en-endpoint-jms feature ([ce56f6a](https://github.com/gravitee-io/gravitee-node/commit/ce56f6af35a3ad0ab294bf6433d90a6a97648e69))
+
 # [7.25.0](https://github.com/gravitee-io/gravitee-node/compare/7.24.0...7.25.0) (2026-02-27)
 
 
