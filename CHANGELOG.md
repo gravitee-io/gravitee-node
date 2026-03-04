@@ -1,3 +1,10 @@
+# [8.0.0-alpha.12](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.11...8.0.0-alpha.12) (2026-03-04)
+
+
+### Features
+
+* enrich the tracing api with the possibility to specify the SpanKind ([4743b5d](https://github.com/gravitee-io/gravitee-node/commit/4743b5d8c97b31b1e54d2ad2ee09103def58a26c))
+
 # [8.0.0-alpha.11](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.10...8.0.0-alpha.11) (2026-03-04)
 
 
