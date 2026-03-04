@@ -1,3 +1,23 @@
+# [8.0.0-beta.2](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-beta.1...8.0.0-beta.2) (2026-03-04)
+
+
+### Bug Fixes
+
+* **deps:** update gravitee orb ([aef91d8](https://github.com/gravitee-io/gravitee-node/commit/aef91d8bbee914ca50d4ec956c5ceb332f85ad43))
+* **deps:** update gravitee-parent ([6dd999c](https://github.com/gravitee-io/gravitee-node/commit/6dd999cfa5ad4d05df9268bdf025c5c1972982e7))
+* new specific factory for WebSocketClient ([edd80b5](https://github.com/gravitee-io/gravitee-node/commit/edd80b50a7c9863dbcf9af033e38b42806cb6e87))
+* PrometheusEndpoint improvements and unit tests ([72d7c50](https://github.com/gravitee-io/gravitee-node/commit/72d7c50fb06aedce8cdd618f0825391a0dd309f9))
+
+
+### Features
+
+* upgrade to vert.x 5 ([b4e40a7](https://github.com/gravitee-io/gravitee-node/commit/b4e40a7aa37a008fc768b72279c3c3b01bfdbd00))
+
+
+### BREAKING CHANGES
+
+* upgrade to vert.x 5.x
+
 # [8.0.0-beta.1](https://github.com/gravitee-io/gravitee-node/compare/7.18.3...8.0.0-beta.1) (2026-03-03)
 
 
