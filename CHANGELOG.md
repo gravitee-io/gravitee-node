@@ -1,3 +1,10 @@
+# [8.0.0-alpha.13](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.12...8.0.0-alpha.13) (2026-03-05)
+
+
+### Bug Fixes
+
+* micrometer registry is now a CompositeRegistry ([09ec508](https://github.com/gravitee-io/gravitee-node/commit/09ec508426961810a8e66ccecc78c86e391b010e))
+
 # [8.0.0-alpha.12](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.11...8.0.0-alpha.12) (2026-03-04)
 
 
