@@ -1,3 +1,10 @@
+## [7.26.1](https://github.com/gravitee-io/gravitee-node/compare/7.26.0...7.26.1) (2026-03-05)
+
+
+### Bug Fixes
+
+* micrometer registry is now a CompositeRegistry ([f7d192e](https://github.com/gravitee-io/gravitee-node/commit/f7d192ede1def9c199e76e9a91405ba2f0fd2983))
+
 # [7.26.0](https://github.com/gravitee-io/gravitee-node/compare/7.25.0...7.26.0) (2026-03-04)
 
 
