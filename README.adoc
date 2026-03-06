@@ -52,6 +52,8 @@ Many enterprise plugins are relying on it.
 === Logging
 
 The Gravitee Node Logging module provides a specialized logging infrastructure, including the `NodeAwareLogger` which enriches logs with node-specific contextual information.
+It also supports configuring MDC filtering and log pattern overrides via `gravitee.yml` or environment variables.
+For more information, see the module link:gravitee-node-logging/README.adoc[README].
 
 === Management
 
