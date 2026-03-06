@@ -119,5 +119,20 @@ class LoggingOverrideConfigurationTest {
         assertThat(mdcConfig.getInclude()).isEmpty();
         assertThat(mdcConfig.getFormat()).isEqualTo("%s=\"%s\"");
         assertThat(mdcConfig.getNullValue()).isEmpty();
+        assertThat(mdcConfig.isFilterAll()).isFalse();
+    }
+
+    @Test
+    void should_configure_filterAll_from_environment() {
+        MockEnvironment env = new MockEnvironment()
+            .withProperty("logging.mdc.include[0]", "nodeId")
+            .withProperty("logging.mdc.filterAll", "true");
+
+        LoggingOverrideConfiguration config = new LoggingOverrideConfiguration(env);
+        config.configure();
+
+        MdcLoggingConfiguration mdcConfig = NodeLoggerFactory.getMdcConfiguration();
+        assertThat(mdcConfig).isNotNull();
+        assertThat(mdcConfig.isFilterAll()).isTrue();
     }
 }

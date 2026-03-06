@@ -73,10 +73,15 @@ logging:
       - nodeHostname
     format: "%s=\"%s\""     # Format pattern for each entry (default: %s="%s")
     nullValue: "-"          # Value for missing MDC entries (default: empty string)
+    filterAll: true         # Also filter MDC keys set by external code (default: false)
 ----
 
 When `include` is set, only the listed keys are populated into the MDC. Keys not in the list are never added, which affects all appenders (pattern-based and JSON).
 When `include` is empty or absent, all MDC keys are populated (backward-compatible behavior).
+
+When `filterAll` is `true`, MDC keys set by external components (e.g. servlet filters, third-party libraries via direct `MDC.put()` calls) are also filtered according to the `include` list.
+This ensures that all appenders — both pattern-based and JSON — only see the whitelisted keys.
+When `filterAll` is `false` (default), only the keys managed by `NodeAwareLogger` are subject to filtering; pre-existing MDC keys are left untouched.
 
 The order of the `include` list is preserved and determines the rendering order of the `%mdcList` conversion word.
 
@@ -120,6 +125,7 @@ All properties can be overridden via environment variables, following Gravitee's
 | `logging.mdc.include[0]` | `GRAVITEE_LOGGING_MDC_INCLUDE_0`
 | `logging.mdc.format` | `GRAVITEE_LOGGING_MDC_FORMAT`
 | `logging.mdc.nullValue` | `GRAVITEE_LOGGING_MDC_NULLVALUE`
+| `logging.mdc.filterAll` | `GRAVITEE_LOGGING_MDC_FILTERALL`
 | `logging.pattern.overrideLogbackXml` | `GRAVITEE_LOGGING_PATTERN_OVERRIDELOGBACKXML`
 | `logging.pattern.console` | `GRAVITEE_LOGGING_PATTERN_CONSOLE`
 | `logging.pattern.file` | `GRAVITEE_LOGGING_PATTERN_FILE`

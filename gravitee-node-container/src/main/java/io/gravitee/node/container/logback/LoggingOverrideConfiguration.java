@@ -44,6 +44,7 @@ import org.springframework.core.env.Environment;
  *     <li>{@code logging.mdc.include[0..n]} — ordered list of MDC keys to include</li>
  *     <li>{@code logging.mdc.format} — format pattern for {@code %mdcList} entries (default: {@code %s="%s"})</li>
  *     <li>{@code logging.mdc.nullValue} — value for missing MDC entries (default: empty string)</li>
+ *     <li>{@code logging.mdc.filterAll} — also filter MDC keys set by external code, e.g. servlet filters (default: false)</li>
  *     <li>{@code logging.pattern.overrideLogbackXml} — enable pattern override (default: false)</li>
  *     <li>{@code logging.pattern.console} — console appender pattern</li>
  *     <li>{@code logging.pattern.file} — file appender pattern</li>
@@ -74,12 +75,13 @@ public class LoggingOverrideConfiguration implements InitializingBean {
         List<String> include = readListProperty("logging.mdc.include");
         String format = environment.getProperty("logging.mdc.format");
         String nullValue = environment.getProperty("logging.mdc.nullValue");
+        boolean filterAll = environment.getProperty("logging.mdc.filterAll", Boolean.class, false);
 
-        MdcLoggingConfiguration mdcConfig = new MdcLoggingConfiguration(include, format, nullValue);
+        MdcLoggingConfiguration mdcConfig = new MdcLoggingConfiguration(include, format, nullValue, filterAll);
         NodeLoggerFactory.initMdcConfiguration(mdcConfig);
 
         if (!include.isEmpty()) {
-            log.info("MDC logging configured with include keys: {}", include);
+            log.info("MDC logging configured with include keys: {}, filterAll: {}", include, filterAll);
         }
     }
 

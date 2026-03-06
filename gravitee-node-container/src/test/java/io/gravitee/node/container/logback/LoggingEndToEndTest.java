@@ -156,6 +156,37 @@ class LoggingEndToEndTest {
         assertThat(output).isEqualTo("nodeId=\"gw-1\" nonExistentKey=\"N/A\" with missing");
     }
 
+    @Test
+    void should_filter_external_mdc_keys_when_filterAll_is_enabled() {
+        configureMdc(new MockEnvironment().withProperty("logging.mdc.include[0]", "nodeId").withProperty("logging.mdc.filterAll", "true"));
+        startAppenderWithPattern("[%X{nodeId}] [%X{externalKey}] %msg%n");
+
+        // Simulate external code (e.g. servlet filter) adding MDC keys
+        MDC.put("externalKey", "externalValue");
+
+        org.slf4j.Logger logger = NodeLoggerFactory.getLogger(logbackLogger.getName());
+        logger.info("filterAll test");
+
+        String output = getOutput();
+        // externalKey should be filtered out because filterAll is enabled
+        assertThat(output).isEqualTo("[gw-1] [] filterAll test");
+    }
+
+    @Test
+    void should_keep_external_mdc_keys_when_filterAll_is_disabled() {
+        configureMdc(new MockEnvironment().withProperty("logging.mdc.include[0]", "nodeId").withProperty("logging.mdc.filterAll", "false"));
+        startAppenderWithPattern("[%X{nodeId}] [%X{externalKey}] %msg%n");
+
+        MDC.put("externalKey", "externalValue");
+
+        org.slf4j.Logger logger = NodeLoggerFactory.getLogger(logbackLogger.getName());
+        logger.info("no filterAll test");
+
+        String output = getOutput();
+        // externalKey should remain because filterAll is disabled
+        assertThat(output).isEqualTo("[gw-1] [externalValue] no filterAll test");
+    }
+
     private void configureMdc(MockEnvironment env) {
         LoggingOverrideConfiguration config = new LoggingOverrideConfiguration(env);
         config.configure();

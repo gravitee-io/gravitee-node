@@ -95,4 +95,25 @@ class MdcLoggingConfigurationTest {
 
         assertThat(config.getNullValue()).isEqualTo("-");
     }
+
+    @Test
+    void should_have_filterAll_false_by_default() {
+        MdcLoggingConfiguration config = new MdcLoggingConfiguration();
+
+        assertThat(config.isFilterAll()).isFalse();
+    }
+
+    @Test
+    void should_have_filterAll_false_with_three_arg_constructor() {
+        MdcLoggingConfiguration config = new MdcLoggingConfiguration(List.of("nodeId"), null, null);
+
+        assertThat(config.isFilterAll()).isFalse();
+    }
+
+    @Test
+    void should_set_filterAll_via_four_arg_constructor() {
+        MdcLoggingConfiguration config = new MdcLoggingConfiguration(List.of("nodeId"), null, null, true);
+
+        assertThat(config.isFilterAll()).isTrue();
+    }
 }

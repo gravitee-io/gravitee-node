@@ -17,8 +17,11 @@ package io.gravitee.node.logging;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.gravitee.node.api.Node;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -264,6 +267,35 @@ public class NodeAwareLogger implements Logger {
         return mdcConfig != null && !mdcConfig.shouldInclude(key);
     }
 
+    /**
+     * When {@code filterAll} is enabled, removes MDC keys that are not in the include list
+     * but were set externally (e.g., via direct {@code MDC.put()} calls in servlet filters
+     * or third-party libraries). This ensures that all appenders (pattern and JSON) only
+     * see the allowed MDC keys.
+     *
+     * @return the list of keys that were removed, for potential restoration if needed
+     */
+    private List<String> filterExternalMdcKeys() {
+        MdcLoggingConfiguration mdcConfig = mdcConfigRef.get();
+        if (mdcConfig == null || !mdcConfig.isFilterAll() || mdcConfig.getInclude().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<String, String> currentMdc = MDC.getCopyOfContextMap();
+        if (currentMdc == null || currentMdc.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> removedKeys = new ArrayList<>();
+        for (String key : currentMdc.keySet()) {
+            if (!mdcConfig.shouldInclude(key)) {
+                MDC.remove(key);
+                removedKeys.add(key);
+            }
+        }
+        return removedKeys;
+    }
+
     private Optional<Object> provideLogSource(LogEntry<?> logEntry, Map<Class<?>, Object> logSources) {
         return Optional.ofNullable(logSources.get(logEntry.sourceType()));
     }
@@ -272,6 +304,10 @@ public class NodeAwareLogger implements Logger {
         // Gather log sources from child implementations to provide LogEntry a way to be resolved
         final Map<Class<?>, Object> logSources = new HashMap<>();
         registerLogSources(logSources);
+
+        // When filterAll is enabled, remove MDC keys not in the include list
+        // that were set externally (e.g., via direct MDC.put() calls in filters or libraries)
+        final List<String> removedExternalKeys = filterExternalMdcKeys();
 
         logEntries.forEach(logEntry -> {
             if (isMdcKeyExcluded(logEntry.getKey())) {

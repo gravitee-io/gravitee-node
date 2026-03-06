@@ -37,15 +37,21 @@ public final class MdcLoggingConfiguration {
     private final List<String> include;
     private final String format;
     private final String nullValue;
+    private final boolean filterAll;
 
     public MdcLoggingConfiguration() {
-        this(Collections.emptyList(), "%s=\"%s\"", "");
+        this(Collections.emptyList(), "%s=\"%s\"", "", false);
     }
 
     public MdcLoggingConfiguration(List<String> include, String format, String nullValue) {
+        this(include, format, nullValue, false);
+    }
+
+    public MdcLoggingConfiguration(List<String> include, String format, String nullValue, boolean filterAll) {
         this.include = include == null ? Collections.emptyList() : List.copyOf(include);
         this.format = (format == null || format.isEmpty()) ? "%s=\"%s\"" : format;
         this.nullValue = nullValue == null ? "" : nullValue;
+        this.filterAll = filterAll;
     }
 
     public List<String> getInclude() {
@@ -66,5 +72,14 @@ public final class MdcLoggingConfiguration {
      */
     public boolean shouldInclude(String key) {
         return include.isEmpty() || include.contains(key);
+    }
+
+    /**
+     * Returns {@code true} if MDC keys set outside of {@link NodeAwareLogger}
+     * (e.g., via direct {@code MDC.put()} calls) should also be filtered
+     * according to the include list.
+     */
+    public boolean isFilterAll() {
+        return filterAll;
     }
 }
