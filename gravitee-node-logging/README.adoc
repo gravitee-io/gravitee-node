@@ -53,6 +53,84 @@ private static final Logger logger = NodeLoggerFactory.getLogger(MyClass.class);
 The returned logger will be a `NodeAwareLogger` instance wrapping the standard SLF4J logger.
 If the `Node` context is not yet available at the time of the log call, it will gracefully fallback to standard logging without enrichment.
 
+== Logging Configuration Override
+
+The logging system can be configured via `gravitee.yml` (or environment variables) to control MDC filtering and log pattern formatting.
+This is especially useful for Kubernetes/Helm deployments where modifying `logback.xml` is impractical.
+
+Configuration is loaded by `LoggingOverrideConfiguration`, a Spring bootstrap bean registered in `SpringBasedContainer`.
+
+=== MDC Configuration
+
+Control which MDC keys are populated and how they are formatted by the `%mdcList` conversion word.
+
+[source,yaml]
+----
+logging:
+  mdc:
+    include:
+      - nodeId
+      - nodeHostname
+    format: "%s=\"%s\""     # Format pattern for each entry (default: %s="%s")
+    nullValue: "-"          # Value for missing MDC entries (default: empty string)
+    filterAll: true         # Also filter MDC keys set by external code (default: false)
+----
+
+When `include` is set, only the listed keys are populated into the MDC. Keys not in the list are never added, which affects all appenders (pattern-based and JSON).
+When `include` is empty or absent, all MDC keys are populated (backward-compatible behavior).
+
+When `filterAll` is `true`, MDC keys set by external components (e.g. servlet filters, third-party libraries via direct `MDC.put()` calls) are also filtered according to the `include` list.
+This ensures that all appenders — both pattern-based and JSON — only see the whitelisted keys.
+When `filterAll` is `false` (default), only the keys managed by `NodeAwareLogger` are subject to filtering; pre-existing MDC keys are left untouched.
+
+The order of the `include` list is preserved and determines the rendering order of the `%mdcList` conversion word.
+
+==== The `%mdcList` conversion word
+
+A custom logback conversion word that renders all included MDC entries as a single formatted string.
+It is registered programmatically at startup — no `logback.xml` changes required.
+
+Example output with the configuration above:
+
+----
+nodeId="gw-1" nodeHostname="host-alpha"
+----
+
+Individual MDC values remain accessible via the standard `%X{key}` pattern.
+
+=== Pattern Override
+
+Override logback console and file appender patterns from `gravitee.yml`:
+
+[source,yaml]
+----
+logging:
+  pattern:
+    overrideLogbackXml: true
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %mdcList %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %mdcList %msg%n"
+----
+
+Pattern overrides only apply when `overrideLogbackXml` is `true`.
+Only appenders using `PatternLayoutEncoder` are affected — JSON encoders and other encoder types are left untouched.
+
+=== Environment Variable Overrides
+
+All properties can be overridden via environment variables, following Gravitee's standard naming convention:
+
+[cols="1,1"]
+|===
+| YAML property | Environment variable
+
+| `logging.mdc.include[0]` | `GRAVITEE_LOGGING_MDC_INCLUDE_0`
+| `logging.mdc.format` | `GRAVITEE_LOGGING_MDC_FORMAT`
+| `logging.mdc.nullValue` | `GRAVITEE_LOGGING_MDC_NULLVALUE`
+| `logging.mdc.filterAll` | `GRAVITEE_LOGGING_MDC_FILTERALL`
+| `logging.pattern.overrideLogbackXml` | `GRAVITEE_LOGGING_PATTERN_OVERRIDELOGBACKXML`
+| `logging.pattern.console` | `GRAVITEE_LOGGING_PATTERN_CONSOLE`
+| `logging.pattern.file` | `GRAVITEE_LOGGING_PATTERN_FILE`
+|===
+
 [TIP]
 .Lombok integration
 ====

@@ -1,5 +1,6 @@
 package io.gravitee.node.logging;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.gravitee.node.api.Node;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 public final class NodeLoggerFactory {
 
     private static final AtomicReference<Supplier<Node>> NODE_SUPPLIER = new AtomicReference<>();
+    private static final AtomicReference<MdcLoggingConfiguration> MDC_CONFIGURATION = new AtomicReference<>();
 
     private NodeLoggerFactory() {}
 
@@ -51,13 +53,52 @@ public final class NodeLoggerFactory {
         NODE_SUPPLIER.set(nodeSupplier);
     }
 
+    /**
+     * Initializes the MDC logging configuration.
+     * Once set, all loggers created through this factory will filter and format MDC entries
+     * according to the provided configuration.
+     *
+     * @param configuration the {@link MdcLoggingConfiguration} to apply. Must not be null.
+     * @throws NullPointerException if the provided configuration is null.
+     */
+    public static void initMdcConfiguration(MdcLoggingConfiguration configuration) {
+        Objects.requireNonNull(configuration, "mdcLoggingConfiguration");
+        MDC_CONFIGURATION.set(configuration);
+    }
+
+    /**
+     * Returns the current {@link MdcLoggingConfiguration}, or {@code null} if not yet initialized.
+     * Used by logback converters (e.g., {@code %mdcList}) to access the MDC formatting configuration.
+     *
+     * @return the current MDC logging configuration, or {@code null}
+     */
+    public static MdcLoggingConfiguration getMdcConfiguration() {
+        return MDC_CONFIGURATION.get();
+    }
+
+    /**
+     * Resets the MDC configuration to its uninitialized state. Intended for testing only.
+     */
+    @VisibleForTesting
+    public static void resetMdcConfiguration() {
+        MDC_CONFIGURATION.set(null);
+    }
+
+    /**
+     * Resets cached log entries (e.g., node id, hostname). Intended for testing only.
+     */
+    @VisibleForTesting
+    public static void flushLogEntries() {
+        NodeAwareLogger.flushLogEntry();
+    }
+
     public static Logger getLogger(Class<?> type) {
         // Always return a NodeAwareLogger, it will handle by itself the absence or presence of Node
-        return new NodeAwareLogger(NODE_SUPPLIER, LoggerFactory.getLogger(type));
+        return new NodeAwareLogger(NODE_SUPPLIER, MDC_CONFIGURATION, LoggerFactory.getLogger(type));
     }
 
     public static Logger getLogger(String name) {
         // Always return a NodeAwareLogger, it will handle by itself the absence or presence of Node
-        return new NodeAwareLogger(NODE_SUPPLIER, LoggerFactory.getLogger(name));
+        return new NodeAwareLogger(NODE_SUPPLIER, MDC_CONFIGURATION, LoggerFactory.getLogger(name));
     }
 }

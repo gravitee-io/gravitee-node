@@ -115,7 +115,7 @@ public class NodeAwareLoggerTest {
     public void should_log_info_with_node_mdc_waiting_for_node_initialization() {
         Node node = new FakeNode("my-node", "my-host");
         AtomicReference<Supplier<Node>> nodeSupplierRef = new AtomicReference<>();
-        NodeAwareLogger logger = new NodeAwareLogger(nodeSupplierRef, delegate);
+        NodeAwareLogger logger = new NodeAwareLogger(nodeSupplierRef, new AtomicReference<>(), delegate);
 
         logger.info("Hello {}", "world");
         nodeSupplierRef.set(() -> node);
@@ -137,6 +137,58 @@ public class NodeAwareLoggerTest {
     }
 
     @Test
+    public void should_filter_mdc_keys_based_on_include_list() {
+        AtomicReference<MdcLoggingConfiguration> mdcConfigRef = new AtomicReference<>(
+            new MdcLoggingConfiguration(List.of("nodeId"), null, null)
+        );
+        Node node = new FakeNode("my-node", "my-host");
+        NodeAwareLogger logger = new NodeAwareLogger(node, mdcConfigRef, delegate);
+
+        logger.info("Filtered MDC");
+
+        List<ILoggingEvent> events = listAppender.list;
+        assertThat(events).hasSize(1);
+        ILoggingEvent event = events.get(0);
+        assertThat(event.getMDCPropertyMap())
+            .containsEntry("nodeId", "my-node")
+            .doesNotContainKey("nodeHostname")
+            .doesNotContainKey("nodeApplication");
+    }
+
+    @Test
+    public void should_include_all_mdc_keys_when_include_list_is_empty() {
+        AtomicReference<MdcLoggingConfiguration> mdcConfigRef = new AtomicReference<>(new MdcLoggingConfiguration(List.of(), null, null));
+        Node node = new FakeNode("my-node", "my-host");
+        NodeAwareLogger logger = new NodeAwareLogger(node, mdcConfigRef, delegate);
+
+        logger.info("All MDC keys");
+
+        List<ILoggingEvent> events = listAppender.list;
+        assertThat(events).hasSize(1);
+        ILoggingEvent event = events.get(0);
+        assertThat(event.getMDCPropertyMap())
+            .containsEntry("nodeId", "my-node")
+            .containsEntry("nodeHostname", "my-host")
+            .containsKey("nodeApplication");
+    }
+
+    @Test
+    public void should_include_all_mdc_keys_when_no_mdc_configuration() {
+        Node node = new FakeNode("my-node", "my-host");
+        NodeAwareLogger logger = new NodeAwareLogger(node, delegate);
+
+        logger.info("No MDC config");
+
+        List<ILoggingEvent> events = listAppender.list;
+        assertThat(events).hasSize(1);
+        ILoggingEvent event = events.get(0);
+        assertThat(event.getMDCPropertyMap())
+            .containsEntry("nodeId", "my-node")
+            .containsEntry("nodeHostname", "my-host")
+            .containsKey("nodeApplication");
+    }
+
+    @Test
     public void should_enrich_mdc_only_once_when_delegate_is_nodeAwareLogger() {
         try (MockedStatic<MDC> mdcMock = Mockito.mockStatic(MDC.class)) {
             Node node = new FakeNode("my-node", "my-host");
@@ -149,5 +201,94 @@ public class NodeAwareLoggerTest {
             mdcMock.verify(() -> MDC.put(eq("nodeHostname"), anyString()), times(1));
             mdcMock.verify(() -> MDC.put(eq("nodeApplication"), anyString()), times(1));
         }
+    }
+
+    @Test
+    public void should_filter_external_mdc_keys_when_filterAll_is_enabled() {
+        AtomicReference<MdcLoggingConfiguration> mdcConfigRef = new AtomicReference<>(
+            new MdcLoggingConfiguration(List.of("nodeId"), null, null, true)
+        );
+        Node node = new FakeNode("my-node", "my-host");
+        NodeAwareLogger logger = new NodeAwareLogger(node, mdcConfigRef, delegate);
+
+        // Simulate an external component (e.g. servlet filter) adding MDC keys
+        MDC.put("externalKey", "externalValue");
+        MDC.put("anotherExternal", "anotherValue");
+
+        logger.info("FilterAll test");
+
+        List<ILoggingEvent> events = listAppender.list;
+        assertThat(events).hasSize(1);
+        ILoggingEvent event = events.get(0);
+        assertThat(event.getMDCPropertyMap())
+            .containsEntry("nodeId", "my-node")
+            .doesNotContainKey("nodeHostname")
+            .doesNotContainKey("externalKey")
+            .doesNotContainKey("anotherExternal");
+    }
+
+    @Test
+    public void should_keep_external_mdc_keys_when_filterAll_is_disabled() {
+        AtomicReference<MdcLoggingConfiguration> mdcConfigRef = new AtomicReference<>(
+            new MdcLoggingConfiguration(List.of("nodeId"), null, null, false)
+        );
+        Node node = new FakeNode("my-node", "my-host");
+        NodeAwareLogger logger = new NodeAwareLogger(node, mdcConfigRef, delegate);
+
+        // Simulate an external component adding MDC keys
+        MDC.put("externalKey", "externalValue");
+
+        logger.info("FilterAll disabled test");
+
+        List<ILoggingEvent> events = listAppender.list;
+        assertThat(events).hasSize(1);
+        ILoggingEvent event = events.get(0);
+        assertThat(event.getMDCPropertyMap())
+            .containsEntry("nodeId", "my-node")
+            .containsEntry("externalKey", "externalValue")
+            .doesNotContainKey("nodeHostname");
+    }
+
+    @Test
+    public void should_not_filter_external_mdc_keys_when_include_list_is_empty() {
+        AtomicReference<MdcLoggingConfiguration> mdcConfigRef = new AtomicReference<>(
+            new MdcLoggingConfiguration(List.of(), null, null, true)
+        );
+        Node node = new FakeNode("my-node", "my-host");
+        NodeAwareLogger logger = new NodeAwareLogger(node, mdcConfigRef, delegate);
+
+        MDC.put("externalKey", "externalValue");
+
+        logger.info("Empty include with filterAll");
+
+        List<ILoggingEvent> events = listAppender.list;
+        assertThat(events).hasSize(1);
+        ILoggingEvent event = events.get(0);
+        // When include list is empty, all keys are accepted regardless of filterAll
+        assertThat(event.getMDCPropertyMap())
+            .containsEntry("nodeId", "my-node")
+            .containsEntry("nodeHostname", "my-host")
+            .containsEntry("externalKey", "externalValue");
+    }
+
+    @Test
+    public void should_inherit_mdc_config_from_delegate_nodeAwareLogger() {
+        AtomicReference<MdcLoggingConfiguration> mdcConfigRef = new AtomicReference<>(
+            new MdcLoggingConfiguration(List.of("nodeId"), null, null)
+        );
+        Node node = new FakeNode("my-node", "my-host");
+        // Inner logger has the config, outer logger uses constructor without explicit mdcConfigRef
+        NodeAwareLogger innerLogger = new NodeAwareLogger(node, mdcConfigRef, delegate);
+        NodeAwareLogger outerLogger = new NodeAwareLogger(node, innerLogger);
+
+        outerLogger.info("Inherited config");
+
+        List<ILoggingEvent> events = listAppender.list;
+        assertThat(events).hasSize(1);
+        ILoggingEvent event = events.get(0);
+        assertThat(event.getMDCPropertyMap())
+            .containsEntry("nodeId", "my-node")
+            .doesNotContainKey("nodeHostname")
+            .doesNotContainKey("nodeApplication");
     }
 }
