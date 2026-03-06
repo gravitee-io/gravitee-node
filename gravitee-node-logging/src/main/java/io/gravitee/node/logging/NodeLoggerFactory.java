@@ -1,5 +1,6 @@
 package io.gravitee.node.logging;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.gravitee.node.api.Node;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -63,6 +64,24 @@ public final class NodeLoggerFactory {
     public static void initMdcConfiguration(MdcLoggingConfiguration configuration) {
         Objects.requireNonNull(configuration, "mdcLoggingConfiguration");
         MDC_CONFIGURATION.set(configuration);
+    }
+
+    /**
+     * Returns the current {@link MdcLoggingConfiguration}, or {@code null} if not yet initialized.
+     * Used by logback converters (e.g., {@code %mdcList}) to access the MDC formatting configuration.
+     *
+     * @return the current MDC logging configuration, or {@code null}
+     */
+    public static MdcLoggingConfiguration getMdcConfiguration() {
+        return MDC_CONFIGURATION.get();
+    }
+
+    /**
+     * Resets the MDC configuration to its uninitialized state. Intended for testing only.
+     */
+    @VisibleForTesting
+    public static void resetMdcConfiguration() {
+        MDC_CONFIGURATION.set(null);
     }
 
     public static Logger getLogger(Class<?> type) {
