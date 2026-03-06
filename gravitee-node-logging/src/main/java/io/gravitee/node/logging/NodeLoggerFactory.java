@@ -84,6 +84,14 @@ public final class NodeLoggerFactory {
         MDC_CONFIGURATION.set(null);
     }
 
+    /**
+     * Resets cached log entries (e.g., node id, hostname). Intended for testing only.
+     */
+    @VisibleForTesting
+    public static void flushLogEntries() {
+        NodeAwareLogger.flushLogEntry();
+    }
+
     public static Logger getLogger(Class<?> type) {
         // Always return a NodeAwareLogger, it will handle by itself the absence or presence of Node
         return new NodeAwareLogger(NODE_SUPPLIER, MDC_CONFIGURATION, LoggerFactory.getLogger(type));
