@@ -21,6 +21,7 @@ import io.gravitee.node.api.Node;
 import io.gravitee.node.api.license.LicenseManager;
 import io.gravitee.node.certificates.spring.NodeCertificatesConfiguration;
 import io.gravitee.node.container.AbstractContainer;
+import io.gravitee.node.container.logback.LoggingOverrideConfiguration;
 import io.gravitee.node.container.spring.env.EnvironmentConfiguration;
 import io.gravitee.node.container.spring.env.PropertiesConfiguration;
 import io.gravitee.node.kubernetes.spring.NodeKubernetesConfiguration;
@@ -133,6 +134,7 @@ public abstract class SpringBasedContainer extends AbstractContainer {
         final List<Class<?>> bootstrapClasses = new ArrayList<>();
         bootstrapClasses.add(EnvironmentConfiguration.class);
         bootstrapClasses.add(PropertiesConfiguration.class);
+        bootstrapClasses.add(LoggingOverrideConfiguration.class);
         bootstrapClasses.add(NodeContainerConfiguration.class);
         bootstrapClasses.add(BootPluginConfiguration.class);
         bootstrapClasses.add(ConfigurationLevelSecretBeanFactory.class);
