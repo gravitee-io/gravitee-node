@@ -79,6 +79,25 @@ public class NodeAwareLogger implements Logger {
      * </ul>
      */
     private final AtomicReference<Supplier<Node>> nodeSupplierRef;
+    /**
+     * A shared reference to the {@link MdcLoggingConfiguration}, used to filter which MDC keys
+     * are populated during log calls.
+     * <p>
+     * Similar to {@link #nodeSupplierRef}, this reference follows a lazy resolution strategy:
+     * the configuration may not be available at logger construction time (since loggers are
+     * instantiated statically before Spring loads gravitee.yml). When the reference contains
+     * {@code null}, all MDC keys are included (backward-compatible behavior). Once the
+     * configuration is set via {@link NodeLoggerFactory#initMdcConfiguration(MdcLoggingConfiguration)},
+     * all existing loggers immediately pick up the new filtering rules.
+     * </p>
+     * <p>
+     * When constructing a {@code NodeAwareLogger} from another {@code NodeAwareLogger} delegate
+     * (e.g., in subclasses like {@code ExecutionContextAwareLogger}), the reference is inherited
+     * from the delegate via {@link #extractMdcConfigRef(Logger)}, ensuring consistent filtering
+     * across the logger hierarchy.
+     * </p>
+     */
+    private final AtomicReference<MdcLoggingConfiguration> mdcConfigRef;
 
     /**
      * Extracts the delegate logger from the given logger if it is an instance of {@code NodeAwareLogger}.
@@ -91,6 +110,20 @@ public class NodeAwareLogger implements Logger {
      */
     private static Logger extractDelegateLogger(Logger logger) {
         return logger instanceof NodeAwareLogger nodeAwareLogger ? nodeAwareLogger.delegateLogger : logger;
+    }
+
+    /**
+     * Extracts the {@link MdcLoggingConfiguration} reference from the given logger if it is
+     * an instance of {@code NodeAwareLogger}. This ensures that when a {@code NodeAwareLogger}
+     * wraps another one (e.g., in subclasses), the MDC filtering configuration is inherited
+     * rather than lost.
+     *
+     * @param logger the logger instance from which to extract the MDC configuration reference
+     * @return the MDC configuration reference if the input logger is a {@code NodeAwareLogger};
+     *         otherwise, a new empty {@link AtomicReference}
+     */
+    private static AtomicReference<MdcLoggingConfiguration> extractMdcConfigRef(Logger logger) {
+        return logger instanceof NodeAwareLogger nodeAwareLogger ? nodeAwareLogger.mdcConfigRef : new AtomicReference<>();
     }
 
     /**
@@ -108,11 +141,26 @@ public class NodeAwareLogger implements Logger {
      *               Must not be null.
      */
     public NodeAwareLogger(Node node, Logger logger) {
+        this(node, extractMdcConfigRef(logger), logger);
+    }
+
+    /**
+     * Constructs a NodeAwareLogger instance with an explicit {@link MdcLoggingConfiguration} reference.
+     * This constructor is used by {@link NodeLoggerFactory} to pass the shared MDC configuration
+     * that controls which MDC keys are populated during log calls.
+     *
+     * @param node the {@link Node} instance to be associated with this logger. Must not be null.
+     * @param mdcConfigRef a shared {@link AtomicReference} to the {@link MdcLoggingConfiguration}.
+     *                     May contain {@code null} if the configuration has not been initialized yet.
+     * @param logger the {@link Logger} instance to which logging operations are delegated. Must not be null.
+     */
+    public NodeAwareLogger(Node node, AtomicReference<MdcLoggingConfiguration> mdcConfigRef, Logger logger) {
         Objects.requireNonNull(node, "Node must not be null");
         Objects.requireNonNull(logger, "Delegate logger must not be null");
         this.node = node;
         this.delegateLogger = extractDelegateLogger(logger);
         this.nodeSupplierRef = new AtomicReference<>(() -> node);
+        this.mdcConfigRef = mdcConfigRef;
         Set<LogEntry<?>> logEntries = new HashSet<>();
         registerLogEntries(logEntries);
         this.logEntries = Set.copyOf(logEntries);
@@ -131,10 +179,15 @@ public class NodeAwareLogger implements Logger {
      * @param logger the {@link Logger} instance to which logging operations are delegated. It serves as the main
      *               logging interface for this class.
      */
-    public NodeAwareLogger(AtomicReference<Supplier<Node>> nodeSupplierRef, Logger logger) {
+    public NodeAwareLogger(
+        AtomicReference<Supplier<Node>> nodeSupplierRef,
+        AtomicReference<MdcLoggingConfiguration> mdcConfigRef,
+        Logger logger
+    ) {
         Objects.requireNonNull(nodeSupplierRef, "Factory supplier provider must not be null");
         Objects.requireNonNull(logger, "Delegate logger must not be null");
         this.nodeSupplierRef = nodeSupplierRef;
+        this.mdcConfigRef = mdcConfigRef;
         this.delegateLogger = extractDelegateLogger(logger);
         Set<LogEntry<?>> logEntries = new HashSet<>();
         registerLogEntries(logEntries);
@@ -206,6 +259,11 @@ public class NodeAwareLogger implements Logger {
      * @return an {@code Optional} containing the corresponding log source object if found,
      * or an empty {@code Optional} if no matching log source is available.
      */
+    private boolean isMdcKeyExcluded(String key) {
+        MdcLoggingConfiguration mdcConfig = mdcConfigRef.get();
+        return mdcConfig != null && !mdcConfig.shouldInclude(key);
+    }
+
     private Optional<Object> provideLogSource(LogEntry<?> logEntry, Map<Class<?>, Object> logSources) {
         return Optional.ofNullable(logSources.get(logEntry.sourceType()));
     }
@@ -215,7 +273,10 @@ public class NodeAwareLogger implements Logger {
         final Map<Class<?>, Object> logSources = new HashMap<>();
         registerLogSources(logSources);
 
-        logEntries.forEach(logEntry ->
+        logEntries.forEach(logEntry -> {
+            if (isMdcKeyExcluded(logEntry.getKey())) {
+                return;
+            }
             provideLogSource(logEntry, logSources)
                 .ifPresentOrElse(
                     logSource -> {
@@ -225,8 +286,8 @@ public class NodeAwareLogger implements Logger {
                         }
                     },
                     () -> MDC.put(logEntry.getKey(), UNKNOWN)
-                )
-        );
+                );
+        });
         try {
             logAction.run();
         } finally {
