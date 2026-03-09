@@ -16,10 +16,6 @@ It offers a piece of functionalities that can be selectively used out-of-the-box
 
 The Gravitee Node Api module regroups all the interfaces that are implemented in the other modules.
 
-=== ArchUnit
-
-The Gravitee Node ArchUnit module provides a set of reusable architecture rules to enforce consistency across the codebase using link:https://www.archunit.org/[ArchUnit].
-
 === Cache
 
 The Gravitee Node Cache module regroups all the classes related to cache management plugins, and two plugins implementations: standalone and hazelcast.
