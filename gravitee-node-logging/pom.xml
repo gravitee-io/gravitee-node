@@ -63,4 +63,21 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.gravitee.maven</groupId>
+                <artifactId>gravitee-archrules-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>global-logging-check</id>
+                        <configuration>
+<!--                            Skip rule for this module as it deals directly with Slf4j classes-->
+                            <skip>true</skip>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
