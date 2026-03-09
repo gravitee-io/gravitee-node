@@ -185,4 +185,24 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.gravitee.maven</groupId>
+                <artifactId>gravitee-archrules-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>global-logging-check</id>
+                        <configuration>
+                            <!-- Exclude those classes from analysis as they deal with logging directly -->
+                            <allowList>
+                                <allowList>io.gravitee.node.container.AbstractContainer</allowList>
+                                <allowList>io.gravitee.node.container.logback.LogbackPatternOverrider</allowList>
+                            </allowList>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
