@@ -1,3 +1,22 @@
+# [8.0.0-alpha.14](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.13...8.0.0-alpha.14) (2026-03-10)
+
+
+### chore
+
+* bump gravitee-parent ([96c3129](https://github.com/gravitee-io/gravitee-node/commit/96c3129eff3bb968ac8d9e5f094675bcc41a60f8))
+
+
+### Features
+
+* add custom %mdcList logback converter ([ff3a5d4](https://github.com/gravitee-io/gravitee-node/commit/ff3a5d4a65a39ac4ab76927b5f544827b10a8aeb))
+* add logback pattern override from gravitee.yml ([1ea0d9e](https://github.com/gravitee-io/gravitee-node/commit/1ea0d9e9eee577ee36c00251d19daecc3b3993dc))
+* add MDC filtering configuration in gravitee-node-logging ([8a2d3f3](https://github.com/gravitee-io/gravitee-node/commit/8a2d3f3a7e68a08588baf0b72ef11b7b2a924da9))
+
+
+### BREAKING CHANGES
+
+* bump gravitee parent
+
 # [8.0.0-alpha.13](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.12...8.0.0-alpha.13) (2026-03-05)
 
 
