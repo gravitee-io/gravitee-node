@@ -1,3 +1,10 @@
+# [8.0.0-alpha.15](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.14...8.0.0-alpha.15) (2026-03-12)
+
+
+### Bug Fixes
+
+* **logging:** use supplier based converter registration ([40f2688](https://github.com/gravitee-io/gravitee-node/commit/40f26886f9b0f4ab64a60ac4d2a798fe5483730e))
+
 # [8.0.0-alpha.14](https://github.com/gravitee-io/gravitee-node/compare/8.0.0-alpha.13...8.0.0-alpha.14) (2026-03-10)
 
 
