@@ -45,12 +45,16 @@ public final class LogbackPatternOverrider {
 
     /**
      * Registers the {@code %mdcList} conversion word on the current logback context.
+     * <p>
+     * Uses the supplier-based API ({@link PatternLayout#DEFAULT_CONVERTER_SUPPLIER_MAP}) introduced
+     * in logback 1.4+. The legacy string-based map ({@code DEFAULT_CONVERTER_MAP}) is deprecated and
+     * relies on class-name resolution via {@code ConverterSupplierByClassName}, which can fail under
+     * custom classloader hierarchies (e.g., standalone Docker deployments with {@code GraviteeClassLoader}).
+     * </p>
      */
     public static void registerMdcListConverter() {
-        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        loggerContext.putObject(MdcListConverter.CONVERSION_WORD, MdcListConverter.class.getName());
-        // Register via the conversionRule map used by PatternLayout
-        PatternLayout.DEFAULT_CONVERTER_MAP.put(MdcListConverter.CONVERSION_WORD, MdcListConverter.class.getName());
+        // Register directly as a supplier to avoid classloader issues with the legacy string-based map
+        PatternLayout.DEFAULT_CONVERTER_SUPPLIER_MAP.put(MdcListConverter.CONVERSION_WORD, MdcListConverter::new);
     }
 
     /**

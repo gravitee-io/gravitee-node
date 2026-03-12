@@ -141,7 +141,8 @@ class LogbackPatternOverriderTest {
     void should_register_mdcList_converter() {
         LogbackPatternOverrider.registerMdcListConverter();
 
-        assertThat(PatternLayout.DEFAULT_CONVERTER_MAP).containsEntry("mdcList", MdcListConverter.class.getName());
+        assertThat(PatternLayout.DEFAULT_CONVERTER_SUPPLIER_MAP).containsKey("mdcList");
+        assertThat(PatternLayout.DEFAULT_CONVERTER_SUPPLIER_MAP.get("mdcList").get()).isInstanceOf(MdcListConverter.class);
     }
 
     private PatternLayoutEncoder createEncoder() {
