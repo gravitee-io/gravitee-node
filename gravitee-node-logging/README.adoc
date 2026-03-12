@@ -95,28 +95,13 @@ nodeId: gw-1 | nodeHostname: host-alpha
 
 Individual MDC values remain accessible via the standard `%X{key}` pattern.
 
-[IMPORTANT]
-.Using `%mdcList` directly in `logback.xml`
+[WARNING]
+.Do NOT use `%mdcList` directly in `logback.xml`
 ====
-The programmatic registration happens *after* logback parses `logback.xml`.
-If you want to use `%mdcList` directly in your `logback.xml` patterns, you must register the converter explicitly:
+The `%mdcList` converter is registered programmatically *after* the bootstrap classloader has initialized.
+Using `<conversionRule conversionWord="mdcList" converterClass="io.gravitee.node.container.logback.MdcListConverter"/>` directly in `logback.xml` will fail with a `PARSER_ERROR[mdcList]` because the `MdcListConverter` class is not visible to Logback's classloader at parse time.
 
-[source,xml]
-----
-<configuration>
-    <conversionRule conversionWord="mdcList"
-                    converterClass="io.gravitee.node.container.logback.MdcListConverter" />
-
-    <!-- Now %mdcList can be used in any pattern -->
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] [%mdcList] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
-</configuration>
-----
-
-This is not needed when using the pattern override via `gravitee.yml`, as the converter is already registered before the pattern is applied.
+To use `%mdcList`, enable the pattern override via `gravitee.yml` instead (see <<Pattern Override>> below).
 ====
 
 === Pattern Override
