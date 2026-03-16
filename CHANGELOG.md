@@ -1,3 +1,44 @@
+# [8.0.0](https://github.com/gravitee-io/gravitee-node/compare/7.26.1...8.0.0) (2026-03-16)
+
+
+### Bug Fixes
+
+* add missing NodeKubernetesConfiguration ([a43b461](https://github.com/gravitee-io/gravitee-node/commit/a43b4615a46e7d16e143c1ab339a1acb96df26c4))
+* avoid populating MDC twice when delegate is a NodeAwareLogger ([a961e85](https://github.com/gravitee-io/gravitee-node/commit/a961e859a9a4e54ed30f6de27a2569f2a4074832))
+* ensure defaultPort is set before environment ([1e850d6](https://github.com/gravitee-io/gravitee-node/commit/1e850d6e446507bb108308392b10f2d4c7d66539))
+* handle exceptions when reloading keystore in AbstractFileKeyStoreLoader ([d202b3e](https://github.com/gravitee-io/gravitee-node/commit/d202b3ebceab22b30379f68f85038fd1bbc7996a))
+* **logging:** use supplier based converter registration ([f837b8d](https://github.com/gravitee-io/gravitee-node/commit/f837b8ddfeb134d27ce6b7d1267094ddd3b3d393))
+* remove useless checkNoLombokSlf4j method ([78eb5ac](https://github.com/gravitee-io/gravitee-node/commit/78eb5ac95f84fd5fe073b6426b116ede4300452a))
+* use unknown value instead of debug log ([cefd5f7](https://github.com/gravitee-io/gravitee-node/commit/cefd5f74ca1ce466ef97e17fc18b9c811657c966))
+
+
+### chore
+
+* bump gravitee-parent ([63dd814](https://github.com/gravitee-io/gravitee-node/commit/63dd8149257e36d43c6d802acaeefad053f37a39))
+
+
+### Features
+
+* add custom %mdcList logback converter ([842cd6e](https://github.com/gravitee-io/gravitee-node/commit/842cd6e989bf56dc51f6dc053a5fd1d4744b3c32))
+* add logback pattern override from gravitee.yml ([0b67d3d](https://github.com/gravitee-io/gravitee-node/commit/0b67d3d5c22c415c589c0ec18701e77e5a8b90b2))
+* add MDC filtering configuration in gravitee-node-logging ([e180034](https://github.com/gravitee-io/gravitee-node/commit/e180034faae8ca6f1f2640b0684de9f06824091d))
+* allow to exclude packages from scan ([6ea4e57](https://github.com/gravitee-io/gravitee-node/commit/6ea4e57fe478e40152f23844faf85b0028a4434a))
+* configure lombok to inject new NodeAwareLogger when using @CustomLog annotation ([3519be5](https://github.com/gravitee-io/gravitee-node/commit/3519be5ad5a694a62ad0dd6ef219cf2418bbb0f9))
+* do not clear MDC for node logging entries ([40d2029](https://github.com/gravitee-io/gravitee-node/commit/40d2029281b26389ee269055f90f107ea8e68690))
+* enrich the tracing api with the possibility to specify the SpanKind ([2000447](https://github.com/gravitee-io/gravitee-node/commit/2000447f3b7b55b666f784ccfd4859a324ba86f4))
+* initialize NodeLoggerFactory with current node instance ([eb07acc](https://github.com/gravitee-io/gravitee-node/commit/eb07acce0b79d4b453e4bdc90e00cf44753dc22e))
+* introduce node-logging capabilities ([10a098d](https://github.com/gravitee-io/gravitee-node/commit/10a098d7d76526aa119585b5ce1261b38e2635d1))
+* migrate log calls to use the new NodeAwareLogger ([c732676](https://github.com/gravitee-io/gravitee-node/commit/c732676ac78027c3d3cf1bb525b628b8356a88c5))
+
+
+### BREAKING CHANGES
+
+* bump gravitee parent
+* IllegalArgumentException will be thrown if a 'defaultPort'
+is assigned after the environment.
+
+https://gravitee.atlassian.net/browse/ARCHI-639
+
 ## [7.26.1](https://github.com/gravitee-io/gravitee-node/compare/7.26.0...7.26.1) (2026-03-05)
 
 
