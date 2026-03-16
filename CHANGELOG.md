@@ -1,3 +1,10 @@
+## [8.0.1](https://github.com/gravitee-io/gravitee-node/compare/8.0.0...8.0.1) (2026-03-16)
+
+
+### Bug Fixes
+
+* bump parent ([5ca1d31](https://github.com/gravitee-io/gravitee-node/commit/5ca1d31de60b9f8ad19847b7b3d8d1d386246ce0))
+
 # [8.0.0](https://github.com/gravitee-io/gravitee-node/compare/7.26.1...8.0.0) (2026-03-16)
 
 
