@@ -16,10 +16,13 @@
 package io.gravitee.node.opentelemetry;
 
 import io.gravitee.node.api.opentelemetry.InstrumenterTracerFactory;
+import io.gravitee.node.api.opentelemetry.Logger;
+import io.gravitee.node.api.opentelemetry.LoggerFactory;
 import io.gravitee.node.api.opentelemetry.Tracer;
 import io.gravitee.node.api.opentelemetry.TracerFactory;
 import io.gravitee.node.opentelemetry.configuration.OpenTelemetryConfiguration;
 import io.gravitee.node.opentelemetry.exporter.SpanExporterFactory;
+import io.gravitee.node.opentelemetry.logger.OpenTelemetryLogger;
 import io.gravitee.node.opentelemetry.tracer.OpenTelemetryTracer;
 import io.gravitee.node.opentelemetry.tracer.noop.NoOpTracer;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
@@ -27,8 +30,12 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -47,7 +54,7 @@ import lombok.RequiredArgsConstructor;
  */
 @CustomLog
 @RequiredArgsConstructor
-public class OpenTelemetryFactory implements TracerFactory {
+public class OpenTelemetryFactory implements TracerFactory, LoggerFactory {
 
     private static final String DEFAULT_HOST_NAME = "unknown";
     private static final String DEFAULT_IP = "0.0.0.0";
@@ -107,6 +114,43 @@ public class OpenTelemetryFactory implements TracerFactory {
         } else {
             return new NoOpTracer();
         }
+    }
+
+    @Override
+    public Logger createLogger(
+        final String serviceInstanceId,
+        final String serviceName,
+        final String serviceNamespace,
+        final String serviceVersion,
+        final Map<String, String> additionalResourceAttributes
+    ) {
+        final Resource resource = createResource(
+            serviceInstanceId,
+            serviceName,
+            serviceNamespace,
+            serviceVersion,
+            additionalResourceAttributes
+        );
+
+        final OpenTelemetrySdkBuilder builder = OpenTelemetrySdk
+            .builder()
+            .setPropagators(
+                ContextPropagators.create(
+                    TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())
+                )
+            );
+
+        LogRecordExporter logRecordExporter = OtlpGrpcLogRecordExporter.builder().setEndpoint(configuration.getEndpoint()).build();
+        SdkLoggerProvider loggerProvider = SdkLoggerProvider
+            .builder()
+            .addLogRecordProcessor(SimpleLogRecordProcessor.create(logRecordExporter))
+            .setResource(resource)
+            .build();
+
+        builder.setLoggerProvider(loggerProvider);
+        OpenTelemetrySdk openTelemetrySdk = builder.build();
+
+        return new OpenTelemetryLogger(openTelemetrySdk);
     }
 
     private Resource createResource(
