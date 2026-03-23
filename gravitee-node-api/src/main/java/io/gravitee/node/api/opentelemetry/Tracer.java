@@ -123,4 +123,8 @@ public interface Tracer extends Service<Tracer> {
      * @param textMapSetter a text map setter used to set fields into carrier
      */
     void injectSpanContext(final Context vertxContext, final Span span, final BiConsumer<String, String> textMapSetter);
+
+    String traceId(final Context vertxContext);
+
+    String spanId(final Context vertxContext);
 }

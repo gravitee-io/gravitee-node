@@ -183,4 +183,17 @@ public class OpenTelemetryTracer extends AbstractService<Tracer> implements Trac
                 .inject(openTelemetrySpan.otelContext(), null, (nullCarrier, key, value) -> textMapSetter.accept(key, value));
         }
     }
+
+    public String traceId(final Context vertxContext) {
+        io.opentelemetry.context.Context currentContext = VertxContextStorage.getContext(vertxContext);
+        io.opentelemetry.api.trace.Span span = io.opentelemetry.api.trace.Span.fromContext(currentContext);
+
+        return span.getSpanContext().getTraceId();
+    }
+
+    public String spanId(final Context vertxContext) {
+        io.opentelemetry.context.Context currentContext = VertxContextStorage.getContext(vertxContext);
+        io.opentelemetry.api.trace.Span span = io.opentelemetry.api.trace.Span.fromContext(currentContext);
+        return span.getSpanContext().getSpanId();
+    }
 }
