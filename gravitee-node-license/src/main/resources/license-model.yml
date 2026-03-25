@@ -56,6 +56,7 @@ packs:
     enterprise-authenticator:
         features:
             - am-authenticator-cba
+            - am-authenticator-magic-link
     enterprise-mfa-factor:
         features:
             - am-mfa-recovery-code
