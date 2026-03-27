@@ -1,3 +1,21 @@
+# [9.0.0-alpha.1](https://github.com/gravitee-io/gravitee-node/compare/8.0.1...9.0.0-alpha.1) (2026-03-27)
+
+
+### Bug Fixes
+
+* new specific factory for WebSocketClient ([ddd67f9](https://github.com/gravitee-io/gravitee-node/commit/ddd67f98bf5a59221ef8a0521ebfb47721f6c07a))
+* PrometheusEndpoint improvements and unit tests ([990f060](https://github.com/gravitee-io/gravitee-node/commit/990f06019468ff52dd2a1bea9e773158b754b344))
+
+
+### Features
+
+* upgrade to vert.x 5 ([69a6797](https://github.com/gravitee-io/gravitee-node/commit/69a67971660c210da44550e3666ee80d6166d55d))
+
+
+### BREAKING CHANGES
+
+* upgrade to vert.x 5.x
+
 ## [8.0.1](https://github.com/gravitee-io/gravitee-node/compare/8.0.0...8.0.1) (2026-03-16)
 
 
