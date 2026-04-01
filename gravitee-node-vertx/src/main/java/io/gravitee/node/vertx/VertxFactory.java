@@ -154,6 +154,7 @@ public class VertxFactory implements FactoryBean<Vertx> {
                 new HashSet<>(
                     Arrays.asList(
                         MetricsDomain.DATAGRAM_SOCKET.toCategory(),
+                        MetricsDomain.NAMED_POOLS.toCategory(),
                         MetricsDomain.VERTICLES.toCategory(),
                         MetricsDomain.EVENT_BUS.toCategory()
                     )
