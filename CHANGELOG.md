@@ -1,3 +1,10 @@
+## [7.26.2](https://github.com/gravitee-io/gravitee-node/compare/7.26.1...7.26.2) (2026-04-01)
+
+
+### Bug Fixes
+
+* **vertx:** disable named pools metrics domain by default ([8a660dc](https://github.com/gravitee-io/gravitee-node/commit/8a660dc532d5de2895f733d2020435f2eac29b2d))
+
 ## [7.26.1](https://github.com/gravitee-io/gravitee-node/compare/7.26.0...7.26.1) (2026-03-05)
 
 
