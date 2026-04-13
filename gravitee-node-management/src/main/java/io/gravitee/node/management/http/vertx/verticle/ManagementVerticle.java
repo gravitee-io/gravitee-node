@@ -25,7 +25,6 @@ import io.gravitee.node.management.http.node.heap.HeapDumpEndpoint;
 import io.gravitee.node.management.http.node.log.LoggingEndpoint;
 import io.gravitee.node.management.http.node.thread.ThreadDumpEndpoint;
 import io.gravitee.node.management.http.utils.ConcurrencyLimitHandler;
-import io.gravitee.node.management.http.utils.OffloadHandler;
 import io.gravitee.node.management.http.vertx.configuration.HttpServerConfiguration;
 import io.vertx.core.*;
 import io.vertx.core.http.HttpMethod;
@@ -246,7 +245,7 @@ public class ManagementVerticle extends AbstractVerticle {
                     nodeRouter
                         .route(convert(endpoint.method()), endpoint.path())
                         .handler(new ConcurrencyLimitHandler(configuredConcurrentLimit))
-                        .handler(OffloadHandler.ofCtx(endpoint::handle));
+                        .handler(endpoint::handle);
                 } else {
                     if (method.equals(io.gravitee.common.http.HttpMethod.POST)) {
                         nodeRouter.route(convert(method), endpoint.path()).handler(BodyHandler.create()).handler(endpoint::handle);
