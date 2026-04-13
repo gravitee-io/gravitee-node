@@ -1,3 +1,10 @@
+## [7.26.3](https://github.com/gravitee-io/gravitee-node/compare/7.26.2...7.26.3) (2026-04-13)
+
+
+### Bug Fixes
+
+* improve Prometheus endpoint stability and add test coverage ([#533](https://github.com/gravitee-io/gravitee-node/issues/533)) ([#545](https://github.com/gravitee-io/gravitee-node/issues/545)) ([07688d6](https://github.com/gravitee-io/gravitee-node/commit/07688d6e3affb5e280a73b572474968b1bdd2a4a))
+
 ## [7.26.2](https://github.com/gravitee-io/gravitee-node/compare/7.26.1...7.26.2) (2026-04-01)
 
 
