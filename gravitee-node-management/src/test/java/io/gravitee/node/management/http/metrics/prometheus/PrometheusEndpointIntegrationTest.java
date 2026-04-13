@@ -3,6 +3,7 @@ package io.gravitee.node.management.http.metrics.prometheus;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.gravitee.node.management.http.utils.ConcurrencyLimitHandler;
+import io.gravitee.node.management.http.utils.OffloadHandler;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.prometheus.PrometheusConfig;
@@ -148,11 +149,16 @@ class PrometheusEndpointIntegrationTest {
             endpoint = new PrometheusEndpoint();
         }
 
+        var route = router.route(HttpMethod.GET, endpoint.path());
         if (withConcurrencyLimit) {
-            router.route(HttpMethod.GET, endpoint.path()).handler(new ConcurrencyLimitHandler(3)).handler(ctx -> endpoint.handle(ctx));
-        } else {
-            router.route(HttpMethod.GET, endpoint.path()).handler(ctx -> endpoint.handle(ctx));
+            route.handler(new ConcurrencyLimitHandler(3));
         }
+        route.handler(
+            OffloadHandler.ofCtx((ctx, promise) -> {
+                endpoint.handle(ctx);
+                promise.complete();
+            })
+        );
 
         server = vertx.createHttpServer().requestHandler(router);
         server.exceptionHandler(Throwable::printStackTrace);
@@ -164,12 +170,10 @@ class PrometheusEndpointIntegrationTest {
         client
             .request(HttpMethod.GET, port, "localhost", "/metrics/prometheus")
             .compose(req -> req.send())
+            .compose(response -> response.body().map(buffer -> response.statusCode()))
             .onComplete(ar -> {
                 if (ar.succeeded()) {
-                    io.vertx.core.http.HttpClientResponse response = ar.result();
-                    response.handler(chunk -> {});
-                    response.endHandler(v -> statusFuture.complete(response.statusCode()));
-                    response.exceptionHandler(statusFuture::completeExceptionally);
+                    statusFuture.complete(ar.result());
                 } else {
                     statusFuture.completeExceptionally(ar.cause());
                 }
