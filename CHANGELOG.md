@@ -1,3 +1,10 @@
+## [7.9.11](https://github.com/gravitee-io/gravitee-node/compare/7.9.10...7.9.11) (2026-04-13)
+
+
+### Bug Fixes
+
+* enhance Prometheus endpoint with offload support and refactor test handling ([#544](https://github.com/gravitee-io/gravitee-node/issues/544)) ([6a4c1f1](https://github.com/gravitee-io/gravitee-node/commit/6a4c1f1dcb6d6253d786f0cb5587ca9d84357ea2))
+
 ## [7.9.10](https://github.com/gravitee-io/gravitee-node/compare/7.9.9...7.9.10) (2026-02-02)
 
 
