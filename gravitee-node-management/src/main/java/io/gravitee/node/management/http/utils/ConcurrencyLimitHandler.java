@@ -41,12 +41,8 @@ public class ConcurrencyLimitHandler implements Handler<RoutingContext> {
 
         HttpServerResponse response = context.response();
 
-        // In Vert.x, bodyEndHandler, exceptionHandler, and closeHandler can all fire for the
-        // same request (e.g. IOException in SafeBufferedWriter triggers exceptionHandler, then
-        // PrometheusEndpoint calls response.close() which triggers closeHandler). Without a
-        // guard, each fires semaphore.release() and permits accumulate beyond the configured
-        // limit — permanently breaking the concurrency gate. The AtomicBoolean ensures we
-        // release exactly once regardless of how many handlers fire.
+        // bodyEndHandler, exceptionHandler, and closeHandler can all fire for one request.
+        // Release the permit exactly once regardless of which lifecycle path finishes it.
         AtomicBoolean released = new AtomicBoolean(false);
         Runnable release = () -> {
             if (released.compareAndSet(false, true)) {
@@ -59,9 +55,6 @@ public class ConcurrencyLimitHandler implements Handler<RoutingContext> {
             log.error("Error on connection", e);
             release.run();
         });
-        // closeHandler is critical: when SafeBufferedWriter times out, PrometheusEndpoint
-        // calls response.close() which does NOT trigger bodyEndHandler or exceptionHandler.
-        // Without this handler the semaphore permit is never returned.
         response.closeHandler(v -> release.run());
 
         context.next();

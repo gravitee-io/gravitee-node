@@ -3,28 +3,19 @@ package io.gravitee.node.management.http.metrics.prometheus;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.gravitee.node.management.http.utils.ConcurrencyLimitHandler;
-import io.gravitee.node.management.http.utils.OffloadHandler;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
-import io.vertx.micrometer.backends.BackendRegistries;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 class PrometheusEndpointIntegrationTest {
 
@@ -37,18 +28,10 @@ class PrometheusEndpointIntegrationTest {
     @BeforeEach
     void setUp() {
         prometheusMeterRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
-        CompositeMeterRegistry compositeMeterRegistry = new CompositeMeterRegistry();
-        compositeMeterRegistry.add(prometheusMeterRegistry);
+        prometheusMeterRegistry.counter("test_counter", "env", "test").increment();
 
-        MicrometerMetricsOptions metricsOptions = new MicrometerMetricsOptions()
-            .setEnabled(true)
-            .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-            .setMicrometerRegistry(compositeMeterRegistry);
-
-        vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(metricsOptions));
+        vertx = Vertx.vertx();
         client = vertx.createHttpClient();
-
-        Counter.builder("test_counter").register(prometheusMeterRegistry).increment();
     }
 
     @AfterEach
@@ -71,28 +54,15 @@ class PrometheusEndpointIntegrationTest {
         String body = scrapeAndGetBody();
         assertNotNull(body, "Body is null");
         assertFalse(body.isEmpty(), "No data received from prometheus endpoint");
-        assertTrue(body.contains("test_counter_total"), body);
+        assertTrue(body.contains("test_counter"), body);
     }
 
     @Test
-    void should_not_expose_prometheus_metrics_when_disabled() throws Exception {
-        Router router = Router.router(vertx);
-        server = vertx.createHttpServer().requestHandler(router);
-        port = listen(server);
+    void should_return_501_when_registry_is_unavailable() throws Exception {
+        startServer(new PrometheusEndpoint((PrometheusMeterRegistry) null), false);
 
-        CompletableFuture<Integer> statusFuture = new CompletableFuture<>();
-        client
-            .request(HttpMethod.GET, port, "localhost", "/metrics/prometheus")
-            .compose(io.vertx.core.http.HttpClientRequest::send)
-            .onComplete(ar -> {
-                if (ar.succeeded()) {
-                    statusFuture.complete(ar.result().statusCode());
-                } else {
-                    statusFuture.completeExceptionally(ar.cause());
-                }
-            });
-
-        assertEquals(404, await(Future.fromCompletionStage(statusFuture)));
+        int status = scrapeAndGetStatus();
+        assertEquals(501, status);
     }
 
     @Test
@@ -111,7 +81,7 @@ class PrometheusEndpointIntegrationTest {
 
         for (int i = 0; i < 20; i++) {
             int status = scrapeAndGetStatus();
-            assertEquals(200, status, "Request " + i + " was rejected — concurrency slots may be leaking");
+            assertEquals(200, status, "Request " + i + " was rejected - concurrency slots may be leaking");
         }
     }
 
@@ -122,48 +92,30 @@ class PrometheusEndpointIntegrationTest {
         String body = scrapeAndGetBody();
         assertNotNull(body);
         assertFalse(body.isEmpty());
-        assertTrue(body.contains("test_counter_total"), body);
+        assertTrue(body.contains("test_counter"), body);
     }
 
-    // --- Helpers ---
-
     private void startServer(boolean withConcurrencyLimit) throws Exception {
+        startServer(new PrometheusEndpoint(prometheusMeterRegistry), withConcurrencyLimit);
+    }
+
+    private void startServer(PrometheusEndpoint endpoint, boolean withConcurrencyLimit) throws Exception {
         Router router = Router.router(vertx);
         router
             .route()
             .failureHandler(ctx -> {
-                Throwable t = ctx.failure();
-                if (t != null) {
-                    t.printStackTrace();
-                }
                 if (!ctx.response().ended()) {
                     ctx.response().setStatusCode(500).end();
                 }
             });
 
-        // The mock only needs to be active during construction since the
-        // constructor resolves the registry once and stores it in a field.
-        PrometheusEndpoint endpoint;
-        try (MockedStatic<BackendRegistries> mocked = Mockito.mockStatic(BackendRegistries.class)) {
-            CompositeMeterRegistry composite = new CompositeMeterRegistry();
-            composite.add(prometheusMeterRegistry);
-            mocked.when(BackendRegistries::getDefaultNow).thenReturn(composite);
-            endpoint = new PrometheusEndpoint();
-        }
-
         var route = router.route(HttpMethod.GET, endpoint.path());
         if (withConcurrencyLimit) {
             route.handler(new ConcurrencyLimitHandler(3));
         }
-        route.handler(
-            OffloadHandler.ofCtx((ctx, promise) -> {
-                endpoint.handle(ctx);
-                promise.complete();
-            })
-        );
+        route.handler(endpoint::handle);
 
         server = vertx.createHttpServer().requestHandler(router);
-        server.exceptionHandler(Throwable::printStackTrace);
         port = listen(server);
     }
 
@@ -187,12 +139,11 @@ class PrometheusEndpointIntegrationTest {
         CompletableFuture<String> bodyFuture = new CompletableFuture<>();
         StringBuilder bodyBuilder = new StringBuilder();
 
-        io.vertx.core.http.HttpClientRequest request = await(client.request(HttpMethod.GET, port, "localhost", "/metrics/prometheus"));
-        request
+        await(client.request(HttpMethod.GET, port, "localhost", "/metrics/prometheus"))
             .send()
             .onComplete(ar -> {
                 if (ar.succeeded()) {
-                    io.vertx.core.http.HttpClientResponse response = ar.result();
+                    var response = ar.result();
                     if (response.statusCode() != 200) {
                         bodyFuture.completeExceptionally(new RuntimeException("Status code " + response.statusCode()));
                         return;
