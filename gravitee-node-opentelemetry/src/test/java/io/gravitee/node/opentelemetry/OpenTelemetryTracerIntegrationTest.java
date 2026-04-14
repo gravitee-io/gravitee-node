@@ -21,6 +21,8 @@ import static org.awaitility.Awaitility.await;
 
 import io.gravitee.node.api.opentelemetry.Span;
 import io.gravitee.node.api.opentelemetry.internal.InternalRequest;
+import io.gravitee.node.api.opentelemetry.redaction.RedactionConfig;
+import io.gravitee.node.api.opentelemetry.redaction.RedactionRule;
 import io.gravitee.node.opentelemetry.configuration.OpenTelemetryConfiguration;
 import io.gravitee.node.opentelemetry.configuration.Protocol;
 import io.gravitee.node.opentelemetry.exporter.SpanExporterFactory;
@@ -234,6 +236,82 @@ public class OpenTelemetryTracerIntegrationTest {
 
                 assertThat(response.statusCode()).isEqualTo(200);
                 assertData(response.bodyAsJsonObject(), false, true, true);
+            });
+    }
+
+    @Test
+    void should_redact_configured_span_attributes_before_export(Vertx vertx) throws Exception {
+        var openTelemetryConfiguration = OpenTelemetryConfiguration
+            .builder()
+            .endpoint("http://localhost:" + container.getCollectorGrpcPort())
+            .tracesEnabled(true)
+            .protocol(Protocol.GRPC.value())
+            .environment(new MockEnvironment())
+            .build();
+
+        final var serviceName = "jaeger_grpc_redaction";
+        var redactionConfig = new RedactionConfig(List.of(new RedactionRule("custom")));
+
+        OpenTelemetryFactory openTelemetryFactory = openTelemetryFactory(vertx, openTelemetryConfiguration);
+        var tracer = openTelemetryFactory.createTracer(
+            "serviceInstanceId",
+            serviceName,
+            "serviceNamespace",
+            "serviceVersion",
+            List.of(new VertxHttpInstrumenterTracerFactory(), new InternalInstrumenterTracerFactory()),
+            redactionConfig
+        );
+        tracer.start();
+
+        Context vertxContext = vertx.getOrCreateContext();
+        Context duplicatedContext = VertxContext.createNewDuplicatedContext(vertxContext);
+        duplicatedContext.runOnContext(v -> {
+            var span = tracer.startSpanFrom(
+                duplicatedContext,
+                new InternalRequest("my-span", Map.of("custom", "secret-value", "http.method", "GET"))
+            );
+            tracer.end(duplicatedContext, span);
+        });
+
+        await()
+            .atMost(30, SECONDS)
+            .untilAsserted(() -> {
+                var client = container.client(vertx);
+                var response = client
+                    .get("/api/traces")
+                    .addQueryParam("service", serviceName)
+                    .send()
+                    .toCompletionStage()
+                    .toCompletableFuture()
+                    .get();
+
+                assertThat(response.statusCode()).isEqualTo(200);
+
+                var data = response.bodyAsJsonObject().getJsonArray("data");
+                assertThat(data).isNotEmpty();
+
+                JsonArray tags = data.getJsonObject(0).getJsonArray("spans").getJsonObject(0).getJsonArray("tags");
+                // Matching attribute must be redacted
+                assertThat(
+                    tags
+                        .stream()
+                        .anyMatch(t ->
+                            ((JsonObject) t).getString("key").equals("custom") &&
+                            ((JsonObject) t).getString("value").equals(RedactionRule.DEFAULT_REPLACEMENT)
+                        )
+                )
+                    .as("Attribute 'custom' should be redacted to '%s'", RedactionRule.DEFAULT_REPLACEMENT)
+                    .isTrue();
+                // Non-matching attribute must pass through unchanged
+                assertThat(
+                    tags
+                        .stream()
+                        .anyMatch(t ->
+                            ((JsonObject) t).getString("key").equals("http.method") && ((JsonObject) t).getString("value").equals("GET")
+                        )
+                )
+                    .as("Non-matching attribute 'http.method' should not be redacted")
+                    .isTrue();
             });
     }
 
