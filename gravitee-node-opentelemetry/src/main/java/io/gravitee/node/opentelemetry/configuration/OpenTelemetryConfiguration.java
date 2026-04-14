@@ -81,6 +81,14 @@ public class OpenTelemetryConfiguration {
     private String endpoint;
 
     /**
+     * Sets the OTLP HTTP endpoint for log records. If unset, defaults to <code>http://localhost:3100/otlp/v1/logs</code> (Loki).
+     * Log records are always exported over HTTP/protobuf (not gRPC) because Loki does not implement the gRPC LogsService.
+     * Must be the full URL including signal path (e.g. /v1/logs) — the SDK does not append it automatically.
+     */
+    @Value("${services.opentelemetry.exporter.logsEndpoint:http://localhost:3100/otlp/v1/logs}")
+    private String logsEndpoint;
+
+    /**
      * Key-value pairs to be used as headers associated with exporter requests.
      */
     @Getter(AccessLevel.NONE)
