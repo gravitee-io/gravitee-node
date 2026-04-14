@@ -61,6 +61,16 @@ public class NoOpTracer extends AbstractService<Tracer> implements Tracer {
     public <R> void endWithResponseAndError(final Context vertxContext, final Span span, final R response, final String message) {}
 
     @Override
+    public String traceId(final Context vertxContext) {
+        return "";
+    }
+
+    @Override
+    public String spanId(final Context vertxContext) {
+        return "";
+    }
+
+    @Override
     public void injectSpanContext(final Context vertxContext, final BiConsumer<String, String> textMapSetter) {}
 
     @Override
