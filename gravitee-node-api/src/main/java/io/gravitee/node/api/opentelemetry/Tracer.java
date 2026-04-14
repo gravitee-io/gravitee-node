@@ -108,6 +108,22 @@ public interface Tracer extends Service<Tracer> {
     <R> void endWithResponseAndError(final Context vertxContext, final Span span, final R response, final String message);
 
     /**
+     * Returns the trace ID of the currently active span, or an empty string if tracing is disabled or no span is active.
+     *
+     * @param vertxContext current vert context used to store tracing information
+     * @return W3C TraceContext trace ID (32 lowercase hex chars), or {@code ""} if none
+     */
+    String traceId(final Context vertxContext);
+
+    /**
+     * Returns the span ID of the currently active span, or an empty string if tracing is disabled or no span is active.
+     *
+     * @param vertxContext current vert context used to store tracing information
+     * @return W3C TraceContext span ID (16 lowercase hex chars), or {@code ""} if none
+     */
+    String spanId(final Context vertxContext);
+
+    /**
      * Inject into the given carrier the current span context
      *
      * @param vertxContext current vert context used to store tracing information

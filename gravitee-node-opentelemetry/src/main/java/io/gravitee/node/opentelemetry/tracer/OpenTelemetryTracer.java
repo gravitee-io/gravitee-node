@@ -172,6 +172,26 @@ public class OpenTelemetryTracer extends AbstractService<Tracer> implements Trac
     }
 
     @Override
+    public String traceId(final Context vertxContext) {
+        io.opentelemetry.context.Context currentContext = VertxContextStorage.getContext(vertxContext);
+        if (currentContext == null) {
+            return "";
+        }
+        var spanContext = io.opentelemetry.api.trace.Span.fromContext(currentContext).getSpanContext();
+        return spanContext.isValid() ? spanContext.getTraceId() : "";
+    }
+
+    @Override
+    public String spanId(final Context vertxContext) {
+        io.opentelemetry.context.Context currentContext = VertxContextStorage.getContext(vertxContext);
+        if (currentContext == null) {
+            return "";
+        }
+        var spanContext = io.opentelemetry.api.trace.Span.fromContext(currentContext).getSpanContext();
+        return spanContext.isValid() ? spanContext.getSpanId() : "";
+    }
+
+    @Override
     public void injectSpanContext(final Context vertxContext, final BiConsumer<String, String> textMapSetter) {
         io.opentelemetry.context.Context currentContext = VertxContextStorage.getContext(vertxContext);
         if (currentContext != null) {
