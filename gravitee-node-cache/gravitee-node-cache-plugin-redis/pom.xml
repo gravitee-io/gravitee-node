@@ -54,6 +54,11 @@
             <artifactId>gravitee-node-vertx</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>io.gravitee.plugin</groupId>
+            <artifactId>gravitee-plugin-common-configurations</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>io.vertx</groupId>
