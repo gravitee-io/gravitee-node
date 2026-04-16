@@ -1,11 +1,11 @@
-/**
- * Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+/*
+ * Copyright © 2015 The Gravitee team (http://gravitee.io)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,24 +16,30 @@
 
 package io.gravitee.node.plugin.cache.redis.configuration;
 
-import io.gravitee.node.vertx.client.ssl.KeyStore;
-import io.gravitee.node.vertx.client.ssl.KeyStoreType;
-import io.gravitee.node.vertx.client.ssl.SslOptions;
-import io.gravitee.node.vertx.client.ssl.TrustStore;
-import io.gravitee.node.vertx.client.ssl.jks.JKSKeyStore;
-import io.gravitee.node.vertx.client.ssl.jks.JKSTrustStore;
-import io.gravitee.node.vertx.client.ssl.none.NoneKeyStore;
-import io.gravitee.node.vertx.client.ssl.none.NoneTrustStore;
-import io.gravitee.node.vertx.client.ssl.pem.PEMKeyStore;
-import io.gravitee.node.vertx.client.ssl.pem.PEMTrustStore;
-import io.gravitee.node.vertx.client.ssl.pkcs12.PKCS12KeyStore;
-import io.gravitee.node.vertx.client.ssl.pkcs12.PKCS12TrustStore;
+import io.gravitee.plugin.configurations.redis.HostAndPort;
+import io.gravitee.plugin.configurations.redis.RedisClientOptions;
+import io.gravitee.plugin.configurations.redis.RedisSentinelOptions;
+import io.gravitee.plugin.configurations.ssl.KeyStore;
+import io.gravitee.plugin.configurations.ssl.KeyStoreType;
+import io.gravitee.plugin.configurations.ssl.SslOptions;
+import io.gravitee.plugin.configurations.ssl.TrustStore;
+import io.gravitee.plugin.configurations.ssl.jks.JKSKeyStore;
+import io.gravitee.plugin.configurations.ssl.jks.JKSTrustStore;
+import io.gravitee.plugin.configurations.ssl.none.NoneKeyStore;
+import io.gravitee.plugin.configurations.ssl.none.NoneTrustStore;
+import io.gravitee.plugin.configurations.ssl.pem.PEMKeyStore;
+import io.gravitee.plugin.configurations.ssl.pem.PEMTrustStore;
+import io.gravitee.plugin.configurations.ssl.pkcs12.PKCS12KeyStore;
+import io.gravitee.plugin.configurations.ssl.pkcs12.PKCS12TrustStore;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
 /**
+ * Reads {@code cache.redis.*} properties and produces a {@link RedisClientOptions}
+ * consumable by {@link io.gravitee.node.vertx.client.redis.VertxRedisClientFactory}.
+ *
  * @author Eric LELEU (eric.leleu at graviteesource.com)
  * @author GraviteeSource Team
  */
@@ -53,56 +59,51 @@ public class RedisConfigurationProvider {
         // no op
     }
 
-    public static RedisConfiguration from(Environment environment, String propertiesPrefix) {
-        RedisConfiguration config = new RedisConfiguration();
+    public static RedisClientOptions from(Environment environment, String propertiesPrefix) {
+        final RedisClientOptions.RedisClientOptionsBuilder builder = RedisClientOptions.builder();
 
-        final String host = environment.getProperty(propertiesPrefix + "." + HOST_KEY, String.class, "localhost");
-        final Integer port = environment.getProperty(propertiesPrefix + "." + PORT_KEY, Integer.class, 6379);
-        final String password = environment.getProperty(propertiesPrefix + "." + PASSWORD_KEY, String.class);
+        builder.host(environment.getProperty(propertiesPrefix + "." + HOST_KEY, String.class, RedisClientOptions.DEFAULT_HOST));
+        builder.port(environment.getProperty(propertiesPrefix + "." + PORT_KEY, Integer.class, RedisClientOptions.DEFAULT_PORT));
+        builder.password(environment.getProperty(propertiesPrefix + "." + PASSWORD_KEY, String.class));
+
         final boolean useSsl = environment.getProperty(propertiesPrefix + ".ssl", boolean.class, false);
+        builder.useSsl(useSsl);
 
-        final var hostAndPort = HostAndPort.of(host, port).withPassword(password).withSsl(useSsl);
-        config.setHostAndPort(hostAndPort);
-
-        SentinelConfiguration sentinelConfiguration = new SentinelConfiguration();
-        sentinelConfiguration.setEnabled(isSentinelEnabled(environment, propertiesPrefix));
-        if (sentinelConfiguration.isEnabled()) {
-            sentinelConfiguration.setMaster(
-                environment.getProperty(propertiesPrefix + SENTINEL_PREFIX + ".master", String.class, "mymaster")
-            );
-            sentinelConfiguration.setMaster(environment.getProperty(propertiesPrefix + SENTINEL_PREFIX + "." + PASSWORD_KEY, String.class));
-
-            List<HostAndPort> sentinelNodes = getSentinelNodes(environment, propertiesPrefix);
-            sentinelNodes.forEach(node -> node.withPassword(hostAndPort.password()).withSsl(hostAndPort.useSsl()));
-            sentinelConfiguration.setNodes(sentinelNodes);
+        if (isSentinelEnabled(environment, propertiesPrefix)) {
+            final RedisSentinelOptions.RedisSentinelOptionsBuilder sentinelBuilder = RedisSentinelOptions.builder();
+            sentinelBuilder.masterId(environment.getProperty(propertiesPrefix + SENTINEL_PREFIX + ".master", String.class, "mymaster"));
+            sentinelBuilder.password(environment.getProperty(propertiesPrefix + SENTINEL_PREFIX + "." + PASSWORD_KEY, String.class));
+            sentinelBuilder.nodes(getSentinelNodes(environment, propertiesPrefix));
+            builder.sentinel(sentinelBuilder.build());
         }
-        config.setSentinelConfiguration(sentinelConfiguration);
 
         if (useSsl) {
-            final var useOpenSSL = environment.getProperty(propertiesPrefix + ".openssl", Boolean.class, false);
-            final var trustAll = environment.getProperty(propertiesPrefix + ".trustAll", Boolean.class, false);
-            final var hostnameVerificationAlgorithm = environment.getProperty(
-                propertiesPrefix + ".hostnameVerificationAlgorithm",
-                String.class,
-                "NONE"
-            );
-
-            final var sslConfig = new SslOptions();
-            sslConfig.setTrustAll(trustAll);
-            sslConfig.setOpenSsl(useOpenSSL);
-            sslConfig.setHostnameVerificationAlgorithm(hostnameVerificationAlgorithm);
-            sslConfig.setKeyStore(loadKeyStore(environment, propertiesPrefix + ".keystore"));
-            sslConfig.setTrustStore(loadTrustStore(environment, propertiesPrefix + ".truststore"));
-            config.setSslConfiguration(sslConfig);
+            builder.ssl(loadSslOptions(environment, propertiesPrefix));
         }
 
-        config.setMaxPoolSize(environment.getProperty(propertiesPrefix + "." + MAX_POOL_SIZE_KEY, Integer.class));
-        config.setMaxPoolWaiting(environment.getProperty(propertiesPrefix + "." + MAX_POOL_WAITING_KEY, Integer.class));
-        config.setPoolCleanerInterval(environment.getProperty(propertiesPrefix + "." + POOL_CLEANER_INTERVAL_KEY, Integer.class));
-        config.setPoolRecycleTimeout(environment.getProperty(propertiesPrefix + "." + POOL_RECYCLE_TIMEOUT_KEY, Integer.class));
-        config.setMaxWaitingHandlers(environment.getProperty(propertiesPrefix + "." + MAX_WAITING_HANDLERS_KEY, Integer.class));
+        ofIntProperty(environment, propertiesPrefix + "." + MAX_POOL_SIZE_KEY).ifPresent(builder::maxPoolSize);
+        ofIntProperty(environment, propertiesPrefix + "." + MAX_POOL_WAITING_KEY).ifPresent(builder::maxPoolWaiting);
+        ofIntProperty(environment, propertiesPrefix + "." + POOL_CLEANER_INTERVAL_KEY).ifPresent(builder::poolCleanerInterval);
+        ofIntProperty(environment, propertiesPrefix + "." + POOL_RECYCLE_TIMEOUT_KEY).ifPresent(builder::poolRecycleTimeout);
+        ofIntProperty(environment, propertiesPrefix + "." + MAX_WAITING_HANDLERS_KEY).ifPresent(builder::maxWaitingHandlers);
 
-        return config;
+        return builder.build();
+    }
+
+    private static java.util.Optional<Integer> ofIntProperty(Environment environment, String key) {
+        return java.util.Optional.ofNullable(environment.getProperty(key, Integer.class));
+    }
+
+    private static SslOptions loadSslOptions(Environment environment, String propertiesPrefix) {
+        final SslOptions sslConfig = new SslOptions();
+        sslConfig.setTrustAll(environment.getProperty(propertiesPrefix + ".trustAll", Boolean.class, false));
+        // hostnameVerifier: plugin-common-configurations stores a boolean; legacy YAML uses an
+        // algorithm name. Map "NONE" (or absent) to false, any other value to true.
+        final String hostnameAlgo = environment.getProperty(propertiesPrefix + ".hostnameVerificationAlgorithm", String.class, "NONE");
+        sslConfig.setHostnameVerifier(!"NONE".equalsIgnoreCase(hostnameAlgo));
+        sslConfig.setKeyStore(loadKeyStore(environment, propertiesPrefix + ".keystore"));
+        sslConfig.setTrustStore(loadTrustStore(environment, propertiesPrefix + ".truststore"));
+        return sslConfig;
     }
 
     private static KeyStore loadKeyStore(Environment environment, String propertiesPrefix) {
@@ -197,7 +198,7 @@ public class RedisConfigurationProvider {
         ) {
             String host = environment.getProperty(propertyPrefix + SENTINEL_PREFIX + nodeAtIndex(idx) + "." + HOST_KEY, String.class);
             Integer port = environment.getProperty(propertyPrefix + SENTINEL_PREFIX + nodeAtIndex(idx) + "." + PORT_KEY, Integer.class, 0);
-            nodes.add(HostAndPort.of(host, port));
+            nodes.add(HostAndPort.builder().host(host).port(port).build());
         }
         return nodes;
     }
