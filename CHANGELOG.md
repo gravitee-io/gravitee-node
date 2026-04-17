@@ -1,3 +1,10 @@
+# [9.0.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.2...9.0.0-alpha.3) (2026-04-17)
+
+
+### Bug Fixes
+
+* http2 keep alive timeout needs is in seconds ([b65df69](https://github.com/gravitee-io/gravitee-node/commit/b65df69ba19da517a6b29e168c9e82cb1cf7f501))
+
 # [9.0.0-alpha.2](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.1...9.0.0-alpha.2) (2026-04-02)
 
 
