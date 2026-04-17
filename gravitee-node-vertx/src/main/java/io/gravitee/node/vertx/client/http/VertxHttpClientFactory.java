@@ -124,7 +124,7 @@ public class VertxHttpClientFactory {
             options
                 .setProtocolVersion(HttpVersion.HTTP_2)
                 .setHttp2ClearTextUpgrade(httpOptions.isClearTextUpgrade())
-                .setHttp2KeepAliveTimeout((int) httpOptions.getKeepAliveTimeout());
+                .setHttp2KeepAliveTimeout((int) (httpOptions.getKeepAliveTimeout() / 1000));
 
             if (httpOptions.getHttp2MultiplexingLimit() != VertxHttpClientOptions.DEFAULT_HTTP2_MULTIPLEXING_LIMIT) {
                 options.setHttp2MultiplexingLimit(httpOptions.getHttp2MultiplexingLimit());
