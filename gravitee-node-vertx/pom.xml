@@ -50,6 +50,11 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>io.gravitee.plugin</groupId>
+            <artifactId>gravitee-plugin-common-configurations</artifactId>
+        </dependency>
+
         <!-- Vert.x -->
         <dependency>
             <groupId>io.vertx</groupId>
@@ -58,6 +63,10 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-rx-java3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-redis-client</artifactId>
         </dependency>
 
         <dependency>
