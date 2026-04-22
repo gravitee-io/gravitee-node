@@ -1,3 +1,10 @@
+# [9.0.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.3...9.0.0-alpha.4) (2026-04-22)
+
+
+### Features
+
+* **redis:** add VertxRedisClientFactory for shared Redis clients ([5887e7f](https://github.com/gravitee-io/gravitee-node/commit/5887e7ff4d71d8b62717b24850297f5d55cb4356))
+
 # [9.0.0-alpha.3](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.2...9.0.0-alpha.3) (2026-04-17)
 
 
