@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
@@ -67,6 +68,7 @@ public class HazelcastClusterConfiguration {
     }
 
     @Bean(destroyMethod = "shutdown")
+    @Lazy
     public HazelcastInstance clusterHazelcastInstance() throws FileNotFoundException {
         // Force Hazelcast to use SLF4J before loading any HZ classes
         System.setProperty(ClusterProperty.LOGGING_TYPE.getName(), "slf4j");

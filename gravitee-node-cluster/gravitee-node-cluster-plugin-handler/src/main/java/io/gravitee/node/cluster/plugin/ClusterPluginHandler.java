@@ -40,7 +40,6 @@ import org.springframework.context.annotation.Import;
 public class ClusterPluginHandler extends AbstractPluginHandler {
 
     private static final String PLUGIN_TYPE = "cluster";
-    private static final String HAZELCAST_PLUGIN_ID = "cluster-hazelcast";
 
     @Autowired
     private PluginContextFactory pluginContextFactory;
@@ -66,38 +65,26 @@ public class ClusterPluginHandler extends AbstractPluginHandler {
 
     @Override
     protected void handle(final Plugin plugin, final Class<?> pluginClass) {
-        final boolean asClusterManager = isConfiguredClusterPlugin(plugin.id());
-        final boolean asDistributedMapProvider = !asClusterManager && HAZELCAST_PLUGIN_ID.equals(plugin.id()) && isHazelcastEnabled();
-
-        if (!asClusterManager && !asDistributedMapProvider) {
-            log.debug("Cluster manager plugin '{}' is not the type configured and won't be installed.", plugin.id());
-            return;
-        }
-
         try {
             ApplicationContext context = pluginContextFactory.create(plugin);
             DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) (
                 (ConfigurableApplicationContext) applicationContext
             ).getBeanFactory();
 
-            if (asClusterManager) {
+            if (isConfiguredClusterPlugin(plugin.id())) {
                 ClusterManager clusterManager = (ClusterManager) context.getBean(pluginClass);
                 beanFactory.registerSingleton(ClusterManager.class.getName(), clusterManager);
                 log.info("Cluster manager plugin '{}' installed.", plugin.id());
-            } else {
-                log.info("Cluster plugin '{}' loaded as distributed-map provider (cluster.type={}).", plugin.id(), configuredClusterType());
             }
 
-            // Expose DistributedMapProvider from any cluster plugin that declares one (e.g. Hazelcast).
-            // This decouples distributed-map availability from cluster.type: operators can run
-            // cluster.type=standalone + hazelcast.enabled=true to get HZ-backed distributed maps
-            // without APIM cluster sync going through HZ.
-            try {
+            // Expose DistributedMapProvider from any cluster plugin that declares one.
+            // The underlying store (e.g. a Hazelcast instance) is lazy, so loading the plugin
+            // context without a consumer is cheap. ratelimit.type=hazelcast on the APIM side
+            // triggers lazy-init via the first provider.get(...) call.
+            if (context.getBeanNamesForType(DistributedMapProvider.class).length > 0) {
                 DistributedMapProvider provider = context.getBean(DistributedMapProvider.class);
                 beanFactory.registerSingleton(DistributedMapProvider.class.getName(), provider);
                 log.info("DistributedMapProvider registered from plugin '{}'.", plugin.id());
-            } catch (NoSuchBeanDefinitionException ignored) {
-                // Plugin doesn't offer a DistributedMapProvider (e.g. standalone). Normal.
             }
         } catch (NoSuchBeanDefinitionException nsbde) {
             logger.info("No ClusterManager instance has been detected. Skipping.");
@@ -109,17 +96,9 @@ public class ClusterPluginHandler extends AbstractPluginHandler {
     }
 
     private boolean isConfiguredClusterPlugin(final String clusterPluginId) {
-        final String configuredClusterType = configuredClusterType();
+        final String configuredClusterType = configuration.getProperty("cluster.type", "standalone");
         final String prefixedType = PLUGIN_TYPE + "-" + configuredClusterType;
         return configuredClusterType.equals(clusterPluginId) || prefixedType.equals(clusterPluginId);
-    }
-
-    private String configuredClusterType() {
-        return configuration.getProperty("cluster.type", "standalone");
-    }
-
-    private boolean isHazelcastEnabled() {
-        return Boolean.parseBoolean(configuration.getProperty("hazelcast.enabled", "false"));
     }
 
     @Override
