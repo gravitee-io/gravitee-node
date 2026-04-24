@@ -74,8 +74,11 @@ public interface ClusterManager extends Service<ClusterManager> {
 
     /**
      * Returns a cluster-wide key-value store with per-entry TTL and per-key locking.
-     * Implementations backed by an actual cluster manager (e.g. Hazelcast) share state
-     * across members; the standalone implementation keeps state local to the JVM.
+     * Supported only by implementations backed by a real cluster (e.g. Hazelcast);
+     * non-clustered {@link ClusterManager}s throw {@link UnsupportedOperationException}.
+     * Callers relying on this API should therefore fail fast at startup if the active
+     * {@link ClusterManager} does not support it — signalling a configuration mismatch
+     * (e.g. {@code ratelimit.type=hazelcast} paired with {@code cluster.type=standalone}).
      *
      * <p>Map names share a single backing namespace within the JVM: two callers asking
      * for the same {@code name} will read and write the same entries. Callers that need
@@ -83,6 +86,7 @@ public interface ClusterManager extends Service<ClusterManager> {
      *
      * @param name the name used to retrieve (or lazily create) the distributed map
      * @return a {@link DistributedMap}
+     * @throws UnsupportedOperationException if the active {@link ClusterManager} is not cluster-backed
      */
     default <K, V> DistributedMap<K, V> distributedMap(final String name) {
         throw new UnsupportedOperationException("distributedMap is not supported by this ClusterManager");
