@@ -30,6 +30,7 @@ import com.hazelcast.core.LifecycleEvent;
 import com.hazelcast.spi.properties.ClusterProperty;
 import io.gravitee.common.component.Lifecycle;
 import io.gravitee.node.api.cluster.ClusterManager;
+import io.gravitee.node.api.cluster.DistributedMap;
 import io.gravitee.node.api.cluster.Member;
 import io.gravitee.node.api.cluster.MemberListener;
 import io.gravitee.node.api.cluster.messaging.Queue;
@@ -107,5 +108,44 @@ class HazelcastClusterManagerTest {
             .untilAsserted(() -> {
                 assertThat(msg.get()).isEqualTo(new Message("hello!"));
             });
+    }
+
+    @Test
+    void distributed_map_shares_state_across_calls_with_same_name() {
+        cut.<String, String>distributedMap("shared").put("k", "v", 60_000);
+        assertThat(cut.<String, String>distributedMap("shared").get("k")).isEqualTo("v");
+    }
+
+    @Test
+    void distributed_map_isolates_state_between_names() {
+        DistributedMap<String, String> a = cut.distributedMap("a");
+        DistributedMap<String, String> b = cut.distributedMap("b");
+        a.put("k", "v", 60_000);
+        assertThat(b.get("k")).isNull();
+    }
+
+    @Test
+    void distributed_map_expires_entry_after_ttl() {
+        DistributedMap<String, String> map = cut.distributedMap("ttl");
+        map.put("k", "v", 100);
+        await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> assertThat(map.get("k")).isNull());
+    }
+
+    @Test
+    void distributed_map_lock_blocks_second_thread_until_unlock() throws InterruptedException {
+        DistributedMap<String, Object> map = cut.distributedMap("lock");
+        map.lock("k");
+        AtomicBoolean acquired = new AtomicBoolean(false);
+        Thread second = new Thread(() -> {
+            map.lock("k");
+            acquired.set(true);
+            map.unlock("k");
+        });
+        second.start();
+        Thread.sleep(100);
+        assertThat(acquired).isFalse();
+        map.unlock("k");
+        second.join(2_000);
+        assertThat(acquired).isTrue();
     }
 }
