@@ -32,7 +32,7 @@ public class HazelcastDistributedMap<K, V> implements DistributedMap<K, V> {
 
     @Override
     public void put(K key, V value, long ttlMillis) {
-        delegate.put(key, value, ttlMillis, TimeUnit.MILLISECONDS);
+        delegate.set(key, value, ttlMillis, TimeUnit.MILLISECONDS);
     }
 
     @Override
