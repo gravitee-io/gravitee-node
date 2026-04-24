@@ -13,22 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.node.plugin.cluster.hazelcast;
+package io.gravitee.node.plugin.cluster.hazelcast.provider;
 
-import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import io.gravitee.node.api.cluster.DistributedMap;
-import io.gravitee.node.api.cluster.DistributedMapProvider;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class HazelcastDistributedMapProvider implements DistributedMapProvider {
+public class HazelcastDistributedMap<K, V> implements DistributedMap<K, V> {
 
-    private final HazelcastInstance hazelcastInstance;
+    private final IMap<K, V> delegate;
 
     @Override
-    public <K, V> DistributedMap<K, V> get(final String name) {
-        IMap<K, V> iMap = hazelcastInstance.getMap(name);
-        return new HazelcastDistributedMap<>(iMap);
+    public V get(K key) {
+        return delegate.get(key);
+    }
+
+    @Override
+    public void put(K key, V value, long ttlMillis) {
+        delegate.set(key, value, ttlMillis, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void lock(K key) {
+        delegate.lock(key);
+    }
+
+    @Override
+    public void unlock(K key) {
+        delegate.unlock(key);
     }
 }

@@ -16,7 +16,7 @@
  *
  */
 
-package io.gravitee.node.plugin.cluster.hazelcast;
+package io.gravitee.node.plugin.cluster.hazelcast.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;

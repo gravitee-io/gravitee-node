@@ -16,7 +16,6 @@
 package io.gravitee.node.cluster.plugin;
 
 import io.gravitee.node.api.cluster.ClusterManager;
-import io.gravitee.node.api.cluster.DistributedMapProvider;
 import io.gravitee.node.api.configuration.Configuration;
 import io.gravitee.node.cluster.spring.NodeClusterPluginConfiguration;
 import io.gravitee.plugin.core.api.AbstractPluginHandler;
@@ -66,25 +65,20 @@ public class ClusterPluginHandler extends AbstractPluginHandler {
     @Override
     protected void handle(final Plugin plugin, final Class<?> pluginClass) {
         try {
-            ApplicationContext context = pluginContextFactory.create(plugin);
-            DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) (
-                (ConfigurableApplicationContext) applicationContext
-            ).getBeanFactory();
-
+            // Check if the current cluster plugin is the one configured
             if (isConfiguredClusterPlugin(plugin.id())) {
+                // Create spring application context
+                ApplicationContext context = pluginContextFactory.create(plugin);
+
+                // Retrieve actual ClusterManager bean and register it as Singleton
                 ClusterManager clusterManager = (ClusterManager) context.getBean(pluginClass);
+                DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) (
+                    (ConfigurableApplicationContext) applicationContext
+                ).getBeanFactory();
                 beanFactory.registerSingleton(ClusterManager.class.getName(), clusterManager);
                 log.info("Cluster manager plugin '{}' installed.", plugin.id());
-            }
-
-            // Expose DistributedMapProvider from any cluster plugin that declares one.
-            // The underlying store (e.g. a Hazelcast instance) is lazy, so loading the plugin
-            // context without a consumer is cheap. ratelimit.type=hazelcast on the APIM side
-            // triggers lazy-init via the first provider.get(...) call.
-            if (context.getBeanNamesForType(DistributedMapProvider.class).length > 0) {
-                DistributedMapProvider provider = context.getBean(DistributedMapProvider.class);
-                beanFactory.registerSingleton(DistributedMapProvider.class.getName(), provider);
-                log.info("DistributedMapProvider registered from plugin '{}'.", plugin.id());
+            } else {
+                log.warn("Cluster manager plugin '{}' is not the type configured and won't be installed.", plugin.id());
             }
         } catch (NoSuchBeanDefinitionException nsbde) {
             logger.info("No ClusterManager instance has been detected. Skipping.");

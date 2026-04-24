@@ -15,93 +15,26 @@
  */
 package io.gravitee.node.plugin.cluster.hazelcast.spring;
 
-import com.hazelcast.config.Config;
-import com.hazelcast.config.FileSystemXmlConfig;
-import com.hazelcast.config.FileSystemYamlConfig;
-import com.hazelcast.config.MemberAttributeConfig;
-import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.instance.BuildInfoProvider;
-import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.version.Version;
-import io.gravitee.node.api.Node;
-import io.gravitee.node.api.cluster.DistributedMapProvider;
-import io.gravitee.node.plugin.cluster.hazelcast.HazelcastDistributedMapProvider;
-import java.io.FileNotFoundException;
+import io.gravitee.node.plugin.cluster.hazelcast.HazelcastClusterManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 
 /**
- * @author David BRASSELY (david.brassely at graviteesource.com)
- * @author GraviteeSource Team
+ * The {@link HazelcastInstance} bean is owned by the {@code hazelcast-provider} plugin and
+ * registered in the main application context — we autowire it here rather than construct it,
+ * to guarantee a single instance shared with any {@link io.gravitee.node.api.cluster.DistributedMapProvider}
+ * consumer.
  */
 @Configuration
 public class HazelcastClusterConfiguration {
 
-    @Value("${cluster.hazelcast.config-path:${gravitee.home}/config/hazelcast-cluster.xml}")
-    private String hazelcastConfigFilePath;
-
-    @Value("${cluster.hazelcast.instance-name:gio-cluster-hz-instance}")
-    private String hazelcastInstanceName;
-
-    // WARNING: This option was introduced as a temporary fix for upgrading Hazelcast from v5.3 to v5.5.
-    // Reference: https://github.com/hazelcast/hazelcast/issues/26486
-    //
-    // When enabled ('true'), the Hazelcast cluster name is suffixed with '-hzm<major><minor>'
-    // (e.g., 'graviteeio-apim-cluster-hz55'). This ensures that clusters remain distinct,
-    // preventing an infinite loop where an application embedding Hazelcast v5.5 tries to join a v5.3 cluster.
-    //
-    // The option is enabled by default but can be disabled if running on node >= 6.4.1,
-    // which already includes Hazelcast >= 5.5.
-    @Value("${cluster.hazelcast.cluster-name-versioning:true}")
-    private boolean hazelcastClusterNameVersioning;
-
     @Autowired
-    private Node node;
+    private HazelcastInstance hazelcastInstance;
 
     @Bean
-    public DistributedMapProvider distributedMapProvider(final HazelcastInstance hazelcastInstance) {
-        return new HazelcastDistributedMapProvider(hazelcastInstance);
-    }
-
-    @Bean(destroyMethod = "shutdown")
-    @Lazy
-    public HazelcastInstance clusterHazelcastInstance() throws FileNotFoundException {
-        // Force Hazelcast to use SLF4J before loading any HZ classes
-        System.setProperty(ClusterProperty.LOGGING_TYPE.getName(), "slf4j");
-        System.setProperty(ClusterProperty.SHUTDOWNHOOK_ENABLED.getName(), "false");
-
-        Config config = fromFilePath(hazelcastConfigFilePath);
-        if (!config.getClusterName().contains("cluster")) {
-            config.setClusterName(config.getClusterName() + "-cluster-manager");
-        }
-
-        if (hazelcastClusterNameVersioning) {
-            Version hzVersion = Version.of(BuildInfoProvider.getBuildInfo().getVersion());
-            config.setClusterName(config.getClusterName() + "-hz" + hzVersion.getMajor() + hzVersion.getMinor());
-        }
-
-        config.setProperty(ClusterProperty.HEALTH_MONITORING_LEVEL.getName(), "OFF");
-        config.setInstanceName(hazelcastInstanceName);
-
-        MemberAttributeConfig memberAttributeConfig = new MemberAttributeConfig();
-        memberAttributeConfig.setAttribute("gio_node_id", node.id());
-        memberAttributeConfig.setAttribute("gio_node_hostname", node.hostname());
-        config.setMemberAttributeConfig(memberAttributeConfig);
-
-        return Hazelcast.newHazelcastInstance(config);
-    }
-
-    private Config fromFilePath(String filePath) throws FileNotFoundException {
-        if (filePath.endsWith("xml")) {
-            return new FileSystemXmlConfig(hazelcastConfigFilePath);
-        } else if (filePath.endsWith("yaml") || filePath.endsWith("yml")) {
-            return new FileSystemYamlConfig(hazelcastConfigFilePath);
-        }
-
-        throw new IllegalArgumentException("Only xml or yaml file supported for Hazelcast configuration");
+    public HazelcastClusterManager hazelcastClusterManager() {
+        return new HazelcastClusterManager(hazelcastInstance);
     }
 }
