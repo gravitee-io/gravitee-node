@@ -25,6 +25,8 @@ import com.hazelcast.instance.BuildInfoProvider;
 import com.hazelcast.spi.properties.ClusterProperty;
 import com.hazelcast.version.Version;
 import io.gravitee.node.api.Node;
+import io.gravitee.node.api.cluster.DistributedMapProvider;
+import io.gravitee.node.plugin.cluster.hazelcast.HazelcastDistributedMapProvider;
 import java.io.FileNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,6 +62,11 @@ public class HazelcastClusterConfiguration {
     private Node node;
 
     @Bean
+    public DistributedMapProvider distributedMapProvider(final HazelcastInstance hazelcastInstance) {
+        return new HazelcastDistributedMapProvider(hazelcastInstance);
+    }
+
+    @Bean(destroyMethod = "shutdown")
     public HazelcastInstance clusterHazelcastInstance() throws FileNotFoundException {
         // Force Hazelcast to use SLF4J before loading any HZ classes
         System.setProperty(ClusterProperty.LOGGING_TYPE.getName(), "slf4j");

@@ -16,7 +16,6 @@
 package io.gravitee.node.plugin.cluster.standalone;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.mock;
 
@@ -67,10 +66,5 @@ class StandaloneClusterManagerTest {
     @Test
     void should_ignore_removing_listener() {
         assertDoesNotThrow(() -> standaloneClusterManager.removeMemberListener(null));
-    }
-
-    @Test
-    void distributed_map_is_not_supported() {
-        assertThatThrownBy(() -> standaloneClusterManager.distributedMap("any")).isInstanceOf(UnsupportedOperationException.class);
     }
 }

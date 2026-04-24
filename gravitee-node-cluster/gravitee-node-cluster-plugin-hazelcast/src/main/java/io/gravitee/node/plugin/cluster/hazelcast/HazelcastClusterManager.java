@@ -20,11 +20,9 @@ import com.hazelcast.cluster.MembershipEvent;
 import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.map.IMap;
 import com.hazelcast.topic.ITopic;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.cluster.ClusterManager;
-import io.gravitee.node.api.cluster.DistributedMap;
 import io.gravitee.node.api.cluster.Member;
 import io.gravitee.node.api.cluster.MemberListener;
 import io.gravitee.node.api.cluster.messaging.Queue;
@@ -61,9 +59,9 @@ public class HazelcastClusterManager extends AbstractService<ClusterManager> imp
     @Override
     protected void doStop() throws Exception {
         super.doStop();
-        if (hazelcastInstance != null) {
-            hazelcastInstance.shutdown();
-        }
+        // The HazelcastInstance lifecycle is owned by its Spring @Bean (shutdown is the
+        // configured destroyMethod). Explicitly shutting it here would race with the
+        // DistributedMapProvider sharing the same instance.
     }
 
     @Override
@@ -117,12 +115,6 @@ public class HazelcastClusterManager extends AbstractService<ClusterManager> imp
                 return new HazelcastQueue<>(iQueue);
             }
         );
-    }
-
-    @Override
-    public <K, V> DistributedMap<K, V> distributedMap(final String name) {
-        IMap<K, V> iMap = hazelcastInstance.getMap(name);
-        return new HazelcastDistributedMap<>(iMap);
     }
 
     @Override
