@@ -17,6 +17,7 @@ package io.gravitee.node.plugin.cluster.standalone;
 
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.cluster.ClusterManager;
+import io.gravitee.node.api.cluster.DistributedMap;
 import io.gravitee.node.api.cluster.Member;
 import io.gravitee.node.api.cluster.MemberListener;
 import io.gravitee.node.api.cluster.messaging.Queue;
@@ -40,6 +41,7 @@ public class StandaloneClusterManager extends AbstractService<ClusterManager> im
     private static final Member LOCAL_MEMBER = new StandaloneMember();
     private final Map<String, Topic<?>> topicsByName = new ConcurrentHashMap<>();
     private final Map<String, Queue<?>> queuesByName = new ConcurrentHashMap<>();
+    private final Map<String, DistributedMap<?, ?>> distributedMapsByName = new ConcurrentHashMap<>();
     private final Vertx vertx;
 
     @Override
@@ -86,5 +88,11 @@ public class StandaloneClusterManager extends AbstractService<ClusterManager> im
     @Override
     public <T> Queue<T> queue(final String name) {
         return (Queue<T>) queuesByName.computeIfAbsent(name, key -> new StandaloneQueue<>(vertx, name));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <K, V> DistributedMap<K, V> distributedMap(final String name) {
+        return (DistributedMap<K, V>) distributedMapsByName.computeIfAbsent(name, key -> new StandaloneDistributedMap<>());
     }
 }
