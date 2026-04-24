@@ -1,3 +1,10 @@
+# [9.0.0-alpha.5](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.4...9.0.0-alpha.5) (2026-04-24)
+
+
+### Bug Fixes
+
+* **redis:** wire hostname algorithm + SSL tuning through factory ([59145bc](https://github.com/gravitee-io/gravitee-node/commit/59145bccea1457a6b3c51c50d9e3035a363e88dc))
+
 # [9.0.0-alpha.4](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.3...9.0.0-alpha.4) (2026-04-22)
 
 
