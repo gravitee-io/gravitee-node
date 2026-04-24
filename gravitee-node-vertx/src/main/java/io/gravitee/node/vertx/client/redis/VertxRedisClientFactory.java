@@ -188,9 +188,22 @@ public class VertxRedisClientFactory {
 
         var sslOptions = SslOptionsMapper.INSTANCE.map(sourceSslOptions);
         netClientOptions.setTrustAll(sslOptions.isTrustAll());
+        netClientOptions.setHostnameVerificationAlgorithm(sslOptions.isHostnameVerifier() ? "HTTPS" : "");
 
-        if (!sslOptions.isHostnameVerifier()) {
-            netClientOptions.setHostnameVerificationAlgorithm("");
+        if (sslOptions.getTlsProtocols() != null && !sslOptions.getTlsProtocols().isEmpty()) {
+            netClientOptions.setEnabledSecureTransportProtocols(sslOptions.getTlsProtocols());
+        }
+
+        if (sslOptions.getTlsCiphers() != null && !sslOptions.getTlsCiphers().isEmpty()) {
+            for (String cipher : sslOptions.getTlsCiphers()) {
+                netClientOptions.addEnabledCipherSuite(cipher.strip());
+            }
+        }
+
+        netClientOptions.setUseAlpn(sslOptions.isAlpn());
+
+        if (sslOptions.isOpenSsl()) {
+            netClientOptions.setSslEngineOptions(new io.vertx.core.net.OpenSSLEngineOptions());
         }
 
         if (!sslOptions.isTrustAll()) {
