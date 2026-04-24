@@ -2,7 +2,9 @@ package io.gravitee.node.vertx.client.ssl;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,7 +30,13 @@ public class SslOptions implements Serializable {
     private boolean openSsl = false;
 
     @Builder.Default
+    private boolean alpn = false;
+
+    @Builder.Default
     private String hostnameVerificationAlgorithm = "NONE";
+
+    private Set<String> tlsProtocols;
+    private List<String> tlsCiphers;
 
     private TrustStore trustStore;
     private KeyStore keyStore;
