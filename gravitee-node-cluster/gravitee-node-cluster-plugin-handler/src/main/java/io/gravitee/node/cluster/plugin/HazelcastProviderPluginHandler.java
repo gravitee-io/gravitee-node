@@ -15,7 +15,9 @@
  */
 package io.gravitee.node.cluster.plugin;
 
+import io.gravitee.node.api.cluster.ClusterManager;
 import io.gravitee.node.api.cluster.DistributedMapProvider;
+import io.gravitee.node.api.configuration.Configuration;
 import io.gravitee.plugin.core.api.AbstractPluginHandler;
 import io.gravitee.plugin.core.api.Plugin;
 import io.gravitee.plugin.core.api.PluginClassLoaderFactory;
@@ -25,23 +27,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 
 /**
- * Handles plugins of type {@code hazelcast-provider}. The plugin owns the embedded Hazelcast
- * instance and exposes it as a {@link DistributedMapProvider}. Both are registered as singletons
- * in the main application context so that siblings (e.g. the {@code cluster-hazelcast} plugin's
- * {@code HazelcastClusterManager}, or APIM's rate-limit repository) can autowire them.
+ * Handles plugins of type {@code hazelcast-provider}. This plugin owns the embedded
+ * {@link com.hazelcast.core.HazelcastInstance} and exposes three roles from a single classloader:
  *
- * <p>Runs at {@link Ordered#HIGHEST_PRECEDENCE} so that downstream cluster plugins finding
- * {@code HazelcastInstance} in the main context don't race the registration.</p>
+ * <ul>
+ *   <li>Always: {@link DistributedMapProvider} — registered in the main application context so any
+ *       consumer (e.g. APIM's rate-limit repository) can autowire it.</li>
+ *   <li>When {@code cluster.type=hazelcast}: the Hazelcast-backed {@link ClusterManager} — also
+ *       registered in the main application context, replacing the role previously filled by the
+ *       (now-retired) {@code cluster-hazelcast} plugin.</li>
+ * </ul>
+ *
+ * <p>Keeping ownership of the Hazelcast instance + cluster-manager in the same plugin is required
+ * because plugin classloaders are isolated: a {@link HazelcastInstance} created in one plugin's
+ * classloader is a different {@code Class} object from the one in another plugin's, so Spring
+ * autowiring across plugin boundaries fails on types drawn from bundled third-party libraries.</p>
  */
 @CustomLog
-@Order(Ordered.HIGHEST_PRECEDENCE)
 public class HazelcastProviderPluginHandler extends AbstractPluginHandler {
 
     private static final String PLUGIN_TYPE = "hazelcast-provider";
+    private static final String HAZELCAST_CLUSTER_MANAGER_BEAN = "hazelcastClusterManager";
 
     @Autowired
     private PluginContextFactory pluginContextFactory;
@@ -51,6 +59,9 @@ public class HazelcastProviderPluginHandler extends AbstractPluginHandler {
 
     @Autowired
     private ApplicationContext applicationContext;
+
+    @Autowired
+    private Configuration configuration;
 
     @Override
     public boolean canHandle(Plugin plugin) {
@@ -70,20 +81,32 @@ public class HazelcastProviderPluginHandler extends AbstractPluginHandler {
                 (ConfigurableApplicationContext) applicationContext
             ).getBeanFactory();
 
-            // Promote the provider to the main context so siblings can autowire it.
+            // Always expose DistributedMapProvider. The provider holds HazelcastInstance through a
+            // Spring @Lazy proxy, so fetching the bean here does NOT boot Hazelcast — HZ is deferred
+            // until the first get(...) call. That lets operators run cluster.type=standalone +
+            // ratelimit.type!=hazelcast with zero HZ overhead, even though the provider plugin is
+            // always bundled in the default distribution.
             DistributedMapProvider provider = context.getBean(DistributedMapProvider.class);
             beanFactory.registerSingleton(DistributedMapProvider.class.getName(), provider);
 
-            // Also promote the underlying HazelcastInstance so the cluster-hazelcast plugin can
-            // consume it without creating a second instance.
-            Object hazelcastInstance = context.getBean("clusterHazelcastInstance");
-            beanFactory.registerSingleton("clusterHazelcastInstance", hazelcastInstance);
+            // Register HazelcastClusterManager as the active ClusterManager only when cluster.type=hazelcast.
+            // Fetching this bean DOES boot Hazelcast (the cluster manager needs the live instance at startup
+            // for membership, topics, queues) — which is the correct behaviour under cluster.type=hazelcast.
+            if (isHazelcastClusterConfigured()) {
+                ClusterManager clusterManager = (ClusterManager) context.getBean(HAZELCAST_CLUSTER_MANAGER_BEAN);
+                beanFactory.registerSingleton(ClusterManager.class.getName(), clusterManager);
+                log.info("HazelcastClusterManager registered (cluster.type=hazelcast).");
+            }
 
             log.info("Hazelcast provider plugin '{}' installed.", plugin.id());
         } catch (Exception e) {
             log.error("Unexpected error while registering hazelcast provider {}", plugin.id(), e);
             pluginContextFactory.remove(plugin);
         }
+    }
+
+    private boolean isHazelcastClusterConfigured() {
+        return "hazelcast".equalsIgnoreCase(configuration.getProperty("cluster.type", "standalone"));
     }
 
     @Override
