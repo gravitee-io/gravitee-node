@@ -65,7 +65,6 @@
         <gravitee-kubernetes.version>3.5.2</gravitee-kubernetes.version>
         <gravitee-secret-api.version>1.0.0</gravitee-secret-api.version>
         <snakeyaml.version>2.0</snakeyaml.version>
-        <hazelcast.version>5.5.0</hazelcast.version>
         <gravitee-alert-api.version>1.9.1</gravitee-alert-api.version>
         <protobuf-java.version>3.25.5</protobuf-java.version>
         <opentelemetry.version>1.39.0</opentelemetry.version>
@@ -306,11 +305,14 @@
                 <version>${guava.version}</version>
             </dependency>
 
-            <!-- Hazelcast -->
+            <!-- Hazelcast: version inlined (not behind a property) so that consumers importing
+                 this pom as a BOM see a fully-resolved version. BOM imports propagate
+                 <dependencyManagement> but not <properties>, so a placeholder here would leak
+                 unresolved through to consumers like gravitee-apim. -->
             <dependency>
                 <groupId>com.hazelcast</groupId>
                 <artifactId>hazelcast</artifactId>
-                <version>${hazelcast.version}</version>
+                <version>5.5.0</version>
             </dependency>
 
             <dependency>
