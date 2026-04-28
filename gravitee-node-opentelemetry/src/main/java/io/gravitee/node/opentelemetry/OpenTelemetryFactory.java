@@ -18,8 +18,10 @@ package io.gravitee.node.opentelemetry;
 import io.gravitee.node.api.opentelemetry.InstrumenterTracerFactory;
 import io.gravitee.node.api.opentelemetry.Tracer;
 import io.gravitee.node.api.opentelemetry.TracerFactory;
+import io.gravitee.node.api.opentelemetry.redaction.RedactionConfig;
 import io.gravitee.node.opentelemetry.configuration.OpenTelemetryConfiguration;
 import io.gravitee.node.opentelemetry.exporter.SpanExporterFactory;
+import io.gravitee.node.opentelemetry.exporter.redact.RedactSpanExporter;
 import io.gravitee.node.opentelemetry.tracer.OpenTelemetryTracer;
 import io.gravitee.node.opentelemetry.tracer.noop.NoOpTracer;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
@@ -33,6 +35,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -66,7 +69,15 @@ public class OpenTelemetryFactory implements TracerFactory {
         final String serviceVersion,
         final List<InstrumenterTracerFactory> instrumenterTracerFactories
     ) {
-        return createTracer(serviceInstanceId, serviceName, serviceNamespace, serviceVersion, instrumenterTracerFactories, null);
+        return createTracer(
+            serviceInstanceId,
+            serviceName,
+            serviceNamespace,
+            serviceVersion,
+            instrumenterTracerFactories,
+            null,
+            RedactionConfig.EMPTY
+        );
     }
 
     @Override
@@ -78,14 +89,59 @@ public class OpenTelemetryFactory implements TracerFactory {
         final List<InstrumenterTracerFactory> instrumenterTracerFactories,
         final Map<String, String> additionalResourceAttributes
     ) {
+        return createTracer(
+            serviceInstanceId,
+            serviceName,
+            serviceNamespace,
+            serviceVersion,
+            instrumenterTracerFactories,
+            additionalResourceAttributes,
+            RedactionConfig.EMPTY
+        );
+    }
+
+    @Override
+    public Tracer createTracer(
+        final String serviceInstanceId,
+        final String serviceName,
+        final String serviceNamespace,
+        final String serviceVersion,
+        final List<InstrumenterTracerFactory> instrumenterTracerFactories,
+        final Map<String, String> additionalResourceAttributes,
+        final RedactionConfig redactionConfig
+    ) {
         if (configuration.isTracesEnabled()) {
-            final Resource resource = createResource(
+            Resource resource = createResource(
                 serviceInstanceId,
                 serviceName,
                 serviceNamespace,
                 serviceVersion,
                 additionalResourceAttributes
             );
+
+            // YAML rules are the base; any product-supplied rules are merged on top.
+            // Products that pass RedactionConfig.EMPTY (or nothing) automatically benefit
+            // from operator-configured YAML rules without any code change in APIM or AM.
+            RedactionConfig effectiveConfig = configuration.getRedactionConfig().mergeWith(redactionConfig);
+            SpanExporter exporter = spanExporterFactory.getSpanExporter();
+            if (effectiveConfig.hasRules()) {
+                // Create the exporter once and reuse its compiled rules to redact resource
+                // attributes (service.instance.id, hostname, ip, …) upfront so the already-clean
+                // values are baked into the SdkTracerProvider. Resource attrs live in
+                // SpanData.getResource(), not SpanData.getAttributes(), so they are invisible
+                // to per-span redaction inside the exporter.
+                // @SuppressWarnings: lifecycle is transferred to BatchSpanProcessor below.
+                @SuppressWarnings("resource")
+                RedactSpanExporter redactExporter = new RedactSpanExporter(exporter, effectiveConfig);
+                resource = redactExporter.redactResource(resource);
+                exporter = redactExporter;
+            }
+
+            SdkTracerProvider tracerProvider = SdkTracerProvider
+                .builder()
+                .addSpanProcessor(BatchSpanProcessor.builder(exporter).build())
+                .setResource(resource)
+                .build();
 
             final OpenTelemetrySdkBuilder builder = OpenTelemetrySdk
                 .builder()
@@ -94,12 +150,6 @@ public class OpenTelemetryFactory implements TracerFactory {
                         TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())
                     )
                 );
-
-            SdkTracerProvider tracerProvider = SdkTracerProvider
-                .builder()
-                .addSpanProcessor(BatchSpanProcessor.builder(spanExporterFactory.getSpanExporter()).build())
-                .setResource(resource)
-                .build();
 
             builder.setTracerProvider(tracerProvider);
             OpenTelemetrySdk openTelemetrySdk = builder.build();
@@ -120,8 +170,9 @@ public class OpenTelemetryFactory implements TracerFactory {
         String ipv4;
 
         try {
-            hostname = InetAddress.getLocalHost().getHostName();
-            ipv4 = InetAddress.getLocalHost().getHostAddress();
+            InetAddress localHost = InetAddress.getLocalHost();
+            hostname = localHost.getHostName();
+            ipv4 = localHost.getHostAddress();
         } catch (UnknownHostException e) {
             log.warn("Unable to retrieve current host and ip for OpenTelemetry Tracer, fallback to default value");
             hostname = DEFAULT_HOST_NAME;
