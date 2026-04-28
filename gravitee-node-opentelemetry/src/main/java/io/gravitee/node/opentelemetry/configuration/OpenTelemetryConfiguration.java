@@ -16,9 +16,13 @@
 package io.gravitee.node.opentelemetry.configuration;
 
 import io.gravitee.common.util.EnvironmentUtils;
+import io.gravitee.node.api.opentelemetry.redaction.MaskingStrategy;
+import io.gravitee.node.api.opentelemetry.redaction.RedactionConfig;
+import io.gravitee.node.api.opentelemetry.redaction.RedactionRule;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -198,6 +202,73 @@ public class OpenTelemetryConfiguration {
 
     @Value("${services.opentelemetry.exporter.proxy.password:#{null}}")
     String proxyPassword;
+
+    @Getter(AccessLevel.NONE)
+    private RedactionConfig redactionConfig;
+
+    public RedactionConfig getRedactionConfig() {
+        if (redactionConfig != null) {
+            return redactionConfig;
+        }
+        Map<String, Object> allRuleProperties = EnvironmentUtils.getPropertiesStartingWith(
+            environment,
+            "services.opentelemetry.redactionRules"
+        );
+        if (allRuleProperties.isEmpty()) {
+            return redactionConfig = RedactionConfig.EMPTY;
+        }
+        List<RedactionRule> rules = new ArrayList<>();
+        int ruleIndex = 0;
+        while (true) {
+            String rulePrefix = "services.opentelemetry.redactionRules[" + ruleIndex + "].";
+            String pattern = getString(allRuleProperties, rulePrefix + "attributeNamePattern");
+            if (pattern == null) break;
+            rules.add(buildRule(allRuleProperties, rulePrefix, pattern));
+            ruleIndex++;
+        }
+        String defaultReplacement = getString(
+            EnvironmentUtils.getPropertiesStartingWith(environment, "services.opentelemetry.redactionDefaultReplacement"),
+            "services.opentelemetry.redactionDefaultReplacement"
+        );
+        return redactionConfig = rules.isEmpty() ? RedactionConfig.EMPTY : new RedactionConfig(rules, defaultReplacement);
+    }
+
+    private RedactionRule buildRule(Map<String, Object> ruleProperties, String rulePrefix, String pattern) {
+        return new RedactionRule(
+            pattern,
+            buildMaskingStrategy(ruleProperties, rulePrefix),
+            getString(ruleProperties, rulePrefix + "valuePattern")
+        );
+    }
+
+    private MaskingStrategy buildMaskingStrategy(Map<String, Object> ruleProperties, String rulePrefix) {
+        String type = getString(ruleProperties, rulePrefix + "maskingStrategy.type");
+        if ("PARTIAL".equalsIgnoreCase(type)) {
+            int prefixLength = getInt(ruleProperties, rulePrefix + "maskingStrategy.prefixLength", 0);
+            int suffixLength = getInt(ruleProperties, rulePrefix + "maskingStrategy.suffixLength", 0);
+            String maskChar = Objects.requireNonNullElse(getString(ruleProperties, rulePrefix + "maskingStrategy.replacement"), "*");
+            return MaskingStrategy.partialMask(prefixLength, suffixLength, maskChar);
+        }
+        String replacement = getString(ruleProperties, rulePrefix + "maskingStrategy.replacement");
+        return replacement != null ? MaskingStrategy.fullMask(replacement) : MaskingStrategy.DEFAULT;
+    }
+
+    private static String getString(Map<String, Object> properties, String key) {
+        Object value = properties.get(key);
+        if (value == null) return null;
+        String str = value.toString().strip();
+        return str.isBlank() ? null : str;
+    }
+
+    private static int getInt(Map<String, Object> properties, String key, int defaultValue) {
+        String value = getString(properties, key);
+        if (value == null) return defaultValue;
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException ignored) {
+            return defaultValue;
+        }
+    }
 
     private List<String> getPropertyList(final String key, final String fallbackKey) {
         Map<String, Object> properties = EnvironmentUtils.getPropertiesStartingWith(environment, key);
