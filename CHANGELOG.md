@@ -1,3 +1,10 @@
+# [9.0.0-alpha.6](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.5...9.0.0-alpha.6) (2026-04-28)
+
+
+### Features
+
+* add span-attribute redaction support ([#548](https://github.com/gravitee-io/gravitee-node/issues/548)) ([eb3833e](https://github.com/gravitee-io/gravitee-node/commit/eb3833e281a3c4a247ae8a86af5ed25b56a27311))
+
 # [9.0.0-alpha.5](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.4...9.0.0-alpha.5) (2026-04-24)
 
 
