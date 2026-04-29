@@ -123,4 +123,13 @@ public interface Tracer extends Service<Tracer> {
      * @param textMapSetter a text map setter used to set fields into carrier
      */
     void injectSpanContext(final Context vertxContext, final Span span, final BiConsumer<String, String> textMapSetter);
+
+    /**
+     * Flush any pending spans to the configured exporter. Production callers should not need this — span batching is the
+     * intended export model. Test code uses it to drain the BatchSpanProcessor queue eagerly so the export latency does not
+     * dominate test runtime.
+     * <p>
+     * Default implementation is a no-op for tracers that are synchronous or do not buffer.
+     */
+    default void forceFlush() {}
 }
