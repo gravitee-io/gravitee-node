@@ -161,3 +161,210 @@ services:
           path: /path/to/truststore
           password: password
 ----
+
+== Tracing Query
+
+In addition to *exporting* spans (the OTLP exporter described above), the module also offers an
+opt-in *query* side: a `TracingQueryService` port that fetches stored traces back from a tracing
+backend. Today only a Grafana Tempo adapter is shipped; the port is generic enough for other
+backends (Jaeger, direct OTLP, …) to be added later.
+
+=== Port and model
+
+The contract lives in `gravitee-node-api` under
+`io.gravitee.node.api.opentelemetry.query`:
+
+[source,java]
+----
+public interface TracingQueryService {
+    Single<List<Trace>> searchTraces(TraceSearchCriteria criteria);
+    Maybe<Trace> getTrace(String traceId);
+}
+----
+
+`Trace`, `TraceSpan`, `TraceSpanEvent` and `TraceSearchCriteria` are records under
+`io.gravitee.node.api.opentelemetry.query.model`. The records themselves are immutable, but the
+collections they expose (`Trace.spans`, `TraceSpan.attributes`/`events`/`children`,
+`TraceSpanEvent.attributes`, `TraceSearchCriteria.tags`) are deliberately mutable: callers can rebuild
+or augment them — for example to apply product-specific overrides on top of what the Tempo adapter
+returns — without hitting `UnsupportedOperationException`. The API is reactive (RxJava 3) so it
+composes naturally with the Vert.x HTTP client used by the Tempo adapter.
+
+`TraceSearchCriteria` is structured (`Map<String,String> tags` + `Instant start`/`end` +
+`Integer limit`); the implementation decides how to translate keys into the backend query
+language. For Tempo, keys prefixed with `service.` or `telemetry.` go on the resource, everything
+else on the span.
+
+=== Backend behaviour
+
+The Tempo adapter returns Tempo's data as-is. In particular:
+
+* `searchTraces` returns one `Trace` per Tempo search hit with `rootService = rootServiceName`
+  and `rootOperation = rootTraceName` verbatim. `spans` is empty in list responses — call
+  `getTrace` to fetch a trace's spans.
+* `getTrace` returns the full span tree. `rootOperation` is taken from the parent-less span's
+  `name`. OTLP status codes are normalised so both numeric (`"0"`/`"1"`/`"2"`) and proto-enum
+  (`STATUS_CODE_UNSET/OK/ERROR`) Tempo serialisations surface as `"UNSET"`/`"OK"`/`"ERROR"` in
+  `TraceSpan.attributes["otel.status_code"]`.
+* `Trace.hasError` is set by a parallel second-pass TraceQL query (`status = error`) merged onto
+  the primary search response. Older Tempo builds that don't support the `status` intrinsic are
+  handled gracefully — the second pass is wrapped in `onErrorReturnItem(Set.of())` so the list
+  still loads with `hasError=false` instead of failing.
+
+Product-specific overrides (e.g. preferring an inbound HTTP server span's `http.target` +
+`http.method` over `rootTraceName` when an internal policy mutates `http.route`) are deliberately
+left to callers — they have access to the full span list returned by `getTrace` and can apply
+their own rule by rebuilding the `Trace` record before returning it from their use case.
+
+=== Configuration
+
+The module ships the building blocks; *consumers* (APIM, AM, …) register the bean in their own
+`@Configuration` and pick the property prefix that fits their namespace. The pattern mirrors the
+Redis cache plugin's `RedisConfigurationProvider` — the base library has no opinionated `@Bean`.
+
+Two entry points:
+
+* `TracingQueryConfigurationProvider.from(Environment, prefix)` — reads keys under `prefix` and
+  returns a populated `TracingQueryConfiguration` POJO.
+* `TempoTracingQueryServiceFactory.create(Vertx, Configuration, TracingQueryConfiguration)` —
+  builds a fully wired `TempoTracingQueryService` (Vert.x `HttpClient` via
+  `VertxHttpClientFactory`, headers, lifecycle).
+
+Typical wiring in a consumer module:
+
+[source,java]
+----
+@Bean(destroyMethod = "close")
+public TracingQueryService tempoTracingQueryService(
+    Environment environment,
+    Vertx vertx,
+    Configuration nodeConfiguration
+) {
+    var configuration = TracingQueryConfigurationProvider.from(environment, "apim.tracing.tempo");
+    return TempoTracingQueryServiceFactory.create(vertx, nodeConfiguration, configuration);
+}
+----
+
+==== General
+
+|===
+|Parameter |Default |Description
+
+|{prefix}.url
+|http://localhost:3200
+|Base URL of the Tempo HTTP API. The adapter calls `/api/traces/{id}` and `/api/search` against
+this host. `https://` triggers TLS using the SSL settings below.
+|===
+
+==== Headers
+
+Static headers added to every Tempo request. Useful for `X-Scope-OrgID` on multi-tenant Tempo
+deployments (Grafana Cloud) and for `Authorization` when Tempo is behind an auth-enforcing
+reverse proxy.
+
+|===
+|Parameter |Default |Description
+
+|{prefix}.headers[N].name
+|
+|Header name.
+
+|{prefix}.headers[N].value
+|
+|Header value.
+|===
+
+==== SSL settings
+
+|===
+|Parameter |Default |Description
+
+|{prefix}.ssl.trustAll
+|false
+|Disable certificate validation. Use with care.
+
+|{prefix}.ssl.verifyHost
+|true
+|Verify the certificate's subject / SANs against the target host.
+|===
+
+==== Proxy settings
+
+|===
+|Parameter |Default |Description
+
+|{prefix}.proxy.enabled
+|false
+|Enable proxy configuration.
+
+|{prefix}.proxy.useSystemProxy
+|false
+|Use the JVM's system proxy settings instead of an explicit host/port.
+
+|{prefix}.proxy.host
+|
+|Proxy host (when `useSystemProxy=false`).
+
+|{prefix}.proxy.port
+|0
+|Proxy port (when `useSystemProxy=false`).
+
+|{prefix}.proxy.username
+|
+|Optional proxy credentials.
+
+|{prefix}.proxy.password
+|
+|Optional proxy credentials.
+
+|{prefix}.proxy.type
+|HTTP
+|`HTTP`, `SOCKS4` or `SOCKS5`.
+|===
+
+==== HTTP timeouts
+
+|===
+|Parameter |Default |Description
+
+|{prefix}.http.connectTimeout
+|5000
+|(Milliseconds) TCP connect timeout for calls to Tempo.
+
+|{prefix}.http.idleTimeout
+|60000
+|(Milliseconds) Idle timeout on the connection. Closes the connection if no read/write activity
+is observed within the window.
+|===
+
+=== Example
+
+YAML for a consumer that picked the prefix `apim.tracing.tempo`:
+
+[source,yaml]
+----
+apim:
+  tracing:
+    tempo:
+      url: http://tempo.observability.svc:3200
+      headers:
+        - name: X-Scope-OrgID
+          value: tenant-prod
+        - name: Authorization
+          value: Bearer eyJhbGciOi...
+      ssl:
+        trustAll: false
+        verifyHost: true
+      http:
+        connectTimeout: 3000
+        idleTimeout: 30000
+----
+
+=== Lifecycle
+
+`TempoTracingQueryService` implements `AutoCloseable`. Its `close()` subscribes to the underlying
+Vert.x `HttpClient`'s close `Completable` so the connection pool is torn down cleanly on shutdown.
+
+The consumer owns the lifecycle. When registering the service as a Spring bean, use
+`@Bean(destroyMethod = "close")` (as in the wiring snippet above) so Spring closes it on context
+shutdown. Outside Spring the caller must invoke `close()` itself on shutdown.

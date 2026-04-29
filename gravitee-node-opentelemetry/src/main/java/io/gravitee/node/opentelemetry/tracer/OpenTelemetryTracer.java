@@ -30,6 +30,7 @@ import io.vertx.core.Context;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
@@ -74,6 +75,11 @@ public class OpenTelemetryTracer extends AbstractService<Tracer> implements Trac
     protected void doStop() throws Exception {
         super.doStop();
         openTelemetrySdk.close();
+    }
+
+    @Override
+    public void forceFlush() {
+        openTelemetrySdk.getSdkTracerProvider().forceFlush().join(2, TimeUnit.SECONDS);
     }
 
     @Override
