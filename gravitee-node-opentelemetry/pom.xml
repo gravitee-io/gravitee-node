@@ -41,6 +41,11 @@
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-logging</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-vertx</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- Vert.x -->
         <dependency>
             <groupId>io.vertx</groupId>
@@ -62,6 +67,12 @@
         <dependency>
             <groupId>io.smallrye.common</groupId>
             <artifactId>smallrye-common-vertx-context</artifactId>
+        </dependency>
+
+        <!-- Jackson -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
         <!-- Spring -->
