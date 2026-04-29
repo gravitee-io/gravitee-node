@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import io.gravitee.node.api.opentelemetry.Span;
+import io.gravitee.node.api.opentelemetry.Tracer;
 import io.gravitee.node.api.opentelemetry.internal.InternalRequest;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionConfig;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionRule;
@@ -38,6 +39,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.junit.jupiter.api.AfterAll;
@@ -120,15 +124,17 @@ public class OpenTelemetryTracerIntegrationTest {
         );
         tracer.start();
 
-        Context vertxContext = vertx.getOrCreateContext();
-        Context duplicatedContext = VertxContext.createNewDuplicatedContext(vertxContext);
-        duplicatedContext.runOnContext(v -> {
-            var span = tracer.startSpanFrom(duplicatedContext, new InternalRequest("my-span", Map.of("custom", "value")));
-            tracer.end(duplicatedContext, span);
-        });
+        emitSpan(
+            vertx,
+            tracer,
+            ctx -> {
+                var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
+                tracer.end(ctx, span);
+            }
+        );
 
         await()
-            .atMost(30, SECONDS)
+            .atMost(10, SECONDS)
             .untilAsserted(() -> {
                 var client = container.client(vertx);
                 var response = client
@@ -167,15 +173,17 @@ public class OpenTelemetryTracerIntegrationTest {
         );
         tracer.start();
 
-        Context vertxContext = vertx.getOrCreateContext();
-        Context duplicatedContext = VertxContext.createNewDuplicatedContext(vertxContext);
-        duplicatedContext.runOnContext(v -> {
-            var span = tracer.startSpanFrom(duplicatedContext, new InternalRequest("my-span", Map.of("custom", "value")));
-            tracer.end(duplicatedContext, span);
-        });
+        emitSpan(
+            vertx,
+            tracer,
+            ctx -> {
+                var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
+                tracer.end(ctx, span);
+            }
+        );
 
         await()
-            .atMost(30, SECONDS)
+            .atMost(10, SECONDS)
             .untilAsserted(() -> {
                 var client = container.client(vertx);
                 var response = client
@@ -213,17 +221,19 @@ public class OpenTelemetryTracerIntegrationTest {
         );
         tracer.start();
 
-        Context vertxContext = vertx.getOrCreateContext();
-        Context duplicatedContext = VertxContext.createNewDuplicatedContext(vertxContext);
-        duplicatedContext.runOnContext(v -> {
-            Span span = tracer.startSpanFrom(duplicatedContext, new InternalRequest("my-span", Map.of("custom", "value")));
-            span.addEvent("my-event", Map.of("event.attribute", "event.value"));
-            span.inError();
-            tracer.end(duplicatedContext, span);
-        });
+        emitSpan(
+            vertx,
+            tracer,
+            ctx -> {
+                Span span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
+                span.addEvent("my-event", Map.of("event.attribute", "event.value"));
+                span.inError();
+                tracer.end(ctx, span);
+            }
+        );
 
         await()
-            .atMost(30, SECONDS)
+            .atMost(10, SECONDS)
             .untilAsserted(() -> {
                 var client = container.client(vertx);
                 var response = client
@@ -263,18 +273,20 @@ public class OpenTelemetryTracerIntegrationTest {
         );
         tracer.start();
 
-        Context vertxContext = vertx.getOrCreateContext();
-        Context duplicatedContext = VertxContext.createNewDuplicatedContext(vertxContext);
-        duplicatedContext.runOnContext(v -> {
-            var span = tracer.startSpanFrom(
-                duplicatedContext,
-                new InternalRequest("my-span", Map.of("custom", "secret-value", "http.method", "GET"))
-            );
-            tracer.end(duplicatedContext, span);
-        });
+        emitSpan(
+            vertx,
+            tracer,
+            ctx -> {
+                var span = tracer.startSpanFrom(
+                    ctx,
+                    new InternalRequest("my-span", Map.of("custom", "secret-value", "http.method", "GET"))
+                );
+                tracer.end(ctx, span);
+            }
+        );
 
         await()
-            .atMost(30, SECONDS)
+            .atMost(10, SECONDS)
             .untilAsserted(() -> {
                 var client = container.client(vertx);
                 var response = client
@@ -323,6 +335,27 @@ public class OpenTelemetryTracerIntegrationTest {
         return new OpenTelemetryFactory(openTelemetryConfiguration, new SpanExporterFactory(openTelemetryConfiguration, vertx));
     }
 
+    /**
+     * Runs the span work on a fresh Vert.x duplicated context, waits for the callback to complete, then drains the
+     * BatchSpanProcessor queue via {@link Tracer#forceFlush()}. Without this the tests pay the SDK's default 5s schedule
+     * delay per assertion, which dominates the suite runtime.
+     */
+    private static void emitSpan(Vertx vertx, Tracer tracer, Consumer<Context> work) throws InterruptedException {
+        CountDownLatch done = new CountDownLatch(1);
+        Context duplicatedContext = VertxContext.createNewDuplicatedContext(vertx.getOrCreateContext());
+        duplicatedContext.runOnContext(v -> {
+            try {
+                work.accept(duplicatedContext);
+            } finally {
+                done.countDown();
+            }
+        });
+        if (!done.await(5, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("Span work did not complete within 5 seconds");
+        }
+        tracer.forceFlush();
+    }
+
     @ParameterizedTest(name = "{0}")
     @MethodSource("generator")
     void should_connect_to_a_secure_jaeger_over_grpc(String name, JsonObject sslConfig, Vertx vertx) throws Exception {
@@ -361,15 +394,17 @@ public class OpenTelemetryTracerIntegrationTest {
         );
         tracer.start();
 
-        Context vertxContext = vertx.getOrCreateContext();
-        Context duplicatedContext = VertxContext.createNewDuplicatedContext(vertxContext);
-        duplicatedContext.runOnContext(v -> {
-            var span = tracer.startSpanFrom(duplicatedContext, new InternalRequest("my-span", Map.of("custom", "value")));
-            tracer.end(duplicatedContext, span);
-        });
+        emitSpan(
+            vertx,
+            tracer,
+            ctx -> {
+                var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
+                tracer.end(ctx, span);
+            }
+        );
 
         await()
-            .atMost(30, SECONDS)
+            .atMost(10, SECONDS)
             .untilAsserted(() -> {
                 var client = containerTLS.client(vertx);
                 var response = client
@@ -406,15 +441,17 @@ public class OpenTelemetryTracerIntegrationTest {
         );
         tracer.start();
 
-        Context vertxContext = vertx.getOrCreateContext();
-        Context duplicatedContext = VertxContext.createNewDuplicatedContext(vertxContext);
-        duplicatedContext.runOnContext(v -> {
-            var span = tracer.startSpanFrom(duplicatedContext, new InternalRequest("my-span", Map.of("custom", "value")));
-            tracer.end(duplicatedContext, span);
-        });
+        emitSpan(
+            vertx,
+            tracer,
+            ctx -> {
+                var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
+                tracer.end(ctx, span);
+            }
+        );
 
         await()
-            .atMost(30, SECONDS)
+            .atMost(10, SECONDS)
             .untilAsserted(() -> {
                 var client = container.client(vertx);
                 var response = client
@@ -467,15 +504,17 @@ public class OpenTelemetryTracerIntegrationTest {
         );
         tracer.start();
 
-        Context vertxContext = vertx.getOrCreateContext();
-        Context duplicatedContext = VertxContext.createNewDuplicatedContext(vertxContext);
-        duplicatedContext.runOnContext(v -> {
-            var span = tracer.startSpanFrom(duplicatedContext, new InternalRequest("my-span", Map.of("custom", "value")));
-            tracer.end(duplicatedContext, span);
-        });
+        emitSpan(
+            vertx,
+            tracer,
+            ctx -> {
+                var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
+                tracer.end(ctx, span);
+            }
+        );
 
         await()
-            .atMost(30, SECONDS)
+            .atMost(10, SECONDS)
             .untilAsserted(() -> {
                 var client = containerTLS.client(vertx);
                 var response = client
