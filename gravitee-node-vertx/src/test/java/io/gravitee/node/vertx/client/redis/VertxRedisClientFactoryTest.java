@@ -394,4 +394,58 @@ class VertxRedisClientFactoryTest {
             assertThat(factory.sharedClientCount()).isZero();
         }
     }
+
+    @Nested
+    class HostnameAlgorithmResolution {
+
+        @Test
+        void shouldUseExplicitAlgorithmWhenProvided() {
+            var ssl = io.gravitee.node.vertx.client.ssl.SslOptions
+                .builder()
+                .hostnameVerifier(true)
+                .hostnameVerificationAlgorithm("LDAPS")
+                .build();
+            assertThat(VertxRedisClientFactory.resolveHostnameVerificationAlgorithm(ssl)).isEqualTo("LDAPS");
+        }
+
+        @Test
+        void shouldFallBackToHttpsWhenAlgorithmNoneAndVerifierTrue() {
+            var ssl = io.gravitee.node.vertx.client.ssl.SslOptions
+                .builder()
+                .hostnameVerifier(true)
+                .hostnameVerificationAlgorithm("NONE")
+                .build();
+            assertThat(VertxRedisClientFactory.resolveHostnameVerificationAlgorithm(ssl)).isEqualTo("HTTPS");
+        }
+
+        @Test
+        void shouldFallBackToEmptyWhenAlgorithmNoneAndVerifierFalse() {
+            var ssl = io.gravitee.node.vertx.client.ssl.SslOptions
+                .builder()
+                .hostnameVerifier(false)
+                .hostnameVerificationAlgorithm("NONE")
+                .build();
+            assertThat(VertxRedisClientFactory.resolveHostnameVerificationAlgorithm(ssl)).isEmpty();
+        }
+
+        @Test
+        void shouldFallBackToHttpsWhenAlgorithmNullAndVerifierTrue() {
+            var ssl = io.gravitee.node.vertx.client.ssl.SslOptions.builder().hostnameVerifier(true).build();
+            // hostnameVerificationAlgorithm builder-default is "NONE" — explicit-null only via setter.
+            ssl.setHostnameVerificationAlgorithm(null);
+            assertThat(VertxRedisClientFactory.resolveHostnameVerificationAlgorithm(ssl)).isEqualTo("HTTPS");
+        }
+
+        @Test
+        void explicitAlgorithmTakesPrecedenceOverVerifierFalse() {
+            // Verifier=false would normally disable verification, but an explicit
+            // algorithm string opts the operator into algorithm-driven verification.
+            var ssl = io.gravitee.node.vertx.client.ssl.SslOptions
+                .builder()
+                .hostnameVerifier(false)
+                .hostnameVerificationAlgorithm("HTTPS")
+                .build();
+            assertThat(VertxRedisClientFactory.resolveHostnameVerificationAlgorithm(ssl)).isEqualTo("HTTPS");
+        }
+    }
 }
