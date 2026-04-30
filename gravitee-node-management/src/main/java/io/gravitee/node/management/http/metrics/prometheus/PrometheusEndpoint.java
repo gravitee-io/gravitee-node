@@ -38,10 +38,12 @@ public class PrometheusEndpoint implements ManagementEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PrometheusEndpoint.class);
 
-    private final PrometheusMeterRegistry prometheusRegistry;
+    private PrometheusMeterRegistry prometheusRegistry = null;
 
-    public PrometheusEndpoint() {
-        this.prometheusRegistry = (PrometheusMeterRegistry) BackendRegistries.getDefaultNow();
+    public PrometheusEndpoint(boolean prometheusEnabled) {
+        if (prometheusEnabled) {
+            this.prometheusRegistry = (PrometheusMeterRegistry) BackendRegistries.getDefaultNow();
+        }
     }
 
     @Override

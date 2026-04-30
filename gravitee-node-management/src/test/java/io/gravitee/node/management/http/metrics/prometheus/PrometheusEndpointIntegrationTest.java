@@ -146,7 +146,7 @@ class PrometheusEndpointIntegrationTest {
         PrometheusEndpoint endpoint;
         try (MockedStatic<BackendRegistries> mocked = Mockito.mockStatic(BackendRegistries.class)) {
             mocked.when(BackendRegistries::getDefaultNow).thenReturn(prometheusMeterRegistry);
-            endpoint = new PrometheusEndpoint();
+            endpoint = new PrometheusEndpoint(true);
         }
 
         var route = router.route(HttpMethod.GET, endpoint.path());
