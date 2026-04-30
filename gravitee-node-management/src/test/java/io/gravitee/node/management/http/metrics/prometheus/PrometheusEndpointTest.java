@@ -107,7 +107,7 @@ class PrometheusEndpointTest {
     private PrometheusEndpoint createEndpointWith(PrometheusMeterRegistry registry) {
         try (MockedStatic<BackendRegistries> mocked = Mockito.mockStatic(BackendRegistries.class)) {
             mocked.when(BackendRegistries::getDefaultNow).thenReturn(registry);
-            return new PrometheusEndpoint();
+            return new PrometheusEndpoint(true);
         }
     }
 

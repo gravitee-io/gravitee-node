@@ -24,6 +24,7 @@ import io.gravitee.node.management.http.node.log.LoggingEndpoint;
 import io.gravitee.node.management.http.node.thread.ThreadDumpEndpoint;
 import io.gravitee.node.management.http.vertx.spring.HttpServerSpringConfiguration;
 import io.gravitee.node.management.http.vertx.verticle.ManagementVerticle;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -52,8 +53,8 @@ public class ManagementConfiguration {
     }
 
     @Bean
-    public PrometheusEndpoint prometheusEndpoint() {
-        return new PrometheusEndpoint();
+    public PrometheusEndpoint prometheusEndpoint(@Value("${services.metrics.prometheus.enabled:true}") boolean enabled) {
+        return new PrometheusEndpoint(enabled);
     }
 
     @Bean
