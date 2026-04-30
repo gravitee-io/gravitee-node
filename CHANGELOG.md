@@ -1,3 +1,10 @@
+## [7.9.12](https://github.com/gravitee-io/gravitee-node/compare/7.9.11...7.9.12) (2026-04-30)
+
+
+### Bug Fixes
+
+* **metrics:** initialize Prometheus registry only if prometheus is enabled ([9677eae](https://github.com/gravitee-io/gravitee-node/commit/9677eae5b893cd30d1a2e1350cd0eeda2eaf8c56))
+
 ## [7.9.11](https://github.com/gravitee-io/gravitee-node/compare/7.9.10...7.9.11) (2026-04-13)
 
 
