@@ -20,6 +20,7 @@ import io.gravitee.node.vertx.client.ssl.KeyStoreType;
 import io.vertx.core.net.KeyCertOptions;
 import io.vertx.core.net.PemKeyCertOptions;
 import java.io.Serial;
+import java.util.List;
 import java.util.Optional;
 import lombok.Builder;
 import lombok.Data;
@@ -39,22 +40,47 @@ public class PEMKeyStore extends KeyStore {
     private String keyContent;
     private String certPath;
     private String certContent;
+    private List<String> certPaths;
+    private List<String> keyPaths;
 
     public PEMKeyStore() {
         super(KeyStoreType.PEM);
     }
 
     public PEMKeyStore(String keyPath, String keyContent, String certPath, String certContent) {
+        this(keyPath, keyContent, certPath, certContent, null, null);
+    }
+
+    public PEMKeyStore(
+        String keyPath,
+        String keyContent,
+        String certPath,
+        String certContent,
+        List<String> certPaths,
+        List<String> keyPaths
+    ) {
         super(KeyStoreType.PEM);
         this.keyPath = keyPath;
         this.keyContent = keyContent;
         this.certPath = certPath;
         this.certContent = certContent;
+        this.certPaths = certPaths;
+        this.keyPaths = keyPaths;
     }
 
     @Override
     public Optional<KeyCertOptions> keyCertOptions() {
         final PemKeyCertOptions pemKeyCertOptions = new PemKeyCertOptions();
+
+        if (certPaths != null && !certPaths.isEmpty()) {
+            if (keyPaths == null || keyPaths.size() != certPaths.size()) {
+                throw new KeyStoreCertOptionsException("PEM certPaths and keyPaths must have the same size");
+            }
+            for (int i = 0; i < certPaths.size(); i++) {
+                pemKeyCertOptions.addCertPath(certPaths.get(i)).addKeyPath(keyPaths.get(i));
+            }
+            return Optional.of(pemKeyCertOptions);
+        }
 
         if (getCertPath() != null && !getCertPath().isEmpty()) {
             pemKeyCertOptions.setCertPath(getCertPath());
