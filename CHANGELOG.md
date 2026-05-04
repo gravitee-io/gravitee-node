@@ -1,3 +1,10 @@
+# [9.0.0-alpha.7](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.6...9.0.0-alpha.7) (2026-05-04)
+
+
+### Features
+
+* implement a tracing query service based on Tempo ([5187d04](https://github.com/gravitee-io/gravitee-node/commit/5187d04a6910c623e444866294b1590e73cde691))
+
 # [9.0.0-alpha.6](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.5...9.0.0-alpha.6) (2026-04-28)
 
 
