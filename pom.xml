@@ -56,14 +56,14 @@
     </modules>
 
     <properties>
-        <gravitee-bom.version>8.2.9</gravitee-bom.version>
+        <gravitee-bom.version>8.3.56</gravitee-bom.version>
         <gravitee-common.version>4.6.0</gravitee-common.version>
         <gravitee-plugin.version>4.2.1</gravitee-plugin.version>
         <gravitee-reporter-api.version>1.33.0</gravitee-reporter-api.version>
         <gravitee-kubernetes.version>3.5.2</gravitee-kubernetes.version>
         <gravitee-secret-api.version>1.0.0</gravitee-secret-api.version>
         <snakeyaml.version>2.0</snakeyaml.version>
-        <hazelcast.version>5.5.0</hazelcast.version>
+        <hazelcast.version>5.6.1</hazelcast.version>
         <gravitee-alert-api.version>1.9.1</gravitee-alert-api.version>
         <protobuf-java.version>3.25.5</protobuf-java.version>
         <opentelemetry.version>1.39.0</opentelemetry.version>
@@ -407,6 +407,20 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>hazelcast-releases</id>
+            <name>Hazelcast Releases</name>
+            <url>https://repository.hazelcast.com/release</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <build>
         <pluginManagement>
