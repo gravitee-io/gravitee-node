@@ -1,3 +1,10 @@
+## [7.9.13](https://github.com/gravitee-io/gravitee-node/compare/7.9.12...7.9.13) (2026-05-04)
+
+
+### Bug Fixes
+
+* **deps:** Bumping up hazlecast and gravitee-bom versions ([2a050bb](https://github.com/gravitee-io/gravitee-node/commit/2a050bb6373699a8a6a710b935fd05e3920ac7e4))
+
 ## [7.9.12](https://github.com/gravitee-io/gravitee-node/compare/7.9.11...7.9.12) (2026-04-30)
 
 
