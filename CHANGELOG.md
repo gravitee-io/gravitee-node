@@ -1,3 +1,10 @@
+# [9.0.0-alpha.8](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.7...9.0.0-alpha.8) (2026-05-05)
+
+
+### Bug Fixes
+
+* **deps:** bump gravitee-plugin-common-configurations to 1.2.3 ([87f3048](https://github.com/gravitee-io/gravitee-node/commit/87f3048ae11303f1881e1b5891a014d40bd06193))
+
 # [9.0.0-alpha.7](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.6...9.0.0-alpha.7) (2026-05-04)
 
 
