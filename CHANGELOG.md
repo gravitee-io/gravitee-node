@@ -1,3 +1,10 @@
+# [9.0.0-alpha.9](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.8...9.0.0-alpha.9) (2026-05-05)
+
+
+### Features
+
+* **redis,ssl:** honour hostname algorithm and multi-cert PEM via shared SSL types ([c46adb5](https://github.com/gravitee-io/gravitee-node/commit/c46adb51e52a7c107f9c4d1b4287493503a2ff30))
+
 # [9.0.0-alpha.8](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.7...9.0.0-alpha.8) (2026-05-05)
 
 
