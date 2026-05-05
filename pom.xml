@@ -60,7 +60,7 @@
         <gravitee-bom.version>9.0.0-alpha.2</gravitee-bom.version>
         <gravitee-common.version>4.6.0</gravitee-common.version>
         <gravitee-plugin.version>4.2.1</gravitee-plugin.version>
-        <gravitee-plugin-common-configurations.version>1.2.1</gravitee-plugin-common-configurations.version>
+        <gravitee-plugin-common-configurations.version>1.2.3</gravitee-plugin-common-configurations.version>
         <gravitee-reporter-api.version>1.33.0</gravitee-reporter-api.version>
         <gravitee-kubernetes.version>3.5.2</gravitee-kubernetes.version>
         <gravitee-secret-api.version>1.0.0</gravitee-secret-api.version>
