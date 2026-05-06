@@ -16,8 +16,10 @@
 
 package io.gravitee.node.plugin.cache.redis.spring;
 
-import io.gravitee.node.plugin.cache.redis.configuration.RedisConfiguration;
 import io.gravitee.node.plugin.cache.redis.configuration.RedisConfigurationProvider;
+import io.gravitee.node.vertx.client.redis.VertxRedisClientFactory;
+import io.gravitee.plugin.configurations.redis.RedisClientOptions;
+import io.vertx.core.Vertx;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -30,7 +32,12 @@ import org.springframework.core.env.Environment;
 public class RedisCacheConfiguration {
 
     @Bean
-    public RedisConfiguration getRedisAPI(Environment environment) {
+    public RedisClientOptions redisClientOptions(Environment environment) {
         return RedisConfigurationProvider.from(environment, "cache.redis");
+    }
+
+    @Bean
+    public VertxRedisClientFactory vertxRedisClientFactory(Vertx vertx) {
+        return new VertxRedisClientFactory(vertx);
     }
 }

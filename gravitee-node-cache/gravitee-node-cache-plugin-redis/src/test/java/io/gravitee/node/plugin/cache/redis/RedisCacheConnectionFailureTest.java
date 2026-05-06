@@ -20,8 +20,8 @@ import io.gravitee.node.api.cache.Cache;
 import io.gravitee.node.api.cache.CacheConfiguration;
 import io.gravitee.node.api.cache.CacheException;
 import io.gravitee.node.api.cache.ValueMapper;
-import io.gravitee.node.plugin.cache.redis.configuration.HostAndPort;
-import io.gravitee.node.plugin.cache.redis.configuration.RedisConfiguration;
+import io.gravitee.node.vertx.client.redis.VertxRedisClientFactory;
+import io.gravitee.plugin.configurations.redis.RedisClientOptions;
 import io.reactivex.rxjava3.observers.TestObserver;
 import io.vertx.core.Vertx;
 import java.io.IOException;
@@ -49,10 +49,9 @@ public class RedisCacheConnectionFailureTest {
 
     @BeforeAll
     public static void redisInitialization() throws IOException {
-        final var redisConfiguration = new RedisConfiguration();
-        redisConfiguration.setHostAndPort(HostAndPort.of("test", 6379));
-
-        final var cm = new RedisCacheManager(redisConfiguration, Vertx.vertx());
+        final var options = RedisClientOptions.builder().host("test").port(6379).build();
+        final var vertx = Vertx.vertx();
+        final var cm = new RedisCacheManager(options, new VertxRedisClientFactory(vertx));
         redisCache =
             cm.getOrCreateCache(
                 "test",
