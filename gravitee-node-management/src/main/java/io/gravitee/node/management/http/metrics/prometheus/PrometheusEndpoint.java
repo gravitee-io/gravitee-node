@@ -75,6 +75,10 @@ public class PrometheusEndpoint implements ManagementEndpoint {
     @Override
     public void handle(RoutingContext routingContext) {
         HttpServerResponse response = routingContext.response();
+        if (prometheusRegistry == null) {
+            response.setStatusCode(501).end("Prometheus metrics are not enabled");
+            return;
+        }
 
         response.putHeader(CONTENT_TYPE, CONTENT_TYPE_004);
         response.setChunked(true);
@@ -90,11 +94,11 @@ public class PrometheusEndpoint implements ManagementEndpoint {
             .onComplete(ar -> {
                 if (ar.failed()) {
                     log.error("Unexpected error while scraping the Prometheus endpoint", ar.cause());
-                    if (!response.ended()) {
+                    if (!response.ended() && !response.closed()) {
                         routingContext.request().connection().close();
                     }
                 } else {
-                    if (!response.ended()) {
+                    if (!response.ended() && !response.closed()) {
                         response.end();
                     }
                 }
