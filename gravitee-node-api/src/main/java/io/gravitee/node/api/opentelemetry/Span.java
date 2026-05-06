@@ -49,4 +49,18 @@ public interface Span {
      * @return current {@link Span}
      */
     Span addEvent(final String name, final Map<String, Object> attributes);
+
+    /**
+     * Get the span id from this span
+     *
+     * @return the span id of this span
+     */
+    String spanId();
+
+    /**
+     * Get the trace id from this span
+     *
+     * @return the trace id of this span
+     */
+    String traceId();
 }

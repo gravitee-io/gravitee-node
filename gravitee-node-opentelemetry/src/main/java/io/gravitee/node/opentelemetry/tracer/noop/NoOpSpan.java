@@ -56,4 +56,14 @@ public class NoOpSpan implements Span {
     public Span addEvent(final String name, final Map<String, Object> attributes) {
         return this;
     }
+
+    @Override
+    public String spanId() {
+        return "";
+    }
+
+    @Override
+    public String traceId() {
+        return "";
+    }
 }
