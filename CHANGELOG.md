@@ -1,3 +1,11 @@
+# [9.0.0-alpha.10](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.9...9.0.0-alpha.10) (2026-05-06)
+
+
+### Features
+
+* add traceId/spanId to span and a record method with specific span to logger ([cbb733b](https://github.com/gravitee-io/gravitee-node/commit/cbb733b1f166ee988f8001bb573f28857cdf9dc2))
+* **APIM-13618:** add OTel Logger API, logsEndpoint config and Loki HTTP log exporter ([6349560](https://github.com/gravitee-io/gravitee-node/commit/63495608a6780816cfaa307ff850155e4c9039e2))
+
 # [9.0.0-alpha.9](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.8...9.0.0-alpha.9) (2026-05-05)
 
 
