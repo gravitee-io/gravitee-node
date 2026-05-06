@@ -17,6 +17,8 @@ package io.gravitee.node.opentelemetry.logger;
 
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.opentelemetry.Logger;
+import io.gravitee.node.api.opentelemetry.Span;
+import io.gravitee.node.opentelemetry.tracer.span.OpenTelemetrySpan;
 import io.gravitee.node.opentelemetry.tracer.vertx.VertxContextStorage;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -54,7 +56,15 @@ public class OpenTelemetryLogger extends AbstractService<Logger> implements Logg
 
     @Override
     public void record(final Context vertxContext, final String body, final Map<String, Object> attributes) {
+        this.record(vertxContext, null, body, attributes);
+    }
+
+    @Override
+    public void record(Context vertxContext, Span span, String body, Map<String, Object> attributes) {
         io.opentelemetry.context.Context openTelemetryContext = VertxContextStorage.getContext(vertxContext);
+        if (span instanceof OpenTelemetrySpan<?> openTelemetrySpan) {
+            openTelemetryContext = openTelemetrySpan.otelContext();
+        }
 
         AttributesBuilder builder = Attributes.builder();
         if (attributes != null) {

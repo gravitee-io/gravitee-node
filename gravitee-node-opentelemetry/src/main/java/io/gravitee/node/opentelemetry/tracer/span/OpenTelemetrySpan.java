@@ -119,4 +119,14 @@ public class OpenTelemetrySpan<R> implements Span {
         }
         return this;
     }
+
+    @Override
+    public String spanId() {
+        return span().getSpanContext().getSpanId();
+    }
+
+    @Override
+    public String traceId() {
+        return span().getSpanContext().getTraceId();
+    }
 }

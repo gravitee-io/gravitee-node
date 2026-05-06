@@ -17,6 +17,7 @@ package io.gravitee.node.opentelemetry.logger.noop;
 
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.node.api.opentelemetry.Logger;
+import io.gravitee.node.api.opentelemetry.Span;
 import io.vertx.core.Context;
 import java.util.Map;
 
@@ -31,4 +32,7 @@ public class NoOpLogger extends AbstractService<Logger> implements Logger {
 
     @Override
     public void record(final Context vertxContext, final String body, final Map<String, Object> attributes) {}
+
+    @Override
+    public void record(Context vertxContext, Span span, String body, Map<String, Object> attributes) {}
 }

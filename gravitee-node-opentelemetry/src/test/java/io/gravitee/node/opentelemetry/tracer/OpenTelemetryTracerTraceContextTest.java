@@ -106,4 +106,36 @@ class OpenTelemetryTracerTraceContextTest {
         var vertxContext = VertxContext.createNewDuplicatedContext(vertx.getOrCreateContext());
         assertThat(noOp.spanId(vertxContext)).isEmpty();
     }
+
+    @Test
+    void spanId_is_unreliable_when_sibling_spans_close_out_of_order_on_same_context(Vertx vertx) {
+        // Documents the caveat called out in Tracer#spanId(Context) javadoc: the per-context slot
+        // behaves like a stack and does not survive non-LIFO close ordering. Asserts that the
+        // Span-level accessor remains correct in the same scenario.
+        var vertxContext = VertxContext.createNewDuplicatedContext(vertx.getOrCreateContext());
+        var otelTracer = openTelemetry.getTracer("test");
+
+        var spanA = otelTracer.spanBuilder("A").startSpan();
+        var spanB = otelTracer.spanBuilder("B").startSpan();
+        var scopeA = VertxContextStorage.INSTANCE.attach(vertxContext, Context.root().with(spanA));
+        var scopeB = VertxContextStorage.INSTANCE.attach(vertxContext, Context.root().with(spanB));
+
+        // Slot currently holds B (most recently attached) — Tracer#spanId reflects that.
+        assertThat(tracer.spanId(vertxContext)).isEqualTo(spanB.getSpanContext().getSpanId());
+
+        // Closing A's scope out of order restores the slot to A's pre-attach snapshot (null),
+        // even though B is logically still in flight. Tracer#spanId now returns "" — the bug.
+        scopeA.close();
+        assertThat(tracer.spanId(vertxContext)).isEmpty();
+
+        // The SDK span objects themselves still carry their IDs regardless of the slot state.
+        // This is what consumers should rely on when spans are not strictly LIFO-nested.
+        assertThat(spanA.getSpanContext().getSpanId()).hasSize(16);
+        assertThat(spanB.getSpanContext().getSpanId()).hasSize(16);
+        assertThat(spanA.getSpanContext().getSpanId()).isNotEqualTo(spanB.getSpanContext().getSpanId());
+
+        scopeB.close();
+        spanA.end();
+        spanB.end();
+    }
 }
