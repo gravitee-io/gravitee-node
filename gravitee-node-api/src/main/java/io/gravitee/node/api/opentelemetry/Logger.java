@@ -40,4 +40,14 @@ public interface Logger extends Service<Logger> {
      * @param attributes the attributes to attach to the Log
      */
     void record(final Context vertxContext, String body, Map<String, Object> attributes);
+
+    /**
+     * Log a body with attributes associated to this context
+     *
+     * @param vertxContext current vert context used to store tracing information
+     * @param span extract OpenTelemetry context from this span
+     * @param body the body to be logged
+     * @param attributes the attributes to attach to the Log
+     */
+    void record(final Context vertxContext, Span span, String body, Map<String, Object> attributes);
 }
