@@ -17,6 +17,7 @@ package io.gravitee.node.api.opentelemetry.query;
 
 import io.gravitee.node.api.opentelemetry.query.model.Trace;
 import io.gravitee.node.api.opentelemetry.query.model.TraceSearchCriteria;
+import io.gravitee.node.api.opentelemetry.query.model.TracingQueryContext;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
 import java.util.List;
@@ -24,24 +25,30 @@ import java.util.List;
 /**
  * Backend-agnostic port for querying stored traces. Implementations adapt this contract to a specific tracing backend
  * (Grafana Tempo today; Jaeger / direct OTLP could follow).
+ * <p>
+ * Both methods take a {@link TracingQueryContext} so implementations can scope a request — Tempo uses it to set the
+ * {@code X-Scope-OrgID} header for multi-tenant deployments, single-tenant backends just ignore it. Pass
+ * {@link TracingQueryContext#EMPTY} when no per-call context applies.
  *
  * @author GraviteeSource Team
  */
 public interface TracingQueryService {
     /**
-     * List traces matching the given filter. The returned {@link Trace} entries carry summary fields only; {@code spans} is
-     * always empty — call {@link #getTrace(String)} to fetch a trace's spans.
+     * List traces matching the given filter. The returned {@link Trace} entries carry summary fields only;
+     * {@code spans} is always empty — call {@link #getTrace(TracingQueryContext, String)} to fetch a trace's spans.
      *
+     * @param context per-call context (tenant for multi-tenant backends; pass {@link TracingQueryContext#EMPTY} otherwise)
      * @param criteria filter (tags, time window, limit)
      * @return list of matching traces; emits an empty list when no trace matches
      */
-    Single<List<Trace>> searchTraces(TraceSearchCriteria criteria);
+    Single<List<Trace>> searchTraces(TracingQueryContext context, TraceSearchCriteria criteria);
 
     /**
      * Fetch a single trace by id, including its full span tree.
      *
+     * @param context per-call context (tenant for multi-tenant backends; pass {@link TracingQueryContext#EMPTY} otherwise)
      * @param traceId the trace identifier
      * @return the trace; completes empty when the backend has no trace for that id
      */
-    Maybe<Trace> getTrace(String traceId);
+    Maybe<Trace> getTrace(TracingQueryContext context, String traceId);
 }
