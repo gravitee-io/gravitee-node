@@ -34,6 +34,9 @@ import lombok.CustomLog;
 @CustomLog
 public class TempoHttpClient implements AutoCloseable {
 
+    /** Tempo's multi-tenancy header — set per-call when a {@code TracingQueryContext.tenant()} is provided. */
+    static final String X_SCOPE_ORG_ID = "X-Scope-OrgID";
+
     private final HttpClient httpClient;
     private final Map<String, String> staticHeaders;
     private final ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -43,11 +46,17 @@ public class TempoHttpClient implements AutoCloseable {
         this.staticHeaders = staticHeaders == null ? Map.of() : Map.copyOf(staticHeaders);
     }
 
-    public Single<TempoTraceResponse> getTrace(final String traceId) {
-        return executeGet("/api/traces/" + URLEncoder.encode(traceId, StandardCharsets.UTF_8), TempoTraceResponse.class);
+    public Single<TempoTraceResponse> getTrace(final String traceId, final String tenant) {
+        return executeGet("/api/traces/" + URLEncoder.encode(traceId, StandardCharsets.UTF_8), tenant, TempoTraceResponse.class);
     }
 
-    public Single<TempoSearchResponse> searchTracesTraceQL(final String traceQL, final Integer limit, final Long start, final Long end) {
+    public Single<TempoSearchResponse> searchTracesTraceQL(
+        final String traceQL,
+        final Integer limit,
+        final Long start,
+        final Long end,
+        final String tenant
+    ) {
         StringBuilder uri = new StringBuilder("/api/search");
         String separator = "?";
 
@@ -67,7 +76,7 @@ public class TempoHttpClient implements AutoCloseable {
             uri.append(separator).append("end=").append(end);
         }
 
-        return executeGet(uri.toString(), TempoSearchResponse.class);
+        return executeGet(uri.toString(), tenant, TempoSearchResponse.class);
     }
 
     /**
@@ -79,12 +88,17 @@ public class TempoHttpClient implements AutoCloseable {
         httpClient.close().subscribe();
     }
 
-    private <T> Single<T> executeGet(final String requestUri, final Class<T> responseType) {
+    private <T> Single<T> executeGet(final String requestUri, final String tenant, final Class<T> responseType) {
         return httpClient
             .rxRequest(HttpMethod.GET, requestUri)
             .map(req -> {
                 req.putHeader("Accept", "application/json");
                 staticHeaders.forEach(req::putHeader);
+                // A per-call tenant overrides any X-Scope-OrgID baked into staticHeaders so callers running in a
+                // multi-tenant deployment can target individual tenants without rebuilding the client.
+                if (tenant != null && !tenant.isEmpty()) {
+                    req.putHeader(X_SCOPE_ORG_ID, tenant);
+                }
                 return req;
             })
             .flatMap(req -> req.rxSend())

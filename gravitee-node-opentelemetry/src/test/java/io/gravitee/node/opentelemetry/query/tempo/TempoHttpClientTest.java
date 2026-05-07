@@ -64,7 +64,6 @@ class TempoHttpClientTest {
         server.listen(0, "127.0.0.1").toCompletionStage().toCompletableFuture().join();
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("X-Scope-OrgID", "tenant-1");
         headers.put("Authorization", "Bearer secret");
         client = new TempoHttpClient(buildHttpClient(server.actualPort()), headers);
     }
@@ -94,7 +93,7 @@ class TempoHttpClientTest {
                         "\"scopeSpans\":[{\"scope\":{\"name\":\"scope\"},\"spans\":[]}]}]}"
                     );
 
-        TempoTraceResponse response = client.getTrace("abc-123").blockingGet();
+        TempoTraceResponse response = client.getTrace("abc-123", null).blockingGet();
 
         assertThat(response).isNotNull();
         assertThat(response.batches()).hasSize(1);
@@ -107,15 +106,26 @@ class TempoHttpClientTest {
     void should_send_static_headers_and_default_accept_on_each_request() {
         stubHandler = req -> req.response().end("{}");
 
-        client.getTrace("abc-123").blockingGet();
+        client.getTrace("abc-123", null).blockingGet();
 
         assertThat(recorded)
             .singleElement()
             .satisfies(r -> {
                 assertThat(r.headers().get("Accept")).isEqualTo("application/json");
-                assertThat(r.headers().get("X-Scope-OrgID")).isEqualTo("tenant-1");
                 assertThat(r.headers().get("Authorization")).isEqualTo("Bearer secret");
+                // No tenant supplied, no X-Scope-OrgID — single-tenant Tempo ignores the header anyway.
+                assertThat(r.headers().get("X-Scope-OrgID")).isNull();
             });
+    }
+
+    @Test
+    void should_set_x_scope_org_id_header_when_tenant_is_provided() {
+        stubHandler = req -> req.response().end("{}");
+
+        client.getTrace("abc-123", "acme").blockingGet();
+        client.searchTracesTraceQL("{}", 10, 1700000000L, 1700000060L, "acme").blockingGet();
+
+        assertThat(recorded).hasSize(2).allSatisfy(r -> assertThat(r.headers().get("X-Scope-OrgID")).isEqualTo("acme"));
     }
 
     @Test
@@ -123,7 +133,7 @@ class TempoHttpClientTest {
         stubHandler = req -> req.response().end("{\"traces\":[]}");
 
         String traceQL = "{ span.http.method = \"GET\" } | select(span.http.target)";
-        client.searchTracesTraceQL(traceQL, 10, 1700000000L, 1700000060L).blockingGet();
+        client.searchTracesTraceQL(traceQL, 10, 1700000000L, 1700000060L, null).blockingGet();
 
         assertThat(recorded)
             .singleElement()
@@ -147,7 +157,7 @@ class TempoHttpClientTest {
     void should_url_encode_the_trace_id() {
         stubHandler = req -> req.response().end("{\"batches\":[]}");
 
-        client.getTrace("abc/with weird?chars").blockingGet();
+        client.getTrace("abc/with weird?chars", null).blockingGet();
 
         assertThat(recorded).singleElement().satisfies(r -> assertThat(r.uri()).isEqualTo("/api/traces/abc%2Fwith+weird%3Fchars"));
     }
@@ -156,7 +166,7 @@ class TempoHttpClientTest {
     void should_raise_tempo_client_exception_on_4xx() {
         stubHandler = req -> req.response().setStatusCode(404).end("not found");
 
-        assertThatThrownBy(() -> client.getTrace("abc-123").blockingGet())
+        assertThatThrownBy(() -> client.getTrace("abc-123", null).blockingGet())
             .isInstanceOf(TempoClientException.class)
             .hasMessageContaining("404");
     }
@@ -165,7 +175,7 @@ class TempoHttpClientTest {
     void should_raise_tempo_client_exception_on_5xx() {
         stubHandler = req -> req.response().setStatusCode(500).end("internal error");
 
-        assertThatThrownBy(() -> client.getTrace("abc-123").blockingGet())
+        assertThatThrownBy(() -> client.getTrace("abc-123", null).blockingGet())
             .isInstanceOf(TempoClientException.class)
             .hasMessageContaining("500");
     }

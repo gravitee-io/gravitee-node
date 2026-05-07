@@ -20,20 +20,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Filter passed to {@link io.gravitee.node.api.opentelemetry.query.TracingQueryService#searchTraces(TraceSearchCriteria)}.
+ * Filter passed to {@link io.gravitee.node.api.opentelemetry.query.TracingQueryService#searchTraces(TracingQueryContext, TraceSearchCriteria)}.
  * <p>
- * {@code tags} is a structured key/value filter — the backend decides where each key lands (resource vs. span attribute) and
- * how it is encoded into the backend query language.
+ * {@code attributeFilters} is a structured key/value filter on span attributes — the backend decides where each
+ * key lands (resource vs. span attribute) and how it is encoded into the backend query language. Resource-side
+ * filters travel separately via {@link TracingQueryContext#resourceAttributeFilters()} so the caller can be
+ * explicit about which side of the OTel data model each filter applies to.
  *
  * @author GraviteeSource Team
  */
-public record TraceSearchCriteria(Map<String, String> tags, Integer limit, Instant start, Instant end) {
+public record TraceSearchCriteria(Map<String, String> attributeFilters, Integer limit, Instant start, Instant end) {
     public TraceSearchCriteria {
         if (limit == null || limit <= 0) {
             limit = 20;
         }
-        if (tags == null) {
-            tags = new HashMap<>();
+        if (attributeFilters == null) {
+            attributeFilters = new HashMap<>();
         }
     }
 }

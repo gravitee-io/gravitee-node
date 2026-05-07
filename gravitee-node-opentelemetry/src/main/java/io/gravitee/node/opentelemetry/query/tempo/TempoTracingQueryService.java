@@ -20,6 +20,7 @@ import io.gravitee.node.api.opentelemetry.query.model.Trace;
 import io.gravitee.node.api.opentelemetry.query.model.TraceSearchCriteria;
 import io.gravitee.node.api.opentelemetry.query.model.TraceSpan;
 import io.gravitee.node.api.opentelemetry.query.model.TraceSpanEvent;
+import io.gravitee.node.api.opentelemetry.query.model.TracingQueryContext;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
 import java.time.Instant;
@@ -54,9 +55,10 @@ public class TempoTracingQueryService implements TracingQueryService, AutoClosea
     }
 
     @Override
-    public Single<List<Trace>> searchTraces(TraceSearchCriteria criteria) {
-        String traceQL = buildTraceQL(criteria.tags(), false);
-        String errorTraceQL = buildTraceQL(criteria.tags(), true);
+    public Single<List<Trace>> searchTraces(TracingQueryContext context, TraceSearchCriteria criteria) {
+        Map<String, String> resourceFilters = context != null ? context.resourceAttributeFilters() : Map.of();
+        String traceQL = buildTraceQL(criteria.attributeFilters(), resourceFilters, false);
+        String errorTraceQL = buildTraceQL(criteria.attributeFilters(), resourceFilters, true);
         Long start = criteria.start() != null ? criteria.start().getEpochSecond() : null;
         Long end = criteria.end() != null ? criteria.end().getEpochSecond() : null;
         if (start == null && end != null) {
@@ -64,12 +66,13 @@ public class TempoTracingQueryService implements TracingQueryService, AutoClosea
         }
         Long startParam = start;
         Long endParam = end;
+        String tenant = context != null ? context.tenant() : null;
 
-        Single<TempoSearchResponse> primary = tempoClient.searchTracesTraceQL(traceQL, criteria.limit(), startParam, endParam);
+        Single<TempoSearchResponse> primary = tempoClient.searchTracesTraceQL(traceQL, criteria.limit(), startParam, endParam, tenant);
         // Older Tempo builds may not support the `status = error` intrinsic; fall back to an empty error set rather than
         // failing the whole list — the status column then renders as "unknown" instead of breaking the page.
         Single<Set<String>> errorIds = tempoClient
-            .searchTracesTraceQL(errorTraceQL, criteria.limit(), startParam, endParam)
+            .searchTracesTraceQL(errorTraceQL, criteria.limit(), startParam, endParam, tenant)
             .map(TempoTracingQueryService::extractTraceIds)
             .onErrorReturnItem(Set.of());
 
@@ -77,15 +80,54 @@ public class TempoTracingQueryService implements TracingQueryService, AutoClosea
     }
 
     @Override
-    public Maybe<Trace> getTrace(String traceId) {
+    public Maybe<Trace> getTrace(TracingQueryContext context, String traceId) {
+        String tenant = context != null ? context.tenant() : null;
+        Map<String, String> resourceFilters = context != null ? context.resourceAttributeFilters() : Map.of();
         return tempoClient
-            .getTrace(traceId)
+            .getTrace(traceId, tenant)
             .flatMapMaybe(response -> {
                 if (response == null || response.batches() == null || response.batches().isEmpty()) {
                     return Maybe.empty();
                 }
+                // Defence in depth: Tempo's /api/traces/{id} has no query DSL, so resource-attribute scoping has
+                // to happen post-fetch. If no batch's resource carries all the requested attribute filters, treat
+                // it as "not found" — a caller scoped to env A must not see env B's trace just because they know
+                // its id. "At least one batch matches all filters" is intentional: traces touching external
+                // services may include batches without the Gravitee-emitted attributes, and those shouldn't
+                // block the match.
+                if (!resourceFilters.isEmpty() && !traceMatchesResourceFilters(response, resourceFilters)) {
+                    return Maybe.empty();
+                }
                 return Maybe.just(convertToTrace(traceId, response));
             });
+    }
+
+    private static boolean traceMatchesResourceFilters(TempoTraceResponse response, Map<String, String> filters) {
+        for (TempoTraceResponse.ResourceSpans batch : response.batches()) {
+            if (batch.resource() == null || batch.resource().attributes() == null) {
+                continue;
+            }
+            if (batchSatisfies(batch.resource().attributes(), filters)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean batchSatisfies(List<TempoTraceResponse.KeyValue> attributes, Map<String, String> filters) {
+        for (Map.Entry<String, String> entry : filters.entrySet()) {
+            boolean matched = false;
+            for (TempoTraceResponse.KeyValue kv : attributes) {
+                if (entry.getKey().equals(kv.key()) && kv.value() != null && entry.getValue().equals(kv.value().asString())) {
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static Set<String> extractTraceIds(TempoSearchResponse response) {
@@ -196,9 +238,9 @@ public class TempoTracingQueryService implements TracingQueryService, AutoClosea
         List<TraceSpanEvent> events = convertEvents(span.events());
 
         return TraceSpan.of(
-            span.traceId(),
-            span.spanId(),
-            span.parentSpanId(),
+            hexEncodeIfBase64(span.traceId()),
+            hexEncodeIfBase64(span.spanId()),
+            hexEncodeIfBase64(span.parentSpanId()),
             span.name(),
             serviceName,
             startTime,
@@ -206,6 +248,28 @@ public class TempoTracingQueryService implements TracingQueryService, AutoClosea
             attrs,
             events
         );
+    }
+
+    /**
+     * Tempo's {@code /api/traces/{id}} returns OTLP/JSON where 8-byte / 16-byte span and trace IDs are encoded as
+     * base64. Most consumers (Elasticsearch-backed indexes, OTel tooling, distributed-tracing UIs) expect IDs in the
+     * conventional lowercase-hex form. Decode and re-encode so callers comparing IDs across backends see the same
+     * representation. Returns the input unchanged when it doesn't decode cleanly to 8 or 16 bytes — covers the
+     * unusual case where a Tempo build already hands back hex strings.
+     */
+    private static String hexEncodeIfBase64(String maybeBase64) {
+        if (maybeBase64 == null || maybeBase64.isEmpty()) {
+            return maybeBase64;
+        }
+        try {
+            byte[] bytes = java.util.Base64.getDecoder().decode(maybeBase64);
+            if (bytes.length != 8 && bytes.length != 16) {
+                return maybeBase64;
+            }
+            return java.util.HexFormat.of().formatHex(bytes);
+        } catch (IllegalArgumentException notBase64) {
+            return maybeBase64;
+        }
     }
 
     private List<TraceSpanEvent> convertEvents(List<TempoTraceResponse.Event> rawEvents) {
@@ -234,29 +298,59 @@ public class TempoTracingQueryService implements TracingQueryService, AutoClosea
     }
 
     /**
-     * Turn a structured tag filter into TraceQL. {@code service.*} and {@code telemetry.*} keys go on the resource, everything
-     * else on the span. Multiple keys are joined with {@code &&}. When {@code errorsOnly} is true a {@code status = error}
-     * intrinsic is added so only traces with at least one errored span match.
+     * Turn a structured attribute filter + caller-provided resource-attribute filters into TraceQL.
+     * <ul>
+     *   <li>{@code resourceFilters} entries are emitted as {@code resource.<key> = "<value>"} clauses; the caller
+     *       has already decided the key belongs on the resource (e.g. tenant-specific scoping attributes).</li>
+     *   <li>{@code attributeFilters} keys prefixed with {@code service.} or {@code telemetry.} go on the resource,
+     *       everything else on the span.</li>
+     *   <li>Multiple clauses are joined with {@code &&}.</li>
+     *   <li>When {@code errorsOnly} is true, a {@code status = error} intrinsic is added so only traces with at
+     *       least one errored span match.</li>
+     * </ul>
      */
-    private String buildTraceQL(Map<String, String> tags, boolean errorsOnly) {
+    private String buildTraceQL(Map<String, String> attributeFilters, Map<String, String> resourceFilters, boolean errorsOnly) {
         StringBuilder sb = new StringBuilder("{ ");
-        boolean hasTag = tags != null && !tags.isEmpty();
-        if (hasTag) {
-            boolean first = true;
-            for (Map.Entry<String, String> entry : tags.entrySet()) {
-                if (!first) sb.append(" && ");
+        boolean hasClause = false;
+        if (resourceFilters != null) {
+            for (Map.Entry<String, String> entry : resourceFilters.entrySet()) {
+                if (hasClause) sb.append(" && ");
+                appendClause(sb, "resource.", entry.getKey(), entry.getValue());
+                hasClause = true;
+            }
+        }
+        if (attributeFilters != null && !attributeFilters.isEmpty()) {
+            for (Map.Entry<String, String> entry : attributeFilters.entrySet()) {
+                if (hasClause) sb.append(" && ");
                 String key = entry.getKey();
                 String prefix = isResourceAttribute(key) ? "resource." : "span.";
-                sb.append(prefix).append(key).append(" = \"").append(entry.getValue()).append("\"");
-                first = false;
+                appendClause(sb, prefix, key, entry.getValue());
+                hasClause = true;
             }
         }
         if (errorsOnly) {
-            if (hasTag) sb.append(" && ");
+            if (hasClause) sb.append(" && ");
             sb.append("status = error");
         }
         sb.append(" }");
         return sb.toString();
+    }
+
+    private static void appendClause(StringBuilder sb, String prefix, String key, String value) {
+        sb.append(prefix).append(key).append(" = \"").append(escapeTraceQLValue(value)).append("\"");
+    }
+
+    /**
+     * Escapes backslashes and double quotes in a TraceQL string literal so the resulting query parses cleanly.
+     * Today's callers pass UUIDs / opaque identifiers without special characters, but a value flowing in from
+     * outside this module (operator config, future user-supplied attribute filter) could carry either — without
+     * escaping, the produced TraceQL would be syntactically invalid.
+     */
+    private static String escapeTraceQLValue(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     private boolean isResourceAttribute(String key) {
