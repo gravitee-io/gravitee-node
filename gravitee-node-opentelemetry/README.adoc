@@ -2,7 +2,7 @@
 
 == Description
 
-The *Gravitee Node OpenTelemtry* module offers the capabilities to create Tracer based on OpenTelemetry implementation. This Tracer could be then used to create start/end spans for any request objets.
+The *Gravitee Node OpenTelemetry* module offers the capabilities to create Tracer based on OpenTelemetry implementation. This Tracer could be then used to create start/end spans for any request objets.
 
 == Configuration
 
@@ -36,6 +36,12 @@ All the exporter configurations are located under the `services.opentelemetry.ex
 |endpoint
 |http://localhost:4317
 |Sets the OTLP endpoint to send telemetry data. If unset, defaults to http://localhost:4317. If protocol is `http` or `http/protobuf` the version and signal will be appended to the path (e.g. v1/traces or v1/metrics).
+
+**Using `https://` will apply SSL settings**
+
+|logsEndpoint
+|http://localhost:3100/otlp/v1/logs
+|Sets the OTLP HTTP endpoint for log records. If unset, defaults to http://localhost:3100/otlp/v1/logs
 
 **Using `https://` will apply SSL settings**
 
@@ -144,6 +150,7 @@ services:
       - deployment.environment.name: production
     exporter:
       endpoint: http://localhost:4317
+      logsEndpoint: http://localhost:3100/otlp/v1/logs
       protocol: grpc
       compression: none
       headers:
@@ -177,18 +184,44 @@ The contract lives in `gravitee-node-api` under
 [source,java]
 ----
 public interface TracingQueryService {
-    Single<List<Trace>> searchTraces(TraceSearchCriteria criteria);
-    Maybe<Trace> getTrace(String traceId);
+    Single<List<Trace>> searchTraces(TracingQueryContext context, TraceSearchCriteria criteria);
+    Maybe<Trace> getTrace(TracingQueryContext context, String traceId);
 }
 ----
 
-`Trace`, `TraceSpan`, `TraceSpanEvent` and `TraceSearchCriteria` are records under
-`io.gravitee.node.api.opentelemetry.query.model`. The records themselves are immutable, but the
+`Trace`, `TraceSpan`, `TraceSpanEvent`, `TraceSearchCriteria` and `TracingQueryContext` are records
+under `io.gravitee.node.api.opentelemetry.query.model`. The records themselves are immutable, but the
 collections they expose (`Trace.spans`, `TraceSpan.attributes`/`events`/`children`,
 `TraceSpanEvent.attributes`, `TraceSearchCriteria.tags`) are deliberately mutable: callers can rebuild
 or augment them — for example to apply product-specific overrides on top of what the Tempo adapter
 returns — without hitting `UnsupportedOperationException`. The API is reactive (RxJava 3) so it
 composes naturally with the Vert.x HTTP client used by the Tempo adapter.
+
+`TracingQueryContext` is the per-call request context. It carries two scoping knobs, both backend-
+agnostic:
+
+* `tenant` — backend-level tenant identity. Tempo turns it into `X-Scope-OrgID`; backends without
+  multi-tenancy ignore it.
+* `resourceAttributeFilters` — `Map<String, String>` of resource-attribute filters. Each entry is
+  injected as a query clause `resource.<key> = "<value>"`. The caller chooses the keys (e.g.
+  `gravitee.environment.id` for APIM, `deployment.environment.name` for OTel-standard pipelines,
+  `cloud.region` for geo-scoping). Producers must emit matching resource attributes — typically via
+  `services.opentelemetry.extraAttributes` — for the filter to find spans.
+
+Constructors / helpers:
+
+[source,java]
+----
+TracingQueryContext.EMPTY                                          // no tenant, no filters
+TracingQueryContext.forTenant("acme")                              // tenant only
+TracingQueryContext.of("acme", Map.of("gravitee.environment.id",
+                                       "production"))              // both
+----
+
+The module deliberately doesn't define product-specific attribute key constants — APIM (or any other
+consumer) keeps the mapping from its own concepts (`envId`, etc.) to OTel attribute keys on its
+side. The record is left open for future per-call knobs so new requirements (e.g. correlation id)
+won't force another signature change.
 
 `TraceSearchCriteria` is structured (`Map<String,String> tags` + `Instant start`/`end` +
 `Integer limit`); the implementation decides how to translate keys into the backend query
@@ -210,6 +243,14 @@ The Tempo adapter returns Tempo's data as-is. In particular:
   the primary search response. Older Tempo builds that don't support the `status` intrinsic are
   handled gracefully — the second pass is wrapped in `onErrorReturnItem(Set.of())` so the list
   still loads with `hasError=false` instead of failing.
+* Each entry in `context.resourceAttributeFilters()` is prepended to both the primary and the error
+  TraceQL pass as `resource.<key> = "<value>"` clauses, joined with `&&` and the rest of the
+  criteria tags. `getTrace(context, traceId)` has no equivalent query-side filter (Tempo's
+  `/api/traces/{id}` takes no query DSL), so the match is enforced post-fetch — the trace is
+  returned only when at least one of its resource batches carries **all** the requested
+  attributes. "At least one batch" is intentional: traces touching external services may include
+  batches without the consumer-side resource attributes (e.g. Gravitee-emitted env), and those
+  shouldn't block the match.
 
 Product-specific overrides (e.g. preferring an inbound HTTP server span's `http.target` +
 `http.method` over `rootTraceName` when an internal policy mutates `http.route`) are deliberately
@@ -243,6 +284,16 @@ public TracingQueryService tempoTracingQueryService(
     var configuration = TracingQueryConfigurationProvider.from(environment, "apim.tracing.tempo");
     return TempoTracingQueryServiceFactory.create(vertx, nodeConfiguration, configuration);
 }
+
+// Calling the service:
+//   no scoping:    service.searchTraces(TracingQueryContext.EMPTY, criteria)
+//   tenant only:   service.searchTraces(TracingQueryContext.forTenant(orgId), criteria)
+//   tenant + env:  service.searchTraces(
+//                      TracingQueryContext.of(orgId, Map.of("gravitee.environment.id", envId)),
+//                      criteria)
+//
+// Producers must set the matching attributes on the resource
+// (services.opentelemetry.extraAttributes) for the filter to find spans.
 ----
 
 ==== General
@@ -258,9 +309,14 @@ this host. `https://` triggers TLS using the SSL settings below.
 
 ==== Headers
 
-Static headers added to every Tempo request. Useful for `X-Scope-OrgID` on multi-tenant Tempo
-deployments (Grafana Cloud) and for `Authorization` when Tempo is behind an auth-enforcing
-reverse proxy.
+Static headers added to every Tempo request. Useful for `Authorization` when Tempo is behind an
+auth-enforcing reverse proxy, and for `X-Scope-OrgID` on single-tenant Tempo deployments where the
+tenant id is fixed.
+
+For multi-tenant deployments where the tenant varies per request, prefer
+`TracingQueryContext.forTenant(...)` over a static header — a per-call tenant overrides the static
+`X-Scope-OrgID` when present, so each call hits the right tenant scope without rebuilding the
+service.
 
 |===
 |Parameter |Default |Description
