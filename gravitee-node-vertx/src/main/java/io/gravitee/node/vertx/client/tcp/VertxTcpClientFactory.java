@@ -119,7 +119,7 @@ public class VertxTcpClientFactory {
         }
 
         String hostnameVerificationAlgorithm = sslOptions.getHostnameVerificationAlgorithm();
-        if ("NONE".equals(hostnameVerificationAlgorithm)) {
+        if (hostnameVerificationAlgorithm == null || "NONE".equalsIgnoreCase(hostnameVerificationAlgorithm)) {
             clientOptions.setHostnameVerificationAlgorithm("");
         } else {
             clientOptions.setHostnameVerificationAlgorithm(hostnameVerificationAlgorithm);
