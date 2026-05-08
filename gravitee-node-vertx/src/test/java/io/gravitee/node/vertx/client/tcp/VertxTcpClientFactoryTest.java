@@ -69,6 +69,22 @@ class VertxTcpClientFactoryTest {
         assertThat(tcpClient).isNotNull();
     }
 
+    @Test
+    void should_build_client_when_hostnameVerificationAlgorithm_is_null() throws Exception {
+        // Reproduces the regression from apim TCP proxy endpoint tests: SslOptions
+        // populated via mapper/setter ends up with hostnameVerificationAlgorithm=null
+        // (Lombok's @Builder.Default does not apply to @NoArgsConstructor + setter
+        // population). The factory must treat null/NONE as verification-disabled
+        // instead of passing null straight to Vert.x.
+        final SslOptions sslOptions = new SslOptions();
+        sslOptions.setHostnameVerificationAlgorithm(null);
+
+        final var vertxTcpClientFactoryBuilder = builder().sslOptions(sslOptions);
+        final var tcpClient = vertxTcpClientFactoryBuilder.build().createTcpClient();
+
+        assertThat(tcpClient).isNotNull();
+    }
+
     @Nested
     class PEM {
 

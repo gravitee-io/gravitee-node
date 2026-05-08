@@ -188,7 +188,7 @@ public class VertxRedisClientFactory {
 
         var sslOptions = SslOptionsMapper.INSTANCE.map(sourceSslOptions);
         netClientOptions.setTrustAll(sslOptions.isTrustAll());
-        netClientOptions.setHostnameVerificationAlgorithm(resolveHostnameVerificationAlgorithm(sslOptions));
+        netClientOptions.setHostnameVerificationAlgorithm(sslOptions.effectiveHostnameVerificationAlgorithm());
 
         if (sslOptions.getTlsProtocols() != null && !sslOptions.getTlsProtocols().isEmpty()) {
             netClientOptions.setEnabledSecureTransportProtocols(sslOptions.getTlsProtocols());
@@ -211,25 +211,6 @@ public class VertxRedisClientFactory {
         }
 
         sslOptions.keyStore().flatMap(KeyStore::keyCertOptions).ifPresent(netClientOptions::setKeyCertOptions);
-    }
-
-    /**
-     * Pick the hostname verification algorithm to apply on the Vert.x
-     * {@code NetClientOptions}. Precedence:
-     * <ol>
-     *   <li>{@code SslOptions.hostnameVerificationAlgorithm} if set and not
-     *       {@code "NONE"} — used verbatim, supports {@code HTTPS},
-     *       {@code LDAPS}, etc.</li>
-     *   <li>Otherwise {@code SslOptions.hostnameVerifier} — {@code true} →
-     *       {@code "HTTPS"}, {@code false} → {@code ""} (disabled).</li>
-     * </ol>
-     */
-    static String resolveHostnameVerificationAlgorithm(io.gravitee.node.vertx.client.ssl.SslOptions sslOptions) {
-        String algo = sslOptions.getHostnameVerificationAlgorithm();
-        if (algo != null && !algo.isEmpty() && !"NONE".equalsIgnoreCase(algo)) {
-            return algo;
-        }
-        return sslOptions.isHostnameVerifier() ? "HTTPS" : "";
     }
 
     /**
