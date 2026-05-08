@@ -405,7 +405,7 @@ class VertxRedisClientFactoryTest {
                 .hostnameVerifier(true)
                 .hostnameVerificationAlgorithm("LDAPS")
                 .build();
-            assertThat(VertxRedisClientFactory.resolveHostnameVerificationAlgorithm(ssl)).isEqualTo("LDAPS");
+            assertThat(ssl.effectiveHostnameVerificationAlgorithm()).isEqualTo("LDAPS");
         }
 
         @Test
@@ -415,7 +415,7 @@ class VertxRedisClientFactoryTest {
                 .hostnameVerifier(true)
                 .hostnameVerificationAlgorithm("NONE")
                 .build();
-            assertThat(VertxRedisClientFactory.resolveHostnameVerificationAlgorithm(ssl)).isEqualTo("HTTPS");
+            assertThat(ssl.effectiveHostnameVerificationAlgorithm()).isEqualTo("HTTPS");
         }
 
         @Test
@@ -425,7 +425,7 @@ class VertxRedisClientFactoryTest {
                 .hostnameVerifier(false)
                 .hostnameVerificationAlgorithm("NONE")
                 .build();
-            assertThat(VertxRedisClientFactory.resolveHostnameVerificationAlgorithm(ssl)).isEmpty();
+            assertThat(ssl.effectiveHostnameVerificationAlgorithm()).isEmpty();
         }
 
         @Test
@@ -433,7 +433,7 @@ class VertxRedisClientFactoryTest {
             var ssl = io.gravitee.node.vertx.client.ssl.SslOptions.builder().hostnameVerifier(true).build();
             // hostnameVerificationAlgorithm builder-default is "NONE" — explicit-null only via setter.
             ssl.setHostnameVerificationAlgorithm(null);
-            assertThat(VertxRedisClientFactory.resolveHostnameVerificationAlgorithm(ssl)).isEqualTo("HTTPS");
+            assertThat(ssl.effectiveHostnameVerificationAlgorithm()).isEqualTo("HTTPS");
         }
 
         @Test
@@ -445,7 +445,7 @@ class VertxRedisClientFactoryTest {
                 .hostnameVerifier(false)
                 .hostnameVerificationAlgorithm("HTTPS")
                 .build();
-            assertThat(VertxRedisClientFactory.resolveHostnameVerificationAlgorithm(ssl)).isEqualTo("HTTPS");
+            assertThat(ssl.effectiveHostnameVerificationAlgorithm()).isEqualTo("HTTPS");
         }
     }
 }

@@ -24,6 +24,8 @@ public class SslOptions implements Serializable {
     private static final long serialVersionUID = 5578794192878572915L;
 
     private boolean trustAll;
+
+    @Builder.Default
     private boolean hostnameVerifier = true;
 
     @Builder.Default
@@ -47,5 +49,29 @@ public class SslOptions implements Serializable {
 
     public Optional<KeyStore> keyStore() {
         return Optional.ofNullable(keyStore);
+    }
+
+    /**
+     * Hostname verification algorithm to apply on the Vert.x
+     * {@code NetClientOptions}. Precedence:
+     * <ol>
+     *   <li>{@link #hostnameVerificationAlgorithm} if set and not
+     *       {@code "NONE"} — used verbatim, supports {@code HTTPS},
+     *       {@code LDAPS}, etc.</li>
+     *   <li>Otherwise {@link #hostnameVerifier} — {@code true} →
+     *       {@code "HTTPS"}, {@code false} → {@code ""} (disabled).</li>
+     * </ol>
+     * Never returns {@code null}, so it is safe to pass directly to
+     * {@code NetClientOptions#setHostnameVerificationAlgorithm}.
+     */
+    public String effectiveHostnameVerificationAlgorithm() {
+        if (
+            hostnameVerificationAlgorithm != null &&
+            !hostnameVerificationAlgorithm.isEmpty() &&
+            !"NONE".equalsIgnoreCase(hostnameVerificationAlgorithm)
+        ) {
+            return hostnameVerificationAlgorithm;
+        }
+        return hostnameVerifier ? "HTTPS" : "";
     }
 }
