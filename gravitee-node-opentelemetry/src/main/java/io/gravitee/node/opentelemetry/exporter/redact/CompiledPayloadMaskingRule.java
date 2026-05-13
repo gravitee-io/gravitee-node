@@ -1,0 +1,82 @@
+/*
+ * Copyright © 2015 The Gravitee team (http://gravitee.io)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.gravitee.node.opentelemetry.exporter.redact;
+
+import com.jayway.jsonpath.JsonPath;
+import io.gravitee.node.api.opentelemetry.redaction.FullMaskingStrategy;
+import io.gravitee.node.api.opentelemetry.redaction.MaskingStrategy;
+import io.gravitee.node.api.opentelemetry.redaction.PartialMaskingStrategy;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadFormat;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadMaskingRule;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadPhase;
+
+/**
+ * A pre-compiled form of a {@link PayloadMaskingRule} used at export time.
+ * Path expressions are compiled once at deploy time — not per request — to avoid
+ * repeated parse overhead on the hot path.
+ */
+final class CompiledPayloadMaskingRule {
+
+    // null when format is XML (or AUTO — resolved at redact time)
+    final JsonPath compiledJsonPath;
+    // raw XPath expression; null when format is JSON
+    final String rawXPath;
+    final MaskingStrategy maskingStrategy;
+    final String effectiveReplacement;
+    final PayloadPhase phase;
+    final PayloadFormat format;
+
+    CompiledPayloadMaskingRule(PayloadMaskingRule rule, String configDefaultReplacement) {
+        this.maskingStrategy = rule.maskingStrategy();
+        this.phase = rule.phase();
+        this.format = rule.format();
+        this.effectiveReplacement =
+            switch (rule.maskingStrategy()) {
+                case FullMaskingStrategy full -> (full == MaskingStrategy.DEFAULT) ? configDefaultReplacement : full.replacement();
+                case PartialMaskingStrategy ignored -> null; // computed per value
+            };
+
+        if (rule.format() == PayloadFormat.XML) {
+            this.compiledJsonPath = null;
+            this.rawXPath = rule.path();
+        } else {
+            // JSON or AUTO: compile as JsonPath. AUTO rules also run through XML redactor if body is XML.
+            this.compiledJsonPath = JsonPath.compile(rule.path());
+            // Keep the raw path for XPath evaluation when AUTO detects XML at runtime.
+            this.rawXPath = rule.path();
+        }
+    }
+
+    boolean appliesToPhase(PayloadPhase requestedPhase) {
+        return this.phase == PayloadPhase.BOTH || this.phase == requestedPhase;
+    }
+
+    String applyMask(String value) {
+        return switch (maskingStrategy) {
+            case FullMaskingStrategy ignored -> effectiveReplacement;
+            case PartialMaskingStrategy partial -> {
+                String maskChar = partial.maskChar();
+                if (value == null) yield maskChar;
+                int prefix = partial.prefixLength();
+                int suffix = partial.suffixLength();
+                if (value.length() <= prefix + suffix) yield maskChar.repeat(value.length());
+                yield value.substring(0, prefix) +
+                maskChar.repeat(value.length() - prefix - suffix) +
+                value.substring(value.length() - suffix);
+            }
+        };
+    }
+}
