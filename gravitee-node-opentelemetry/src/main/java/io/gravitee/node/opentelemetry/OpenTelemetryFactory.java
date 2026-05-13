@@ -20,6 +20,7 @@ import io.gravitee.node.api.opentelemetry.Logger;
 import io.gravitee.node.api.opentelemetry.LoggerFactory;
 import io.gravitee.node.api.opentelemetry.Tracer;
 import io.gravitee.node.api.opentelemetry.TracerFactory;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadMaskingConfig;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionConfig;
 import io.gravitee.node.opentelemetry.configuration.OpenTelemetryConfiguration;
 import io.gravitee.node.opentelemetry.exporter.SpanExporterFactory;
@@ -116,6 +117,29 @@ public class OpenTelemetryFactory implements TracerFactory, LoggerFactory {
         final Map<String, String> additionalResourceAttributes,
         final RedactionConfig redactionConfig
     ) {
+        return createTracer(
+            serviceInstanceId,
+            serviceName,
+            serviceNamespace,
+            serviceVersion,
+            instrumenterTracerFactories,
+            additionalResourceAttributes,
+            redactionConfig,
+            PayloadMaskingConfig.EMPTY
+        );
+    }
+
+    @Override
+    public Tracer createTracer(
+        final String serviceInstanceId,
+        final String serviceName,
+        final String serviceNamespace,
+        final String serviceVersion,
+        final List<InstrumenterTracerFactory> instrumenterTracerFactories,
+        final Map<String, String> additionalResourceAttributes,
+        final RedactionConfig redactionConfig,
+        final PayloadMaskingConfig payloadMaskingConfig
+    ) {
         if (configuration.isTracesEnabled()) {
             Resource resource = createResource(
                 serviceInstanceId,
@@ -126,11 +150,12 @@ public class OpenTelemetryFactory implements TracerFactory, LoggerFactory {
             );
 
             // YAML rules are the base; any product-supplied rules are merged on top.
-            // Products that pass RedactionConfig.EMPTY (or nothing) automatically benefit
-            // from operator-configured YAML rules without any code change in APIM or AM.
-            RedactionConfig effectiveConfig = configuration.getRedactionConfig().mergeWith(redactionConfig);
+            // Products that pass RedactionConfig.EMPTY / PayloadMaskingConfig.EMPTY (or nothing)
+            // automatically benefit from operator-configured YAML rules without any code change.
+            RedactionConfig effectiveRedaction = configuration.getRedactionConfig().mergeWith(redactionConfig);
+            PayloadMaskingConfig effectivePayload = configuration.getPayloadMaskingConfig().mergeWith(payloadMaskingConfig);
             SpanExporter exporter = spanExporterFactory.getSpanExporter();
-            if (effectiveConfig.hasRules()) {
+            if (effectiveRedaction.hasRules() || effectivePayload.hasRules()) {
                 // Create the exporter once and reuse its compiled rules to redact resource
                 // attributes (service.instance.id, hostname, ip, …) upfront so the already-clean
                 // values are baked into the SdkTracerProvider. Resource attrs live in
@@ -138,7 +163,7 @@ public class OpenTelemetryFactory implements TracerFactory, LoggerFactory {
                 // to per-span redaction inside the exporter.
                 // @SuppressWarnings: lifecycle is transferred to BatchSpanProcessor below.
                 @SuppressWarnings("resource")
-                RedactSpanExporter redactExporter = new RedactSpanExporter(exporter, effectiveConfig);
+                RedactSpanExporter redactExporter = new RedactSpanExporter(exporter, effectiveRedaction, effectivePayload);
                 resource = redactExporter.redactResource(resource);
                 exporter = redactExporter;
             }

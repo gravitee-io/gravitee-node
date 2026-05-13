@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.opentelemetry.exporter.redact;
 
+import io.gravitee.node.api.opentelemetry.redaction.PayloadMaskingConfig;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionConfig;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -32,8 +33,12 @@ public final class RedactSpanExporter implements SpanExporter {
     private final SpanAttributeRedactor redactor;
 
     public RedactSpanExporter(SpanExporter delegate, RedactionConfig config) {
+        this(delegate, config, PayloadMaskingConfig.EMPTY);
+    }
+
+    public RedactSpanExporter(SpanExporter delegate, RedactionConfig config, PayloadMaskingConfig payloadMaskingConfig) {
         this.delegate = delegate;
-        this.redactor = new SpanAttributeRedactor(config);
+        this.redactor = new SpanAttributeRedactor(config, payloadMaskingConfig);
     }
 
     /** Redacts resource attributes at tracer-creation time. Returns the original if no rule matches. */

@@ -5,6 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.gravitee.node.api.opentelemetry.redaction.FullMaskingStrategy;
 import io.gravitee.node.api.opentelemetry.redaction.MaskingStrategy;
 import io.gravitee.node.api.opentelemetry.redaction.PartialMaskingStrategy;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadFormat;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadMaskingConfig;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadMaskingRule;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadPhase;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionConfig;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionRule;
 import io.opentelemetry.api.common.AttributeKey;
@@ -246,6 +250,81 @@ class OpenTelemetryConfigurationTest {
             RedactionConfig merged = yamlConfig.mergeWith(productConfig);
 
             assertThat(merged.defaultReplacement()).isEqualTo("[YAML_DEFAULT]");
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // getPayloadMaskingConfig
+    // -------------------------------------------------------------------------
+
+    @Nested
+    class GetPayloadMaskingConfig {
+
+        @Test
+        void returns_empty_config_when_no_rules_defined() {
+            assertThat(underTest.getPayloadMaskingConfig()).isSameAs(PayloadMaskingConfig.EMPTY);
+        }
+
+        @Test
+        void reads_single_full_mask_rule_with_defaults() {
+            environment.setProperty("services.opentelemetry.payloadMasking.rules[0].path", "$.password");
+            environment.setProperty("services.opentelemetry.payloadMasking.rules[0].maskingStrategy.type", "FULL");
+
+            PayloadMaskingConfig config = underTest.getPayloadMaskingConfig();
+
+            assertThat(config.rules()).hasSize(1);
+            PayloadMaskingRule rule = config.rules().get(0);
+            assertThat(rule.path()).isEqualTo("$.password");
+            assertThat(rule.phase()).isEqualTo(PayloadPhase.BOTH);
+            assertThat(rule.format()).isEqualTo(PayloadFormat.AUTO);
+        }
+
+        @Test
+        void reads_phase_and_format_explicitly() {
+            environment.setProperty("services.opentelemetry.payloadMasking.rules[0].path", "//cvv");
+            environment.setProperty("services.opentelemetry.payloadMasking.rules[0].phase", "REQUEST");
+            environment.setProperty("services.opentelemetry.payloadMasking.rules[0].format", "XML");
+
+            PayloadMaskingConfig config = underTest.getPayloadMaskingConfig();
+
+            PayloadMaskingRule rule = config.rules().get(0);
+            assertThat(rule.phase()).isEqualTo(PayloadPhase.REQUEST);
+            assertThat(rule.format()).isEqualTo(PayloadFormat.XML);
+        }
+
+        @Test
+        void reads_partial_mask_rule() {
+            environment.setProperty("services.opentelemetry.payloadMasking.rules[0].path", "$.card.number");
+            environment.setProperty("services.opentelemetry.payloadMasking.rules[0].maskingStrategy.type", "PARTIAL");
+            environment.setProperty("services.opentelemetry.payloadMasking.rules[0].maskingStrategy.prefixLength", "0");
+            environment.setProperty("services.opentelemetry.payloadMasking.rules[0].maskingStrategy.suffixLength", "4");
+            environment.setProperty("services.opentelemetry.payloadMasking.rules[0].maskingStrategy.replacement", "X");
+
+            PayloadMaskingConfig config = underTest.getPayloadMaskingConfig();
+
+            assertThat(config.rules().get(0).maskingStrategy()).isInstanceOf(PartialMaskingStrategy.class);
+            PartialMaskingStrategy partial = (PartialMaskingStrategy) config.rules().get(0).maskingStrategy();
+            assertThat(partial.suffixLength()).isEqualTo(4);
+            assertThat(partial.maskChar()).isEqualTo("X");
+        }
+
+        @Test
+        void reads_multiple_rules_in_order() {
+            environment.setProperty("services.opentelemetry.payloadMasking.rules[0].path", "$.password");
+            environment.setProperty("services.opentelemetry.payloadMasking.rules[1].path", "//cvv");
+
+            PayloadMaskingConfig config = underTest.getPayloadMaskingConfig();
+
+            assertThat(config.rules()).hasSize(2);
+            assertThat(config.rules().get(0).path()).isEqualTo("$.password");
+            assertThat(config.rules().get(1).path()).isEqualTo("//cvv");
+        }
+
+        @Test
+        void result_is_cached_across_calls() {
+            environment.setProperty("services.opentelemetry.payloadMasking.rules[0].path", "$.password");
+
+            assertThat(underTest.getPayloadMaskingConfig()).isSameAs(underTest.getPayloadMaskingConfig());
         }
     }
 }

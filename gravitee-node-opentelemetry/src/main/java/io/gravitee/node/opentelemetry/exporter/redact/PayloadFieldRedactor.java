@@ -19,6 +19,7 @@ import io.gravitee.node.api.opentelemetry.redaction.PayloadFormat;
 import io.gravitee.node.api.opentelemetry.redaction.PayloadMaskingConfig;
 import io.gravitee.node.api.opentelemetry.redaction.PayloadPhase;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Dispatcher that routes a payload body to {@link JsonPathPayloadRedactor} or
@@ -38,9 +39,10 @@ final class PayloadFieldRedactor {
     private final JsonPathPayloadRedactor jsonRedactor = new JsonPathPayloadRedactor();
     private final XPathPayloadRedactor xmlRedactor = new XPathPayloadRedactor();
 
-    private final List<CompiledPayloadMaskingRule> jsonRules;
-    private final List<CompiledPayloadMaskingRule> xmlRules;
-    private final List<CompiledPayloadMaskingRule> autoRules;
+    // JSON-format rules merged with AUTO rules (both applied when body is JSON)
+    private final List<CompiledPayloadMaskingRule> effectiveJsonRules;
+    // XML-format rules merged with AUTO rules (both applied when body is XML)
+    private final List<CompiledPayloadMaskingRule> effectiveXmlRules;
 
     PayloadFieldRedactor(PayloadMaskingConfig config) {
         String defaultReplacement = config.defaultReplacement();
@@ -50,9 +52,13 @@ final class PayloadFieldRedactor {
             .map(rule -> new CompiledPayloadMaskingRule(rule, defaultReplacement))
             .toList();
 
-        this.jsonRules = compiled.stream().filter(r -> r.format == PayloadFormat.JSON).toList();
-        this.xmlRules = compiled.stream().filter(r -> r.format == PayloadFormat.XML).toList();
-        this.autoRules = compiled.stream().filter(r -> r.format == PayloadFormat.AUTO).toList();
+        List<CompiledPayloadMaskingRule> jsonRules = compiled.stream().filter(r -> r.format() == PayloadFormat.JSON).toList();
+        List<CompiledPayloadMaskingRule> xmlRules = compiled.stream().filter(r -> r.format() == PayloadFormat.XML).toList();
+        List<CompiledPayloadMaskingRule> autoRules = compiled.stream().filter(r -> r.format() == PayloadFormat.AUTO).toList();
+
+        // Pre-merge so each body is parsed only once per format
+        this.effectiveJsonRules = autoRules.isEmpty() ? jsonRules : Stream.concat(jsonRules.stream(), autoRules.stream()).toList();
+        this.effectiveXmlRules = autoRules.isEmpty() ? xmlRules : Stream.concat(xmlRules.stream(), autoRules.stream()).toList();
     }
 
     /**
@@ -71,16 +77,8 @@ final class PayloadFieldRedactor {
         PayloadFormat resolved = resolveFormat(eventFormat, body);
 
         return switch (resolved) {
-            case JSON -> {
-                String result = jsonRedactor.redact(body, jsonRules, phase);
-                // Also apply AUTO rules as JSON
-                yield autoRules.isEmpty() ? result : jsonRedactor.redact(result, autoRules, phase);
-            }
-            case XML -> {
-                String result = xmlRedactor.redact(body, xmlRules, phase);
-                // Also apply AUTO rules as XML
-                yield autoRules.isEmpty() ? result : xmlRedactor.redact(result, autoRules, phase);
-            }
+            case JSON -> jsonRedactor.redact(body, effectiveJsonRules, phase);
+            case XML -> xmlRedactor.redact(body, effectiveXmlRules, phase);
             case AUTO -> body; // unrecognised format — fail-open, do not mask
         };
     }

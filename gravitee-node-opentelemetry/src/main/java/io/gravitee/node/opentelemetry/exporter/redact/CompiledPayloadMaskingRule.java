@@ -30,14 +30,14 @@ import io.gravitee.node.api.opentelemetry.redaction.PayloadPhase;
  */
 final class CompiledPayloadMaskingRule {
 
-    // null when format is XML (or AUTO — resolved at redact time)
-    final JsonPath compiledJsonPath;
-    // raw XPath expression; null when format is JSON
-    final String rawXPath;
-    final MaskingStrategy maskingStrategy;
-    final String effectiveReplacement;
-    final PayloadPhase phase;
-    final PayloadFormat format;
+    // null when format is XML, or when JsonPath.compile() fails for AUTO/JSON rules
+    private final JsonPath compiledJsonPath;
+    // raw XPath expression; always set for XML and AUTO formats
+    private final String rawXPath;
+    private final MaskingStrategy maskingStrategy;
+    private final String effectiveReplacement;
+    private final PayloadPhase phase;
+    private final PayloadFormat format;
 
     CompiledPayloadMaskingRule(PayloadMaskingRule rule, String configDefaultReplacement) {
         this.maskingStrategy = rule.maskingStrategy();
@@ -54,10 +54,28 @@ final class CompiledPayloadMaskingRule {
             this.rawXPath = rule.path();
         } else {
             // JSON or AUTO: compile as JsonPath. AUTO rules also run through XML redactor if body is XML.
-            this.compiledJsonPath = JsonPath.compile(rule.path());
+            JsonPath compiled;
+            try {
+                compiled = JsonPath.compile(rule.path());
+            } catch (Exception e) {
+                compiled = null; // invalid JsonPath expression — rule will be skipped at redact time
+            }
+            this.compiledJsonPath = compiled;
             // Keep the raw path for XPath evaluation when AUTO detects XML at runtime.
             this.rawXPath = rule.path();
         }
+    }
+
+    JsonPath compiledJsonPath() {
+        return compiledJsonPath;
+    }
+
+    String rawXPath() {
+        return rawXPath;
+    }
+
+    PayloadFormat format() {
+        return format;
     }
 
     boolean appliesToPhase(PayloadPhase requestedPhase) {

@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.api.opentelemetry;
 
+import io.gravitee.node.api.opentelemetry.redaction.PayloadMaskingConfig;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionConfig;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,50 @@ public interface TracerFactory {
         final List<InstrumenterTracerFactory> instrumenterTracerFactories,
         final Map<String, String> additionalResourceAttributes,
         final RedactionConfig redactionConfig
+    ) {
+        return createTracer(
+            id,
+            serviceName,
+            serviceNamespace,
+            version,
+            instrumenterTracerFactories,
+            additionalResourceAttributes,
+            redactionConfig,
+            PayloadMaskingConfig.EMPTY
+        );
+    }
+
+    default Tracer createTracer(
+        final String id,
+        final String serviceName,
+        final String serviceNamespace,
+        final String version,
+        final List<InstrumenterTracerFactory> instrumenterTracerFactories,
+        final RedactionConfig redactionConfig,
+        final PayloadMaskingConfig payloadMaskingConfig
+    ) {
+        return createTracer(
+            id,
+            serviceName,
+            serviceNamespace,
+            version,
+            instrumenterTracerFactories,
+            null,
+            redactionConfig,
+            payloadMaskingConfig
+        );
+    }
+
+    @SuppressWarnings("java:S107") // 8 params required: service identity (4) + factories + attrs + redaction + payload masking
+    default Tracer createTracer(
+        final String id,
+        final String serviceName,
+        final String serviceNamespace,
+        final String version,
+        final List<InstrumenterTracerFactory> instrumenterTracerFactories,
+        final Map<String, String> additionalResourceAttributes,
+        final RedactionConfig redactionConfig,
+        final PayloadMaskingConfig payloadMaskingConfig
     ) {
         return createTracer(id, serviceName, serviceNamespace, version, instrumenterTracerFactories, additionalResourceAttributes);
     }

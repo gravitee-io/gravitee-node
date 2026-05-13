@@ -20,8 +20,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.Option;
 import io.gravitee.node.api.opentelemetry.redaction.PayloadPhase;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.CustomLog;
 
 /**
  * Applies {@link CompiledPayloadMaskingRule} entries to a JSON body string using Jayway JsonPath.
@@ -29,9 +28,8 @@ import org.slf4j.LoggerFactory;
  * <p>Fail-open: any parse error returns the original body unchanged — the span is never dropped.
  * Thread-safe and stateless (no mutable instance fields).
  */
+@CustomLog
 final class JsonPathPayloadRedactor {
-
-    private static final Logger log = LoggerFactory.getLogger(JsonPathPayloadRedactor.class);
 
     // SUPPRESS_EXCEPTIONS: missing paths are silently skipped (no PathNotFoundException).
     // DEFAULT_PATH_LEAF_TO_NULL intentionally excluded — it would create null fields for non-existent paths.
@@ -55,13 +53,13 @@ final class JsonPathPayloadRedactor {
 
         boolean anyApplied = false;
         for (CompiledPayloadMaskingRule rule : rules) {
-            if (!rule.appliesToPhase(phase) || rule.compiledJsonPath == null) {
+            if (!rule.appliesToPhase(phase) || rule.compiledJsonPath() == null) {
                 continue;
             }
             try {
                 boolean[] matched = { false };
                 ctx.map(
-                    rule.compiledJsonPath,
+                    rule.compiledJsonPath(),
                     (value, cfg) -> {
                         if (value == null) return null;
                         matched[0] = true;
@@ -72,7 +70,7 @@ final class JsonPathPayloadRedactor {
             } catch (Exception e) {
                 log.warn(
                     "PayloadMasking: failed to apply JSONPath '{}' — skipping rule. Cause: {}",
-                    rule.compiledJsonPath.getPath(),
+                    rule.compiledJsonPath().getPath(),
                     e.getMessage()
                 );
             }

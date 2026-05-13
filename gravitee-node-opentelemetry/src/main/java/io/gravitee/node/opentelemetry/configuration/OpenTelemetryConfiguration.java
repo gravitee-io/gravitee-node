@@ -17,6 +17,10 @@ package io.gravitee.node.opentelemetry.configuration;
 
 import io.gravitee.common.util.EnvironmentUtils;
 import io.gravitee.node.api.opentelemetry.redaction.MaskingStrategy;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadFormat;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadMaskingConfig;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadMaskingRule;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadPhase;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionConfig;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionRule;
 import io.opentelemetry.api.common.AttributeKey;
@@ -239,6 +243,47 @@ public class OpenTelemetryConfiguration {
             "services.opentelemetry.redactionDefaultReplacement"
         );
         return redactionConfig = rules.isEmpty() ? RedactionConfig.EMPTY : new RedactionConfig(rules, defaultReplacement);
+    }
+
+    @Getter(AccessLevel.NONE)
+    private PayloadMaskingConfig payloadMaskingConfig;
+
+    public PayloadMaskingConfig getPayloadMaskingConfig() {
+        if (payloadMaskingConfig != null) {
+            return payloadMaskingConfig;
+        }
+        Map<String, Object> allRuleProperties = EnvironmentUtils.getPropertiesStartingWith(
+            environment,
+            "services.opentelemetry.payloadMasking.rules"
+        );
+        if (allRuleProperties.isEmpty()) {
+            payloadMaskingConfig = PayloadMaskingConfig.EMPTY;
+            return payloadMaskingConfig;
+        }
+        List<PayloadMaskingRule> rules = new ArrayList<>();
+        int ruleIndex = 0;
+        while (true) {
+            String rulePrefix = "services.opentelemetry.payloadMasking.rules[" + ruleIndex + "].";
+            String path = getString(allRuleProperties, rulePrefix + "path");
+            if (path == null) break;
+            rules.add(buildPayloadRule(allRuleProperties, rulePrefix, path));
+            ruleIndex++;
+        }
+        String defaultReplacement = getString(
+            EnvironmentUtils.getPropertiesStartingWith(environment, "services.opentelemetry.payloadMasking.defaultReplacement"),
+            "services.opentelemetry.payloadMasking.defaultReplacement"
+        );
+        payloadMaskingConfig = rules.isEmpty() ? PayloadMaskingConfig.EMPTY : new PayloadMaskingConfig(rules, defaultReplacement);
+        return payloadMaskingConfig;
+    }
+
+    private PayloadMaskingRule buildPayloadRule(Map<String, Object> ruleProperties, String rulePrefix, String path) {
+        MaskingStrategy strategy = buildMaskingStrategy(ruleProperties, rulePrefix);
+        String phaseStr = getString(ruleProperties, rulePrefix + "phase");
+        PayloadPhase phase = phaseStr != null ? PayloadPhase.valueOf(phaseStr.toUpperCase()) : PayloadPhase.BOTH;
+        String formatStr = getString(ruleProperties, rulePrefix + "format");
+        PayloadFormat format = formatStr != null ? PayloadFormat.valueOf(formatStr.toUpperCase()) : PayloadFormat.AUTO;
+        return new PayloadMaskingRule(path, strategy, phase, format);
     }
 
     private RedactionRule buildRule(Map<String, Object> ruleProperties, String rulePrefix, String pattern) {

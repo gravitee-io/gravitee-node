@@ -20,10 +20,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.gravitee.node.api.opentelemetry.redaction.MaskingStrategy;
 import io.gravitee.node.api.opentelemetry.redaction.PartialMaskingStrategy;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadMaskingConfig;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadMaskingRule;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionConfig;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionRule;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.trace.data.EventData;
 import java.util.List;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -699,6 +702,102 @@ class SpanAttributeRedactorTest {
             // must not throw
             var redactor = new SpanAttributeRedactor(new RedactionConfig(List.of(rule)));
             assertThat(redactor.hasRules()).isTrue();
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Contract: payload body masking via PayloadMaskingConfig
+    // -------------------------------------------------------------------------
+
+    @Nested
+    class PayloadBodyMasking {
+
+        @Test
+        void should_mask_payload_body_in_payload_event() {
+            var config = new PayloadMaskingConfig(List.of(new PayloadMaskingRule("$.password")));
+            var redactor = new SpanAttributeRedactor(RedactionConfig.EMPTY, config);
+
+            Attributes attrs = Attributes.of(
+                AttributeKey.stringKey("payload.body"),
+                "{\"password\":\"secret\"}",
+                AttributeKey.stringKey("payload.format"),
+                "JSON",
+                AttributeKey.stringKey("payload.phase"),
+                "REQUEST"
+            );
+            EventData event = EventData.create(1L, "payload", attrs, 3);
+            List<EventData> result = redactor.redactEvents(List.of(event));
+
+            assertThat(result).hasSize(1);
+            String maskedBody = result.get(0).getAttributes().get(AttributeKey.stringKey("payload.body"));
+            assertThat(maskedBody).contains("[REDACTED]").doesNotContain("secret");
+        }
+
+        @Test
+        void should_preserve_other_payload_event_attributes_unchanged() {
+            var config = new PayloadMaskingConfig(List.of(new PayloadMaskingRule("$.password")));
+            var redactor = new SpanAttributeRedactor(RedactionConfig.EMPTY, config);
+
+            Attributes attrs = Attributes.of(
+                AttributeKey.stringKey("payload.body"),
+                "{\"password\":\"secret\"}",
+                AttributeKey.stringKey("payload.format"),
+                "JSON",
+                AttributeKey.stringKey("payload.phase"),
+                "REQUEST"
+            );
+            EventData event = EventData.create(1L, "payload", attrs, 3);
+            List<EventData> result = redactor.redactEvents(List.of(event));
+
+            assertThat(result.get(0).getAttributes().get(AttributeKey.stringKey("payload.format"))).isEqualTo("JSON");
+            assertThat(result.get(0).getAttributes().get(AttributeKey.stringKey("payload.phase"))).isEqualTo("REQUEST");
+        }
+
+        @Test
+        void should_return_original_event_list_reference_when_body_does_not_match_any_rule() {
+            var config = new PayloadMaskingConfig(List.of(new PayloadMaskingRule("$.token")));
+            var redactor = new SpanAttributeRedactor(RedactionConfig.EMPTY, config);
+
+            Attributes attrs = Attributes.of(
+                AttributeKey.stringKey("payload.body"),
+                "{\"user\":\"alice\"}",
+                AttributeKey.stringKey("payload.format"),
+                "JSON",
+                AttributeKey.stringKey("payload.phase"),
+                "REQUEST"
+            );
+            EventData event = EventData.create(1L, "payload", attrs, 3);
+            var original = List.of(event);
+            List<EventData> result = redactor.redactEvents(original);
+
+            assertThat(result).isSameAs(original);
+        }
+
+        @Test
+        void should_not_touch_non_payload_events() {
+            var config = new PayloadMaskingConfig(List.of(new PayloadMaskingRule("$.password")));
+            var redactor = new SpanAttributeRedactor(RedactionConfig.EMPTY, config);
+
+            Attributes attrs = Attributes.of(AttributeKey.stringKey("payload.body"), "{\"password\":\"secret\"}");
+            EventData event = EventData.create(1L, "request-received", attrs, 1);
+            var original = List.of(event);
+            List<EventData> result = redactor.redactEvents(original);
+
+            // event name is "request-received", not "payload" — must not be touched
+            assertThat(result).isSameAs(original);
+        }
+
+        @Test
+        void should_report_has_rules_true_when_only_payload_masking_configured() {
+            var config = new PayloadMaskingConfig(List.of(new PayloadMaskingRule("$.password")));
+            var redactor = new SpanAttributeRedactor(RedactionConfig.EMPTY, config);
+            assertThat(redactor.hasRules()).isTrue();
+        }
+
+        @Test
+        void should_report_has_rules_false_when_both_configs_are_empty() {
+            var redactor = new SpanAttributeRedactor(RedactionConfig.EMPTY, PayloadMaskingConfig.EMPTY);
+            assertThat(redactor.hasRules()).isFalse();
         }
     }
 

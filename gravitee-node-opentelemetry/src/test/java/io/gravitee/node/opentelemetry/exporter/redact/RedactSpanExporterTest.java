@@ -18,6 +18,8 @@ package io.gravitee.node.opentelemetry.exporter.redact;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.gravitee.node.api.opentelemetry.internal.InternalRequest;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadMaskingConfig;
+import io.gravitee.node.api.opentelemetry.redaction.PayloadMaskingRule;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionConfig;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionRule;
 import io.gravitee.node.opentelemetry.tracer.instrumentation.internal.InternalInstrumenterTracer;
@@ -288,6 +290,96 @@ class RedactSpanExporterTest {
             assertThat(events.get(1)).isNotSameAs(sensitiveEvent);
             assertThat(events.get(1).getAttributes().get(AttributeKey.stringKey("secret.key")))
                 .isEqualTo(RedactionRule.DEFAULT_REPLACEMENT);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Payload event body masking through export()
+    // -------------------------------------------------------------------------
+
+    @Nested
+    class PayloadEventBodyMasking {
+
+        @Test
+        void should_mask_payload_body_in_payload_span_event() {
+            AtomicReference<Collection<SpanData>> received = new AtomicReference<>();
+            var exporter = new RedactSpanExporter(
+                capturingExporter(received),
+                RedactionConfig.EMPTY,
+                new PayloadMaskingConfig(List.of(new PayloadMaskingRule("$.password")))
+            );
+
+            SpanData span = TestSpanData
+                .builder()
+                .setName("test")
+                .setKind(SpanKind.INTERNAL)
+                .setStartEpochNanos(0)
+                .setEndEpochNanos(1)
+                .setHasEnded(true)
+                .setStatus(StatusData.ok())
+                .setAttributes(Attributes.empty())
+                .setEvents(
+                    List.of(
+                        EventData.create(
+                            1L,
+                            "payload",
+                            Attributes.of(
+                                AttributeKey.stringKey("payload.body"),
+                                "{\"password\":\"secret\"}",
+                                AttributeKey.stringKey("payload.format"),
+                                "JSON",
+                                AttributeKey.stringKey("payload.phase"),
+                                "REQUEST"
+                            ),
+                            3
+                        )
+                    )
+                )
+                .build();
+
+            exporter.export(List.of(span));
+
+            var result = new ArrayList<>(received.get());
+            assertThat(result).hasSize(1);
+            String maskedBody = result.get(0).getEvents().get(0).getAttributes().get(AttributeKey.stringKey("payload.body"));
+            assertThat(maskedBody).contains("[REDACTED]").doesNotContain("secret");
+        }
+
+        @Test
+        void should_not_touch_non_payload_events_when_payload_masking_configured() {
+            AtomicReference<Collection<SpanData>> received = new AtomicReference<>();
+            var exporter = new RedactSpanExporter(
+                capturingExporter(received),
+                RedactionConfig.EMPTY,
+                new PayloadMaskingConfig(List.of(new PayloadMaskingRule("$.password")))
+            );
+
+            SpanData span = TestSpanData
+                .builder()
+                .setName("test")
+                .setKind(SpanKind.INTERNAL)
+                .setStartEpochNanos(0)
+                .setEndEpochNanos(1)
+                .setHasEnded(true)
+                .setStatus(StatusData.ok())
+                .setAttributes(Attributes.empty())
+                .setEvents(
+                    List.of(
+                        EventData.create(
+                            1L,
+                            "request-received",
+                            Attributes.of(AttributeKey.stringKey("payload.body"), "{\"password\":\"secret\"}"),
+                            1
+                        )
+                    )
+                )
+                .build();
+
+            var original = List.of(span);
+            exporter.export(original);
+
+            // non-payload event — original collection reference forwarded unchanged
+            assertThat(received.get()).isSameAs(original);
         }
     }
 
