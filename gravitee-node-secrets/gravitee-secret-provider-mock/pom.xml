@@ -40,22 +40,27 @@
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.gravitee.node</groupId>
             <artifactId>gravitee-node-logging</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.gravitee.secret</groupId>
             <artifactId>gravitee-secret-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.gravitee.plugin</groupId>
             <artifactId>gravitee-plugin-core</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.reactivex.rxjava3</groupId>
             <artifactId>rxjava</artifactId>
+            <scope>provided</scope>
         </dependency>
         <!-- tests -->
         <dependency>
