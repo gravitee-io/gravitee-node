@@ -34,7 +34,7 @@
     <properties>
         <!-- Property used by the publication job in CI-->
         <publish-folder-path>plugins/node-cache</publish-folder-path>
-        <commons-pool2.version>2.12.0</commons-pool2.version>
+        <commons-pool2.version>2.13.1</commons-pool2.version>
         <embedded-redis.version>1.4.3</embedded-redis.version>
     </properties>
 
