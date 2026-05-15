@@ -1,3 +1,10 @@
+# [9.0.0-alpha.11](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.10...9.0.0-alpha.11) (2026-05-15)
+
+
+### Bug Fixes
+
+* **ssl:** null-safe hostnameVerificationAlgorithm in TCP client factory ([7572310](https://github.com/gravitee-io/gravitee-node/commit/757231042f2344158c419058f603d9f2c41845de))
+
 # [9.0.0-alpha.10](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.9...9.0.0-alpha.10) (2026-05-06)
 
 
