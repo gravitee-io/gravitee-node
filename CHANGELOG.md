@@ -1,3 +1,10 @@
+## [8.0.4](https://github.com/gravitee-io/gravitee-node/compare/8.0.3...8.0.4) (2026-05-15)
+
+
+### Bug Fixes
+
+* **deps:** Updating versions to fix vulnerabilities ([28e9aa7](https://github.com/gravitee-io/gravitee-node/commit/28e9aa7f5c5c3570879a13c27c9c0b445fad04f4))
+
 ## [8.0.3](https://github.com/gravitee-io/gravitee-node/compare/8.0.2...8.0.3) (2026-04-13)
 
 
