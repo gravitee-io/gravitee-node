@@ -1,3 +1,10 @@
+# [9.0.0-alpha.12](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.11...9.0.0-alpha.12) (2026-05-18)
+
+
+### Features
+
+* add support for multitenancy in TracingQueryService and Tempo impl ([72bd2cd](https://github.com/gravitee-io/gravitee-node/commit/72bd2cdf74864cd944f85f8fe88fedc54995370d))
+
 # [9.0.0-alpha.11](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.10...9.0.0-alpha.11) (2026-05-15)
 
 
