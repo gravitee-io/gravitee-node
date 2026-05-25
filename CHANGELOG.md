@@ -1,3 +1,10 @@
+# [9.0.0-alpha.13](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.12...9.0.0-alpha.13) (2026-05-25)
+
+
+### Features
+
+* **otel-logger:** add record overload taking raw traceId/spanId strings ([b521272](https://github.com/gravitee-io/gravitee-node/commit/b521272f2d3c7f219c163a687fbfd7650df32736))
+
 # [9.0.0-alpha.12](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.11...9.0.0-alpha.12) (2026-05-18)
 
 
