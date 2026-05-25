@@ -231,6 +231,48 @@ class OpenTelemetryLoggerTest {
 
         noOp.record(vertxContext, "body");
         noOp.record(vertxContext, "body", Map.of("k", "v"));
-        noOp.record(vertxContext, null, "body", Map.of("k", "v"));
+        noOp.record(vertxContext, (Span) null, "body", Map.of("k", "v"));
+        noOp.record(vertxContext, "0123456789abcdef0123456789abcdef", "0123456789abcdef", "body", Map.of("k", "v"));
+    }
+
+    @Test
+    void record_with_raw_ids_should_place_trace_and_span_id_in_top_level_fields(Vertx vertx) {
+        var vertxContext = VertxContext.createNewDuplicatedContext(vertx.getOrCreateContext());
+        String traceId = "0123456789abcdef0123456789abcdef";
+        String spanId = "0123456789abcdef";
+
+        logger.record(vertxContext, traceId, spanId, "body", Map.of("k", "v"));
+
+        List<LogRecordData> records = logExporter.getFinishedLogRecordItems();
+        assertThat(records).hasSize(1);
+        assertThat(records.get(0).getSpanContext().getTraceId()).isEqualTo(traceId);
+        assertThat(records.get(0).getSpanContext().getSpanId()).isEqualTo(spanId);
+        assertThat(records.get(0).getSpanContext().isValid()).isTrue();
+        assertThat(records.get(0).getSpanContext().isSampled()).isTrue();
+        assertThat(records.get(0).getAttributes().get(AttributeKey.stringKey("k"))).isEqualTo("v");
+    }
+
+    @Test
+    void record_with_raw_ids_should_emit_uncorrelated_when_ids_are_malformed(Vertx vertx) {
+        var vertxContext = VertxContext.createNewDuplicatedContext(vertx.getOrCreateContext());
+
+        logger.record(vertxContext, "not-a-trace-id", "not-a-span-id", "body", Map.of("k", "v"));
+
+        List<LogRecordData> records = logExporter.getFinishedLogRecordItems();
+        assertThat(records).hasSize(1);
+        assertThat(records.get(0).getBody().asString()).isEqualTo("body");
+        assertThat(records.get(0).getSpanContext().isValid()).isFalse();
+        assertThat(records.get(0).getAttributes().get(AttributeKey.stringKey("k"))).isEqualTo("v");
+    }
+
+    @Test
+    void record_with_raw_ids_should_emit_uncorrelated_when_ids_are_null(Vertx vertx) {
+        var vertxContext = VertxContext.createNewDuplicatedContext(vertx.getOrCreateContext());
+
+        logger.record(vertxContext, null, null, "body", Map.of());
+
+        List<LogRecordData> records = logExporter.getFinishedLogRecordItems();
+        assertThat(records).hasSize(1);
+        assertThat(records.get(0).getSpanContext().isValid()).isFalse();
     }
 }
