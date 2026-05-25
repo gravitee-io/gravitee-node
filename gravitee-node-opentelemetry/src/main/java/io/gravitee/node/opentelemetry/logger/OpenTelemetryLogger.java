@@ -22,15 +22,20 @@ import io.gravitee.node.opentelemetry.tracer.span.OpenTelemetrySpan;
 import io.gravitee.node.opentelemetry.tracer.vertx.VertxContextStorage;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.vertx.core.Context;
 import java.util.Map;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 
 /**
  * @author Remi Baptiste (remi.baptiste at graviteesource.com)
  * @author GraviteeSource Team
  */
+@CustomLog
 @RequiredArgsConstructor
 public class OpenTelemetryLogger extends AbstractService<Logger> implements Logger {
 
@@ -65,7 +70,33 @@ public class OpenTelemetryLogger extends AbstractService<Logger> implements Logg
         if (span instanceof OpenTelemetrySpan<?> openTelemetrySpan) {
             openTelemetryContext = openTelemetrySpan.otelContext();
         }
+        emit(openTelemetryContext, body, attributes);
+    }
 
+    @Override
+    public void record(Context vertxContext, String traceId, String spanId, String body, Map<String, Object> attributes) {
+        io.opentelemetry.context.Context openTelemetryContext = VertxContextStorage.getContext(vertxContext);
+        // SpanContext.create validates the ids — invalid input returns a SpanContext where isValid() is
+        // false rather than throwing. Guard against null up front so we don't NPE inside the SDK.
+        if (traceId != null && spanId != null) {
+            // TraceFlags.getSampled(): the caller is asking us to record a log for an existing trace, so
+            //   declare it sampled — downstream collectors / tail-samplers won't drop the record on the
+            //   "not sampled" branch. TraceState.getDefault(): empty W3C vendor state; we don't have
+            //   access to the parent trace's original TraceState through this API (only the two ids).
+            SpanContext spanContext = SpanContext.create(traceId, spanId, TraceFlags.getSampled(), TraceState.getDefault());
+            if (spanContext.isValid()) {
+                io.opentelemetry.context.Context base = openTelemetryContext != null
+                    ? openTelemetryContext
+                    : io.opentelemetry.context.Context.root();
+                openTelemetryContext = base.with(io.opentelemetry.api.trace.Span.wrap(spanContext));
+            } else {
+                log.warn("Skipping trace correlation for log record: invalid traceId='{}' or spanId='{}'", traceId, spanId);
+            }
+        }
+        emit(openTelemetryContext, body, attributes);
+    }
+
+    private void emit(io.opentelemetry.context.Context openTelemetryContext, String body, Map<String, Object> attributes) {
         AttributesBuilder builder = Attributes.builder();
         if (attributes != null) {
             attributes.forEach((key, value) -> {

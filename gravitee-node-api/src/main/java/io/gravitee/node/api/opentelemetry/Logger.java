@@ -50,4 +50,24 @@ public interface Logger extends Service<Logger> {
      * @param attributes the attributes to attach to the Log
      */
     void record(final Context vertxContext, Span span, String body, Map<String, Object> attributes);
+
+    /**
+     * Log a body correlated with a trace by raw {@code traceId} / {@code spanId} strings. Intended for
+     * callers that receive the identifiers from elsewhere (e.g. a request header or a reporter input)
+     * and don't hold the originating {@link Span}. The implementation reconstructs a
+     * {@code SpanContext} from the two ids so the resulting log record carries them in the OTLP
+     * top-level {@code TraceId} / {@code SpanId} fields rather than as record attributes.
+     *
+     * <p>When the supplied identifiers are malformed (wrong hex length, non-hex characters, …) the
+     * record is emitted uncorrelated — same fallback as the overloads that take no span at all — so
+     * data is never silently dropped.
+     *
+     * @param vertxContext current vert context, used as fallback for tracing information when the
+     *                     supplied identifiers are invalid
+     * @param traceId 32-char lowercase-hex trace id
+     * @param spanId 16-char lowercase-hex span id
+     * @param body the body to be logged
+     * @param attributes the attributes to attach to the Log
+     */
+    void record(final Context vertxContext, String traceId, String spanId, String body, Map<String, Object> attributes);
 }
