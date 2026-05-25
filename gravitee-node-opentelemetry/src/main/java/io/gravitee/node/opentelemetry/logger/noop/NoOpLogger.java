@@ -35,4 +35,7 @@ public class NoOpLogger extends AbstractService<Logger> implements Logger {
 
     @Override
     public void record(Context vertxContext, Span span, String body, Map<String, Object> attributes) {}
+
+    @Override
+    public void record(Context vertxContext, String traceId, String spanId, String body, Map<String, Object> attributes) {}
 }
