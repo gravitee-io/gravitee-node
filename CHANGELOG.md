@@ -1,3 +1,10 @@
+## [8.0.5](https://github.com/gravitee-io/gravitee-node/compare/8.0.4...8.0.5) (2026-05-26)
+
+
+### Bug Fixes
+
+* **vertx:** honor user-configured metric labels in MicrometerMetricsOptions ([#564](https://github.com/gravitee-io/gravitee-node/issues/564)) ([#565](https://github.com/gravitee-io/gravitee-node/issues/565)) ([3188e9c](https://github.com/gravitee-io/gravitee-node/commit/3188e9c71665a7ff413b07032082c3f5a36426c9))
+
 ## [8.0.4](https://github.com/gravitee-io/gravitee-node/compare/8.0.3...8.0.4) (2026-05-15)
 
 
