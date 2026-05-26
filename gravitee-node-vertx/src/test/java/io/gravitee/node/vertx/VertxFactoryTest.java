@@ -51,6 +51,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class VertxFactoryTest {
 
+    @SuppressWarnings("unchecked")
+    private static final Set<Label> ORIGINAL_DEFAULT_LABELS = EnumSet.copyOf(
+        (Set<Label>) ReflectionTestUtils.getField(VertxFactory.class, "DEFAULT_LABELS")
+    );
+
     @Mock
     private Node node;
 
@@ -128,6 +133,37 @@ class VertxFactoryTest {
         cut.getObject();
 
         verifyGlobalLabels(List.of(Label.LOCAL, Label.REMOTE, Label.HTTP_METHOD, Label.HTTP_CODE));
+    }
+
+    @Test
+    void should_pass_user_configured_labels_to_micrometer_options() throws Exception {
+        enableMetrics();
+        environment.setProperty("services.metrics.labels[0]", "local");
+        environment.setProperty("services.metrics.labels[1]", "remote");
+        environment.setProperty("services.metrics.labels[2]", "http_method");
+        environment.setProperty("services.metrics.labels[3]", "http_path");
+
+        cut.getObject();
+
+        verify(vertxBuilder)
+            .with(
+                argThat(options -> {
+                    final MicrometerMetricsOptions metricsOptions = (MicrometerMetricsOptions) options.getMetricsOptions();
+                    return metricsOptions.getLabels().equals(EnumSet.of(Label.LOCAL, Label.REMOTE, Label.HTTP_METHOD, Label.HTTP_PATH));
+                })
+            );
+    }
+
+    @Test
+    void should_not_mutate_DEFAULT_LABELS_when_loading_default_labels_with_include() throws Exception {
+        enableMetrics();
+        environment.setProperty("services.metrics.include.http.client[0]", "remote");
+
+        cut.getObject();
+
+        @SuppressWarnings("unchecked")
+        Set<Label> defaultLabelsField = (Set<Label>) ReflectionTestUtils.getField(VertxFactory.class, "DEFAULT_LABELS");
+        assertThat(defaultLabelsField).isEqualTo(ORIGINAL_DEFAULT_LABELS);
     }
 
     @Test
