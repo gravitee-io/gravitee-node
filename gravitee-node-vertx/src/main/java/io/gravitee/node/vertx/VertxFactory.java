@@ -180,7 +180,7 @@ public class VertxFactory implements FactoryBean<Vertx> {
 
         // Read labels
         this.loadMetricLabels();
-        micrometerMetricsOptions.setLabels(DEFAULT_LABELS);
+        micrometerMetricsOptions.setLabels(metricsLabels);
 
         options.setMetricsOptions(micrometerMetricsOptions);
     }
@@ -203,7 +203,7 @@ public class VertxFactory implements FactoryBean<Vertx> {
         if (labels != null && !labels.isEmpty()) {
             metricsLabels = labels.stream().map(this::toLabel).collect(Collectors.toSet());
         } else {
-            metricsLabels = DEFAULT_LABELS;
+            metricsLabels = EnumSet.copyOf(DEFAULT_LABELS);
         }
 
         // If a label is activated for a specific category, it must be added globally and then manually excluded for all other categories :-(
