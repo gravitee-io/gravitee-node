@@ -19,8 +19,8 @@ package io.gravitee.node.plugin.cache.redis;
 import io.gravitee.node.api.cache.Cache;
 import io.gravitee.node.api.cache.CacheConfiguration;
 import io.gravitee.node.api.cache.ValueMapper;
-import io.gravitee.node.plugin.cache.redis.configuration.HostAndPort;
-import io.gravitee.node.plugin.cache.redis.configuration.RedisConfiguration;
+import io.gravitee.node.vertx.client.redis.VertxRedisClientFactory;
+import io.gravitee.plugin.configurations.redis.RedisClientOptions;
 import io.reactivex.rxjava3.observers.TestObserver;
 import io.vertx.core.Vertx;
 import java.io.IOException;
@@ -48,10 +48,9 @@ public class RedisCacheTest {
         redisServer = new RedisServer(6379);
         redisServer.start();
 
-        final var redisConfiguration = new RedisConfiguration();
-        redisConfiguration.setHostAndPort(HostAndPort.of("localhost", 6379));
-
-        final var cm = new RedisCacheManager(redisConfiguration, Vertx.vertx());
+        final var options = RedisClientOptions.builder().host("localhost").port(6379).build();
+        final var vertx = Vertx.vertx();
+        final var cm = new RedisCacheManager(options, new VertxRedisClientFactory(vertx));
         redisCache =
             cm.getOrCreateCache(
                 "test",
