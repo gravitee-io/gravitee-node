@@ -82,6 +82,7 @@ public class RedisCacheManager extends AbstractService<CacheManager> implements 
     protected void doStop() {
         if (redisAPI != null) {
             redisAPI.close();
+            redisAPI = null;
         }
     }
 
