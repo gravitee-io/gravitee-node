@@ -20,10 +20,8 @@ import io.gravitee.node.api.cache.Cache;
 import io.gravitee.node.api.cache.CacheConfiguration;
 import io.gravitee.node.api.cache.CacheManager;
 import io.gravitee.node.api.cache.ValueMapper;
-import io.gravitee.node.plugin.cache.redis.configuration.RedisConfiguration;
-import io.gravitee.node.plugin.cache.redis.configuration.RedisOptionsFactory;
-import io.vertx.core.Vertx;
-import io.vertx.redis.client.Redis;
+import io.gravitee.node.vertx.client.redis.VertxRedisClientFactory;
+import io.gravitee.plugin.configurations.redis.RedisClientOptions;
 import io.vertx.redis.client.RedisAPI;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -37,16 +35,16 @@ public class RedisCacheManager extends AbstractService<CacheManager> implements 
 
     private final ConcurrentMap<String, Cache<?, ?>> caches = new ConcurrentHashMap<>();
 
-    private final RedisConfiguration redisConfiguration;
+    private final RedisClientOptions redisClientOptions;
 
-    private final Vertx vertx;
+    private final VertxRedisClientFactory redisClientFactory;
 
     private RedisAPI redisAPI;
 
     @Autowired
-    public RedisCacheManager(RedisConfiguration redisConfiguration, Vertx vertx) {
-        this.redisConfiguration = redisConfiguration;
-        this.vertx = vertx;
+    public RedisCacheManager(RedisClientOptions redisClientOptions, VertxRedisClientFactory redisClientFactory) {
+        this.redisClientOptions = redisClientOptions;
+        this.redisClientFactory = redisClientFactory;
     }
 
     @Override
@@ -89,7 +87,7 @@ public class RedisCacheManager extends AbstractService<CacheManager> implements 
 
     private synchronized RedisAPI getOrCreateRedisAPI() {
         if (redisAPI == null) {
-            this.redisAPI = RedisAPI.api(Redis.createClient(vertx, RedisOptionsFactory.build(redisConfiguration)));
+            this.redisAPI = RedisAPI.api(redisClientFactory.createClient(redisClientOptions));
         }
         return this.redisAPI;
     }
