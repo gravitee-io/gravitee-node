@@ -1,3 +1,10 @@
+# [9.0.0-alpha.15](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.14...9.0.0-alpha.15) (2026-06-04)
+
+
+### Features
+
+* **license:** add Azure Key Vault secret provider to enterprise pack ([f9a0cb4](https://github.com/gravitee-io/gravitee-node/commit/f9a0cb4fdb30d02d47d2ecb89656d292e7a011bf))
+
 # [9.0.0-alpha.14](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.13...9.0.0-alpha.14) (2026-05-26)
 
 
