@@ -20,6 +20,7 @@ import io.gravitee.node.vertx.client.ssl.KeyStore;
 import io.gravitee.node.vertx.client.ssl.TrustStore;
 import io.gravitee.plugin.configurations.redis.HostAndPort;
 import io.gravitee.plugin.configurations.redis.RedisClientOptions;
+import io.gravitee.plugin.configurations.redis.RedisClusterOptions;
 import io.gravitee.plugin.configurations.redis.RedisSentinelOptions;
 import io.gravitee.plugin.mappers.RedisClientOptionsMapper;
 import io.gravitee.plugin.mappers.SslOptionsMapper;
@@ -60,6 +61,7 @@ import lombok.RequiredArgsConstructor;
  *   <li>{@code username}</li>
  *   <li>{@code password} (never logged)</li>
  *   <li>sentinel {@code masterId} and sorted {@code nodes}</li>
+ *   <li>cluster {@code useReplicas} and sorted {@code nodes}</li>
  * </ul>
  *
  * <p><b>Invariant:</b> callers using the same connection tuple are assumed to use the
@@ -224,11 +226,24 @@ public class VertxRedisClientFactory {
         sb.append("|user=").append(nullSafe(options.getUsername()));
         sb.append("|pw=").append(nullSafe(options.getPassword()));
 
+        // Gate each topology on isEnabled() too — mirror the mapper's isSentinelMode/isClusterMode
+        // predicates so two configs differing only by 'enabled' (same nodes) don't share a key
+        // yet resolve to different client types.
         RedisSentinelOptions sentinel = options.getSentinel();
-        if (sentinel != null && sentinel.getNodes() != null && !sentinel.getNodes().isEmpty()) {
+        if (sentinel != null && sentinel.isEnabled() && sentinel.getNodes() != null && !sentinel.getNodes().isEmpty()) {
             sb.append("|sentinel=").append(nullSafe(sentinel.getMasterId()));
             // Sort nodes so the key is stable regardless of declaration order.
             List<HostAndPort> sortedNodes = sentinel.getNodes().stream().sorted(VertxRedisClientFactory::compareNode).toList();
+            for (HostAndPort node : sortedNodes) {
+                sb.append(',').append(node.getHost()).append(':').append(node.getPort());
+            }
+        }
+
+        RedisClusterOptions cluster = options.getCluster();
+        if (cluster != null && cluster.isEnabled() && cluster.getNodes() != null && !cluster.getNodes().isEmpty()) {
+            sb.append("|cluster=").append(nullSafe(cluster.getUseReplicas()));
+            // Sort nodes so the key is stable regardless of declaration order.
+            List<HostAndPort> sortedNodes = cluster.getNodes().stream().sorted(VertxRedisClientFactory::compareNode).toList();
             for (HostAndPort node : sortedNodes) {
                 sb.append(',').append(node.getHost()).append(':').append(node.getPort());
             }
@@ -255,6 +270,10 @@ public class VertxRedisClientFactory {
         RedisSentinelOptions sentinel = options.getSentinel();
         if (sentinel != null && sentinel.getNodes() != null && !sentinel.getNodes().isEmpty()) {
             sb.append(" sentinel=").append(sentinel.getMasterId()).append('(').append(sentinel.getNodes().size()).append(" nodes)");
+        }
+        RedisClusterOptions cluster = options.getCluster();
+        if (cluster != null && cluster.getNodes() != null && !cluster.getNodes().isEmpty()) {
+            sb.append(" cluster=(").append(cluster.getNodes().size()).append(" nodes)");
         }
         return sb.toString();
     }

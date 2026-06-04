@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.gravitee.plugin.configurations.redis.HostAndPort;
 import io.gravitee.plugin.configurations.redis.RedisClientOptions;
+import io.gravitee.plugin.configurations.redis.RedisClusterOptions;
 import io.gravitee.plugin.configurations.redis.RedisSentinelOptions;
 import io.gravitee.plugin.configurations.ssl.SslOptions;
 import io.gravitee.plugin.configurations.ssl.jks.JKSTrustStore;
@@ -76,6 +77,21 @@ class VertxRedisClientFactoryTest {
 
             assertThat(result.getType()).isEqualTo(RedisClientType.SENTINEL);
             assertThat(result.getMasterName()).isEqualTo("mymaster");
+        }
+
+        @Test
+        void shouldBuildClusterRedisOptions() {
+            var cluster = RedisClusterOptions
+                .builder()
+                .nodes(List.of(HostAndPort.builder().host("c1").port(6379).build(), HostAndPort.builder().host("c2").port(6379).build()))
+                .build();
+
+            var options = RedisClientOptions.builder().host("redis.local").port(6379).cluster(cluster).build();
+
+            RedisOptions result = factory.buildRedisOptions(options);
+
+            assertThat(result.getType()).isEqualTo(RedisClientType.CLUSTER);
+            assertThat(result.getEndpoints()).hasSize(2);
         }
 
         @Test
@@ -173,6 +189,51 @@ class VertxRedisClientFactoryTest {
         void shouldCreateSeparateClientsForDifferentUsername() {
             Redis c1 = factory.acquire(RedisClientOptions.builder().host("redis.local").port(6379).username("alice").build());
             Redis c2 = factory.acquire(RedisClientOptions.builder().host("redis.local").port(6379).username("bob").build());
+
+            assertThat(c1).isNotSameAs(c2);
+            assertThat(factory.sharedClientCount()).isEqualTo(2);
+        }
+
+        @Test
+        void shouldCreateSeparateClientsForDifferentClusterNodes() {
+            var clusterA = RedisClusterOptions.builder().nodes(List.of(HostAndPort.builder().host("c1").port(6379).build())).build();
+            var clusterB = RedisClusterOptions.builder().nodes(List.of(HostAndPort.builder().host("c2").port(6379).build())).build();
+
+            Redis c1 = factory.acquire(RedisClientOptions.builder().host("redis.local").port(6379).cluster(clusterA).build());
+            Redis c2 = factory.acquire(RedisClientOptions.builder().host("redis.local").port(6379).cluster(clusterB).build());
+
+            assertThat(c1).isNotSameAs(c2);
+            assertThat(factory.sharedClientCount()).isEqualTo(2);
+        }
+
+        @Test
+        void shouldShareClientForSameClusterNodesRegardlessOfOrder() {
+            var clusterA = RedisClusterOptions
+                .builder()
+                .nodes(List.of(HostAndPort.builder().host("c1").port(6379).build(), HostAndPort.builder().host("c2").port(6379).build()))
+                .build();
+            var clusterB = RedisClusterOptions
+                .builder()
+                .nodes(List.of(HostAndPort.builder().host("c2").port(6379).build(), HostAndPort.builder().host("c1").port(6379).build()))
+                .build();
+
+            Redis c1 = factory.acquire(RedisClientOptions.builder().host("redis.local").port(6379).cluster(clusterA).build());
+            Redis c2 = factory.acquire(RedisClientOptions.builder().host("redis.local").port(6379).cluster(clusterB).build());
+
+            assertThat(c1).isSameAs(c2);
+            assertThat(factory.sharedClientCount()).isEqualTo(1);
+        }
+
+        @Test
+        void shouldCreateSeparateClientsForClusterEnabledVsDisabled() {
+            var nodes = List.of(HostAndPort.builder().host("c1").port(6379).build());
+            var enabled = RedisClusterOptions.builder().enabled(true).nodes(nodes).build();
+            var disabled = RedisClusterOptions.builder().enabled(false).nodes(nodes).build();
+
+            // Same nodes but different 'enabled' resolve to different client types (CLUSTER vs STANDALONE),
+            // so they must not share a dedup key.
+            Redis c1 = factory.acquire(RedisClientOptions.builder().host("redis.local").port(6379).cluster(enabled).build());
+            Redis c2 = factory.acquire(RedisClientOptions.builder().host("redis.local").port(6379).cluster(disabled).build());
 
             assertThat(c1).isNotSameAs(c2);
             assertThat(factory.sharedClientCount()).isEqualTo(2);
