@@ -1,3 +1,10 @@
+# [9.0.0-alpha.16](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.15...9.0.0-alpha.16) (2026-06-04)
+
+
+### Features
+
+* **redis:** support Redis Cluster in Vert.x client factory [APIM-14146] ([a397512](https://github.com/gravitee-io/gravitee-node/commit/a397512709cca7d2394b6e0854e5816518e08160))
+
 # [9.0.0-alpha.15](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.14...9.0.0-alpha.15) (2026-06-04)
 
 
