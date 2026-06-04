@@ -54,13 +54,13 @@ class DefaultLicenseFactoryTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         mockedStaticLicense3j = mockStatic(License3J.class);
         mockedStaticLicense3j.when(License3J::publicKey).thenReturn(keyPair.getPublic());
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         mockedStaticLicense3j.close();
     }
 
@@ -448,6 +448,7 @@ class DefaultLicenseFactoryTest {
             "apim-en-endpoint-agent-to-agent",
             "am-authenticator-cba",
             "am-authenticator-magic-link",
+            "gravitee-en-secretprovider-azure-keyvault",
         };
         assertThat(license.getFeatures()).containsExactlyInAnyOrder(features);
 
