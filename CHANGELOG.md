@@ -1,3 +1,10 @@
+# [9.0.0-alpha.17](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.16...9.0.0-alpha.17) (2026-06-05)
+
+
+### Bug Fixes
+
+* **node-cache-redis:** null cached RedisAPI after close to allow restart ([b0f14f0](https://github.com/gravitee-io/gravitee-node/commit/b0f14f08b1d204a68e74472581cfee6468332f4e))
+
 # [9.0.0-alpha.16](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.15...9.0.0-alpha.16) (2026-06-04)
 
 
