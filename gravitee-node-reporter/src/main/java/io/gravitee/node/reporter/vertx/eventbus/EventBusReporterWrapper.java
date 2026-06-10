@@ -16,13 +16,14 @@
 package io.gravitee.node.reporter.vertx.eventbus;
 
 import io.gravitee.common.component.Lifecycle;
+import io.gravitee.reporter.api.ReportTarget;
 import io.gravitee.reporter.api.Reportable;
 import io.gravitee.reporter.api.Reporter;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
+import java.util.Collections;
+import java.util.Set;
 import lombok.CustomLog;
 
 /**
@@ -75,8 +76,27 @@ public class EventBusReporterWrapper implements Reporter, Handler<Message<Report
     @Override
     public void handle(Message<Reportable> reportableMsg) {
         Reportable reportable = reportableMsg.body();
-        if (reporter.canHandle(reportable)) {
+        if (reporter.canHandle(reportable) && hasMatchingTarget(reportable)) {
             reporter.report(reportable);
         }
+    }
+
+    /**
+     * Checks whether the reporter's supported targets intersect with the reportable's
+     * intended targets. A reportable is only dispatched to a reporter when at least one
+     * target is shared between both sets.
+     *
+     * <p>Both sides default to {@link ReportTarget#ALL} for backward compatibility, so
+     * existing reporters and reportables that do not declare explicit targets continue
+     * to match unconditionally.
+     */
+    private boolean hasMatchingTarget(Reportable reportable) {
+        Set<ReportTarget> reportableTargets = reportable.getTargets();
+        Set<ReportTarget> reporterTargets = reporter.supportedTargets();
+        // Null or empty targets = legacy reportable/reporter with no explicit routing → dispatch unconditionally.
+        if (reportableTargets == null || reportableTargets.isEmpty() || reporterTargets == null || reporterTargets.isEmpty()) {
+            return true;
+        }
+        return !Collections.disjoint(reportableTargets, reporterTargets);
     }
 }
