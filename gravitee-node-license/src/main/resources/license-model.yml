@@ -140,27 +140,20 @@ packs:
 
 tiers:
     planet:
-        packs:
+        packs: &planet-packs
             - enterprise-features
             - enterprise-legacy-upgrade
             - enterprise-identity-provider
     galaxy:
-        packs:
-            - enterprise-features
-            - enterprise-legacy-upgrade
-            - enterprise-identity-provider
+        packs: &galaxy-packs
+            - *planet-packs
             - observability
             - enterprise-policy
             - enterprise-alert-engine
     universe:
         packs:
-            - enterprise-features
-            - enterprise-legacy-upgrade
-            - enterprise-identity-provider
-            - observability
-            - enterprise-policy
+            - *galaxy-packs
             - event-native
             - enterprise-mfa-factor
             - enterprise-secret-manager
-            - enterprise-alert-engine
             - enterprise-authenticator
