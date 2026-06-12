@@ -1,3 +1,10 @@
+## [8.0.6](https://github.com/gravitee-io/gravitee-node/compare/8.0.5...8.0.6) (2026-06-12)
+
+
+### Bug Fixes
+
+* **license:** add Azure Key Vault secret provider to enterprise pack ([84028a0](https://github.com/gravitee-io/gravitee-node/commit/84028a017226419ad3cb8bb8d97d20d8ab597120))
+
 ## [8.0.5](https://github.com/gravitee-io/gravitee-node/compare/8.0.4...8.0.5) (2026-05-26)
 
 
