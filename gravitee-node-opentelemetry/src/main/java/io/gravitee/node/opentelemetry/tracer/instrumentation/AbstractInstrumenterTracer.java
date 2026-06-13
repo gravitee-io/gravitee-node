@@ -48,7 +48,8 @@ public abstract class AbstractInstrumenterTracer<REQ, RESP> extends AbstractServ
             }
         }
         Instrumenter<REQ, RESP> instrumenter;
-        if (parentContext.equals(io.opentelemetry.context.Context.root())) {
+        if (root) {
+            parentContext = io.opentelemetry.context.Context.root();
             instrumenter = getRootInstrumenter();
         } else {
             instrumenter = getDefaultInstrumenter();
@@ -59,11 +60,7 @@ public abstract class AbstractInstrumenterTracer<REQ, RESP> extends AbstractServ
             Scope scope = VertxContextStorage.INSTANCE.attach(vertxContext, otelContext);
             return new OpenTelemetrySpan<>(vertxContext, otelContext, scope, root, request);
         }
-        if (root) {
-            return NoOpSpan.asRoot();
-        } else {
-            return NoOpSpan.asDefault();
-        }
+        return root ? NoOpSpan.asRoot() : NoOpSpan.asDefault();
     }
 
     @Override
