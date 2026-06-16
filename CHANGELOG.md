@@ -1,3 +1,10 @@
+# [9.0.0-alpha.19](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.18...9.0.0-alpha.19) (2026-06-16)
+
+
+### Features
+
+* filter reporter dispatch by ReportTarget ([06381a8](https://github.com/gravitee-io/gravitee-node/commit/06381a825367829b4eb8130553e5a7142882ae80))
+
 # [9.0.0-alpha.18](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.17...9.0.0-alpha.18) (2026-06-16)
 
 
