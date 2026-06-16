@@ -1,3 +1,10 @@
+# [9.0.0-alpha.21](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.20...9.0.0-alpha.21) (2026-06-16)
+
+
+### Bug Fixes
+
+* **deps:** bump hazelcast to 5.7.0 ([f6c1a1c](https://github.com/gravitee-io/gravitee-node/commit/f6c1a1c6da203d59db06ae4efbcd46207467aca2))
+
 # [9.0.0-alpha.20](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.19...9.0.0-alpha.20) (2026-06-16)
 
 
