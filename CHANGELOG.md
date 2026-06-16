@@ -1,3 +1,10 @@
+# [9.0.0-alpha.20](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.19...9.0.0-alpha.20) (2026-06-16)
+
+
+### Bug Fixes
+
+* improve concurrency handling and add integration tests for Prometheus endpoint ([b880962](https://github.com/gravitee-io/gravitee-node/commit/b8809620fb04da168977d7b9ccc74dbaf931e83f))
+
 # [9.0.0-alpha.19](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.18...9.0.0-alpha.19) (2026-06-16)
 
 
