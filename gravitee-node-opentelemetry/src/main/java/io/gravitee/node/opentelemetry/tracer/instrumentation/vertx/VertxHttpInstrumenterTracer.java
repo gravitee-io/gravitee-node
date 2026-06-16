@@ -18,6 +18,7 @@ package io.gravitee.node.opentelemetry.tracer.instrumentation.vertx;
 import io.gravitee.node.api.opentelemetry.Span;
 import io.gravitee.node.api.opentelemetry.http.ObservableHttpRequest;
 import io.gravitee.node.api.opentelemetry.http.ObservableHttpResponse;
+import io.gravitee.node.api.opentelemetry.http.ObservableHttpServerRequest;
 import io.gravitee.node.opentelemetry.tracer.instrumentation.AbstractInstrumenterTracer;
 import io.gravitee.node.opentelemetry.tracer.instrumentation.vertx.extractor.AdditionalServerAttributesExtractor;
 import io.gravitee.node.opentelemetry.tracer.instrumentation.vertx.extractor.ClientSpanNameExtractor;
@@ -82,7 +83,11 @@ public class VertxHttpInstrumenterTracer extends AbstractInstrumenterTracer<Obse
 
     @Override
     public <R> void endSpan(final Context vertxContext, final Span span, final R response, final Throwable throwable) {
-        if (span instanceof OpenTelemetrySpan<?> requestSpan && response instanceof ObservableHttpResponse observableHttpResponse) {
+        if (
+            span instanceof OpenTelemetrySpan<?> requestSpan &&
+            requestSpan.request() instanceof ObservableHttpServerRequest &&
+            response instanceof ObservableHttpResponse observableHttpResponse
+        ) {
             HttpServerRoute.update(
                 requestSpan.otelContext(),
                 HttpServerRouteSource.SERVER_FILTER,
