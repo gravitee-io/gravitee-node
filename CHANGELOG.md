@@ -1,3 +1,10 @@
+# [9.0.0-alpha.18](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.17...9.0.0-alpha.18) (2026-06-16)
+
+
+### Bug Fixes
+
+* **tracing:** correct SERVER span kind for gateway entry span ([#573](https://github.com/gravitee-io/gravitee-node/issues/573)) ([bce6f6c](https://github.com/gravitee-io/gravitee-node/commit/bce6f6cda73ae1de422c13c1ca3136a3ea7081e2))
+
 # [9.0.0-alpha.17](https://github.com/gravitee-io/gravitee-node/compare/9.0.0-alpha.16...9.0.0-alpha.17) (2026-06-05)
 
 
