@@ -1,3 +1,10 @@
+## [7.26.5](https://github.com/gravitee-io/gravitee-node/compare/7.26.4...7.26.5) (2026-06-16)
+
+
+### Bug Fixes
+
+* **tracing:** correct SERVER span kind for gateway entry span ([#575](https://github.com/gravitee-io/gravitee-node/issues/575)) ([b9d100c](https://github.com/gravitee-io/gravitee-node/commit/b9d100cc8557a6aea9186b017ff8e84415a883e2))
+
 ## [7.26.4](https://github.com/gravitee-io/gravitee-node/compare/7.26.3...7.26.4) (2026-05-26)
 
 
