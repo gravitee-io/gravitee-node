@@ -38,19 +38,13 @@ public abstract class AbstractInstrumenterTracer<REQ, RESP> extends AbstractServ
 
     @Override
     public <R> Span startSpan(final Context vertxContext, final R request, final boolean root, final Span parentSpan) {
-        io.opentelemetry.context.Context parentContext;
-        if (parentSpan instanceof OpenTelemetrySpan<?> openTelemetryParentSpan) {
-            parentContext = openTelemetryParentSpan.otelContext();
-        } else {
-            parentContext = VertxContextStorage.getContext(vertxContext);
-            if (parentContext == null) {
-                parentContext = io.opentelemetry.context.Context.current();
-            }
-        }
-        Instrumenter<REQ, RESP> instrumenter;
-        if (parentContext.equals(io.opentelemetry.context.Context.root())) {
+        final io.opentelemetry.context.Context parentContext;
+        final Instrumenter<REQ, RESP> instrumenter;
+        if (root) {
+            parentContext = io.opentelemetry.context.Context.root();
             instrumenter = getRootInstrumenter();
         } else {
+            parentContext = resolveParentContext(vertxContext, parentSpan);
             instrumenter = getDefaultInstrumenter();
         }
 
@@ -59,11 +53,18 @@ public abstract class AbstractInstrumenterTracer<REQ, RESP> extends AbstractServ
             Scope scope = VertxContextStorage.INSTANCE.attach(vertxContext, otelContext);
             return new OpenTelemetrySpan<>(vertxContext, otelContext, scope, root, request);
         }
-        if (root) {
-            return NoOpSpan.asRoot();
-        } else {
-            return NoOpSpan.asDefault();
+        return root ? NoOpSpan.asRoot() : NoOpSpan.asDefault();
+    }
+
+    private static io.opentelemetry.context.Context resolveParentContext(final Context vertxContext, final Span parentSpan) {
+        if (parentSpan instanceof OpenTelemetrySpan<?> openTelemetryParentSpan) {
+            return openTelemetryParentSpan.otelContext();
         }
+        io.opentelemetry.context.Context parentContext = VertxContextStorage.getContext(vertxContext);
+        if (parentContext == null) {
+            parentContext = io.opentelemetry.context.Context.current();
+        }
+        return parentContext;
     }
 
     @Override
