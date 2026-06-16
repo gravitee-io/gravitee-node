@@ -1,142 +1,165 @@
 packs:
     enterprise-features:
         features:
-            - apim-api-designer
-            - apim-dcr-registration
-            - apim-custom-roles
-            - apim-audit-trail
-            - apim-sharding-tags
-            - apim-openid-connect-sso
-            - apim-debug-mode
-            - gravitee-risk-assessment
+            - apim-api-designer # not used?
             - risk-assessment # for removal
-            - apim-bridge-gateway
-            - apim-api-products
+
+            - apim-api-products # not a plugin. Feature is in the UI
+            - apim-audit-trail # not a plugin. Feature is in the UI
+            - apim-custom-roles # not a plugin. Feature is in the UI
+            - apim-dcr-registration # not a plugin. Feature is in the UI
+            - apim-debug-mode # not a plugin. Feature is in the UI
+            - apim-openid-connect-sso # not a plugin. Feature is in the UI
+            - apim-sharding-tags # not a plugin. Feature is in the UI
+
+            - gravitee-risk-assessment # service: gravitee-risk-assessment
+            - apim-bridge-gateway # repository: gravitee-apim-repository-bridge-http-server, repository: gravitee-apim-repository-bridge-http-client
+
     enterprise-legacy-upgrade:
         features:
-            - apim-policy-xslt
-            - apim-policy-ws-security-authentication
+            - apim-policy-xslt # policy: gravitee-policy-xslt
+            - apim-policy-ws-security-authentication # policy: gravitee-policy-wssecurity-authentication
+
     enterprise-policy:
         features:
-            - apim-policy-assign-metrics
+            - apim-policy-interops-r-idp # not used?
             - policy-assign-metrics # for removal
-            - apim-policy-data-logging-masking
             - policy-data-logging-masking # for removal
-            - apim-policy-geoip-filtering
-            - apim-policy-oas-validation
-            - apim-policy-transform-avro-json
-            - apim-policy-transform-protobuf-json
-            - apim-policy-transform-avro-protobuf
-            - am-policy-mfa-challenge
-            - am-policy-account-linking
-            - apim-policy-graphql-ratelimit
-            - apim-policy-interops-a-idp
-            - apim-policy-interops-r-idp
-            - apim-policy-interops-a-sp
-            - apim-policy-interops-r-sp
-            - apim-policy-data-cache
+
+            - am-policy-account-linking # policy: gravitee-am-policy-account-linking
+            - am-policy-mfa-challenge # policy: gravitee-am-policy-mfa-challenge
+            - apim-policy-assign-metrics # policy: gravitee-policy-assign-metrics
+            - apim-policy-data-cache # policy: gravitee-policy-data-cache
+            - apim-policy-data-logging-masking # policy: gravitee-policy-data-logging-masking
+            - apim-policy-geoip-filtering # policy: gravitee-policy-geoip-filtering, service: gravitee-service-geoip
+            - apim-policy-graphql-ratelimit # policy: gravitee-policy-graphql-rate-limit
+            - apim-policy-interops-a-idp # policy: gravitee-policy-interops-a-idp
+            - apim-policy-interops-a-sp # policy: gravitee-policy-interops-a-sp
+            - apim-policy-interops-r-sp # policy: gravitee-policy-interops-r-sp
+            - apim-policy-oas-validation # policy: gravitee-policy-oas-validation
+            - apim-policy-transform-avro-json # policy: gravitee-policy-transform-avro-json
+            - apim-policy-transform-avro-protobuf # policy: gravitee-policy-transform-avro-protobuf
+            - apim-policy-transform-protobuf-json # policy: gravitee-policy-transform-protobuf-json
+
     enterprise-identity-provider:
         features:
-            - am-idp-salesforce
-            - am-idp-saml
-            - am-idp-ldap
-            - am-idp-kerberos
-            - am-idp-azure-ad
-            - am-idp-gateway-handler-saml
             - am-gateway-handler-saml-idp # for removal
-            - am-idp-http-flow
-            - http-flow-am-idp # for removal
-            - am-idp-france-connect
-            - am-idp-cas
             - cas-am-idp # for removal
+            - http-flow-am-idp # for removal
+
+            - am-idp-gateway-handler-saml # identity-provider: gravitee-am-gateway-handler-saml2-id
+            - am-idp-azure-ad # identity-provider: gravitee-am-identityprovider-azure-ad
+            - am-idp-cas # identity-provider: gravitee-am-identityprovider-cas
+            - am-idp-france-connect # identity-provider: gravitee-am-identityprovider-france-connect
+            - am-idp-http-flow # identity-provider: gravitee-am-identityprovider-http-flow
+            - am-idp-kerberos # identity-provider: gravitee-am-identityprovider-kerberos
+            - am-idp-ldap # identity-provider: gravitee-am-identityprovider-ldap
+            - am-idp-salesforce # identity-provider: gravitee-am-identityprovider-salesforce
+            - am-idp-saml # identity-provider: gravitee-am-identityprovider-saml
+
     enterprise-authorization-engine:
         features:
-            - am-authorizationengine-openfga
-            - am-authorization-gateway-handler-authzen
+            - am-authorization-gateway-handler-authzen # protocol: gravitee-am-gateway-handler-authzen
+            - am-authorizationengine-openfga # authorization-engine: gravitee-am-authorization-engine-openfga
+
     enterprise-authenticator:
         features:
-            - am-authenticator-cba
-            - am-authenticator-magic-link
+            - am-authenticator-cba # authenticator: gravitee-am-authenticator-cba
+            - am-authenticator-magic-link # authenticator: gravitee-am-authenticator-magiclink
+
     enterprise-mfa-factor:
         features:
-            - am-mfa-recovery-code
-            - am-resource-twilio
-            - am-mfa-http
-            - am-factor-http # for removal
-            - am-mfa-resource-http-factor
-            - am-mfa-otp-sender
-            - am-factor-otp-sender # for removal
-            - am-mfa-fido2
+            - am-mfa-resource-http-factor # not used?
             - am-factor-fido2 # for removal
-            - am-resource-http-factor
-            - am-mfa-sms
-            - am-mfa-call
-            - am-resource-sfr
-            - am-resource-orange-contact-everyone
-            - am-resource-http
+            - am-factor-http # for removal
+            - am-factor-otp-sender # for removal
+
+            - am-mfa-call # factor: gravitee-am-factor-call
+            - am-mfa-fido2 # factor: gravitee-am-factor-fido2
+            - am-mfa-http # factor: gravitee-am-factor-http
+            - am-mfa-otp-sender # factor: gravitee-am-factor-otp-sender
+            - am-mfa-recovery-code # factor: gravitee-am-factor-recovery-code
+            - am-mfa-sms # factor: gravitee-am-factor-sms
+            - am-resource-http # resource: gravitee-am-resource-http
+            - am-resource-http-factor # resource: gravitee-am-resource-http-factor
+            - am-resource-orange-contact-everyone # resource: gravitee-am-resource-orange-contact-everyone
+            - am-resource-sfr # resource: gravitee-am-resource-sfr
+            - am-resource-twilio # resource: gravitee-am-resource-twilio
+
     observability:
         features:
-            - apim-reporter-tcp
-            - apim-reporter-datadog
             - reporter-datadog # for removal
+
+            - apim-reporter-datadog # reporter: gravitee-reporter-datadog
+            - apim-reporter-tcp # reporter: gravitee-reporter-tcp
+
     event-native:
         features:
-            - apim-en-message-reactor
-            - apim-en-entrypoint-webhook
-            - apim-en-entrypoint-http-get
-            - apim-en-entrypoint-websocket
-            - apim-en-entrypoint-http-post
-            - apim-en-entrypoint-sse
-            - apim-en-entrypoint-agent-to-agent
-            - apim-en-endpoint-jms
-            - apim-en-endpoint-mqtt5
-            - apim-en-endpoint-rabbitmq
-            - apim-en-endpoint-kafka
-            - apim-en-endpoint-solace
-            - apim-en-endpoint-asb
-            - apim-en-endpoint-agent-to-agent
-            - apim-en-schema-registry-provider
             - apim-connectors-advanced # for removal
+
+            - apim-en-message-reactor # reactor: gravitee-reactor-message
+            - apim-en-entrypoint-agent-to-agent # entrypoint: gravitee-entrypoint-agent-to-agent
+            - apim-en-entrypoint-http-get # entrypoint: gravitee-entrypoint-http-get
+            - apim-en-entrypoint-http-post # entrypoint: gravitee-entrypoint-http-post
+            - apim-en-entrypoint-sse # entrypoint: gravitee-entrypoint-sse
+            - apim-en-entrypoint-webhook # entrypoint: gravitee-entrypoint-webhook
+            - apim-en-entrypoint-websocket # entrypoint: gravitee-entrypoint-websocket
+            - apim-en-endpoint-agent-to-agent # endpoint: gravitee-endpoint-agent-to-agent
+            - apim-en-endpoint-asb # endpoint: gravitee-endpoint-azure-service-bus
+            - apim-en-endpoint-kafka # endpoint: gravitee-endpoint-kafka
+            - apim-en-endpoint-jms # endpoint: gravitee-endpoint-jms
+            - apim-en-endpoint-mqtt5 # endpoint: gravitee-endpoint-mqtt5
+            - apim-en-endpoint-rabbitmq # endpoint: gravitee-endpoint-rabbitmq
+            - apim-en-endpoint-solace # endpoint: gravitee-endpoint-solace
+            - apim-en-schema-registry-provider # schema-registry: gravitee-resource-schema-registry-confluent, gravitee-resource-schema-registry-embedded
+
     enterprise-secret-manager:
         features:
-            - gravitee-en-secretprovider-vault
-            - gravitee-en-secretprovider-aws
-            - gravitee-en-secretprovider-azure-keyvault
-            - gravitee-en-secrets
-            - am-certificate-aws
-            - am-certificate-aws-cloudhsm
+            - am-certificate-aws # certificate: gravitee-am-certificate-aws
+            - am-certificate-aws-cloudhsm # certificate: gravitee-am-certificate-hsm-aws
+            - gravitee-en-secretprovider-aws # secret-provider: gravitee-secret-provider-aws
+            - gravitee-en-secretprovider-azure-keyvault # secret-provider: gravitee-secret-provider-azure-keyvault
+            - gravitee-en-secretprovider-vault # secret-provider: gravitee-secret-provider-hc-vault
+            - gravitee-en-secrets # service: gravitee-service-secrets
+
     enterprise-alert-engine:
         features:
-            - alert-engine
+            - alert-engine # node: gravitee-alert-engine
+
     oem:
         features:
-            - oem-customization
+            - oem-customization # not a plugin. Feature is in the UI
+
     native-kafka:
         features:
-            - apim-cluster
-            - apim-native-kafka-console
-            - apim-native-kafka-explorer
-            - apim-native-kafka-reactor
-            - apim-native-kafka-policy-acl
-            - apim-native-kafka-policy-quota
-            - apim-native-kafka-policy-topic-mapping
-            - apim-native-kafka-policy-offloading
-            - apim-native-kafka-policy-transform-key
-            - apim-native-kafka-policy-virtual-topics
-            - apim-native-kafka-policy-encryption
-            - apim-native-kafka-policy-rules
-            - apim-native-policy-ip-filtering
+            - apim-native-kafka-console # not used anymore
+
+            - apim-cluster # not a plugin. Feature is in the UI
+            - apim-native-kafka-explorer # not a plugin. Feature is in the UI
+
+            - apim-native-kafka-reactor # reactor: gravitee-reactor-native-kafka, endpoint: gravitee-endpoint-native-kafka, entrypoint: gravitee-entrypoint-native-kafka
+            - apim-native-kafka-policy-acl # policy: gravitee-policy-kafka-acl
+            - apim-native-kafka-policy-encryption # policy: gravitee-policy-kafka-encryption
+            - apim-native-kafka-policy-offloading # policy: gravitee-policy-kafka-offloading
+            - apim-native-kafka-policy-quota # policy: gravitee-policy-kafka-quota
+            - apim-native-kafka-policy-topic-mapping # policy: gravitee-policy-kafka-topic-mapping
+            - apim-native-kafka-policy-transform-key # policy: gravitee-policy-kafka-transform-key
+            - apim-native-kafka-policy-virtual-topics # policy: gravitee-policy-kafka-virtual-topics
+            - apim-native-kafka-policy-rules # policy: gravitee-policy-kafka-fetch-rules, policy: gravitee-policy-kafka-produce-rules, policy: gravitee-policy-kafka-alter-topic-rules, policy: gravitee-policy-kafka-create-topics-rules
+            - apim-native-policy-ip-filtering # policy: gravitee-policy-native-ip-filtering
+
     agent-mesh:
         features:
-            - apim-ai-policy-semantic-cache
-            - apim-ai-resource-text-embedding
-            - apim-ai-resource-token-classification
-            - apim-ai-resource-vector-store-redis
-            - apim-a2a-proxy-reactor
-            - apim-llm-proxy-reactor
-            - apim-mcp-proxy-reactor
-            - apim-mcp-tool-server
-            - apim-policy-pii-filtering
+            - apim-ai-resource-token-classification # not used?
+
+            - apim-a2a-proxy-reactor # reactor: gravitee-reactor-a2a-proxy, endpoint: gravitee-endpoint-a2a-proxy, entrypoint: gravitee-entrypoint-a2a-proxy
+            - apim-llm-proxy-reactor # reactor: gravitee-reactor-llm-proxy, endpoint: gravitee-endpoint-llm-proxy, entrypoint: gravitee-entrypoint-llm-proxy
+            - apim-mcp-proxy-reactor # policy: gravitee-policy-mcp-acl, reactor: gravitee-reactor-mcp-proxy, endpoint: gravitee-endpoint-mcp-proxy, entrypoint: gravitee-entrypoint-mcp-proxy
+            - apim-mcp-tool-server # entrypoint: gravitee-entrypoint-mcp-tool-server
+            - apim-ai-policy-semantic-cache # policy: gravitee-policy-ai-semantic-caching
+            - apim-policy-pii-filtering # policy: gravitee-policy-pii-filtering
+            - apim-ai-resource-text-embedding # resource: gravitee-resource-ai-text-embedding
+            - apim-ai-resource-vector-store-redis # resource: gravitee-resource-ai-vector-store-redis
 
 tiers:
     planet:
