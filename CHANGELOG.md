@@ -1,3 +1,38 @@
+# [9.0.0](https://github.com/gravitee-io/gravitee-node/compare/8.0.7...9.0.0) (2026-06-17)
+
+
+### Bug Fixes
+
+* **deps:** bump gravitee-plugin-common-configurations to 1.2.3 ([0099ccc](https://github.com/gravitee-io/gravitee-node/commit/0099ccc369d693399ec26dad586286bfa36f9c95))
+* http2 keep alive timeout needs is in seconds ([4f17cfe](https://github.com/gravitee-io/gravitee-node/commit/4f17cfe6d044a730aaee5fa3760040fe94e83175))
+* improve concurrency handling and add integration tests for Prometheus endpoint ([fe90b4a](https://github.com/gravitee-io/gravitee-node/commit/fe90b4a4552ac86b14bc0cda2c96cfe207d1d24a))
+* new specific factory for WebSocketClient ([67cbea5](https://github.com/gravitee-io/gravitee-node/commit/67cbea590873b7f489d170494f20ff238fa3321e))
+* **node-cache-redis:** null cached RedisAPI after close to allow restart ([40bd00c](https://github.com/gravitee-io/gravitee-node/commit/40bd00c16527e6443e6ab5d53ac449d00f474147))
+* PrometheusEndpoint improvements and unit tests ([ba6638d](https://github.com/gravitee-io/gravitee-node/commit/ba6638dc6e76e999c2b98dff713f003301102351))
+* **redis:** wire hostname algorithm + SSL tuning through factory ([c73e10b](https://github.com/gravitee-io/gravitee-node/commit/c73e10b9b3c0d39428de6a951c70731cfdb51c3c))
+* **ssl:** null-safe hostnameVerificationAlgorithm in TCP client factory ([661c7cb](https://github.com/gravitee-io/gravitee-node/commit/661c7cb4eb9f0583b15c4fc8317893177eeb6195))
+* **tracing:** correct SERVER span kind for gateway entry span ([#573](https://github.com/gravitee-io/gravitee-node/issues/573)) ([0f7e386](https://github.com/gravitee-io/gravitee-node/commit/0f7e386e9425cd852c02a0833c2eb5df5692d1db))
+
+
+### Features
+
+* add span-attribute redaction support ([#548](https://github.com/gravitee-io/gravitee-node/issues/548)) ([4ad40e9](https://github.com/gravitee-io/gravitee-node/commit/4ad40e931a5fd983bad6a0db5c380ac23b15ffdb))
+* add support for multitenancy in TracingQueryService and Tempo impl ([d91cd27](https://github.com/gravitee-io/gravitee-node/commit/d91cd2788649bab038d07ffc90cb12ed4cd684f1))
+* add traceId/spanId to span and a record method with specific span to logger ([4a90539](https://github.com/gravitee-io/gravitee-node/commit/4a9053996222ff603208c4c881364ee1b3218b51))
+* **APIM-13618:** add OTel Logger API, logsEndpoint config and Loki HTTP log exporter ([0245eaa](https://github.com/gravitee-io/gravitee-node/commit/0245eaafa7f41ab6fd3981223a5455b19710329b))
+* filter reporter dispatch by ReportTarget ([2e2447d](https://github.com/gravitee-io/gravitee-node/commit/2e2447d798a5d3210b953317ab483efdf9307483))
+* implement a tracing query service based on Tempo ([f4bd84c](https://github.com/gravitee-io/gravitee-node/commit/f4bd84cd8d1a68a622e1bc71c9291f2fe419e062))
+* **otel-logger:** add record overload taking raw traceId/spanId strings ([b16d37c](https://github.com/gravitee-io/gravitee-node/commit/b16d37cac3a200cd83341714a9248ad171d54b94))
+* **redis,ssl:** honour hostname algorithm and multi-cert PEM via shared SSL types ([bd0f811](https://github.com/gravitee-io/gravitee-node/commit/bd0f8110972841a92368b04a2a5079820ac8e127))
+* **redis:** add VertxRedisClientFactory for shared Redis clients ([4e16492](https://github.com/gravitee-io/gravitee-node/commit/4e164927e6e6c533cfa7a18cf9268bbac6735acb))
+* **redis:** support Redis Cluster in Vert.x client factory [APIM-14146] ([a3a8750](https://github.com/gravitee-io/gravitee-node/commit/a3a8750e2925615b4e18c127d65acc900108ae88))
+* upgrade to vert.x 5 ([2c696d6](https://github.com/gravitee-io/gravitee-node/commit/2c696d600d458ff4a17adb27eba624437473dd25))
+
+
+### BREAKING CHANGES
+
+* upgrade to vert.x 5.x
+
 ## [8.0.7](https://github.com/gravitee-io/gravitee-node/compare/8.0.6...8.0.7) (2026-06-16)
 
 
