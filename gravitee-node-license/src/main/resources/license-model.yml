@@ -161,6 +161,149 @@ packs:
             - apim-ai-resource-text-embedding # resource: gravitee-resource-ai-text-embedding
             - apim-ai-resource-vector-store-redis # resource: gravitee-resource-ai-vector-store-redis
 
+    ############################### Gamma packs ################################
+    standard:
+        features: &standard-features
+            - apim-api-products # not a plugin. Feature is in the UI
+            - apim-audit-trail # not a plugin. Feature is in the UI
+            - apim-custom-roles # not a plugin. Feature is in the UI
+            - apim-dcr-registration # not a plugin. Feature is in the UI
+            - apim-debug-mode # not a plugin. Feature is in the UI
+            - apim-openid-connect-sso # not a plugin. Feature is in the UI
+            - apim-sharding-tags # not a plugin. Feature is in the UI
+            - gravitee-risk-assessment # service: gravitee-risk-assessment
+            - apim-bridge-gateway # repository: gravitee-apim-repository-bridge-http-server, repository: gravitee-apim-repository-bridge-http-client
+
+            - apim-policy-xslt # policy: gravitee-policy-xslt
+            - apim-policy-ws-security-authentication # policy: gravitee-policy-wssecurity-authentication
+
+            - am-idp-gateway-handler-saml # identity-provider: gravitee-am-gateway-handler-saml2-id
+            - am-idp-azure-ad # identity-provider: gravitee-am-identityprovider-azure-ad
+            - am-idp-cas # identity-provider: gravitee-am-identityprovider-cas
+            - am-idp-france-connect # identity-provider: gravitee-am-identityprovider-france-connect
+            - am-idp-http-flow # identity-provider: gravitee-am-identityprovider-http-flow
+            - am-idp-kerberos # identity-provider: gravitee-am-identityprovider-kerberos
+            - am-idp-ldap # identity-provider: gravitee-am-identityprovider-ldap
+            - am-idp-salesforce # identity-provider: gravitee-am-identityprovider-salesforce
+            - am-idp-saml # identity-provider: gravitee-am-identityprovider-saml
+
+    enterprise:
+        features:
+            - *standard-features
+            - apim-reporter-datadog # reporter: gravitee-reporter-datadog
+            - apim-reporter-tcp # reporter: gravitee-reporter-tcp
+
+            - am-policy-account-linking # policy: gravitee-am-policy-account-linking
+            - am-policy-mfa-challenge # policy: gravitee-am-policy-mfa-challenge
+
+            - apim-policy-assign-metrics # policy: gravitee-policy-assign-metrics
+            - apim-policy-data-cache # policy: gravitee-policy-data-cache
+            - apim-policy-data-logging-masking # policy: gravitee-policy-data-logging-masking
+            - apim-policy-geoip-filtering # policy: gravitee-policy-geoip-filtering, service: gravitee-service-geoip
+            - apim-policy-graphql-ratelimit # policy: gravitee-policy-graphql-rate-limit
+            - apim-policy-interops-a-idp # policy: gravitee-policy-interops-a-idp
+            - apim-policy-interops-a-sp # policy: gravitee-policy-interops-a-sp
+            - apim-policy-interops-r-sp # policy: gravitee-policy-interops-r-sp
+            - apim-policy-oas-validation # policy: gravitee-policy-oas-validation
+            - apim-policy-transform-avro-json # policy: gravitee-policy-transform-avro-json
+            - apim-policy-transform-avro-protobuf # policy: gravitee-policy-transform-avro-protobuf
+            - apim-policy-transform-protobuf-json # policy: gravitee-policy-transform-protobuf-json
+
+            - alert-engine # node: gravitee-alert-engine
+
+    authorization-management:
+        features:
+            - gamma-authz-module # module: gravitee-gamma-module-authz
+            - gamma-authz-reactor # reactor: gravitee-reactor-authz, entrypoint: gravitee-entrypoint-authz
+            - gamma-authz-policy-authzen-pdp # policy: gravitee-policy-pdp-authzen
+            - gamma-authz-policy-pep # policy: gravitee-policy-authz-pep
+            - gamma-authz-service-pdp # service: gravitee-service-authz-pdp
+
+    identity-and-access-management:
+        features:
+            - am-mfa-call # factor: gravitee-am-factor-call
+            - am-mfa-fido2 # factor: gravitee-am-factor-fido2
+            - am-mfa-http # factor: gravitee-am-factor-http
+            - am-mfa-otp-sender # factor: gravitee-am-factor-otp-sender
+            - am-mfa-recovery-code # factor: gravitee-am-factor-recovery-code
+            - am-mfa-sms # factor: gravitee-am-factor-sms
+            - am-resource-http # resource: gravitee-am-resource-http
+            - am-resource-http-factor # resource: gravitee-am-resource-http-factor
+            - am-resource-orange-contact-everyone # resource: gravitee-am-resource-orange-contact-everyone
+            - am-resource-sfr # resource: gravitee-am-resource-sfr
+            - am-resource-twilio # resource: gravitee-am-resource-twilio
+
+            - am-authenticator-cba # authenticator: gravitee-am-authenticator-cba
+            - am-authenticator-magic-link # authenticator: gravitee-am-authenticator-magiclink
+
+    agent-management:
+        features:
+            - apim-ai-resource-token-classification # not used?
+
+            - apim-a2a-proxy-reactor # reactor: gravitee-reactor-a2a-proxy, endpoint: gravitee-endpoint-a2a-proxy, entrypoint: gravitee-entrypoint-a2a-proxy
+            - apim-llm-proxy-reactor # reactor: gravitee-reactor-llm-proxy, endpoint: gravitee-endpoint-llm-proxy, entrypoint: gravitee-entrypoint-llm-proxy
+            - apim-mcp-proxy-reactor # policy: gravitee-policy-mcp-acl, reactor: gravitee-reactor-mcp-proxy, endpoint: gravitee-endpoint-mcp-proxy, entrypoint: gravitee-entrypoint-mcp-proxy
+            - apim-mcp-tool-server # entrypoint: gravitee-entrypoint-mcp-tool-server
+            - apim-ai-policy-semantic-cache # policy: gravitee-policy-ai-semantic-caching
+            - apim-policy-pii-filtering # policy: gravitee-policy-pii-filtering
+            - apim-ai-resource-text-embedding # resource: gravitee-resource-ai-text-embedding
+            - apim-ai-resource-vector-store-redis # resource: gravitee-resource-ai-vector-store-redis
+
+            - gamma-aim-module # module: gravitee-gamma-module-aim
+            - gamma-aim-endpoint-tools-http # endpoint: gravitee-endpoint-tools-http
+            - gamma-aim-endpoint-tools-mcp # endpoint: gravitee-endpoint-tools-mcp
+            - gamma-aim-entrypoint-mcp-studio # entrypoint: gravitee-entrypoint-mcp-studio
+
+            - gamma-aim-policy-prompt-decorator # policy: gravitee-policy-ai-prompt-decorator (not released)
+            - gamma-aim-policy-prompt-pattern-guard-rails # policy: gravitee-policy-ai-prompt-pattern-guard-rails (not released)
+            - gamma-aim-policy-prompt-template # policy: gravitee-policy-ai-prompt-template (not released)
+            - gamma-aim-policy-semantic-prompt-guard # policy: gravitee-policy-ai-semantic-prompt-guard (not released)
+            - gamma-aim-policy-semantic-response-guard # policy: gravitee-policy-ai-semantic-response-guard (not released)
+
+    event-native-management:
+        features:
+            - apim-en-message-reactor # reactor: gravitee-reactor-message
+            - apim-en-entrypoint-agent-to-agent # entrypoint: gravitee-entrypoint-agent-to-agent
+            - apim-en-entrypoint-http-get # entrypoint: gravitee-entrypoint-http-get
+            - apim-en-entrypoint-http-post # entrypoint: gravitee-entrypoint-http-post
+            - apim-en-entrypoint-sse # entrypoint: gravitee-entrypoint-sse
+            - apim-en-entrypoint-webhook # entrypoint: gravitee-entrypoint-webhook
+            - apim-en-entrypoint-websocket # entrypoint: gravitee-entrypoint-websocket
+            - apim-en-endpoint-agent-to-agent # endpoint: gravitee-endpoint-agent-to-agent
+            - apim-en-endpoint-asb # endpoint: gravitee-endpoint-azure-service-bus
+            - apim-en-endpoint-kafka # endpoint: gravitee-endpoint-kafka
+            - apim-en-endpoint-jms # endpoint: gravitee-endpoint-jms
+            - apim-en-endpoint-mqtt5 # endpoint: gravitee-endpoint-mqtt5
+            - apim-en-endpoint-rabbitmq # endpoint: gravitee-endpoint-rabbitmq
+            - apim-en-endpoint-solace # endpoint: gravitee-endpoint-solace
+            - apim-en-schema-registry-provider # schema-registry: gravitee-resource-schema-registry-confluent, gravitee-resource-schema-registry-embedded
+
+            - gamma-en-module # module: gravitee-gamma-module-en
+
+    event-streaming-management:
+        features:
+            - apim-cluster # not a plugin. Feature is in the UI
+            - apim-native-kafka-explorer # not a plugin. Feature is in the UI
+
+            - apim-native-kafka-reactor # reactor: gravitee-reactor-native-kafka, endpoint: gravitee-endpoint-native-kafka, entrypoint: gravitee-entrypoint-native-kafka
+            - apim-native-kafka-policy-acl # policy: gravitee-policy-kafka-acl
+            - apim-native-kafka-policy-encryption # policy: gravitee-policy-kafka-encryption
+            - apim-native-kafka-policy-offloading # policy: gravitee-policy-kafka-offloading
+            - apim-native-kafka-policy-quota # policy: gravitee-policy-kafka-quota
+            - apim-native-kafka-policy-topic-mapping # policy: gravitee-policy-kafka-topic-mapping
+            - apim-native-kafka-policy-transform-key # policy: gravitee-policy-kafka-transform-key
+            - apim-native-kafka-policy-virtual-topics # policy: gravitee-policy-kafka-virtual-topics
+            - apim-native-kafka-policy-rules # policy: gravitee-policy-kafka-fetch-rules, policy: gravitee-policy-kafka-produce-rules, policy: gravitee-policy-kafka-alter-topic-rules, policy: gravitee-policy-kafka-create-topics-rules
+            - apim-native-policy-ip-filtering # policy: gravitee-policy-native-ip-filtering
+
+            - gamma-esm-module # module: gravitee-gamma-module-esm
+
+    edge-management:
+        features:
+            - gamma-edge-module # module: gravitee-gamma-module-edge
+            - gamma-edge-reactor # reactor: gravitee-reactor-edge
+    #############################################################################
+
 tiers:
     planet:
         packs: &planet-packs
@@ -180,3 +323,15 @@ tiers:
             - enterprise-mfa-factor
             - enterprise-secret-manager
             - enterprise-authenticator
+
+    ############################### Gamma tiers ################################
+    gamma-planet:
+        packs:
+            - standard
+    gamma-galaxy:
+        packs:
+            - enterprise
+    gamma-universe:
+        packs:
+            - enterprise
+    ############################################################################
