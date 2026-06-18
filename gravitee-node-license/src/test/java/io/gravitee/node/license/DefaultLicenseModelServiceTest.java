@@ -179,7 +179,7 @@ class DefaultLicenseModelServiceTest {
         assertThat(pack).isNotNull();
         assertThat(pack.getFeatures())
             .containsExactlyInAnyOrder(
-                "apim-ai-resource-token-classification",
+                "apim-ai-resource-model-token-classification",
                 "apim-a2a-proxy-reactor",
                 "apim-llm-proxy-reactor",
                 "apim-mcp-proxy-reactor",

@@ -150,7 +150,7 @@ packs:
 
     agent-mesh:
         features:
-            - apim-ai-resource-token-classification # not used?
+            - apim-ai-resource-model-token-classification # resource: gravitee-resource-ai-model-token-classification
 
             - apim-a2a-proxy-reactor # reactor: gravitee-reactor-a2a-proxy, endpoint: gravitee-endpoint-a2a-proxy, entrypoint: gravitee-entrypoint-a2a-proxy
             - apim-llm-proxy-reactor # reactor: gravitee-reactor-llm-proxy, endpoint: gravitee-endpoint-llm-proxy, entrypoint: gravitee-entrypoint-llm-proxy
@@ -238,7 +238,7 @@ packs:
 
     agent-management:
         features:
-            - apim-ai-resource-token-classification # not used?
+            - apim-ai-resource-model-token-classification # resource: gravitee-resource-ai-model-token-classification
 
             - apim-a2a-proxy-reactor # reactor: gravitee-reactor-a2a-proxy, endpoint: gravitee-endpoint-a2a-proxy, entrypoint: gravitee-entrypoint-a2a-proxy
             - apim-llm-proxy-reactor # reactor: gravitee-reactor-llm-proxy, endpoint: gravitee-endpoint-llm-proxy, entrypoint: gravitee-entrypoint-llm-proxy
