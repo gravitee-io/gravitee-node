@@ -1,3 +1,15 @@
+# [9.1.0](https://github.com/gravitee-io/gravitee-node/compare/9.0.0...9.1.0) (2026-06-19)
+
+
+### Bug Fixes
+
+* rename permission ([0e84f53](https://github.com/gravitee-io/gravitee-node/commit/0e84f5351cd9b3fb3279a5a9637a71b7353058f2))
+
+
+### Features
+
+* add gamma licenses ([3c049d5](https://github.com/gravitee-io/gravitee-node/commit/3c049d511fd37b8f6a607f9acf1bf499e5fb876f))
+
 # [9.0.0](https://github.com/gravitee-io/gravitee-node/compare/8.0.7...9.0.0) (2026-06-17)
 
 
