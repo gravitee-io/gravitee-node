@@ -164,7 +164,26 @@ public class GraviteeConfigurationSecretResolver {
         if (secretURL.isKeyEmpty()) {
             return Maybe.error(new IllegalArgumentException("cannot request secret key, no key provided"));
         }
-        return resolve(secretURL).flatMapMaybe(secretMap -> Maybe.fromOptional(secretMap.getSecret(secretURL)));
+        return resolve(secretURL)
+            .flatMapMaybe(secretMap -> {
+                Optional<Secret> secret = secretMap.getSecret(secretURL);
+
+                if (secretURL.isExistenceCheck()) {
+                    return Maybe.just(new Secret(String.valueOf(secret.isPresent())));
+                }
+
+                if (secret.isPresent()) {
+                    return Maybe.just(secret.get());
+                }
+
+                return secretURL.getFallback().map(fallbackValue -> Maybe.just(new Secret(fallbackValue))).orElse(Maybe.empty());
+            })
+            .onErrorResumeNext(throwable -> {
+                if (secretURL.isExistenceCheck()) {
+                    return Maybe.just(new Secret("false"));
+                }
+                return Maybe.error(throwable);
+            });
     }
 
     /**
