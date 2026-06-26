@@ -1,3 +1,10 @@
+## [9.1.1](https://github.com/gravitee-io/gravitee-node/compare/9.1.0...9.1.1) (2026-06-26)
+
+
+### Bug Fixes
+
+* add apim-native-kafka-policy-namespace feature ([#579](https://github.com/gravitee-io/gravitee-node/issues/579)) ([4447caa](https://github.com/gravitee-io/gravitee-node/commit/4447caa713fdcfdb33bb1e568cca1409f2a9b820))
+
 # [9.1.0](https://github.com/gravitee-io/gravitee-node/compare/9.0.0...9.1.0) (2026-06-19)
 
 
