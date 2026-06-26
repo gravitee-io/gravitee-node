@@ -221,6 +221,7 @@ class DefaultLicenseModelServiceTest {
                     "apim-native-kafka-policy-transform-key",
                     "apim-native-kafka-policy-virtual-topics",
                     "apim-native-kafka-policy-rules",
+                    "apim-native-kafka-policy-namespace",
                     "apim-native-policy-ip-filtering",
                     "gamma-esm-module",
                 }

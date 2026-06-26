@@ -62,12 +62,15 @@ if [ "$generate_client_cert" == "y" ]; then
     # Keystore
     openssl genrsa -out $CONFIG_SSL_PATH/client.key 4096
     openssl req -new -key $CONFIG_SSL_PATH/client.key -out $CONFIG_SSL_PATH/client.csr -subj "/CN=client.jaeger"
-    openssl x509 -req -in $CONFIG_SSL_PATH/client.csr -CA $CONFIG_SSL_PATH/ca.pem -CAkey $CONFIG_SSL_PATH/ca.key -set_serial 101 -extensions client -days 365 -outform PEM -out $CONFIG_SSL_PATH/client.cer -passin pass:gravitee
+    openssl x509 -req -in $CONFIG_SSL_PATH/client.csr -CA $CONFIG_SSL_PATH/ca.pem -CAkey $CONFIG_SSL_PATH/ca.key -set_serial 101 -extensions client -days 3650 -outform PEM -out $CONFIG_SSL_PATH/client.cer -passin pass:gravitee
 
     openssl pkcs12 -export -inkey $CONFIG_SSL_PATH/client.key -in $CONFIG_SSL_PATH/client.cer -out $CONFIG_SSL_PATH/client-keystore.p12 -passout pass:gravitee -name jaeger-client
+    rm -f $CONFIG_SSL_PATH/client-keystore.jks
     keytool -importkeystore -srckeystore $CONFIG_SSL_PATH/client-keystore.p12 -destkeystore $CONFIG_SSL_PATH/client-keystore.jks -srcstoretype PKCS12 -deststoretype JKS -srcstorepass gravitee -deststorepass gravitee
 
     # Truststore
+    # Start from a clean truststore so a regenerated CA is not left behind (keytool -import keeps an existing alias).
+    rm -f $CONFIG_SSL_PATH/client-truststore.jks $CONFIG_SSL_PATH/client-truststore.p12 $CONFIG_SSL_PATH/client-truststore.pem
     # Add the ca.
     keytool -import -file $CONFIG_SSL_PATH/ca.pem -storetype JKS -keystore $CONFIG_SSL_PATH/client-truststore.jks -storepass gravitee -noprompt -alias jaeger-ca
 
