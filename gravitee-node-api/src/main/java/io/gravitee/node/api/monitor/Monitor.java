@@ -32,6 +32,7 @@ public class Monitor implements Serializable, Reportable {
     JvmInfo jvm;
     OsInfo os;
     ProcessInfo process;
+    GpuInfo gpu;
 
     protected Monitor() {}
 
@@ -57,6 +58,10 @@ public class Monitor implements Serializable, Reportable {
         return process;
     }
 
+    public GpuInfo getGpu() {
+        return gpu;
+    }
+
     public long getTimestamp() {
         return timestamp;
     }
@@ -76,6 +81,7 @@ public class Monitor implements Serializable, Reportable {
         private OsInfo os;
         private JvmInfo jvm;
         private ProcessInfo process;
+        private GpuInfo gpu;
 
         public Builder on(String nodeId) {
             this.nodeId = nodeId;
@@ -102,11 +108,17 @@ public class Monitor implements Serializable, Reportable {
             return this;
         }
 
+        public Builder gpu(GpuInfo gpu) {
+            this.gpu = gpu;
+            return this;
+        }
+
         public Monitor build() {
             Monitor metrics = new Monitor(nodeId, timestamp);
             metrics.os = os;
             metrics.jvm = jvm;
             metrics.process = process;
+            metrics.gpu = gpu;
             return metrics;
         }
     }

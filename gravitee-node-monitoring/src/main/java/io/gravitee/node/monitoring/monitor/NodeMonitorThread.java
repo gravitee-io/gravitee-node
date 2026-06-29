@@ -20,10 +20,12 @@ import static io.gravitee.node.monitoring.MonitoringConstants.*;
 import io.gravitee.alert.api.event.DefaultEvent;
 import io.gravitee.alert.api.event.Event;
 import io.gravitee.node.api.Node;
+import io.gravitee.node.api.monitor.GpuInfo;
 import io.gravitee.node.api.monitor.JvmInfo;
 import io.gravitee.node.api.monitor.Monitor;
 import io.gravitee.node.api.monitor.OsInfo;
 import io.gravitee.node.api.monitor.ProcessInfo;
+import io.gravitee.node.monitoring.monitor.gpu.GpuSnapshotRegistry;
 import io.gravitee.node.monitoring.monitor.probe.JvmProbe;
 import io.gravitee.node.monitoring.monitor.probe.OsProbe;
 import io.gravitee.node.monitoring.monitor.probe.ProcessProbe;
@@ -44,6 +46,7 @@ public class NodeMonitorThread implements Runnable {
     private final MessageProducer<Monitor> producer;
     private final Node node;
     private final AlertEventProducer alertEventProducer;
+    private final GpuSnapshotRegistry gpuSnapshotRegistry;
 
     @Override
     public void run() {
@@ -54,6 +57,7 @@ public class NodeMonitorThread implements Runnable {
                 .os(OsProbe.getInstance().osInfo())
                 .jvm(JvmProbe.getInstance().jvmInfo())
                 .process(ProcessProbe.getInstance().processInfo())
+                .gpu(gpuSnapshotRegistry.current())
                 .build();
 
             // And generate monitoring metrics
@@ -93,6 +97,21 @@ public class NodeMonitorThread implements Runnable {
                 event.property("jvm.mem.heap.used", jvmInfo.mem.heapUsed);
                 event.property("jvm.mem.heap.max", jvmInfo.mem.heapMax);
                 event.property("jvm.mem.heap.percent", jvmInfo.mem.getHeapUsedPercent());
+
+                // GPU metrics
+                GpuInfo gpuInfo = monitor.getGpu();
+                if (gpuInfo != null && gpuInfo.devices() != null && !gpuInfo.devices().isEmpty()) {
+                    event.property("gpu.count", gpuInfo.devices().size());
+                    for (GpuInfo.Device device : gpuInfo.devices()) {
+                        String prefix = "gpu." + device.index() + ".";
+                        event.property(prefix + "util.percent", device.utilizationPercent());
+                        event.property(prefix + "mem.percent", device.mem().getUsedPercent());
+                        event.property(prefix + "mem.used", device.mem().getUsed());
+                        event.property(prefix + "mem.total", device.mem().total());
+                        event.property(prefix + "temperature", device.temperature());
+                        event.property(prefix + "power", device.powerWatts());
+                    }
+                }
 
                 alertEventProducer.send(event.build());
             }

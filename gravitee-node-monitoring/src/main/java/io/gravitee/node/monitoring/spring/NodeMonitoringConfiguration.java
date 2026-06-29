@@ -30,8 +30,11 @@ import io.gravitee.node.monitoring.healthcheck.NodeHealthCheckManagementEndpoint
 import io.gravitee.node.monitoring.healthcheck.NodeHealthCheckService;
 import io.gravitee.node.monitoring.healthcheck.ProbeManagerImpl;
 import io.gravitee.node.monitoring.infos.NodeInfosService;
+import io.gravitee.node.monitoring.monitor.NodeGpuMonitorService;
 import io.gravitee.node.monitoring.monitor.NodeMonitorManagementEndpoint;
 import io.gravitee.node.monitoring.monitor.NodeMonitorService;
+import io.gravitee.node.monitoring.monitor.gpu.GpuMonitorEventHandler;
+import io.gravitee.node.monitoring.monitor.gpu.GpuSnapshotRegistry;
 import io.gravitee.plugin.alert.AlertEventProducer;
 import io.gravitee.plugin.core.api.PluginRegistry;
 import io.vertx.core.Vertx;
@@ -59,7 +62,8 @@ public class NodeMonitoringConfiguration {
         AlertEventProducer alertEventProducer,
         Node node,
         Vertx vertx,
-        MonitoringConfiguration monitoringConfiguration
+        MonitoringConfiguration monitoringConfiguration,
+        GpuSnapshotRegistry gpuSnapshotRegistry
     ) {
         return new NodeMonitorService(
             nodeMonitorManagementEndpoint,
@@ -67,13 +71,38 @@ public class NodeMonitoringConfiguration {
             alertEventProducer,
             node,
             vertx,
-            monitoringConfiguration
+            monitoringConfiguration,
+            gpuSnapshotRegistry
         );
     }
 
     @Bean
-    public NodeMonitorManagementEndpoint nodeMonitorManagementEndpoint(ObjectMapper objectMapper) {
-        return new NodeMonitorManagementEndpoint(objectMapper);
+    public NodeMonitorManagementEndpoint nodeMonitorManagementEndpoint(ObjectMapper objectMapper, GpuSnapshotRegistry gpuSnapshotRegistry) {
+        return new NodeMonitorManagementEndpoint(objectMapper, gpuSnapshotRegistry);
+    }
+
+    @Bean
+    public GpuSnapshotRegistry gpuSnapshotRegistry() {
+        return new GpuSnapshotRegistry();
+    }
+
+    @Bean
+    public GpuConfiguration gpuConfiguration(
+        @Value("${services.monitoring.gpu.enabled:${services.monitoring.enabled:true}}") boolean enabled,
+        @Value("${services.monitoring.gpu.delay:${services.monitoring.delay:5000}}") long delay,
+        @Value("${services.monitoring.gpu.unit:${services.monitoring.unit:MILLISECONDS}}") TimeUnit unit
+    ) {
+        return new GpuConfiguration(enabled, delay, unit);
+    }
+
+    @Bean
+    public NodeGpuMonitorService nodeGpuMonitorService(Vertx vertx, GpuConfiguration gpuConfiguration) {
+        return new NodeGpuMonitorService(vertx, gpuConfiguration);
+    }
+
+    @Bean
+    public GpuMonitorEventHandler gpuMonitorEventHandler(Vertx vertx, GpuSnapshotRegistry gpuSnapshotRegistry) {
+        return new GpuMonitorEventHandler(vertx, gpuSnapshotRegistry);
     }
 
     @Bean

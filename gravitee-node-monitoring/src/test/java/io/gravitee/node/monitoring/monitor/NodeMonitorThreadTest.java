@@ -9,9 +9,12 @@ import static org.mockito.Mockito.when;
 
 import io.gravitee.alert.api.event.Event;
 import io.gravitee.node.api.Node;
+import io.gravitee.node.api.monitor.GpuInfo;
 import io.gravitee.node.api.monitor.Monitor;
+import io.gravitee.node.monitoring.monitor.gpu.GpuSnapshotRegistry;
 import io.gravitee.plugin.alert.AlertEventProducer;
 import io.vertx.core.eventbus.MessageProducer;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,9 +43,11 @@ class NodeMonitorThreadTest {
 
     private NodeMonitorThread cut;
 
+    private final GpuSnapshotRegistry gpuSnapshotRegistry = new GpuSnapshotRegistry();
+
     @BeforeEach
     void init() {
-        cut = new NodeMonitorThread(producer, node, alertEventProducer);
+        cut = new NodeMonitorThread(producer, node, alertEventProducer, gpuSnapshotRegistry);
     }
 
     @Test
@@ -88,6 +93,25 @@ class NodeMonitorThreadTest {
                     assertThat(event.properties().get(Event.PROPERTY_ENVIRONMENT)).isEqualTo("ENV_ID");
 
                     assertThat(event.properties().keySet()).contains("os.cpu.percent", "process.fd.open", "jvm.uptime");
+                    return true;
+                })
+            );
+    }
+
+    @Test
+    void should_include_gpu_snapshot_from_registry() {
+        when(node.id()).thenReturn(NODE_ID);
+        GpuInfo.Device device = new GpuInfo.Device(0, "NVIDIA A100", new GpuInfo.Mem(-1, -1));
+        gpuSnapshotRegistry.update(new GpuInfo(123L, List.of(device)));
+
+        cut.run();
+
+        verify(producer)
+            .write(
+                argThat(monitor -> {
+                    assertThat(monitor.getGpu()).isNotNull();
+                    assertThat(monitor.getGpu().devices()).hasSize(1);
+                    assertThat(monitor.getGpu().devices().get(0).name()).isEqualTo("NVIDIA A100");
                     return true;
                 })
             );
