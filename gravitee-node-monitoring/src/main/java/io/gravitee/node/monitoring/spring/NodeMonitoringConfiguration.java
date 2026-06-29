@@ -88,7 +88,7 @@ public class NodeMonitoringConfiguration {
 
     @Bean
     public GpuConfiguration gpuConfiguration(
-        @Value("${services.monitoring.gpu.enabled:${services.monitoring.enabled:true}}") boolean enabled,
+        @Value("${services.monitoring.gpu.enabled:false}") boolean enabled,
         @Value("${services.monitoring.gpu.delay:${services.monitoring.delay:5000}}") long delay,
         @Value("${services.monitoring.gpu.unit:${services.monitoring.unit:MILLISECONDS}}") TimeUnit unit
     ) {
