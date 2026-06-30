@@ -102,7 +102,10 @@ class DefaultLicenseModelServiceTest {
                     "enterprise-alert-engine",
                     "enterprise-authenticator",
                 }
-            )
+            ),
+            arguments("gamma-planet", new String[] { "standard" }),
+            arguments("gamma-galaxy", new String[] { "enterprise" }),
+            arguments("gamma-universe", new String[] { "enterprise" })
         );
     }
 

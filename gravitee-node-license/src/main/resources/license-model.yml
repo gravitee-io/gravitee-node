@@ -166,7 +166,7 @@ packs:
     ############################### Gamma packs ################################
     standard:
         features: &standard-features
-            - apim-api-products # not a plugin. Feature is in the UI
+            - apim-api-products # not a plugin. Feature is in the UI (all Gamma tiers)
             - apim-audit-trail # not a plugin. Feature is in the UI
             - apim-custom-roles # not a plugin. Feature is in the UI
             - apim-dcr-registration # not a plugin. Feature is in the UI
