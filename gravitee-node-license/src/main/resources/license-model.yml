@@ -4,7 +4,6 @@ packs:
             - apim-api-designer # not used?
             - risk-assessment # for removal
 
-            - apim-api-products # not a plugin. Feature is in the UI
             - apim-audit-trail # not a plugin. Feature is in the UI
             - apim-custom-roles # not a plugin. Feature is in the UI
             - apim-dcr-registration # not a plugin. Feature is in the UI
@@ -14,6 +13,10 @@ packs:
 
             - gravitee-risk-assessment # service: gravitee-risk-assessment
             - apim-bridge-gateway # repository: gravitee-apim-repository-bridge-http-server, repository: gravitee-apim-repository-bridge-http-client
+
+    enterprise-products:
+        features:
+            - apim-api-products # not a plugin. Feature is in the UI (universe+ only)
 
     enterprise-legacy-upgrade:
         features:
@@ -165,7 +168,6 @@ packs:
     ############################### Gamma packs ################################
     standard:
         features: &standard-features
-            - apim-api-products # not a plugin. Feature is in the UI
             - apim-audit-trail # not a plugin. Feature is in the UI
             - apim-custom-roles # not a plugin. Feature is in the UI
             - apim-dcr-registration # not a plugin. Feature is in the UI
@@ -321,6 +323,7 @@ tiers:
     universe:
         packs:
             - *galaxy-packs
+            - enterprise-products
             - event-native
             - enterprise-mfa-factor
             - enterprise-secret-manager
