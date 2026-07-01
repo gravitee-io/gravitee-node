@@ -122,6 +122,7 @@ class DefaultLicenseModelServiceTest {
                         "apim-policy-assign-metrics",
                         "apim-policy-data-cache",
                         "apim-policy-data-logging-masking",
+                        "apim-policy-generate-wssecurity",
                         "apim-policy-geoip-filtering",
                         "apim-policy-graphql-ratelimit",
                         "apim-policy-interops-a-idp",
