@@ -15,15 +15,20 @@
  */
 package io.gravitee.node.vertx.client.ssl.pem;
 
+import io.gravitee.node.certificates.CertificateExpiryUtils;
+import io.gravitee.node.logging.NodeLoggerFactory;
 import io.gravitee.node.vertx.client.ssl.KeyStore;
 import io.gravitee.node.vertx.client.ssl.KeyStoreType;
 import io.vertx.core.net.KeyCertOptions;
 import io.vertx.core.net.PemKeyCertOptions;
 import java.io.Serial;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import lombok.Builder;
 import lombok.Data;
+import org.slf4j.Logger;
 
 /**
  * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
@@ -70,6 +75,7 @@ public class PEMKeyStore extends KeyStore {
 
     @Override
     public Optional<KeyCertOptions> keyCertOptions() {
+        warnIfCertificateExpired(NodeLoggerFactory.getLogger(getClass()));
         final PemKeyCertOptions pemKeyCertOptions = new PemKeyCertOptions();
 
         if (certPaths != null && !certPaths.isEmpty()) {
@@ -99,5 +105,17 @@ public class PEMKeyStore extends KeyStore {
         }
 
         return Optional.of(pemKeyCertOptions);
+    }
+
+    @Override
+    public void warnIfCertificateExpired(Logger log) {
+        final List<String> paths = new ArrayList<>();
+        if (getCertPath() != null) {
+            paths.add(getCertPath());
+        }
+        if (getCertPaths() != null) {
+            paths.addAll(getCertPaths());
+        }
+        CertificateExpiryUtils.inspectPem(paths, Arrays.asList(getCertContent()), "client keystore (PEM)", log);
     }
 }

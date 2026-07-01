@@ -20,6 +20,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Optional;
 import lombok.Getter;
+import org.slf4j.Logger;
 
 /**
  * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
@@ -38,6 +39,14 @@ public abstract class KeyStore implements Serializable {
     }
 
     public abstract Optional<KeyCertOptions> keyCertOptions();
+
+    /**
+     * Best-effort check that logs a warning when this keystore holds a certificate that is expired,
+     * not yet valid, or about to expire. No-op by default; overridden by concrete keystore types.
+     */
+    public void warnIfCertificateExpired(Logger log) {
+        // no-op by default
+    }
 
     public static class KeyStoreCertOptionsException extends RuntimeException {
 

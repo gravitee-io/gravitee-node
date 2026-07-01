@@ -20,6 +20,7 @@ import static javax.net.ssl.StandardConstants.SNI_HOST_NAME;
 import io.gravitee.common.util.KeyStoreUtils;
 import io.gravitee.node.api.certificate.KeyStoreProcessingException;
 import io.gravitee.node.api.certificate.RefreshableX509Manager;
+import io.gravitee.node.certificates.CertificateExpiryUtils;
 import java.net.Socket;
 import java.security.*;
 import java.security.cert.X509Certificate;
@@ -88,6 +89,7 @@ public class RefreshableX509KeyManagerDelegator extends X509ExtendedKeyManager i
             dataHolder = new KeyManagerDataHolder(sniFallbackAlias, new ConcurrentHashMap<>(newCommonNamesByAlias), keyManager);
 
             log.info("Key store has been (re)loaded with {} entries for target: {}", keyStore.size(), target);
+            CertificateExpiryUtils.warnIfExpired(keyStore, log);
         } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
             throw new KeyStoreProcessingException("Unable to initialize key manager keystore", e);
         }
