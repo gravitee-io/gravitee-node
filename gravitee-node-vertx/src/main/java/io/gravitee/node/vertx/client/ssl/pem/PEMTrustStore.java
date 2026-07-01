@@ -15,14 +15,18 @@
  */
 package io.gravitee.node.vertx.client.ssl.pem;
 
+import io.gravitee.node.certificates.CertificateExpiryUtils;
+import io.gravitee.node.logging.NodeLoggerFactory;
 import io.gravitee.node.vertx.client.ssl.TrustStore;
 import io.gravitee.node.vertx.client.ssl.TrustStoreType;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.core.net.TrustOptions;
 import java.io.Serial;
+import java.util.Arrays;
 import java.util.Optional;
 import lombok.Builder;
 import lombok.Data;
+import org.slf4j.Logger;
 
 /**
  * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
@@ -50,6 +54,7 @@ public class PEMTrustStore extends TrustStore {
 
     @Override
     public Optional<TrustOptions> trustOptions() {
+        warnIfCertificateExpired(NodeLoggerFactory.getLogger(getClass()));
         final PemTrustOptions pemTrustOptions = new PemTrustOptions();
 
         if (getPath() != null && !getPath().isEmpty()) {
@@ -61,5 +66,10 @@ public class PEMTrustStore extends TrustStore {
         }
 
         return Optional.of(pemTrustOptions);
+    }
+
+    @Override
+    public void warnIfCertificateExpired(Logger log) {
+        CertificateExpiryUtils.inspectPem(Arrays.asList(getPath()), Arrays.asList(getContent()), "client truststore (PEM)", log);
     }
 }

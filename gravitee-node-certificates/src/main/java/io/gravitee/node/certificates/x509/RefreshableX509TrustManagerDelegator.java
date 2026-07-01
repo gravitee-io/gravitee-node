@@ -17,6 +17,7 @@ package io.gravitee.node.certificates.x509;
 
 import io.gravitee.node.api.certificate.CRLRefreshable;
 import io.gravitee.node.api.certificate.RefreshableX509Manager;
+import io.gravitee.node.certificates.CertificateExpiryUtils;
 import java.net.Socket;
 import java.security.KeyStore;
 import java.security.cert.CRL;
@@ -58,6 +59,7 @@ public class RefreshableX509TrustManagerDelegator extends X509ExtendedTrustManag
             this.delegate = (X509ExtendedTrustManager) trustManagerFactory.getTrustManagers()[0];
 
             log.info("Trust store has been (re)loaded with {} entries for target: {}", keyStore.size(), target);
+            CertificateExpiryUtils.warnIfExpired(keyStore, log);
         } catch (Exception e) {
             throw new IllegalArgumentException("Unable to create trust manager for target: %s".formatted(target), e);
         }

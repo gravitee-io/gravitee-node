@@ -15,6 +15,9 @@
  */
 package io.gravitee.node.vertx.client.ssl.pkcs12;
 
+import io.gravitee.common.util.KeyStoreUtils;
+import io.gravitee.node.certificates.CertificateExpiryUtils;
+import io.gravitee.node.logging.NodeLoggerFactory;
 import io.gravitee.node.vertx.client.ssl.KeyStore;
 import io.gravitee.node.vertx.client.ssl.KeyStoreType;
 import io.vertx.core.net.KeyCertOptions;
@@ -24,6 +27,7 @@ import java.util.Base64;
 import java.util.Optional;
 import lombok.Builder;
 import lombok.Data;
+import org.slf4j.Logger;
 
 /**
  * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
@@ -61,6 +65,7 @@ public class PKCS12KeyStore extends KeyStore {
 
     @Override
     public Optional<KeyCertOptions> keyCertOptions() {
+        warnIfCertificateExpired(NodeLoggerFactory.getLogger(getClass()));
         final PfxOptions pfxOptions = new PfxOptions();
 
         if (getPath() != null && !getPath().isEmpty()) {
@@ -75,5 +80,17 @@ public class PKCS12KeyStore extends KeyStore {
         pfxOptions.setAliasPassword(getKeyPassword());
         pfxOptions.setPassword(getPassword());
         return Optional.of(pfxOptions);
+    }
+
+    @Override
+    public void warnIfCertificateExpired(Logger log) {
+        CertificateExpiryUtils.inspectKeyStore(
+            KeyStoreUtils.TYPE_PKCS12,
+            getPath(),
+            getContent(),
+            getPassword(),
+            "client keystore (PKCS#12)",
+            log
+        );
     }
 }
