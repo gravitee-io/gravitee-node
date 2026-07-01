@@ -81,18 +81,19 @@ public class NvidiaSmiGpuMetricsProvider implements GpuMetricsProvider {
 
     private boolean probeAvailability() {
         try {
-            Process process = new ProcessBuilder(command, "--version").redirectErrorStream(true).start();
-            // drain output to avoid blocking, then wait
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
-                while (reader.readLine() != null) {
-                    // discard
-                }
-            }
+            Process process = new ProcessBuilder(command, "--version")
+                .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                .redirectError(ProcessBuilder.Redirect.DISCARD)
+                .start();
             if (!process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
                 process.destroyForcibly();
                 return false;
             }
             return process.exitValue() == 0;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.debug("Interrupted while probing nvidia-smi availability", e);
+            return false;
         } catch (Exception e) {
             log.debug("nvidia-smi is not available", e);
             return false;
@@ -128,6 +129,10 @@ public class NvidiaSmiGpuMetricsProvider implements GpuMetricsProvider {
             }
 
             return parse(output);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.debug("Interrupted while reading GPU metrics from nvidia-smi", e);
+            return new ArrayList<>();
         } catch (Exception e) {
             log.debug("Unable to read GPU metrics from nvidia-smi", e);
             return new ArrayList<>();
@@ -144,30 +149,39 @@ public class NvidiaSmiGpuMetricsProvider implements GpuMetricsProvider {
             return devices;
         }
         for (String rawLine : output.split("\\R")) {
-            String line = rawLine.trim();
-            if (line.isEmpty()) {
-                continue;
+            GpuInfo.Device device = parseLine(rawLine.trim());
+            if (device != null) {
+                devices.add(device);
             }
-            String[] fields = line.split("\\s*,\\s*");
-            if (fields.length < 10) {
-                log.debug("Skipping unexpected nvidia-smi line: {}", line);
-                continue;
-            }
-            GpuInfo.Mem mem = new GpuInfo.Mem(toBytes(parseLong(fields[6], -1)), toBytes(parseLong(fields[7], -1)));
-            GpuInfo.Device device = new GpuInfo.Device(
-                (int) parseLong(fields[0], -1),
-                parseString(fields[1]),
-                parseString(fields[2]),
-                parseString(fields[3]),
-                (short) parseLong(fields[4], -1),
-                (short) parseLong(fields[5], -1),
-                mem,
-                (short) parseLong(fields[8], -1),
-                parseDouble(fields[9])
-            );
-            devices.add(device);
         }
         return devices;
+    }
+
+    /**
+     * Parses a single {@code nvidia-smi} CSV line into a device, or {@code null} when the line is
+     * blank or does not have the expected number of fields.
+     */
+    private GpuInfo.Device parseLine(String line) {
+        if (line.isEmpty()) {
+            return null;
+        }
+        String[] fields = line.split(",");
+        if (fields.length < 10) {
+            log.debug("Skipping unexpected nvidia-smi line: {}", line);
+            return null;
+        }
+        GpuInfo.Mem mem = new GpuInfo.Mem(toBytes(parseLong(fields[6], -1)), toBytes(parseLong(fields[7], -1)));
+        return new GpuInfo.Device(
+            (int) parseLong(fields[0], -1),
+            parseString(fields[1]),
+            parseString(fields[2]),
+            parseString(fields[3]),
+            (short) parseLong(fields[4], -1),
+            (short) parseLong(fields[5], -1),
+            mem,
+            (short) parseLong(fields[8], -1),
+            parseDouble(fields[9])
+        );
     }
 
     private static long toBytes(long mib) {
@@ -175,11 +189,15 @@ public class NvidiaSmiGpuMetricsProvider implements GpuMetricsProvider {
     }
 
     private static boolean isNotAvailable(String value) {
-        return value == null || value.isEmpty() || value.equalsIgnoreCase("[N/A]") || value.equalsIgnoreCase("N/A");
+        if (value == null) {
+            return true;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() || trimmed.equalsIgnoreCase("[N/A]") || trimmed.equalsIgnoreCase("N/A");
     }
 
     private static String parseString(String value) {
-        return isNotAvailable(value) ? null : value;
+        return isNotAvailable(value) ? null : value.trim();
     }
 
     private static long parseLong(String value, long defaultValue) {

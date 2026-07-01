@@ -99,26 +99,30 @@ public class NodeMonitorThread implements Runnable {
                 event.property("jvm.mem.heap.percent", jvmInfo.mem.getHeapUsedPercent());
 
                 // GPU metrics
-                GpuInfo gpuInfo = monitor.getGpu();
-                if (gpuInfo != null && gpuInfo.devices() != null && !gpuInfo.devices().isEmpty()) {
-                    event.property("gpu.count", gpuInfo.devices().size());
-                    for (GpuInfo.Device device : gpuInfo.devices()) {
-                        String prefix = "gpu." + device.index() + ".";
-                        event.property(prefix + "util.percent", device.utilizationPercent());
-                        if (device.mem() != null) {
-                            event.property(prefix + "mem.percent", device.mem().getUsedPercent());
-                            event.property(prefix + "mem.used", device.mem().getUsed());
-                            event.property(prefix + "mem.total", device.mem().total());
-                        }
-                        event.property(prefix + "temperature", device.temperature());
-                        event.property(prefix + "power", device.powerWatts());
-                    }
-                }
+                appendGpuProperties(event, monitor.getGpu());
 
                 alertEventProducer.send(event.build());
             }
         } catch (Exception ex) {
             log.error("Unexpected error occurs while monitoring the node", ex);
+        }
+    }
+
+    private static void appendGpuProperties(DefaultEvent.Builder event, GpuInfo gpuInfo) {
+        if (gpuInfo == null || gpuInfo.devices() == null || gpuInfo.devices().isEmpty()) {
+            return;
+        }
+        event.property("gpu.count", gpuInfo.devices().size());
+        for (GpuInfo.Device device : gpuInfo.devices()) {
+            String prefix = "gpu." + device.index() + ".";
+            event.property(prefix + "util.percent", device.utilizationPercent());
+            if (device.mem() != null) {
+                event.property(prefix + "mem.percent", device.mem().getUsedPercent());
+                event.property(prefix + "mem.used", device.mem().getUsed());
+                event.property(prefix + "mem.total", device.mem().total());
+            }
+            event.property(prefix + "temperature", device.temperature());
+            event.property(prefix + "power", device.powerWatts());
         }
     }
 }

@@ -152,11 +152,11 @@ class NvidiaSmiGpuMetricsProviderTest {
         );
         makeExecutable(nvidiaSmi);
 
-        NvidiaSmiGpuMetricsProvider provider = new NvidiaSmiGpuMetricsProvider(nvidiaSmi.toString());
+        NvidiaSmiGpuMetricsProvider cut = new NvidiaSmiGpuMetricsProvider(nvidiaSmi.toString());
 
-        assertThat(provider.isAvailable()).isTrue();
-        assertThat(provider.isAvailable()).isTrue();
-        assertThat(provider.isAvailable()).isTrue();
+        assertThat(cut.isAvailable()).isTrue();
+        assertThat(cut.isAvailable()).isTrue();
+        assertThat(cut.isAvailable()).isTrue();
 
         assertThat(Files.readAllLines(versionCalls)).hasSize(1);
     }

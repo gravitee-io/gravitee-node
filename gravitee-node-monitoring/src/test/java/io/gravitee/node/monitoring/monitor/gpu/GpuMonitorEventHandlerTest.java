@@ -16,14 +16,15 @@
 package io.gravitee.node.monitoring.monitor.gpu;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import io.gravitee.node.api.monitor.GpuInfo;
 import io.gravitee.node.monitoring.eventbus.GpuInfoCodec;
 import io.gravitee.node.monitoring.monitor.NodeGpuMonitorService;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
+import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,22 +63,12 @@ class GpuMonitorEventHandlerTest {
             .registerCodec(new GpuInfoCodec())
             .send(NodeGpuMonitorService.GIO_NODE_GPU_BUS, published, new DeliveryOptions().setCodecName(GpuInfoCodec.CODEC_NAME));
 
-        awaitDevices(1);
-
-        assertThat(registry.current().devices()).hasSize(1);
-        assertThat(registry.current().devices().get(0).name()).isEqualTo("NVIDIA A100");
-    }
-
-    private void awaitDevices(int expectedSize) {
-        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(2);
-        while (registry.current().devices().size() != expectedSize && System.nanoTime() < deadline) {
-            try {
-                TimeUnit.MILLISECONDS.sleep(10);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
-        }
+        await()
+            .atMost(Duration.ofSeconds(2))
+            .untilAsserted(() -> {
+                assertThat(registry.current().devices()).hasSize(1);
+                assertThat(registry.current().devices().get(0).name()).isEqualTo("NVIDIA A100");
+            });
     }
 
     @Test
