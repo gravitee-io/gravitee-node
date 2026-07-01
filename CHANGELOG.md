@@ -1,3 +1,10 @@
+# [9.2.0](https://github.com/gravitee-io/gravitee-node/compare/9.1.1...9.2.0) (2026-07-01)
+
+
+### Features
+
+* **monitoring:** add probe for gpu device monitoring ([#580](https://github.com/gravitee-io/gravitee-node/issues/580)) ([54e0eac](https://github.com/gravitee-io/gravitee-node/commit/54e0eac56d80061626c2d1ffc8224b1d8bde24ee))
+
 ## [9.1.1](https://github.com/gravitee-io/gravitee-node/compare/9.1.0...9.1.1) (2026-06-26)
 
 
