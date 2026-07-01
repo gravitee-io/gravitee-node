@@ -24,6 +24,7 @@ import io.gravitee.common.http.HttpMethod;
 import io.gravitee.common.http.HttpStatusCode;
 import io.gravitee.common.http.MediaType;
 import io.gravitee.node.management.http.endpoint.ManagementEndpoint;
+import io.gravitee.node.monitoring.monitor.gpu.GpuSnapshotRegistry;
 import io.gravitee.node.monitoring.monitor.probe.JvmProbe;
 import io.gravitee.node.monitoring.monitor.probe.OsProbe;
 import io.gravitee.node.monitoring.monitor.probe.ProcessProbe;
@@ -41,6 +42,7 @@ import lombok.RequiredArgsConstructor;
 public class NodeMonitorManagementEndpoint implements ManagementEndpoint {
 
     private final ObjectMapper mapper;
+    private final GpuSnapshotRegistry gpuSnapshotRegistry;
 
     @Override
     public HttpMethod method() {
@@ -61,10 +63,12 @@ public class NodeMonitorManagementEndpoint implements ManagementEndpoint {
             JsonNode os = mapper.valueToTree(OsProbe.getInstance().osInfo());
             JsonNode jvm = mapper.valueToTree(JvmProbe.getInstance().jvmInfo());
             JsonNode process = mapper.valueToTree(ProcessProbe.getInstance().processInfo());
+            JsonNode gpu = mapper.valueToTree(gpuSnapshotRegistry.current());
 
             root.set("os", os);
             root.set("jvm", jvm);
             root.set("process", process);
+            root.set("gpu", gpu);
 
             response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
             response.setChunked(true);

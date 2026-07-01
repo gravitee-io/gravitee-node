@@ -9,6 +9,7 @@ import static org.mockito.Mockito.*;
 import io.gravitee.alert.api.event.Event;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
+import io.gravitee.node.monitoring.monitor.gpu.GpuSnapshotRegistry;
 import io.gravitee.node.monitoring.spring.MonitoringConfiguration;
 import io.gravitee.plugin.alert.AlertEventProducer;
 import io.vertx.core.Vertx;
@@ -50,7 +51,8 @@ class NodeMonitorServiceTest {
             alertEventProducer,
             node,
             Vertx.vertx(),
-            new MonitoringConfiguration(true, 1, MILLISECONDS)
+            new MonitoringConfiguration(true, 1, MILLISECONDS),
+            new GpuSnapshotRegistry()
         );
 
         final Set<String> orgIds = Set.of("ORG_ID");
@@ -88,7 +90,8 @@ class NodeMonitorServiceTest {
             alertEventProducer,
             node,
             Vertx.vertx(),
-            new MonitoringConfiguration(false, 1, MILLISECONDS)
+            new MonitoringConfiguration(false, 1, MILLISECONDS),
+            new GpuSnapshotRegistry()
         );
 
         cut.doStart();
@@ -105,7 +108,8 @@ class NodeMonitorServiceTest {
             alertEventProducer,
             node,
             Vertx.vertx(),
-            new MonitoringConfiguration(true, 1, MILLISECONDS)
+            new MonitoringConfiguration(true, 1, MILLISECONDS),
+            new GpuSnapshotRegistry()
         );
 
         final Set<String> orgIds = Set.of("ORG_ID");
@@ -143,7 +147,8 @@ class NodeMonitorServiceTest {
             alertEventProducer,
             node,
             Vertx.vertx(),
-            new MonitoringConfiguration(false, 1, MILLISECONDS)
+            new MonitoringConfiguration(false, 1, MILLISECONDS),
+            new GpuSnapshotRegistry()
         );
 
         cut.preStop();

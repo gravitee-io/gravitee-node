@@ -23,6 +23,7 @@ import io.gravitee.node.api.Node;
 import io.gravitee.node.api.monitor.Monitor;
 import io.gravitee.node.management.http.endpoint.ManagementEndpointManager;
 import io.gravitee.node.monitoring.eventbus.MonitorCodec;
+import io.gravitee.node.monitoring.monitor.gpu.GpuSnapshotRegistry;
 import io.gravitee.node.monitoring.spring.MonitoringConfiguration;
 import io.gravitee.plugin.alert.AlertEventProducer;
 import io.vertx.core.Vertx;
@@ -52,6 +53,7 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
     private final Node node;
     private final Vertx vertx;
     private final MonitoringConfiguration monitoringConfiguration;
+    private final GpuSnapshotRegistry gpuSnapshotRegistry;
 
     private MessageProducer<Monitor> producer;
     private ExecutorService executorService;
@@ -72,7 +74,7 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
                         new DeliveryOptions().setTracingPolicy(TracingPolicy.IGNORE).setCodecName(MonitorCodec.CODEC_NAME)
                     );
 
-            NodeMonitorThread monitorThread = new NodeMonitorThread(producer, node, alertEventProducer);
+            NodeMonitorThread monitorThread = new NodeMonitorThread(producer, node, alertEventProducer, gpuSnapshotRegistry);
 
             // Send an event to notify about the node status
             alertEventProducer.send(
