@@ -58,8 +58,8 @@ public class GpuMicrometerHandler implements MeterBinder {
 
             register(registry, "gpu.utilization", "percent", tags, device.index(), GpuInfo.Device::utilizationPercent);
             register(registry, "gpu.memory.utilization", "percent", tags, device.index(), GpuInfo.Device::memoryUtilizationPercent);
-            register(registry, "gpu.memory.used", "bytes", tags, device.index(), d -> d.mem().getUsed());
-            register(registry, "gpu.memory.total", "bytes", tags, device.index(), d -> d.mem().total());
+            register(registry, "gpu.memory.used", "bytes", tags, device.index(), d -> d.mem() == null ? -1 : d.mem().getUsed());
+            register(registry, "gpu.memory.total", "bytes", tags, device.index(), d -> d.mem() == null ? -1 : d.mem().total());
             register(registry, "gpu.temperature", "celsius", tags, device.index(), GpuInfo.Device::temperature);
             register(registry, "gpu.power", "watts", tags, device.index(), GpuInfo.Device::powerWatts);
         }

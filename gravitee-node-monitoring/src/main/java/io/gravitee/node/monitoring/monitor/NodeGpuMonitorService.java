@@ -57,10 +57,15 @@ public class NodeGpuMonitorService extends AbstractService<NodeGpuMonitorService
         }
         super.doStart();
 
+        try {
+            vertx.eventBus().registerCodec(new GpuInfoCodec());
+        } catch (IllegalStateException e) {
+            // Codec already registered (e.g. on service restart), ignore.
+        }
+
         producer =
             vertx
                 .eventBus()
-                .registerCodec(new GpuInfoCodec())
                 .sender(
                     GIO_NODE_GPU_BUS,
                     new DeliveryOptions().setTracingPolicy(TracingPolicy.IGNORE).setCodecName(GpuInfoCodec.CODEC_NAME)

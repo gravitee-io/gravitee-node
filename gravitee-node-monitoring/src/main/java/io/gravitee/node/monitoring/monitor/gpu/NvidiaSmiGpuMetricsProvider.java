@@ -88,7 +88,11 @@ public class NvidiaSmiGpuMetricsProvider implements GpuMetricsProvider {
                     // discard
                 }
             }
-            return process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS) && process.exitValue() == 0;
+            if (!process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                process.destroyForcibly();
+                return false;
+            }
+            return process.exitValue() == 0;
         } catch (Exception e) {
             log.debug("nvidia-smi is not available", e);
             return false;
@@ -99,8 +103,19 @@ public class NvidiaSmiGpuMetricsProvider implements GpuMetricsProvider {
     public List<GpuInfo.Device> readDevices() {
         try {
             Process process = new ProcessBuilder(command, "--query-gpu=" + QUERY, "--format=csv,noheader,nounits")
-                .redirectErrorStream(false)
+                .redirectError(ProcessBuilder.Redirect.DISCARD)
                 .start();
+
+            // nvidia-smi output is small, so wait for completion first to avoid blocking on a hung read.
+            if (!process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                process.destroyForcibly();
+                log.debug("nvidia-smi timed out");
+                return new ArrayList<>();
+            }
+            if (process.exitValue() != 0) {
+                log.debug("nvidia-smi exited with code {}", process.exitValue());
+                return new ArrayList<>();
+            }
 
             String output;
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
@@ -112,15 +127,6 @@ public class NvidiaSmiGpuMetricsProvider implements GpuMetricsProvider {
                 output = sb.toString();
             }
 
-            if (!process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-                process.destroyForcibly();
-                log.debug("nvidia-smi timed out");
-                return new ArrayList<>();
-            }
-            if (process.exitValue() != 0) {
-                log.debug("nvidia-smi exited with code {}", process.exitValue());
-                return new ArrayList<>();
-            }
             return parse(output);
         } catch (Exception e) {
             log.debug("Unable to read GPU metrics from nvidia-smi", e);

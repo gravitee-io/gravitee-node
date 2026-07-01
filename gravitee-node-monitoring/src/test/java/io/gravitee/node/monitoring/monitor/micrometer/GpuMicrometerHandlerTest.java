@@ -108,6 +108,29 @@ class GpuMicrometerHandlerTest {
     }
 
     @Test
+    void should_not_fail_when_device_memory_is_null() {
+        GpuInfo.Device noMem = new GpuInfo.Device(
+            0,
+            "NVIDIA A100",
+            "GPU-abc",
+            "535.104.05",
+            (short) 42,
+            (short) 17,
+            null,
+            (short) 55,
+            250.43
+        );
+        AtomicReference<GpuInfo> snapshot = new AtomicReference<>(new GpuInfo(1L, List.of(noMem)));
+
+        new GpuMicrometerHandler(snapshot::get).bindTo(registry);
+
+        // non-memory gauges still registered, memory gauges skipped (no NPE)
+        assertThat(registry.find("gpu.utilization").gauge().value()).isEqualTo(42d);
+        assertThat(registry.find("gpu.memory.used").gauge()).isNull();
+        assertThat(registry.find("gpu.memory.total").gauge()).isNull();
+    }
+
+    @Test
     void should_register_one_set_of_gauges_per_device() {
         GpuInfo.Mem mem = new GpuInfo.Mem(40960L * 1024 * 1024, 30960L * 1024 * 1024);
         GpuInfo.Device second = new GpuInfo.Device(1, "NVIDIA A100", "GPU-def", "535.104.05", (short) 10, (short) 5, mem, (short) 40, 100d);

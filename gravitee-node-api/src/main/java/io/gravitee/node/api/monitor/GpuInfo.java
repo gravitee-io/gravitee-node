@@ -46,11 +46,12 @@ public record GpuInfo(long timestamp, List<Device> devices) implements Serializa
         }
 
         public short getUsedPercent() {
-            return calculatePercentage(getUsed(), total);
+            long used = getUsed();
+            return used < 0 || total <= 0 ? -1 : calculatePercentage(used, total);
         }
 
         public short getFreePercent() {
-            return calculatePercentage(free, total);
+            return free < 0 || total <= 0 ? -1 : calculatePercentage(free, total);
         }
 
         private static short calculatePercentage(long used, long max) {
