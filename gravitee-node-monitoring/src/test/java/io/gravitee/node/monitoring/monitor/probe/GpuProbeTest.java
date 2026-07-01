@@ -20,11 +20,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.gravitee.node.api.monitor.GpuInfo;
 import io.gravitee.node.monitoring.monitor.gpu.GpuMetricsProvider;
 import java.util.List;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author GraviteeSource Team
  */
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class GpuProbeTest {
 
     @Test

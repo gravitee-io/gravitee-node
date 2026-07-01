@@ -27,12 +27,15 @@ import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Rémi SULTAN (remi.sultan at graviteesource.com)
  * @author GraviteeSource Team
  */
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class GpuMonitorEventHandlerTest {
 
     private Vertx vertx;

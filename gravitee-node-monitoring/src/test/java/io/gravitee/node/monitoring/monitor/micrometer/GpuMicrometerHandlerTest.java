@@ -22,12 +22,15 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Rémi SULTAN (remi.sultan at graviteesource.com)
  * @author GraviteeSource Team
  */
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class GpuMicrometerHandlerTest {
 
     private final SimpleMeterRegistry registry = new SimpleMeterRegistry();

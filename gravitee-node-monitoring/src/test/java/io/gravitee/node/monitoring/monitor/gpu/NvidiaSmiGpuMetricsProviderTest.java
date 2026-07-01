@@ -23,6 +23,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.io.TempDir;
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.io.TempDir;
  * @author Rémi SULTAN (remi.sultan at graviteesource.com)
  * @author GraviteeSource Team
  */
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class NvidiaSmiGpuMetricsProviderTest {
 
     private final NvidiaSmiGpuMetricsProvider provider = new NvidiaSmiGpuMetricsProvider();
