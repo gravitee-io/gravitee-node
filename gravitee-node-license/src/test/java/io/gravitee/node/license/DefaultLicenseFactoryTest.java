@@ -416,6 +416,7 @@ class DefaultLicenseFactoryTest {
             "apim-en-entrypoint-websocket",
             "apim-sharding-tags",
             "apim-policy-data-logging-masking",
+            "apim-policy-generate-wssecurity",
             "apim-en-message-reactor",
             "apim-en-endpoint-jms",
             "apim-en-endpoint-mqtt5",

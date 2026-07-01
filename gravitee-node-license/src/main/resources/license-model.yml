@@ -31,6 +31,7 @@ packs:
             - apim-policy-assign-metrics # policy: gravitee-policy-assign-metrics
             - apim-policy-data-cache # policy: gravitee-policy-data-cache
             - apim-policy-data-logging-masking # policy: gravitee-policy-data-logging-masking
+            - apim-policy-generate-wssecurity # policy: gravitee-policy-generate-wssecurity
             - apim-policy-geoip-filtering # policy: gravitee-policy-geoip-filtering, service: gravitee-service-geoip
             - apim-policy-graphql-ratelimit # policy: gravitee-policy-graphql-rate-limit
             - apim-policy-interops-a-idp # policy: gravitee-policy-interops-a-idp
@@ -200,6 +201,7 @@ packs:
             - apim-policy-assign-metrics # policy: gravitee-policy-assign-metrics
             - apim-policy-data-cache # policy: gravitee-policy-data-cache
             - apim-policy-data-logging-masking # policy: gravitee-policy-data-logging-masking
+            - apim-policy-generate-wssecurity # policy: gravitee-policy-generate-wssecurity
             - apim-policy-geoip-filtering # policy: gravitee-policy-geoip-filtering, service: gravitee-service-geoip
             - apim-policy-graphql-ratelimit # policy: gravitee-policy-graphql-rate-limit
             - apim-policy-interops-a-idp # policy: gravitee-policy-interops-a-idp
