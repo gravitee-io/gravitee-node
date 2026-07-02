@@ -51,6 +51,8 @@ public class VertxHttpClientFactory {
         }
     };
     protected static final String HTTP_SSL_OPENSSL_CONFIGURATION = "http.ssl.openssl";
+    protected static final String HTTP_CLIENT_MAX_HEADER_SIZE_CONFIGURATION = "http.client.maxHeaderSize";
+    protected static final String HTTP_CLIENT_MAX_CHUNK_SIZE_CONFIGURATION = "http.client.maxChunkSize";
 
     @NonNull
     private final Vertx vertx;
@@ -118,7 +120,17 @@ public class VertxHttpClientFactory {
             .setIdleTimeout((int) (httpOptions.getIdleTimeout() / 1000))
             .setKeepAliveTimeout((int) (httpOptions.getKeepAliveTimeout() / 1000))
             .setConnectTimeout((int) httpOptions.getConnectTimeout())
-            .setDecompressionSupported(httpOptions.isUseCompression());
+            .setDecompressionSupported(httpOptions.isUseCompression())
+            .setMaxHeaderSize(
+                nodeConfiguration.getProperty(
+                    HTTP_CLIENT_MAX_HEADER_SIZE_CONFIGURATION,
+                    Integer.class,
+                    httpOptions.getMaxHeaderSize()
+                )
+            )
+            .setMaxChunkSize(
+                nodeConfiguration.getProperty(HTTP_CLIENT_MAX_CHUNK_SIZE_CONFIGURATION, Integer.class, httpOptions.getMaxChunkSize())
+            );
 
         if (httpOptions.getVersion() == VertxHttpProtocolVersion.HTTP_2) {
             options
