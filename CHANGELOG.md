@@ -1,3 +1,10 @@
+## [9.2.1](https://github.com/gravitee-io/gravitee-node/compare/9.2.0...9.2.1) (2026-07-02)
+
+
+### Bug Fixes
+
+* add apim-policy-generate-wssecurity feature ([400caef](https://github.com/gravitee-io/gravitee-node/commit/400caef6ee5034506ab601436de841faa30e1910))
+
 # [9.2.0](https://github.com/gravitee-io/gravitee-node/compare/9.1.1...9.2.0) (2026-07-01)
 
 
