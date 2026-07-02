@@ -15,6 +15,9 @@
  */
 package io.gravitee.node.vertx.client.ssl.jks;
 
+import io.gravitee.common.util.KeyStoreUtils;
+import io.gravitee.node.certificates.CertificateExpiryUtils;
+import io.gravitee.node.logging.NodeLoggerFactory;
 import io.gravitee.node.vertx.client.ssl.TrustStore;
 import io.gravitee.node.vertx.client.ssl.TrustStoreType;
 import io.vertx.core.net.JksOptions;
@@ -24,6 +27,7 @@ import java.util.Base64;
 import java.util.Optional;
 import lombok.Builder;
 import lombok.Data;
+import org.slf4j.Logger;
 
 /**
  * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
@@ -55,6 +59,7 @@ public class JKSTrustStore extends TrustStore {
 
     @Override
     public Optional<TrustOptions> trustOptions() {
+        warnIfCertificateExpired(NodeLoggerFactory.getLogger(getClass()));
         final JksOptions jksOptions = new JksOptions();
         if (getPath() != null && !getPath().isEmpty()) {
             jksOptions.setPath(getPath());
@@ -67,5 +72,17 @@ public class JKSTrustStore extends TrustStore {
         jksOptions.setAlias(getAlias());
         jksOptions.setPassword(getPassword());
         return Optional.of(jksOptions);
+    }
+
+    @Override
+    public void warnIfCertificateExpired(Logger log) {
+        CertificateExpiryUtils.inspectKeyStore(
+            KeyStoreUtils.TYPE_JKS,
+            getPath(),
+            getContent(),
+            getPassword(),
+            "client truststore (JKS)",
+            log
+        );
     }
 }
