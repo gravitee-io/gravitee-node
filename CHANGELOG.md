@@ -1,3 +1,10 @@
+## [9.2.2](https://github.com/gravitee-io/gravitee-node/compare/9.2.1...9.2.2) (2026-07-06)
+
+
+### Bug Fixes
+
+* evaluate certificate expiry ([8e7b7c7](https://github.com/gravitee-io/gravitee-node/commit/8e7b7c75cf885804d469a53a76d257dd27d5b405))
+
 ## [9.2.1](https://github.com/gravitee-io/gravitee-node/compare/9.2.0...9.2.1) (2026-07-02)
 
 
