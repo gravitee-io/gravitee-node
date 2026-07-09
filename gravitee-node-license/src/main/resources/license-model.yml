@@ -306,6 +306,10 @@ packs:
         features:
             - gamma-edge-module # module: gravitee-gamma-module-edge
             - gamma-edge-reactor # reactor: gravitee-reactor-edge
+
+    gravitee-cloud:
+        features:
+            - cache-cloud-redis # resource: cache-cloud-redis
     #############################################################################
 
 tiers:

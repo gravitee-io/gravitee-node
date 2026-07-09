@@ -227,7 +227,8 @@ class DefaultLicenseModelServiceTest {
                     "gamma-esm-module",
                 }
             ),
-            arguments("edge-management", new String[] { "gamma-edge-module", "gamma-edge-reactor" })
+            arguments("edge-management", new String[] { "gamma-edge-module", "gamma-edge-reactor" }),
+            arguments("gravitee-cloud", new String[] { "cache-cloud-redis" })
         );
     }
 
