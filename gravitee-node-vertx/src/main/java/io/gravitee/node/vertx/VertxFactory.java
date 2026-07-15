@@ -269,13 +269,21 @@ public class VertxFactory implements FactoryBean<Vertx> {
     private Set<MetricsDomain> loadMetricsDomains() {
         final Set<MetricsDomain> metricsDomains = new HashSet<>();
 
-        String value;
-        int counter = 0;
-        while ((value = environment.getProperty("services.metrics.domain[" + (counter++) + "]")) != null) {
-            metricsDomains.add(MetricsDomain.valueOf(value));
-        }
+        // "services.metrics.domains" (plural) is the documented configuration key. The singular
+        // "services.metrics.domain" is also read for backward compatibility, as some deployments
+        // relied on it as a workaround while the plural key was ignored (APIM-14510).
+        readIndexedMetricsDomains("services.metrics.domains", metricsDomains);
+        readIndexedMetricsDomains("services.metrics.domain", metricsDomains);
 
         return metricsDomains;
+    }
+
+    private void readIndexedMetricsDomains(String baseProperty, Set<MetricsDomain> metricsDomains) {
+        String value;
+        int counter = 0;
+        while ((value = environment.getProperty(baseProperty + "[" + (counter++) + "]")) != null) {
+            metricsDomains.add(MetricsDomain.valueOf(value));
+        }
     }
 
     private void setBinders(CompositeMeterRegistry compositeMeterRegistry, Vertx instance) {
