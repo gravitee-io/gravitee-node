@@ -19,12 +19,15 @@ import io.gravitee.node.vertx.client.ssl.pem.PEMTrustStore;
 import io.gravitee.node.vertx.client.ssl.pkcs12.PKCS12KeyStore;
 import io.gravitee.node.vertx.client.ssl.pkcs12.PKCS12TrustStore;
 import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.PoolOptions;
 import io.vertx.core.http.impl.CleanableHttpClient;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.http.HttpClient;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -447,6 +450,45 @@ class VertxHttpClientFactoryTest {
 
             assertThat(httpClient).isNotNull();
         }
+    }
+
+    @Test
+    @SneakyThrows
+    void should_configure_pool_with_default_wait_queue_and_lifetime() {
+        final PoolOptions poolOptions = extractPoolOptions(VertxHttpClientOptions.builder().build());
+
+        assertThat(poolOptions.getMaxWaitQueueSize()).isEqualTo(-1);
+        assertThat(poolOptions.getMaxLifetime()).isZero();
+    }
+
+    @Test
+    @SneakyThrows
+    void should_configure_pool_with_custom_wait_queue_and_lifetime() {
+        final VertxHttpClientOptions httpOptions = VertxHttpClientOptions
+            .builder()
+            .maxWaitQueueSize(50)
+            .maxConnectionLifetime(120000)
+            .build();
+
+        final PoolOptions poolOptions = extractPoolOptions(httpOptions);
+
+        assertThat(poolOptions.getMaxWaitQueueSize()).isEqualTo(50);
+        assertThat(poolOptions.getMaxLifetime()).isEqualTo(120000);
+        assertThat(poolOptions.getMaxLifetimeUnit()).isEqualTo(TimeUnit.MILLISECONDS);
+    }
+
+    @SneakyThrows
+    private PoolOptions extractPoolOptions(VertxHttpClientOptions httpOptions) {
+        final VertxHttpClientFactory factory = VertxHttpClientFactory
+            .builder()
+            .vertx(vertx)
+            .nodeConfiguration(nodeConfiguration)
+            .defaultTarget("https://api.gravitee.io/echo")
+            .httpOptions(httpOptions)
+            .build();
+        final Method method = VertxHttpClientFactory.class.getDeclaredMethod("createPoolOptions");
+        method.setAccessible(true);
+        return (PoolOptions) method.invoke(factory);
     }
 
     private static String getSslFilePath(String file) {
