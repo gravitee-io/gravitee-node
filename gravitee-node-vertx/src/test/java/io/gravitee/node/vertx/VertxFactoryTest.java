@@ -360,6 +360,17 @@ class VertxFactoryTest {
         assertThat(domains).containsExactly(MetricsDomain.NAMED_POOLS);
     }
 
+    @Test
+    void should_read_metrics_domains_ignoring_case_and_whitespace() {
+        environment.setProperty("services.metrics.domains[0]", " http_server ");
+        environment.setProperty("services.metrics.domains[1]", "Named_Pools");
+
+        @SuppressWarnings("unchecked")
+        Set<MetricsDomain> domains = (Set<MetricsDomain>) ReflectionTestUtils.invokeMethod(cut, "loadMetricsDomains");
+
+        assertThat(domains).containsExactlyInAnyOrder(MetricsDomain.HTTP_SERVER, MetricsDomain.NAMED_POOLS);
+    }
+
     private void enableMetrics() {
         environment.setProperty("services.metrics.enabled", "true");
         when(node.application()).thenReturn("graviteeio-test");

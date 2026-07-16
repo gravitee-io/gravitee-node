@@ -282,7 +282,7 @@ public class VertxFactory implements FactoryBean<Vertx> {
         String value;
         int counter = 0;
         while ((value = environment.getProperty(baseProperty + "[" + (counter++) + "]")) != null) {
-            metricsDomains.add(MetricsDomain.valueOf(value));
+            metricsDomains.add(MetricsDomain.valueOf(value.trim().toUpperCase()));
         }
     }
 
