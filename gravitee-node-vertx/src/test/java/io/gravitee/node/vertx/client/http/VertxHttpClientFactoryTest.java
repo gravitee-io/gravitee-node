@@ -135,6 +135,34 @@ class VertxHttpClientFactoryTest {
         assertThat(httpClientOptions.getInitialSettings().getMaxFrameSize()).isEqualTo(32000);
     }
 
+    @Test
+    @SneakyThrows
+    void should_build_client_with_unbounded_wait_queue_by_default() {
+        VertxHttpClientFactory.VertxHttpClientFactoryBuilder builder = builder();
+
+        builder.httpOptions(VertxHttpClientOptions.builder().build());
+        final HttpClient httpClient = builder.build().createHttpClient();
+
+        final HttpClientOptions httpClientOptions = extractHttpClientOptions(httpClient);
+        assertThat(httpClientOptions).isNotNull();
+        assertThat(httpClientOptions.getMaxWaitQueueSize()).isEqualTo(-1);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_build_client_with_custom_max_wait_queue_size() {
+        VertxHttpClientFactory.VertxHttpClientFactoryBuilder builder = builder();
+
+        builder.httpOptions(VertxHttpClientOptions.builder().maxWaitQueueSize(50).build());
+        final HttpClient httpClient = builder.build().createHttpClient();
+
+        assertThat(httpClient).isNotNull();
+
+        final HttpClientOptions httpClientOptions = extractHttpClientOptions(httpClient);
+        assertThat(httpClientOptions).isNotNull();
+        assertThat(httpClientOptions.getMaxWaitQueueSize()).isEqualTo(50);
+    }
+
     private static HttpClientOptions extractHttpClientOptions(HttpClient httpClient) throws IllegalAccessException {
         Field httpOptionsFields = ReflectionUtils.findField(HttpClientImpl.class, "options", HttpClientOptions.class);
         httpOptionsFields.setAccessible(true);

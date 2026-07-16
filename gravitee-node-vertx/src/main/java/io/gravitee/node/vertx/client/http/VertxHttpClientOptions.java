@@ -46,6 +46,7 @@ public class VertxHttpClientOptions implements Serializable {
     public static final long DEFAULT_CONNECT_TIMEOUT = 5000;
     public static final long DEFAULT_READ_TIMEOUT = 10000;
     public static final int DEFAULT_MAX_CONCURRENT_CONNECTIONS = 100;
+    public static final int DEFAULT_MAX_WAIT_QUEUE_SIZE = -1;
     public static final boolean DEFAULT_KEEP_ALIVE = true;
     public static final boolean DEFAULT_PIPELINING = false;
     public static final boolean DEFAULT_USE_COMPRESSION = true;
@@ -100,6 +101,13 @@ public class VertxHttpClientOptions implements Serializable {
 
     @Builder.Default
     private int maxConcurrentConnections = DEFAULT_MAX_CONCURRENT_CONNECTIONS;
+
+    /**
+     * Maximum number of requests allowed in the pending queue when the connection pool is full.
+     * Default is {@value DEFAULT_MAX_WAIT_QUEUE_SIZE} which means an unbounded queue.
+     */
+    @Builder.Default
+    private int maxWaitQueueSize = DEFAULT_MAX_WAIT_QUEUE_SIZE;
 
     @Builder.Default
     private boolean useCompression = DEFAULT_USE_COMPRESSION;
