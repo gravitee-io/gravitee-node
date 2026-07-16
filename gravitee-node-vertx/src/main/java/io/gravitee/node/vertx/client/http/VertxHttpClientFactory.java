@@ -32,6 +32,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.util.concurrent.TimeUnit;
 import lombok.Builder;
 import lombok.CustomLog;
 import lombok.NonNull;
@@ -106,6 +107,10 @@ public class VertxHttpClientFactory {
         if (httpOptions.getVersion() == VertxHttpProtocolVersion.HTTP_2) {
             poolOptions.setHttp2MaxSize(httpOptions.getMaxConcurrentConnections());
         }
+        poolOptions
+            .setMaxWaitQueueSize(httpOptions.getMaxWaitQueueSize())
+            .setMaxLifetime((int) httpOptions.getMaxConnectionLifetime())
+            .setMaxLifetimeUnit(TimeUnit.MILLISECONDS);
         return poolOptions;
     }
 
