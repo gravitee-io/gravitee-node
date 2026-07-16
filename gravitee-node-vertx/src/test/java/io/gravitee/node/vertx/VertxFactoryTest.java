@@ -32,6 +32,7 @@ import io.vertx.core.VertxBuilder;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.micrometer.Label;
+import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MetricsNaming;
 import io.vertx.micrometer.MicrometerMetricsFactory;
 import io.vertx.micrometer.MicrometerMetricsOptions;
@@ -78,8 +79,8 @@ class VertxFactoryTest {
     void init() {
         vertxStatic = Mockito.mockStatic(Vertx.class);
 
-        when(vertxBuilder.with(any())).thenReturn(vertxBuilder);
-        when(vertxBuilder.build()).thenReturn(vertx);
+        lenient().when(vertxBuilder.with(any())).thenReturn(vertxBuilder);
+        lenient().when(vertxBuilder.build()).thenReturn(vertx);
         vertxStatic.when(Vertx::builder).thenReturn(vertxBuilder);
 
         EventLoopGroup eventLoopGroup = mock(EventLoopGroup.class);
@@ -336,6 +337,38 @@ class VertxFactoryTest {
         cut.getObject();
 
         verify(vertxBuilder).with(argThat(vertxOptions -> !vertxOptions.getPreferNativeTransport()));
+    }
+
+    @Test
+    void should_read_metrics_domains_from_documented_plural_key() {
+        environment.setProperty("services.metrics.domains[0]", "NAMED_POOLS");
+        environment.setProperty("services.metrics.domains[1]", "HTTP_SERVER");
+
+        @SuppressWarnings("unchecked")
+        Set<MetricsDomain> domains = (Set<MetricsDomain>) ReflectionTestUtils.invokeMethod(cut, "loadMetricsDomains");
+
+        assertThat(domains).containsExactlyInAnyOrder(MetricsDomain.NAMED_POOLS, MetricsDomain.HTTP_SERVER);
+    }
+
+    @Test
+    void should_still_read_metrics_domains_from_legacy_singular_key() {
+        environment.setProperty("services.metrics.domain[0]", "NAMED_POOLS");
+
+        @SuppressWarnings("unchecked")
+        Set<MetricsDomain> domains = (Set<MetricsDomain>) ReflectionTestUtils.invokeMethod(cut, "loadMetricsDomains");
+
+        assertThat(domains).containsExactly(MetricsDomain.NAMED_POOLS);
+    }
+
+    @Test
+    void should_read_metrics_domains_ignoring_case_and_whitespace() {
+        environment.setProperty("services.metrics.domains[0]", " http_server ");
+        environment.setProperty("services.metrics.domains[1]", "Named_Pools");
+
+        @SuppressWarnings("unchecked")
+        Set<MetricsDomain> domains = (Set<MetricsDomain>) ReflectionTestUtils.invokeMethod(cut, "loadMetricsDomains");
+
+        assertThat(domains).containsExactlyInAnyOrder(MetricsDomain.HTTP_SERVER, MetricsDomain.NAMED_POOLS);
     }
 
     private void enableMetrics() {
