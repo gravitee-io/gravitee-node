@@ -112,6 +112,7 @@ public class VertxHttpClientFactory {
             .setKeepAliveTimeout((int) (httpOptions.getKeepAliveTimeout() / 1000))
             .setConnectTimeout((int) httpOptions.getConnectTimeout())
             .setMaxPoolSize(httpOptions.getMaxConcurrentConnections())
+            .setMaxWaitQueueSize(httpOptions.getMaxWaitQueueSize())
             .setDecompressionSupported(httpOptions.isUseCompression())
             .setTryUsePerFrameWebSocketCompression(httpOptions.isUseCompression())
             .setTryUsePerMessageWebSocketCompression(httpOptions.isUseCompression())
