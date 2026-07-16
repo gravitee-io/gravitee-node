@@ -1,3 +1,10 @@
+# [9.3.0](https://github.com/gravitee-io/gravitee-node/compare/9.2.2...9.3.0) (2026-07-16)
+
+
+### Features
+
+* add cloud Redis cache license pack ([#588](https://github.com/gravitee-io/gravitee-node/issues/588)) ([a8afe7f](https://github.com/gravitee-io/gravitee-node/commit/a8afe7f4f69c8ae3d95f132d93c05c25d910f214))
+
 ## [9.2.2](https://github.com/gravitee-io/gravitee-node/compare/9.2.1...9.2.2) (2026-07-06)
 
 
