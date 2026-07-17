@@ -1,3 +1,10 @@
+# [9.4.0](https://github.com/gravitee-io/gravitee-node/compare/9.3.1...9.4.0) (2026-07-17)
+
+
+### Features
+
+* add configurable connection pool max wait queue size and max connection lifetime ([e0b4b52](https://github.com/gravitee-io/gravitee-node/commit/e0b4b52de9754d1a6e5d1c662ad66838a7ed77bc))
+
 ## [9.3.1](https://github.com/gravitee-io/gravitee-node/compare/9.3.0...9.3.1) (2026-07-16)
 
 
