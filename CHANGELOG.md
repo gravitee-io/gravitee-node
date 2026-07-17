@@ -1,3 +1,10 @@
+# [7.27.0](https://github.com/gravitee-io/gravitee-node/compare/7.26.5...7.27.0) (2026-07-17)
+
+
+### Features
+
+* add configurable connection pool max wait queue size ([2df5a71](https://github.com/gravitee-io/gravitee-node/commit/2df5a71ef708d526a567e984787233b179d5bdcc))
+
 ## [7.26.5](https://github.com/gravitee-io/gravitee-node/compare/7.26.4...7.26.5) (2026-06-16)
 
 
