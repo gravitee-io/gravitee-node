@@ -80,6 +80,16 @@ class DefaultLicenseManagerTest {
     }
 
     @Test
+    void should_return_null_license_when_organization_id_is_null() {
+        assertThat(cut.getOrganizationLicense(null)).isNull();
+    }
+
+    @Test
+    void should_return_platform_license_when_organization_id_is_null() {
+        assertThat(cut.getOrganizationLicenseOrPlatform(null)).isSameAs(cut.getPlatformLicense());
+    }
+
+    @Test
     void should_validate_plugin_features_when_allowed_by_platform_license() {
         mockPluginRegistry();
         final License license = mock(License.class);
