@@ -437,6 +437,7 @@ class DefaultLicenseFactoryTest {
             "gravitee-en-secrets",
             "am-certificate-aws",
             "am-certificate-aws-cloudhsm",
+            "am-certificate-oci-kms",
             "apim-policy-graphql-ratelimit",
             "apim-policy-interops-a-idp",
             "apim-policy-interops-r-idp",
