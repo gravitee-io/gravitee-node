@@ -118,6 +118,7 @@ packs:
         features:
             - am-certificate-aws # certificate: gravitee-am-certificate-aws
             - am-certificate-aws-cloudhsm # certificate: gravitee-am-certificate-hsm-aws
+            - am-certificate-oci-kms # certificate: gravitee-am-certificate-oci
             - gravitee-en-secretprovider-aws # secret-provider: gravitee-secret-provider-aws
             - gravitee-en-secretprovider-azure-keyvault # secret-provider: gravitee-secret-provider-azure-keyvault
             - gravitee-en-secretprovider-vault # secret-provider: gravitee-secret-provider-hc-vault
