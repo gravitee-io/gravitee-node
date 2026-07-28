@@ -104,6 +104,7 @@ packs:
             - gravitee-en-secrets
             - am-certificate-aws
             - am-certificate-aws-cloudhsm
+            - am-certificate-oci-kms
     enterprise-alert-engine:
         features:
             - alert-engine
