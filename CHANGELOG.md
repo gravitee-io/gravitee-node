@@ -1,3 +1,10 @@
+## [8.1.1](https://github.com/gravitee-io/gravitee-node/compare/8.1.0...8.1.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* read documented plural services.metrics.domains config key ([#596](https://github.com/gravitee-io/gravitee-node/issues/596)) ([5598b31](https://github.com/gravitee-io/gravitee-node/commit/5598b312e6480310ea6c1d371a629928490bcb64))
+
 # [8.1.0](https://github.com/gravitee-io/gravitee-node/compare/8.0.7...8.1.0) (2026-07-17)
 
 
