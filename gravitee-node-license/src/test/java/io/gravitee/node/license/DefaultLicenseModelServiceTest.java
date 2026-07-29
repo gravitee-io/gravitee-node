@@ -133,6 +133,12 @@ class DefaultLicenseModelServiceTest {
                         "apim-policy-transform-avro-protobuf",
                         "apim-policy-transform-protobuf-json",
                         "alert-engine",
+                        "am-certificate-aws",
+                        "am-certificate-aws-cloudhsm",
+                        "gravitee-en-secretprovider-aws",
+                        "gravitee-en-secretprovider-azure-keyvault",
+                        "gravitee-en-secretprovider-vault",
+                        "gravitee-en-secrets",
                     }
                 )
             ),

@@ -214,6 +214,13 @@ packs:
 
             - alert-engine # node: gravitee-alert-engine
 
+            - am-certificate-aws # certificate: gravitee-am-certificate-aws
+            - am-certificate-aws-cloudhsm # certificate: gravitee-am-certificate-hsm-aws
+            - gravitee-en-secretprovider-aws # secret-provider: gravitee-secret-provider-aws
+            - gravitee-en-secretprovider-azure-keyvault # secret-provider: gravitee-secret-provider-azure-keyvault
+            - gravitee-en-secretprovider-vault # secret-provider: gravitee-secret-provider-hc-vault
+            - gravitee-en-secrets # service: gravitee-service-secrets
+
     authorization-management:
         features:
             - gamma-authz-module # module: gravitee-gamma-module-authz
