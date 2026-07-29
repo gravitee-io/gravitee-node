@@ -1,3 +1,10 @@
+## [9.4.1](https://github.com/gravitee-io/gravitee-node/compare/9.4.0...9.4.1) (2026-07-29)
+
+
+### Bug Fixes
+
+* add missing secret features to gamma entreprise pack ([8be604b](https://github.com/gravitee-io/gravitee-node/commit/8be604b699aba261ddad86d250109598b0183b54))
+
 # [9.4.0](https://github.com/gravitee-io/gravitee-node/compare/9.3.1...9.4.0) (2026-07-17)
 
 
