@@ -1,3 +1,10 @@
+# [7.28.0](https://github.com/gravitee-io/gravitee-node/compare/7.27.0...7.28.0) (2026-07-29)
+
+
+### Features
+
+* am-certificate-oci-kms license feature ([5cfdb8f](https://github.com/gravitee-io/gravitee-node/commit/5cfdb8f57f828597b8215cad8ee392ac2ecc1b7c))
+
 # [7.27.0](https://github.com/gravitee-io/gravitee-node/compare/7.26.5...7.27.0) (2026-07-17)
 
 
