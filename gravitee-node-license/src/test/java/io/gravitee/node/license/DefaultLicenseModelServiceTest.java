@@ -185,6 +185,7 @@ class DefaultLicenseModelServiceTest {
                     "gamma-aim-module",
                     "gamma-aim-endpoint-tools-http",
                     "gamma-aim-endpoint-tools-mcp",
+                    "gamma-aim-endpoint-tools-arazzo",
                     "gamma-aim-entrypoint-mcp-studio",
                     "gamma-aim-policy-prompt-decorator",
                     "gamma-aim-policy-prompt-pattern-guard-rails",
