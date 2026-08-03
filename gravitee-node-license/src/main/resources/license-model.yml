@@ -263,6 +263,7 @@ packs:
             - gamma-aim-module # module: gravitee-gamma-module-aim
             - gamma-aim-endpoint-tools-http # endpoint: gravitee-endpoint-tools-http
             - gamma-aim-endpoint-tools-mcp # endpoint: gravitee-endpoint-tools-mcp
+            - gamma-aim-endpoint-tools-arazzo # endpoint: gravitee-endpoint-tools-arazzo
             - gamma-aim-entrypoint-mcp-studio # entrypoint: gravitee-entrypoint-mcp-studio
 
             - gamma-aim-policy-prompt-decorator # policy: gravitee-policy-ai-prompt-decorator (not released)
