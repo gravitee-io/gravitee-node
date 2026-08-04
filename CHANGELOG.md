@@ -1,3 +1,10 @@
+# [9.6.0](https://github.com/gravitee-io/gravitee-node/compare/9.5.0...9.6.0) (2026-08-04)
+
+
+### Features
+
+* **license:** add gamma-aim-endpoint-tools-arazzo ([91829e1](https://github.com/gravitee-io/gravitee-node/commit/91829e1972742426a70dac283163e03de1850e4f))
+
 # [9.5.0](https://github.com/gravitee-io/gravitee-node/compare/9.4.1...9.5.0) (2026-07-29)
 
 
