@@ -37,6 +37,11 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -374,15 +379,17 @@ public class OpenTelemetryTracerIntegrationTest {
             .keystoreType(keyStore.getString("type"))
             .keystorePath(keyStore.getString("path"))
             .keystorePassword(keyStore.getString("password"))
+            .keystoreContent(keyStore.getString("content"))
             .truststoreType(trustStore.getString("type"))
             .truststorePath(trustStore.getString("path"))
             .truststorePassword(trustStore.getString("password"))
+            .truststoreContent(trustStore.getString("content"))
             .endpoint("https://localhost:" + containerTLS.getCollectorGrpcPort())
             .tracesEnabled(true)
             .protocol(Protocol.GRPC.value())
             .build();
 
-        final var serviceName = "otel_grpc_" + keyStore.getString("type");
+        final var serviceName = "otel_grpc_" + name.replace(' ', '_');
         OpenTelemetryFactory openTelemetryFactory = openTelemetryFactory(vertx, openTelemetryConfiguration);
 
         var tracer = openTelemetryFactory.createTracer(
@@ -485,15 +492,17 @@ public class OpenTelemetryTracerIntegrationTest {
             .keystoreType(keyStore.getString("type"))
             .keystorePath(keyStore.getString("path"))
             .keystorePassword(keyStore.getString("password"))
+            .keystoreContent(keyStore.getString("content"))
             .truststoreType(trustStore.getString("type"))
             .truststorePath(trustStore.getString("path"))
             .truststorePassword(trustStore.getString("password"))
+            .truststoreContent(trustStore.getString("content"))
             .endpoint("https://localhost:" + containerTLS.getCollectorHttpPort())
             .tracesEnabled(true)
             .protocol(Protocol.HTTP_PROTOBUF.value())
             .build();
 
-        final var serviceName = "otel_http_" + keyStore.getString("type");
+        final var serviceName = "otel_http_" + name.replace(' ', '_');
         OpenTelemetryFactory openTelemetryFactory = openTelemetryFactory(vertx, openTelemetryConfiguration);
         var tracer = openTelemetryFactory.createTracer(
             "serviceInstanceId",
@@ -614,8 +623,72 @@ public class OpenTelemetryTracerIntegrationTest {
                         )
                     )
                 )
+            ),
+            Arguments.of(
+                "using a jks base64 content",
+                new JsonObject(
+                    Map.ofEntries(
+                        Map.entry(
+                            "keyStore",
+                            new JsonObject(
+                                Map.ofEntries(
+                                    Map.entry("type", "JKS"),
+                                    Map.entry("content", base64Of("src/test/resources/ssl/client-keystore.jks")),
+                                    Map.entry("password", "gravitee"),
+                                    Map.entry("alias", "jaeger-client")
+                                )
+                            )
+                        ),
+                        Map.entry(
+                            "trustStore",
+                            new JsonObject(
+                                Map.ofEntries(
+                                    Map.entry("type", "JKS"),
+                                    Map.entry("content", base64Of("src/test/resources/ssl/client-truststore.jks")),
+                                    Map.entry("password", "gravitee")
+                                )
+                            )
+                        )
+                    )
+                )
+            ),
+            Arguments.of(
+                "using a PKCS12 base64 content",
+                new JsonObject(
+                    Map.ofEntries(
+                        Map.entry(
+                            "keyStore",
+                            new JsonObject(
+                                Map.ofEntries(
+                                    Map.entry("type", "PKCS12"),
+                                    Map.entry("content", base64Of("src/test/resources/ssl/client-keystore.p12")),
+                                    Map.entry("password", "gravitee"),
+                                    Map.entry("alias", "jaeger-client")
+                                )
+                            )
+                        ),
+                        Map.entry(
+                            "trustStore",
+                            new JsonObject(
+                                Map.ofEntries(
+                                    Map.entry("type", "PKCS12"),
+                                    Map.entry("content", base64Of("src/test/resources/ssl/client-truststore.p12")),
+                                    Map.entry("password", "gravitee")
+                                )
+                            )
+                        )
+                    )
+                )
             )
         );
+    }
+
+    private static String base64Of(final String path) {
+        try {
+            return Base64.getEncoder().encodeToString(Files.readAllBytes(Path.of(path)));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private void assertData(JsonObject json, boolean withAdditionalAttributes, boolean withError, boolean withEvents) {

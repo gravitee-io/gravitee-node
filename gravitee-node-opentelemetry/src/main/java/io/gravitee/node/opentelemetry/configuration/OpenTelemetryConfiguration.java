@@ -153,6 +153,12 @@ public class OpenTelemetryConfiguration {
     @Value("${services.opentelemetry.exporter.ssl.keystore.password:${services.tracing.otel.ssl.keystore.password:#{null}}}")
     private String keystorePassword;
 
+    /**
+     * Base64-encoded keystore content. Alternative to {@code path}, for jks and pkcs12 keystores.
+     */
+    @Value("${services.opentelemetry.exporter.ssl.keystore.content:#{null}}")
+    private String keystoreContent;
+
     private List<String> keystorePemCerts;
 
     public List<String> getKeystorePemCerts() {
@@ -189,6 +195,12 @@ public class OpenTelemetryConfiguration {
 
     @Value("${services.opentelemetry.exporter.ssl.truststore.password:${services.tracing.otel.ssl.truststore.password:#{null}}}")
     private String truststorePassword;
+
+    /**
+     * Base64-encoded truststore content. Alternative to {@code path}, for jks and pkcs12 truststores.
+     */
+    @Value("${services.opentelemetry.exporter.ssl.truststore.content:#{null}}")
+    private String truststoreContent;
 
     /**
      * If proxy connection must be used.

@@ -80,7 +80,11 @@ All the exporter configurations are located under the `services.opentelemetry.ex
 
 |ssl.keystore.path
 |
-|A path is required if certificate's type is jks or pkcs12.
+|A path is required if certificate's type is jks or pkcs12, unless `content` is set.
+
+|ssl.keystore.content
+|
+|Base64-encoded keystore content. Alternative to `path`, for jks and pkcs12 keystores. `path` takes precedence when both are set.
 
 |ssl.keystore.password
 |
@@ -102,7 +106,11 @@ All the exporter configurations are located under the `services.opentelemetry.ex
 
 |ssl.truststore.path
 |
-|A path is required in any case.
+|A path is required for all types, unless `content` is set for a jks or pkcs12 truststore.
+
+|ssl.truststore.content
+|
+|Base64-encoded truststore content. Alternative to `path`, for jks and pkcs12 truststores. `path` takes precedence when both are set.
 
 |ssl.truststore.password
 |
