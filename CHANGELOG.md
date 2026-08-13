@@ -1,3 +1,10 @@
+## [9.6.1](https://github.com/gravitee-io/gravitee-node/compare/9.6.0...9.6.1) (2026-08-13)
+
+
+### Bug Fixes
+
+* bump gravitee-common to 5.1.0 ([c4ddb2b](https://github.com/gravitee-io/gravitee-node/commit/c4ddb2b707c864f8e733ac54b613b66737d3f106))
+
 # [9.6.0](https://github.com/gravitee-io/gravitee-node/compare/9.5.0...9.6.0) (2026-08-04)
 
 
