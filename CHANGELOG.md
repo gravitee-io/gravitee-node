@@ -1,3 +1,10 @@
+## [9.6.2](https://github.com/gravitee-io/gravitee-node/compare/9.6.1...9.6.2) (2026-08-17)
+
+
+### Bug Fixes
+
+* reuse a single NetClient in JettyHttpServerProbe ([d4961c8](https://github.com/gravitee-io/gravitee-node/commit/d4961c8e5a1855ab6629a07cebbfcd02cffbd53c))
+
 ## [9.6.1](https://github.com/gravitee-io/gravitee-node/compare/9.6.0...9.6.1) (2026-08-13)
 
 
