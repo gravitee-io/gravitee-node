@@ -43,7 +43,7 @@ All the exporter configurations are located under the `services.opentelemetry.ex
 |http://localhost:3100/otlp/v1/logs
 |Sets the OTLP HTTP endpoint for log records. If unset, defaults to http://localhost:3100/otlp/v1/logs
 
-**Using `https://` will apply SSL settings**
+**Of the other exporter settings, log records currently use only `timeout`, `compression` and `headers`**
 
 |headers
 |N/A
@@ -63,6 +63,9 @@ All the exporter configurations are located under the `services.opentelemetry.ex
 |===
 
 ==== SSL settings
+
+NOTE: For now these settings apply to the trace exporter only. Log records are exported through the OpenTelemetry SDK's own OTLP HTTP exporter, which is not configured from this section.
+
 |===
 |Parameter |Default |Description
 
@@ -118,6 +121,9 @@ All the exporter configurations are located under the `services.opentelemetry.ex
 |===
 
 ==== Proxy settings
+
+NOTE: For now these settings apply to the trace exporter only. Log records are exported through the OpenTelemetry SDK's own OTLP HTTP exporter, which is not configured from this section.
+
 |===
 |Parameter |Default |Description
 
