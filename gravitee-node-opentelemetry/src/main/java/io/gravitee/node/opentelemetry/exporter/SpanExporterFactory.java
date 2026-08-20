@@ -33,11 +33,9 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.net.JksOptions;
-import io.vertx.core.net.PemKeyCertOptions;
-import io.vertx.core.net.PemTrustOptions;
-import io.vertx.core.net.PfxOptions;
+import io.vertx.core.net.KeyCertOptions;
 import io.vertx.core.net.ProxyOptions;
+import io.vertx.core.net.TrustOptions;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -166,10 +164,6 @@ public class SpanExporterFactory extends AbstractService<SpanExporterFactory> {
     }
 
     private record HttpClientOptionsConsumer(OpenTelemetryConfiguration configuration, URI baseUri) implements Consumer<HttpClientOptions> {
-        private static final String KEYSTORE_FORMAT_JKS = "JKS";
-        private static final String KEYSTORE_FORMAT_PEM = "PEM";
-        private static final String KEYSTORE_FORMAT_PKCS12 = "PKCS12";
-
         @Override
         public void accept(HttpClientOptions options) {
             if (OTelExporterUtil.isHttps(baseUri)) {
@@ -189,32 +183,16 @@ public class SpanExporterFactory extends AbstractService<SpanExporterFactory> {
                 options.setTrustAll(false).setVerifyHost(configuration.isVerifyHost());
             }
 
-            if (KEYSTORE_FORMAT_JKS.equalsIgnoreCase(configuration.getKeystoreType())) {
-                options.setKeyCertOptions(
-                    new JksOptions().setPath(configuration.getKeystorePath()).setPassword(configuration.getKeystorePassword())
-                );
-            } else if (KEYSTORE_FORMAT_PKCS12.equalsIgnoreCase(configuration.getKeystoreType())) {
-                options.setKeyCertOptions(
-                    new PfxOptions().setPath(configuration.getKeystorePath()).setPassword(configuration.getKeystorePassword())
-                );
-            } else if (KEYSTORE_FORMAT_PEM.equalsIgnoreCase(configuration.getKeystoreType())) {
-                options.setKeyCertOptions(
-                    new PemKeyCertOptions()
-                        .setCertPaths(configuration.getKeystorePemCerts())
-                        .setKeyPaths(configuration.getKeystorePemKeys())
-                );
+            OTelSslOptionsFactory sslOptionsFactory = new OTelSslOptionsFactory(configuration);
+
+            KeyCertOptions keyCertOptions = sslOptionsFactory.buildKeyCertOptions();
+            if (keyCertOptions != null) {
+                options.setKeyCertOptions(keyCertOptions);
             }
 
-            if (KEYSTORE_FORMAT_JKS.equalsIgnoreCase(configuration.getTruststoreType())) {
-                options.setTrustOptions(
-                    new JksOptions().setPath(configuration.getTruststorePath()).setPassword(configuration.getTruststorePassword())
-                );
-            } else if (KEYSTORE_FORMAT_PKCS12.equalsIgnoreCase(configuration.getTruststoreType())) {
-                options.setTrustOptions(
-                    new PfxOptions().setPath(configuration.getTruststorePath()).setPassword(configuration.getTruststorePassword())
-                );
-            } else if (KEYSTORE_FORMAT_PEM.equalsIgnoreCase(configuration.getTruststoreType())) {
-                options.setTrustOptions(new PemTrustOptions().addCertPath(configuration.getTruststorePath()));
+            TrustOptions trustOptions = sslOptionsFactory.buildTrustOptions();
+            if (trustOptions != null) {
+                options.setTrustOptions(trustOptions);
             }
         }
 
