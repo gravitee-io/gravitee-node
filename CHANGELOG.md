@@ -1,3 +1,10 @@
+# [9.7.0](https://github.com/gravitee-io/gravitee-node/compare/9.6.2...9.7.0) (2026-08-20)
+
+
+### Features
+
+* **opentelemetry:** accept base64 keystore and truststore content ([#601](https://github.com/gravitee-io/gravitee-node/issues/601)) ([cb3bda7](https://github.com/gravitee-io/gravitee-node/commit/cb3bda7d9c39edd32f7bca946e362eb5d5378046))
+
 ## [9.6.2](https://github.com/gravitee-io/gravitee-node/compare/9.6.1...9.6.2) (2026-08-17)
 
 
