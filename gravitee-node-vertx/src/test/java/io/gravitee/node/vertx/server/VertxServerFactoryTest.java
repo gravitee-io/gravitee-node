@@ -19,16 +19,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
+import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
 import io.gravitee.node.certificates.DefaultCRLLoaderFactoryRegistry;
 import io.gravitee.node.certificates.DefaultKeyStoreLoaderFactoryRegistry;
+import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import io.gravitee.node.certificates.crl.FileCRLLoaderFactory;
 import io.gravitee.node.certificates.file.FileTrustStoreLoaderFactory;
 import io.gravitee.node.certificates.selfsigned.SelfSignedKeyStoreLoaderFactory;
 import io.gravitee.node.vertx.server.http.VertxHttpServerOptions;
 import io.gravitee.node.vertx.server.tcp.VertxTcpServerOptions;
 import io.vertx.rxjava3.core.Vertx;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -99,6 +102,52 @@ class VertxServerFactoryTest {
         assertThat(vertxServer.id()).isEqualTo(ID);
         assertThat(vertxServer.options()).isEqualTo(options);
         assertThat(vertxServer.instances()).isEmpty();
+    }
+
+    @Test
+    void should_not_send_client_certificate_authorities_by_default() throws Exception {
+        VertxServer<?, VertxServerOptions> vertxServer = cut.create(securedOptions(false));
+
+        TrustStoreLoaderManager trustStoreLoaderManager = vertxServer.trustStoreLoaderManager();
+        trustStoreLoaderManager.start();
+        try {
+            assertThat(trustStoreLoaderManager.getCertificateManager().getAcceptedIssuers()).isEmpty();
+        } finally {
+            trustStoreLoaderManager.stop();
+        }
+    }
+
+    @Test
+    void should_send_the_configured_trust_store_when_the_option_is_set() throws Exception {
+        VertxServer<?, VertxServerOptions> vertxServer = cut.create(securedOptions(true));
+
+        TrustStoreLoaderManager trustStoreLoaderManager = vertxServer.trustStoreLoaderManager();
+        trustStoreLoaderManager.start();
+        try {
+            assertThat(trustStoreLoaderManager.getCertificateManager().getAcceptedIssuers()).hasSize(2);
+        } finally {
+            trustStoreLoaderManager.stop();
+        }
+    }
+
+    private VertxHttpServerOptions securedOptions(boolean sendClientCertificateAuthorities) {
+        return VertxHttpServerOptions
+            .builder()
+            .prefix(ID)
+            .environment(new MockEnvironment())
+            .id(ID)
+            .secured(true)
+            .sendClientCertificateAuthorities(sendClientCertificateAuthorities)
+            .keyStoreLoaderOptions(KeyStoreLoaderOptions.builder().build())
+            .trustStoreLoaderOptions(
+                TrustStoreLoaderOptions
+                    .builder()
+                    .paths(List.of("src/test/resources/ssl/truststore.p12"))
+                    .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+                    .password("gravitee")
+                    .build()
+            )
+            .build();
     }
 
     @Test
