@@ -33,6 +33,7 @@ import java.security.cert.CRL;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 import java.util.List;
 import javax.net.ssl.SSLEngine;
 import org.junit.jupiter.api.BeforeEach;
@@ -122,6 +123,95 @@ class RefreshableX509TrustManagerDelegatorTest {
                 .hasMessageContaining("PKIX path validation failed");
             assertThatCode(() -> cut.checkServerTrusted(chain, untrusted.getSigAlgName(), socket))
                 .hasMessageContaining("PKIX path validation failed");
+        }
+    }
+
+    @Test
+    void should_not_advertise_aliases_rejected_by_the_predicate() throws Exception {
+        KeyStore trustStore = loadTruststore();
+
+        cut.refresh(trustStore, "client2"::equals);
+
+        assertThat(cut.getAcceptedIssuers()).containsExactly(readCertificate("/truststores/client2.crt"));
+        assertThat(cut.getAcceptedIssuers()).doesNotContain(readCertificate("/truststores/client3.crt"));
+    }
+
+    @Test
+    void should_still_trust_certificates_it_does_not_advertise() throws Exception {
+        KeyStore trustStore = loadTruststore();
+
+        // client3 is kept out of the advertised acceptable issuers...
+        cut.refresh(trustStore, "client2"::equals);
+
+        // ...yet it remains a valid trust anchor, which is the whole point: plan matching must keep working.
+        X509Certificate client3 = readCertificate("/truststores/client3.crt");
+        X509Certificate[] chain = new X509Certificate[] { client3 };
+        assertThat(cut.getAcceptedIssuers()).doesNotContain(client3);
+        assertThatCode(() -> cut.checkClientTrusted(chain, client3.getSigAlgName())).doesNotThrowAnyException();
+        assertThatCode(() -> cut.checkClientTrusted(chain, client3.getSigAlgName(), sslEngine)).doesNotThrowAnyException();
+        assertThatCode(() -> cut.checkClientTrusted(chain, client3.getSigAlgName(), socket)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void should_advertise_nothing_when_no_alias_is_advertisable() {
+        cut.refresh(loadTruststore(), alias -> false);
+
+        assertThat(cut.getAcceptedIssuers()).isEmpty();
+    }
+
+    @Test
+    void should_advertise_every_alias_when_refreshed_without_predicate() {
+        cut.refresh(loadTruststore(), new char[0]);
+
+        assertThat(cut.getAcceptedIssuers()).hasSize(2);
+    }
+
+    @Test
+    void should_not_expose_its_internal_accepted_issuers_array() {
+        cut.refresh(loadTruststore());
+
+        X509Certificate[] issuers = cut.getAcceptedIssuers();
+        issuers[0] = null;
+
+        assertThat(cut.getAcceptedIssuers()).hasSize(2).doesNotContainNull();
+    }
+
+    @Test
+    void should_advertise_the_leaf_of_key_entries_like_the_jdk_does() throws Exception {
+        // a keystore file reused as a trust store may hold key entries; the JDK trust manager treats the first
+        // certificate of their chain as a trust anchor, so we must advertise it too
+        KeyStore withKeyEntry = KeyStoreUtils.initFromPath(
+            CERTIFICATE_FORMAT_PKCS12,
+            this.getClass().getResource("/keystores/all-in-one.p12").getPath(),
+            PASSWORD
+        );
+        for (String alias : Collections.list(withKeyEntry.aliases())) {
+            assertThat(withKeyEntry.isKeyEntry(alias)).isTrue();
+        }
+
+        cut.refresh(withKeyEntry);
+
+        assertThat(cut.getAcceptedIssuers()).hasSize(4);
+    }
+
+    @Test
+    void should_not_advertise_the_same_certificate_twice() throws Exception {
+        KeyStore duplicated = KeyStore.getInstance(CERTIFICATE_FORMAT_PKCS12);
+        duplicated.load(null, PASSWORD.toCharArray());
+        X509Certificate certificate = readCertificate("/truststores/client1.crt");
+        duplicated.setCertificateEntry("first", certificate);
+        duplicated.setCertificateEntry("second", certificate);
+
+        cut.refresh(duplicated);
+
+        assertThat(cut.getAcceptedIssuers()).containsExactly(certificate);
+    }
+
+    private X509Certificate readCertificate(String path) throws Exception {
+        URL resource = this.getClass().getResource(path);
+        assertThat(resource).isNotNull();
+        try (var is = resource.openStream()) {
+            return (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(is);
         }
     }
 

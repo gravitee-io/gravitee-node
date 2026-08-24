@@ -59,6 +59,7 @@ public class VertxServerOptions implements ServerOptions {
     public static final int TCP_DEFAULT_PORT = 4080;
     public static final int DEFAULT_IDLE_TIMEOUT = TCPSSLOptions.DEFAULT_IDLE_TIMEOUT;
     public static final String DEFAULT_CLIENT_AUTH = ClientAuth.NONE.name();
+    public static final boolean DEFAULT_SEND_CLIENT_CERTIFICATE_AUTHORITIES = false;
     public static final boolean DEFAULT_HAPROXY_PROTOCOL = false;
     public static final long DEFAULT_HAPROXY_PROTOCOL_TIMEOUT = NetServerOptions.DEFAULT_PROXY_PROTOCOL_TIMEOUT;
 
@@ -87,6 +88,21 @@ public class VertxServerOptions implements ServerOptions {
 
     @Builder.Default
     protected String clientAuth = DEFAULT_CLIENT_AUTH;
+
+    /**
+     * Whether the configured trust store is sent to clients as {@code certificate_authorities} during the TLS
+     * handshake, so that a client holding several certificates can pick the right one. Certificates registered
+     * dynamically at runtime are never sent. Does not affect which client certificates are trusted.
+     * <p>
+     * <b>Only enable this when every expected client certificate is issued by an authority present in the
+     * configured trust store.</b> A non-empty list is a constraint, not a hint: a client whose issuer is absent
+     * from it withholds its certificate entirely, which fails the handshake with {@code clientAuth=required} and
+     * degrades to an authentication error with {@code clientAuth=request}. In particular, enabling this cuts off
+     * every client certificate registered at runtime, such as the per-subscription certificates of APIM mTLS
+     * plans, since those are never sent. Leaving it disabled sends an empty list, which constrains nobody.
+     */
+    @Builder.Default
+    protected boolean sendClientCertificateAuthorities = DEFAULT_SEND_CLIENT_CERTIFICATE_AUTHORITIES;
 
     protected List<String> authorizedTlsCipherSuites;
 
@@ -171,6 +187,13 @@ public class VertxServerOptions implements ServerOptions {
             this.sni(environment.getProperty(prefix + ".ssl.sni", Boolean.class, DEFAULT_SNI));
             this.openssl(environment.getProperty(prefix + ".ssl.openssl", Boolean.class, DEFAULT_OPENSSL));
             this.tlsProtocols(environment.getProperty(prefix + ".ssl.tlsProtocols"));
+            this.sendClientCertificateAuthorities(
+                    environment.getProperty(
+                        prefix + ".ssl.sendClientCertificateAuthorities",
+                        Boolean.class,
+                        DEFAULT_SEND_CLIENT_CERTIFICATE_AUTHORITIES
+                    )
+                );
             this.authorizedTlsCipherSuites(environment.getProperty(prefix + ".ssl.tlsCiphers", List.class));
 
             final String clientAuthValue = environment.getProperty(prefix + ".ssl.clientAuth", DEFAULT_CLIENT_AUTH).toUpperCase();

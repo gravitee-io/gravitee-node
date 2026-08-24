@@ -25,8 +25,14 @@ import io.gravitee.node.api.certificate.KeyStoreEvent;
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.api.certificate.TrustStoreLoaderOptions;
 import io.gravitee.node.certificates.file.FileTrustStoreLoaderFactory;
+import java.net.URL;
 import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.List;
+import javax.net.ssl.X509TrustManager;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
 
 /**
@@ -39,6 +45,7 @@ class TrustStoreLoaderManagerTest {
     TrustStoreLoaderManager cut;
     private KeyStoreLoader platformKeystoreLoader;
     private final FileTrustStoreLoaderFactory trustStoreLoaderFactory = new FileTrustStoreLoaderFactory();
+    private final List<TrustStoreLoaderManager> managers = new ArrayList<>();
 
     @BeforeEach
     void begin() {
@@ -54,9 +61,19 @@ class TrustStoreLoaderManagerTest {
         cut = new TrustStoreLoaderManager("fake", platformKeystoreLoader);
     }
 
+    private TrustStoreLoaderManager managerSendingClientCertificateAuthorities() throws Exception {
+        TrustStoreLoaderManager manager = new TrustStoreLoaderManager("fake", platformKeystoreLoader, true);
+        // registered before start, so the file watcher threads are released even if an assertion fails
+        managers.add(manager);
+        manager.start();
+        return manager;
+    }
+
     @AfterEach
     void end() {
         cut.stop();
+        managers.forEach(TrustStoreLoaderManager::stop);
+        managers.clear();
     }
 
     @Test
@@ -65,6 +82,108 @@ class TrustStoreLoaderManagerTest {
         assertThat(cut.getCertificateManager()).isNotNull();
         assertThat(cut.loaders()).containsEntry(platformKeystoreLoader.id(), platformKeystoreLoader);
         assertThat(cut.aliases()).hasSize(2).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
+    }
+
+    /**
+     * Certificates registered dynamically at runtime (per-subscription mTLS client certificates in APIM) must be
+     * trusted, but must never end up in the TLS {@code certificate_authorities} list sent to every client of the
+     * listener.
+     */
+    @Test
+    void should_send_no_certificate_authority_by_default() throws Exception {
+        cut.start();
+        cut.registerLoader(dynamicLoader());
+
+        assertThat(cut.aliases()).hasSize(3);
+        assertThat(cut.getCertificateManager().getAcceptedIssuers()).isEmpty();
+    }
+
+    @Test
+    void should_send_only_the_configured_trust_store_when_sending_authorities() throws Exception {
+        TrustStoreLoaderManager manager = managerSendingClientCertificateAuthorities();
+
+        X509Certificate[] platformOnlyIssuers = manager.getCertificateManager().getAcceptedIssuers();
+        assertThat(platformOnlyIssuers).hasSize(2);
+
+        manager.registerLoader(dynamicLoader());
+
+        // the dynamic entry did join the trust store...
+        assertThat(manager.aliases()).hasSize(3);
+        // ...but the advertised issuers are unchanged
+        assertThat(manager.getCertificateManager().getAcceptedIssuers())
+            .hasSize(2)
+            .containsExactlyInAnyOrder(platformOnlyIssuers)
+            .doesNotContain(readCertificate("/truststores/client1.crt"));
+    }
+
+    @Test
+    void should_keep_trusting_dynamically_registered_certificates_it_does_not_send() throws Exception {
+        cut.start();
+        cut.registerLoader(dynamicLoader());
+
+        X509Certificate client1 = readCertificate("/truststores/client1.crt");
+        X509TrustManager trustManager = cut.getCertificateManager();
+        // nothing is advertised, yet the certificate must remain a valid trust anchor
+
+        assertThat(trustManager.getAcceptedIssuers()).doesNotContain(client1);
+        Assertions
+            .assertThatCode(() -> trustManager.checkClientTrusted(new X509Certificate[] { client1 }, client1.getSigAlgName()))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void should_refresh_sent_authorities_when_a_dynamic_loader_is_unloaded() throws Exception {
+        TrustStoreLoaderManager manager = managerSendingClientCertificateAuthorities();
+        X509Certificate[] platformOnlyIssuers = manager.getCertificateManager().getAcceptedIssuers();
+        AbstractKeyStoreLoader dynamic = dynamicLoader();
+        manager.registerLoader(dynamic);
+
+        dynamic.onEvent(new KeyStoreEvent.UnloadEvent(dynamic.id()));
+
+        assertThat(manager.aliases()).hasSize(2);
+        assertThat(manager.getCertificateManager().getAcceptedIssuers()).containsExactlyInAnyOrder(platformOnlyIssuers);
+    }
+
+    @Test
+    void should_stop_sending_platform_certificates_removed_from_the_truststore() throws Exception {
+        TrustStoreLoaderManager manager = managerSendingClientCertificateAuthorities();
+        assertThat(manager.getCertificateManager().getAcceptedIssuers()).hasSize(2);
+
+        // the platform loader reloads (file watch) with a truststore holding a single certificate
+        ((AbstractKeyStoreLoader) platformKeystoreLoader).onEvent(
+                new KeyStoreEvent.LoadEvent(
+                    platformKeystoreLoader.id(),
+                    KeyStoreUtils.initFromPath(
+                        KeyStoreLoader.CERTIFICATE_FORMAT_JKS,
+                        "src/test/resources/truststores/truststore1.jks",
+                        "secret"
+                    ),
+                    "secret"
+                )
+            );
+
+        assertThat(manager.getCertificateManager().getAcceptedIssuers())
+            .hasSize(1)
+            .containsExactly(readCertificate("/truststores/client1.crt"));
+    }
+
+    private AbstractKeyStoreLoader dynamicLoader() {
+        return (AbstractKeyStoreLoader) trustStoreLoaderFactory.create(
+            TrustStoreLoaderOptions
+                .builder()
+                .paths(List.of("src/test/resources/truststores/truststore1.jks"))
+                .type(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
+                .password("secret")
+                .build()
+        );
+    }
+
+    private X509Certificate readCertificate(String path) throws Exception {
+        URL resource = this.getClass().getResource(path);
+        assertThat(resource).isNotNull();
+        try (var is = resource.openStream()) {
+            return (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(is);
+        }
     }
 
     @Test
