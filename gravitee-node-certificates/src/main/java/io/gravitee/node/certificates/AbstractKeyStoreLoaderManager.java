@@ -116,7 +116,7 @@ public class AbstractKeyStoreLoaderManager {
      * <p>the event handler works as follows when an event is received:
      * <li>for {@link io.gravitee.node.api.certificate.KeyStoreEvent.LoadEvent}: removes all aliases matching {@link KeyStoreEvent#loaderId()} from the main keystore and add all aliases scopes with the loader id to the main keystore</li>
      * <li>for {@link io.gravitee.node.api.certificate.KeyStoreEvent.UnloadEvent}: removes all aliases matching {@link KeyStoreEvent#loaderId()} from the main keystore </li>
-     * Then it clones the keystore and calls {@link RefreshableX509Manager#refresh(KeyStore, char[])} to make the keystore effective.
+     * Then it clones the keystore and calls {@link #refreshX509Manager(KeyStore, char[])} to make the keystore effective.
      * </p>
      * @param loader the {@link KeyStoreLoader} to register and eventually start
      */
@@ -135,15 +135,27 @@ public class AbstractKeyStoreLoaderManager {
             synchronized (refreshableX509Manager) {
                 if (keyStoreEvent instanceof KeyStoreEvent.LoadEvent loadEvent) {
                     updateMain(loader, loadEvent);
-                    refreshableX509Manager.refresh(clone(mainKeyStore), this.mainPassword);
+                    refreshX509Manager(clone(mainKeyStore), this.mainPassword);
                 } else if (keyStoreEvent instanceof KeyStoreEvent.UnloadEvent unLoadEvent) {
                     removeKeyStore(unLoadEvent.loaderId());
-                    refreshableX509Manager.refresh(clone(mainKeyStore), this.mainPassword);
+                    refreshX509Manager(clone(mainKeyStore), this.mainPassword);
                 }
             }
         });
         loaders.put(loader.id(), loader);
         loader.start();
+    }
+
+    /**
+     * Pushes the up-to-date main keystore to the {@link RefreshableX509Manager}. Subclasses may override to
+     * hand over extra context, as {@link TrustStoreLoaderManager} does to keep dynamically registered entries
+     * out of the advertised acceptable issuers.
+     *
+     * @param keyStore a private copy of the main keystore
+     * @param password the main keystore password
+     */
+    protected void refreshX509Manager(KeyStore keyStore, char[] password) {
+        refreshableX509Manager.refresh(keyStore, password);
     }
 
     /**
@@ -176,7 +188,12 @@ public class AbstractKeyStoreLoaderManager {
         addKeyStore(idProvider, keyStoreEvent);
     }
 
-    private boolean isPlatformAlias(String alias) {
+    /**
+     * @param alias a scoped alias of the main keystore
+     * @return {@code true} when the alias comes from the platform (i.e. configured) keystore, {@code false} when it
+     *         was contributed by a loader registered dynamically at runtime.
+     */
+    protected boolean isPlatformAlias(String alias) {
         return isAliasOwnedByLoader(alias, platformKeyStoreLoaderId);
     }
 
@@ -220,7 +237,9 @@ public class AbstractKeyStoreLoaderManager {
     }
 
     private static boolean isAliasOwnedByLoader(String alias, String loaderId) {
-        return alias.startsWith(loaderId);
+        // the separator matters: this test is what keeps a loader's entries out of another's, and since it now also
+        // decides what is disclosed during the TLS handshake, a prefix match would be too loose
+        return alias.startsWith(loaderId + ":");
     }
 
     private KeyStore clone(KeyStore source) {
