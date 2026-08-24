@@ -41,7 +41,11 @@ public class AbstractVertxServerFactory {
 
     protected final TrustStoreLoaderManager createCertificateManager(VertxServerOptions options) {
         KeyStoreLoader platformTrustStoreLoader = trustStoreLoaderFactoryRegistry.createLoader(options.getTrustStoreLoaderOptions());
-        return new TrustStoreLoaderManager("server{id: %s}".formatted(options.getId()), platformTrustStoreLoader);
+        return new TrustStoreLoaderManager(
+            "server{id: %s}".formatted(options.getId()),
+            platformTrustStoreLoader,
+            options.isSendClientCertificateAuthorities()
+        );
     }
 
     protected CRLLoaderManager createCRLManager(TrustStoreLoaderManager trustStoreManager, CRLLoaderOptions crlLoaderOptions) {

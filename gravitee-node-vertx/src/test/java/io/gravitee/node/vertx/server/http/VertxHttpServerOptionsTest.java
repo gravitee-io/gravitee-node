@@ -203,6 +203,22 @@ class VertxHttpServerOptionsTest {
     }
 
     @Test
+    void should_not_send_client_certificate_authorities_by_default() {
+        final VertxHttpServerOptions options = VertxHttpServerOptions.builder().prefix("servers[0]").environment(environment).build();
+
+        assertThat(options.isSendClientCertificateAuthorities()).isFalse();
+    }
+
+    @Test
+    void should_read_send_client_certificate_authorities_from_environment_configuration() {
+        environment.setProperty("servers[0].ssl.sendClientCertificateAuthorities", "true");
+
+        final VertxHttpServerOptions options = VertxHttpServerOptions.builder().prefix("servers[0]").environment(environment).build();
+
+        assertThat(options.isSendClientCertificateAuthorities()).isTrue();
+    }
+
+    @Test
     void should_build_from_environment_configuration_with_pem_keystore() {
         environment.setProperty("servers[0].ssl.keystore.type", "pem");
         environment.setProperty("servers[0].ssl.keystore.certificates[0].cert", "cert1.pem");

@@ -17,6 +17,8 @@ package io.gravitee.node.certificates;
 
 import io.gravitee.node.api.certificate.KeyStoreLoader;
 import io.gravitee.node.certificates.x509.RefreshableX509TrustManagerDelegator;
+import java.security.KeyStore;
+import java.util.function.Predicate;
 import javax.net.ssl.X509TrustManager;
 
 /**
@@ -28,8 +30,32 @@ import javax.net.ssl.X509TrustManager;
  */
 public class TrustStoreLoaderManager extends AbstractKeyStoreLoaderManager {
 
+    private final boolean sendClientCertificateAuthorities;
+
     public TrustStoreLoaderManager(String target, KeyStoreLoader platformKeyStoreLoader) {
+        this(target, platformKeyStoreLoader, false);
+    }
+
+    public TrustStoreLoaderManager(String target, KeyStoreLoader platformKeyStoreLoader, boolean sendClientCertificateAuthorities) {
         super(target, platformKeyStoreLoader, new RefreshableX509TrustManagerDelegator(target));
+        this.sendClientCertificateAuthorities = sendClientCertificateAuthorities;
+    }
+
+    /**
+     * Everything in the main keystore is trusted for client certificate validation; only the disclosure of the
+     * {@code certificate_authorities} sent during the handshake is configurable, and it never covers more than the
+     * platform (i.e. configured) trust store. Certificates registered dynamically at runtime -- typically the
+     * per-subscription client certificates of mTLS plans -- are leaf certificates, are not authorities, and
+     * disclosing them to every client of the listener is both a leak and a source of oversized handshakes.
+     *
+     * @param password unused: a trust manager never has to unlock a private key.
+     */
+    @Override
+    protected void refreshX509Manager(KeyStore keyStore, char[] password) {
+        Predicate<String> advertisableAlias = sendClientCertificateAuthorities
+            ? this::isPlatformAlias
+            : RefreshableX509TrustManagerDelegator.SEND_NOTHING;
+        ((RefreshableX509TrustManagerDelegator) refreshableX509Manager).refresh(keyStore, advertisableAlias);
     }
 
     /**
