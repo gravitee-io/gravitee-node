@@ -1,3 +1,10 @@
+# [9.8.0](https://github.com/gravitee-io/gravitee-node/compare/9.7.0...9.8.0) (2026-08-31)
+
+
+### Features
+
+* **certificates:** stop sending trusted certificates as client certificate authorities ([cb34e72](https://github.com/gravitee-io/gravitee-node/commit/cb34e7232c1f686de798d2014c6dcd5421e8d9d3))
+
 # [9.7.0](https://github.com/gravitee-io/gravitee-node/compare/9.6.2...9.7.0) (2026-08-20)
 
 
