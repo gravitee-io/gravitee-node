@@ -1,6 +1,7 @@
 package io.gravitee.node.opentelemetry.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import io.gravitee.node.api.opentelemetry.redaction.FullMaskingStrategy;
 import io.gravitee.node.api.opentelemetry.redaction.MaskingStrategy;
@@ -46,6 +47,92 @@ class OpenTelemetryConfigurationTest {
     void should_get_empty_custom_headers() {
         Map<String, String> propertyMap = underTest.getCustomHeaders();
         assertThat(propertyMap).isEmpty();
+    }
+
+    @Test
+    void should_read_headers_given_as_name_and_value_pairs() {
+        environment.setProperty("services.opentelemetry.exporter.headers[0].name", "Authorization");
+        environment.setProperty("services.opentelemetry.exporter.headers[0].value", "Bearer xyz");
+
+        assertThat(underTest.getCustomHeaders()).containsExactly(entry("Authorization", "Bearer xyz"));
+    }
+
+    @Test
+    void should_keep_every_pair_rather_than_collapsing_them_onto_name_and_value() {
+        environment.setProperty("services.opentelemetry.exporter.headers[0].name", "Authorization");
+        environment.setProperty("services.opentelemetry.exporter.headers[0].value", "Bearer xyz");
+        environment.setProperty("services.opentelemetry.exporter.headers[1].name", "X-Scope-OrgID");
+        environment.setProperty("services.opentelemetry.exporter.headers[1].value", "tenant-prod");
+
+        assertThat(underTest.getCustomHeaders()).containsOnly(entry("Authorization", "Bearer xyz"), entry("X-Scope-OrgID", "tenant-prod"));
+    }
+
+    @Test
+    void should_read_a_list_mixing_both_shapes() {
+        environment.setProperty("services.opentelemetry.exporter.headers[0].name", "Authorization");
+        environment.setProperty("services.opentelemetry.exporter.headers[0].value", "Bearer xyz");
+        environment.setProperty("services.opentelemetry.exporter.headers[1].X-Custom-Header", "custom");
+
+        assertThat(underTest.getCustomHeaders()).containsOnly(entry("Authorization", "Bearer xyz"), entry("X-Custom-Header", "custom"));
+    }
+
+    @Test
+    void should_keep_an_inline_header_that_is_literally_called_name() {
+        environment.setProperty("services.opentelemetry.exporter.headers[0].name", "X-Only");
+
+        assertThat(underTest.getCustomHeaders()).containsExactly(entry("name", "X-Only"));
+    }
+
+    @Test
+    void should_read_pairs_whose_sub_keys_are_uppercased_by_environment_variables() {
+        environment.setProperty("services.opentelemetry.exporter.headers[0].NAME", "Authorization");
+        environment.setProperty("services.opentelemetry.exporter.headers[0].VALUE", "Bearer xyz");
+
+        assertThat(underTest.getCustomHeaders()).containsExactly(entry("Authorization", "Bearer xyz"));
+    }
+
+    @Test
+    void should_read_a_pair_whose_name_and_value_come_from_differently_cased_keys() {
+        environment.setProperty("services.opentelemetry.exporter.headers[0].name", "Authorization");
+        environment.setProperty("SERVICES.OPENTELEMETRY.EXPORTER.HEADERS[0].VALUE", "Bearer xyz");
+
+        assertThat(underTest.getCustomHeaders()).containsExactly(entry("Authorization", "Bearer xyz"));
+    }
+
+    @Test
+    void should_keep_inline_headers_that_differ_only_in_case() {
+        environment.setProperty("services.opentelemetry.exporter.headers[0].X-Foo", "a");
+        environment.setProperty("services.opentelemetry.exporter.headers[0].x-foo", "b");
+
+        assertThat(underTest.getCustomHeaders()).containsOnly(entry("X-Foo", "a"), entry("x-foo", "b"));
+    }
+
+    @Test
+    void should_not_read_a_pair_when_sub_keys_would_collapse_into_it() {
+        environment.setProperty("services.opentelemetry.exporter.headers[0].name", "Authorization");
+        environment.setProperty("services.opentelemetry.exporter.headers[0].value", "from-yaml");
+        environment.setProperty("services.opentelemetry.exporter.headers[0].VALUE", "from-env");
+
+        assertThat(underTest.getCustomHeaders())
+            .containsOnly(entry("name", "Authorization"), entry("value", "from-yaml"), entry("VALUE", "from-env"));
+    }
+
+    @Test
+    void should_not_read_a_pair_when_the_entry_has_an_extra_sub_key() {
+        environment.setProperty("services.opentelemetry.exporter.headers[0].name", "Authorization");
+        environment.setProperty("services.opentelemetry.exporter.headers[0].value", "Bearer xyz");
+        environment.setProperty("services.opentelemetry.exporter.headers[0].comment", "oops");
+
+        assertThat(underTest.getCustomHeaders())
+            .containsOnly(entry("name", "Authorization"), entry("value", "Bearer xyz"), entry("comment", "oops"));
+    }
+
+    @Test
+    void should_read_pairs_from_the_legacy_fallback_key() {
+        environment.setProperty("services.tracing.otel.headers[0].name", "X-Scope-OrgID");
+        environment.setProperty("services.tracing.otel.headers[0].value", "tenant-prod");
+
+        assertThat(underTest.getCustomHeaders()).containsExactly(entry("X-Scope-OrgID", "tenant-prod"));
     }
 
     @Test
