@@ -1,3 +1,10 @@
+# [8.3.0](https://github.com/gravitee-io/gravitee-node/compare/8.2.0...8.3.0) (2026-09-01)
+
+
+### Features
+
+* **certificates:** stop sending trusted certificates as client certificate authorities ([5fa0f9e](https://github.com/gravitee-io/gravitee-node/commit/5fa0f9ea41b974de5daa4aff0c523538cfc0352b)), closes [#603](https://github.com/gravitee-io/gravitee-node/issues/603)
+
 # [8.2.0](https://github.com/gravitee-io/gravitee-node/compare/8.1.1...8.2.0) (2026-07-29)
 
 
