@@ -1,3 +1,10 @@
+## [9.8.1](https://github.com/gravitee-io/gravitee-node/compare/9.8.0...9.8.1) (2026-09-01)
+
+
+### Bug Fixes
+
+* **opentelemetry:** read exporter headers given as name and value pairs ([#604](https://github.com/gravitee-io/gravitee-node/issues/604)) ([7ec7f6f](https://github.com/gravitee-io/gravitee-node/commit/7ec7f6f308f91cdd5b24335d0b33c872000e0847))
+
 # [9.8.0](https://github.com/gravitee-io/gravitee-node/compare/9.7.0...9.8.0) (2026-08-31)
 
 
