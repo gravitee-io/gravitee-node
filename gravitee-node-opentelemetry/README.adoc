@@ -47,7 +47,7 @@ All the exporter configurations are located under the `services.opentelemetry.ex
 
 |headers
 |N/A
-|Key-value pairs to be used as headers associated with exporter requests.
+|Key-value pairs to be used as headers associated with exporter requests. Two list shapes are accepted: an inline entry whose key is the header name (`- X-Custom-Header: value`), or a `name`/`value` pair (`- name: X-Custom-Header` with `value: value`).
 
 |compression
 |none
@@ -169,6 +169,9 @@ services:
       compression: none
       headers:
         - X-Custom-Header: value
+        # the name/value pair form is also accepted:
+        - name: Authorization
+          value: Bearer eyJhbGciOi...
       timeout: 10000
       ssl:
         trustall: false

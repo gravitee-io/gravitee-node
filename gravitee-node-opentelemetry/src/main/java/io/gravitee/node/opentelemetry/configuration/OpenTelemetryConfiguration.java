@@ -25,8 +25,11 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.*;
@@ -96,10 +99,10 @@ public class OpenTelemetryConfiguration {
 
     public Map<String, String> getCustomHeaders() {
         if (customHeaders == null) {
-            customHeaders = getKeyValuePairs("services.opentelemetry.exporter.headers");
+            customHeaders = readHeaders("services.opentelemetry.exporter.headers");
 
             if (customHeaders.isEmpty()) {
-                customHeaders = getKeyValuePairs("services.tracing.otel.headers");
+                customHeaders = readHeaders("services.tracing.otel.headers");
             }
         }
         return customHeaders;
@@ -307,6 +310,39 @@ public class OpenTelemetryConfiguration {
             .map(k -> elements.get(k).toString())
             .filter(s -> !s.isBlank())
             .toList();
+    }
+
+    private Map<String, String> readHeaders(String baseKey) {
+        Map<String, String> headers = new HashMap<>();
+        for (Map<String, String> subKeys : subKeysByEntry(baseKey).values()) {
+            // environment variables arrive uppercased, so the pair shape is recognised on a lowercased view
+            Map<String, String> pair = new HashMap<>();
+            subKeys.forEach((subKey, value) -> pair.put(subKey.toLowerCase(Locale.ROOT), value));
+            // exactly name + value is the pair shape; anything else, including sub-keys that only differ in
+            // case and would collapse into it, keeps the pre-existing inline reading
+            if (pair.size() == subKeys.size() && pair.keySet().equals(Set.of("name", "value"))) {
+                headers.put(pair.get("name"), pair.get("value"));
+            } else {
+                headers.putAll(subKeys);
+            }
+        }
+        return headers;
+    }
+
+    private Map<String, Map<String, String>> subKeysByEntry(String baseKey) {
+        Map<String, Map<String, String>> subKeysByEntry = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        getPropertiesStartingWith(baseKey)
+            .forEach(entry -> {
+                // keep what is after '].', grouping on the '...[N]' before it
+                String key = entry.getKey();
+                int end = key.lastIndexOf("].");
+                if (end > 0) {
+                    subKeysByEntry
+                        .computeIfAbsent(key.substring(0, end + 1), groupKey -> new HashMap<>())
+                        .put(key.substring(end + 2), entry.getValue().toString());
+                }
+            });
+        return subKeysByEntry;
     }
 
     private Map<String, String> getKeyValuePairs(String baseKey) {
