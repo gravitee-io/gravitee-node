@@ -29,7 +29,8 @@ public class FileTrustStoreLoaderFactory implements KeyStoreLoaderFactory<TrustS
     private static final List<String> SUPPORTED_TYPES = List.of(
         KeyStoreLoader.CERTIFICATE_FORMAT_JKS.toLowerCase(),
         KeyStoreLoader.CERTIFICATE_FORMAT_PEM.toLowerCase(),
-        KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12.toLowerCase()
+        KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12.toLowerCase(),
+        KeyStoreLoader.CERTIFICATE_FORMAT_BCFKS.toLowerCase()
     );
 
     @Override

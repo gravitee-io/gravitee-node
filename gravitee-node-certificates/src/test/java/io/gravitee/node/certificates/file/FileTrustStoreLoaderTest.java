@@ -33,11 +33,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.KeyStoreException;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -72,6 +74,39 @@ class FileTrustStoreLoaderTest {
         assertThat(events).hasSize(1);
         assertThat(events.get(0)).isInstanceOf(KeyStoreEvent.LoadEvent.class);
         assertThat(Collections.list(((KeyStoreEvent.LoadEvent) events.get(0)).keyStore().aliases())).hasSize(1);
+    }
+
+    /**
+     * BCFKS needs a registered BouncyCastle provider — BCFIPS on the FIPS images, the regular one here.
+     * Registered only if absent, and removed only if this test installed it, so a provider another test
+     * relies on is never pulled out from under it.
+     */
+    @Test
+    void should_load_bcfks_truststore() throws KeyStoreException {
+        final boolean added = Security.addProvider(new BouncyCastleProvider()) >= 0;
+        try {
+            cut =
+                new FileTrustStoreLoader(
+                    TrustStoreLoaderOptions
+                        .builder()
+                        .type(KeyStoreLoader.CERTIFICATE_FORMAT_BCFKS)
+                        .password("secret")
+                        .watch(false)
+                        .paths(List.of(getPath("truststore2-3.bcfks")))
+                        .build()
+                );
+            List<KeyStoreEvent> events = new ArrayList<>();
+            cut.setEventHandler(events::add);
+            cut.start();
+
+            assertThat(events).hasSize(1);
+            assertThat(events.get(0)).isInstanceOf(KeyStoreEvent.LoadEvent.class);
+            assertThat(Collections.list(((KeyStoreEvent.LoadEvent) events.get(0)).keyStore().aliases())).hasSize(2);
+        } finally {
+            if (added) {
+                Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+            }
+        }
     }
 
     @Test

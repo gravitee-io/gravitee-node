@@ -30,6 +30,12 @@ public interface KeyStoreLoader extends IdProvider {
     String CERTIFICATE_FORMAT_JKS = "JKS";
     String CERTIFICATE_FORMAT_PEM = "PEM";
     String CERTIFICATE_FORMAT_PKCS12 = "PKCS12";
+    /**
+     * BouncyCastle's own keystore container. The only one that loads under a BC-FIPS "approved only" JVM:
+     * PKCS12 key derivation has no provider there, and JKS is read-only when BC-FIPS answers for it.
+     * Requires a registered BouncyCastle provider — BCFIPS on the FIPS images, plain BC otherwise.
+     */
+    String CERTIFICATE_FORMAT_BCFKS = "BCFKS";
     String CERTIFICATE_FORMAT_SELF_SIGNED = "SELF-SIGNED";
     String CERTIFICATE_FORMAT_PEM_FOLDER = "PEM-FOLDER";
     String CERTIFICATE_FORMAT_PEM_REGISTRY = "KUBERNETES-PEM-REGISTRY";

@@ -30,7 +30,8 @@ public class FileKeyStoreLoaderFactory implements KeyStoreLoaderFactory<KeyStore
     private static final List<String> SUPPORTED_TYPES = Arrays.asList(
         KeyStoreLoader.CERTIFICATE_FORMAT_JKS.toLowerCase(),
         KeyStoreLoader.CERTIFICATE_FORMAT_PEM.toLowerCase(),
-        KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12.toLowerCase()
+        KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12.toLowerCase(),
+        KeyStoreLoader.CERTIFICATE_FORMAT_BCFKS.toLowerCase()
     );
 
     @Override

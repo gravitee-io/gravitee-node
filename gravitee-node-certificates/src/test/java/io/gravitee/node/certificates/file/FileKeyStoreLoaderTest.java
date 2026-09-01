@@ -28,11 +28,13 @@ import io.gravitee.node.api.certificate.KeyStoreLoaderOptions;
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyStoreException;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.*;
 import org.springframework.util.FileCopyUtils;
 
@@ -82,6 +84,46 @@ class FileKeyStoreLoaderTest {
 
         cut = new FileKeyStoreLoader(options);
         assertThatCode(() -> cut.start()).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    /**
+     * BCFKS is the container the FIPS images need: under BC-FIPS "approved only" PKCS12 has no key derivation
+     * provider and JKS is read-only. Reading it needs a registered BouncyCastle provider — BCFIPS on those
+     * images, the plain one here, which is why this test registers it rather than assuming the JVM has one.
+     */
+    @Test
+    void should_load_bcfks() throws KeyStoreException {
+        // Only removed below if this test is the one that installed it: addProvider returns -1 when a
+        // provider of that name is already registered, and surefire reuses the fork across classes.
+        final boolean added = Security.addProvider(new BouncyCastleProvider()) >= 0;
+        try {
+            final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
+                .builder()
+                .type(KeyStoreLoader.CERTIFICATE_FORMAT_BCFKS)
+                .paths(List.of(getPath("all-in-one.bcfks")))
+                .password("secret")
+                .watch(false)
+                .build();
+
+            cut = new FileKeyStoreLoader(options);
+
+            final AtomicReference<KeyStoreEvent> eventRef = new AtomicReference<>(null);
+            cut.setEventHandler(eventRef::set);
+
+            cut.start();
+
+            final KeyStoreEvent event = eventRef.get();
+            assertThat(event).isNotNull();
+            assertThat(event.loaderId()).isEqualTo(cut.id());
+            KeyStoreEvent.LoadEvent loadEvent = (KeyStoreEvent.LoadEvent) event;
+            assertThat(loadEvent.keyStore()).isNotNull();
+            assertThat(loadEvent.keyStore().size()).isEqualTo(4);
+            assertThat(loadEvent.password()).isEqualTo("secret");
+        } finally {
+            if (added) {
+                Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+            }
+        }
     }
 
     @Test

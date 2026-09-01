@@ -60,6 +60,32 @@ class KeyStoreLoaderFactoryRegistryTest {
             .hasOnlyElementsOfTypes(FileTrustStoreLoaderFactory.class, FolderTrustStoreLoaderFactory.class);
     }
 
+    /**
+     * createLoader is called for every server whether or not it is secured, and the options are always built
+     * with a default type and nothing to load from. That has to stay quiet: warning on it would put two lines
+     * per plain listener in every boot log, which is how operators learn to ignore warnings.
+     */
+    @Test
+    void should_return_no_op_loader_when_no_store_is_configured() {
+        final KeyStoreLoaderOptions unconfigured = KeyStoreLoaderOptions.builder().type("JKS").build();
+
+        assertThat(cutKS.createLoader(unconfigured)).isInstanceOf(DefaultKeyStoreLoaderFactoryRegistry.NoOpKeyStoreLoader.class);
+        assertThat(cutTS.createLoader(TrustStoreLoaderOptions.builder().type("JKS").build()))
+            .isInstanceOf(DefaultKeyStoreLoaderFactoryRegistry.NoOpKeyStoreLoader.class);
+    }
+
+    @Test
+    void should_return_no_op_loader_when_a_configured_store_matches_no_factory() {
+        // A source is named, so something was meant to load: the registry has nothing for this pair and says so.
+        final KeyStoreLoaderOptions unmatched = KeyStoreLoaderOptions
+            .builder()
+            .type("BCFKS")
+            .secretLocation("secret://kubernetes/my-tls-secret")
+            .build();
+
+        assertThat(cutKS.createLoader(unmatched)).isInstanceOf(DefaultKeyStoreLoaderFactoryRegistry.NoOpKeyStoreLoader.class);
+    }
+
     @Test
     void should_register_factory() {
         final KeyStoreLoaderFactory<KeyStoreLoaderOptions> loaderFactory = mock(KeyStoreLoaderFactory.class);
