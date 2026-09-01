@@ -55,6 +55,10 @@ class FileKeyStoreLoaderFactoryTest {
                 KeyStoreLoaderOptions.builder().type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12).paths(getPath("localhost.p12")).build()
             ),
             arguments(
+                "BCFKS",
+                KeyStoreLoaderOptions.builder().type(KeyStoreLoader.CERTIFICATE_FORMAT_BCFKS).paths(getPath("all-in-one.bcfks")).build()
+            ),
+            arguments(
                 "PEM",
                 KeyStoreLoaderOptions
                     .builder()

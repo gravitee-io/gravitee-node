@@ -39,7 +39,7 @@ public class FileKeyStoreLoader extends AbstractFileKeyStoreLoader<KeyStoreLoade
 
     @Override
     protected String getKeyStoreLoadingErrorMessage() {
-        return "JKS/PKCS12 Keystore is required but path was not specified. Unable to configure TLS.";
+        return "A JKS, PKCS12 or BCFKS keystore is required but path was not specified. Unable to configure TLS.";
     }
 
     public LoadResult loadFromPems() {

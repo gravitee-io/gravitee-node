@@ -79,7 +79,14 @@ public abstract class AbstractFileKeyStoreLoader<O extends AbstractStoreLoaderOp
     }
 
     final void load() {
-        if (options.getType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS) || options.getType().equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12)) {
+        if (
+            options.getType().equalsIgnoreCase(CERTIFICATE_FORMAT_JKS) ||
+            options.getType().equalsIgnoreCase(CERTIFICATE_FORMAT_PKCS12) ||
+            options.getType().equalsIgnoreCase(CERTIFICATE_FORMAT_BCFKS)
+        ) {
+            if (options.getType().equalsIgnoreCase(CERTIFICATE_FORMAT_BCFKS)) {
+                requireBouncyCastleProvider();
+            }
             LoadResult loadResult = loadFromKeyStore();
             this.keyStore = loadResult.keyStore();
             setFilesToWatch(loadResult.paths());
@@ -102,6 +109,23 @@ public abstract class AbstractFileKeyStoreLoader<O extends AbstractStoreLoaderOp
     }
 
     protected abstract LoadResult loadFromPems();
+
+    /**
+     * BCFKS is only readable through a registered BouncyCastle provider — BCFIPS on the FIPS images, the
+     * regular one otherwise. Nothing here registers one, so without this the JVM's generic
+     * "BCFKS not found" ends up buried under an "unable to load keystore from path" and sends the operator
+     * after a file that is perfectly fine.
+     */
+    private void requireBouncyCastleProvider() {
+        try {
+            KeyStore.getInstance(CERTIFICATE_FORMAT_BCFKS);
+        } catch (KeyStoreException e) {
+            throw new KeyStoreProcessingException(
+                "Keystore type BCFKS needs a registered BouncyCastle provider, and this JVM has none. It is registered on the FIPS images; elsewhere the deployment has to add it.",
+                e
+            );
+        }
+    }
 
     protected LoadResult loadFromKeyStore() {
         if (options.getPaths() != null && !options.getPaths().isEmpty()) {

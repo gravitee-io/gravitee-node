@@ -72,6 +72,27 @@ keytool -importkeystore -srckeystore wildcard.p12 -destkeystore all-in-one.p12 -
 keytool -importkeystore -srckeystore all-in-one.p12 -destkeystore all-in-one.jks -srcstoretype PKCS12 -deststoretype JKS -srcstorepass secret -deststorepass secret -v
 ----
 
+Create the BCFKS variants, converted from their PKCS12 counterparts.
+
+BCFKS is only readable through a BouncyCastle provider, so `keytool` needs one pointed at
+explicitly — hence `-providerpath` and `-providerclass`. Substitute your own path to a `bcprov`
+jar; any recent one works, and a local Maven repository usually already has it.
+
+[source,bash]
+----
+BCPROV=~/.m2/repository/org/bouncycastle/bcprov-jdk18on/1.84/bcprov-jdk18on-1.84.jar
+
+keytool -importkeystore \
+  -srckeystore keystores/all-in-one.p12 -srcstoretype PKCS12 -srcstorepass secret \
+  -destkeystore keystores/all-in-one.bcfks -deststoretype BCFKS -deststorepass secret \
+  -providerpath "$BCPROV" -providerclass org.bouncycastle.jce.provider.BouncyCastleProvider -v
+
+keytool -importkeystore \
+  -srckeystore truststores/truststore2-3.p12 -srcstoretype PKCS12 -srcstorepass secret \
+  -destkeystore truststores/truststore2-3.bcfks -deststoretype BCFKS -deststorepass secret \
+  -providerpath "$BCPROV" -providerclass org.bouncycastle.jce.provider.BouncyCastleProvider -v
+----
+
 Create a keystore containing a mix of private key entries and trusted certificate entries.
 
 [source,bash]

@@ -41,6 +41,6 @@ public class FileTrustStoreLoader extends AbstractFileKeyStoreLoader<TrustStoreL
 
     @Override
     protected String getKeyStoreLoadingErrorMessage() {
-        return "JKS/PKCS12 Keystore is required but path was not specified. Unable to configure mutual TLS.";
+        return "A JKS, PKCS12 or BCFKS truststore is required but path was not specified. Unable to configure mutual TLS.";
     }
 }

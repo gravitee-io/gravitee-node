@@ -59,6 +59,14 @@ class FileTrustStoreLoaderFactoryTest {
                 TrustStoreLoaderOptions.builder().type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12).paths(getPath("truststore2-3.p12")).build()
             ),
             arguments(
+                "BCFKS",
+                TrustStoreLoaderOptions
+                    .builder()
+                    .type(KeyStoreLoader.CERTIFICATE_FORMAT_BCFKS)
+                    .paths(getPath("truststore2-3.bcfks"))
+                    .build()
+            ),
+            arguments(
                 "PEM",
                 TrustStoreLoaderOptions.builder().type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM).paths(getPath("client1.crt")).build()
             )
