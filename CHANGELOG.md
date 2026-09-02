@@ -1,3 +1,10 @@
+# [9.9.0](https://github.com/gravitee-io/gravitee-node/compare/9.8.1...9.9.0) (2026-09-02)
+
+
+### Features
+
+* **certificates:** accept BCFKS as a keystore and truststore type ([0551629](https://github.com/gravitee-io/gravitee-node/commit/0551629da7962d1616ce3989c7b2d6b0017f6460))
+
 ## [9.8.1](https://github.com/gravitee-io/gravitee-node/compare/9.8.0...9.8.1) (2026-09-01)
 
 
