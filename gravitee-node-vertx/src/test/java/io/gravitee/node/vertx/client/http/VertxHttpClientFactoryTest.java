@@ -1,13 +1,19 @@
 package io.gravitee.node.vertx.client.http;
 
+import static io.gravitee.node.vertx.client.http.VertxHttpClientFactory.HTTP_CLIENT_MAX_CHUNK_SIZE_CONFIGURATION;
+import static io.gravitee.node.vertx.client.http.VertxHttpClientFactory.HTTP_CLIENT_MAX_HEADER_SIZE_CONFIGURATION;
 import static io.gravitee.node.vertx.client.http.VertxHttpClientFactory.HTTP_SSL_OPENSSL_CONFIGURATION;
 import static io.gravitee.node.vertx.client.http.VertxHttpProtocolVersion.HTTP_2;
 import static io.gravitee.node.vertx.client.http.VertxHttpProxyType.HTTP;
+import static io.vertx.core.http.HttpClientOptions.DEFAULT_MAX_CHUNK_SIZE;
+import static io.vertx.core.http.HttpClientOptions.DEFAULT_MAX_HEADER_SIZE;
 import static io.vertx.core.http.Http2Settings.*;
 import static io.vertx.core.http.HttpClientOptions.DEFAULT_HTTP2_MULTIPLEXING_LIMIT;
 import static io.vertx.core.http.HttpServerOptions.DEFAULT_HTTP2_CONNECTION_WINDOW_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import io.gravitee.node.api.configuration.Configuration;
@@ -77,6 +83,10 @@ class VertxHttpClientFactoryTest {
             .build();
 
         when(nodeConfiguration.getProperty(HTTP_SSL_OPENSSL_CONFIGURATION, Boolean.class, false)).thenReturn(false);
+        when(nodeConfiguration.getProperty(eq(HTTP_CLIENT_MAX_HEADER_SIZE_CONFIGURATION), eq(Integer.class), anyInt()))
+            .thenAnswer(invocation -> invocation.getArgument(2));
+        when(nodeConfiguration.getProperty(eq(HTTP_CLIENT_MAX_CHUNK_SIZE_CONFIGURATION), eq(Integer.class), anyInt()))
+            .thenAnswer(invocation -> invocation.getArgument(2));
 
         return VertxHttpClientFactory
             .builder()
@@ -133,6 +143,50 @@ class VertxHttpClientFactoryTest {
         assertThat(httpClientOptions.getInitialSettings().getInitialWindowSize()).isEqualTo(72000);
         assertThat(httpClientOptions.getInitialSettings().getMaxConcurrentStreams()).isEqualTo(13);
         assertThat(httpClientOptions.getInitialSettings().getMaxFrameSize()).isEqualTo(32000);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_build_client_with_default_max_header_and_chunk_size() {
+        final HttpClient httpClient = builder().build().createHttpClient();
+
+        assertThat(httpClient).isNotNull();
+        HttpClientOptions httpClientOptions = ((CleanableHttpClient) httpClient.getDelegate()).options();
+
+        assertThat(httpClientOptions.getMaxHeaderSize()).isEqualTo(DEFAULT_MAX_HEADER_SIZE);
+        assertThat(httpClientOptions.getMaxChunkSize()).isEqualTo(DEFAULT_MAX_CHUNK_SIZE);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_build_client_with_custom_max_header_and_chunk_size_from_http_options() {
+        final HttpClient httpClient = builder()
+            .httpOptions(VertxHttpClientOptions.builder().maxHeaderSize(65536).maxChunkSize(65536).build())
+            .build()
+            .createHttpClient();
+
+        assertThat(httpClient).isNotNull();
+        HttpClientOptions httpClientOptions = ((CleanableHttpClient) httpClient.getDelegate()).options();
+
+        assertThat(httpClientOptions.getMaxHeaderSize()).isEqualTo(65536);
+        assertThat(httpClientOptions.getMaxChunkSize()).isEqualTo(65536);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_build_client_with_custom_max_header_and_chunk_size_from_node_configuration() {
+        when(nodeConfiguration.getProperty(eq(HTTP_CLIENT_MAX_HEADER_SIZE_CONFIGURATION), eq(Integer.class), anyInt()))
+            .thenReturn(32768);
+        when(nodeConfiguration.getProperty(eq(HTTP_CLIENT_MAX_CHUNK_SIZE_CONFIGURATION), eq(Integer.class), anyInt()))
+            .thenReturn(32768);
+
+        final HttpClient httpClient = builder().build().createHttpClient();
+
+        assertThat(httpClient).isNotNull();
+        HttpClientOptions httpClientOptions = ((CleanableHttpClient) httpClient.getDelegate()).options();
+
+        assertThat(httpClientOptions.getMaxHeaderSize()).isEqualTo(32768);
+        assertThat(httpClientOptions.getMaxChunkSize()).isEqualTo(32768);
     }
 
     @Test
