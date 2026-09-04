@@ -147,6 +147,24 @@ The following configuration applies to `websocket` configuration node (ex: `webs
 
 |===
 
+==== HTTP/2
+
+The following configuration applies to the `http2` configuration node (ex: `http2.streamWindowSize`). It only has an effect on connections actually negotiated in HTTP/2, either over TLS with `alpn` enabled or in clear text (h2c).
+
+|===
+|Attributes | Default | Mandatory | Description
+
+|http2.connectionWindowSize | -1     | No | Set the HTTP/2 flow-control window of the whole connection, in bytes. `-1` keeps the 65535 bytes protocol default; any other non-positive value is ignored by Vert.x and logged.
+|http2.streamWindowSize | -1     | No | Set the HTTP/2 flow-control window advertised to the peer for each stream, in bytes. `-1` keeps the 65535 bytes protocol default; `0` stalls every request body, and any other negative value is rejected at startup.
+
+|===
+
+A flow-control window bounds how many bytes a peer may send before waiting for an acknowledgment, so throughput is capped by `window size / round-trip time`. The 65535 bytes default therefore throttles large request bodies as soon as there is real network latency, while HTTP/1.1 is unaffected.
+
+IMPORTANT: Set both, or neither. Raising `http2.streamWindowSize` alone has no observable effect: the initial settings are applied to streams only, never to the connection, and the connection window is resized only when `http2.connectionWindowSize` is greater than 0. It otherwise stays at 65535 bytes and remains the bottleneck for the whole connection. Keep `http2.connectionWindowSize` greater than or equal to `http2.streamWindowSize`. Raising `http2.connectionWindowSize` alone is not inert but does nothing for a single upload: every stream stays capped at 65535 bytes. The server logs a warning at startup when only one of the two is raised, or when the connection window is set below the stream window.
+
+NOTE: These windows are a memory setting. The server accepts up to `http2.connectionWindowSize` bytes in flight per connection, and up to `http2.streamWindowSize` bytes per concurrent request, with no upper bound enforced. Size them against the expected concurrency, not against a single upload.
+
 ==== HaProxy
 
 Allows enabling haproxy protocol. The following configuration are supported.
@@ -198,6 +216,9 @@ http:
   haproxy:
     proxyProtocol: false
     proxyProtocolTimeout: 10000
+  http2:
+    connectionWindowSize: 20971520
+    streamWindowSize: 20971520
 ```
 
 Here is an example of multi-servers configuration for Gravitee APIM (servers list takes precedence over single http server:
