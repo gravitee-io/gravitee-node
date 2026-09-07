@@ -1,3 +1,10 @@
+## [8.3.1](https://github.com/gravitee-io/gravitee-node/compare/8.3.0...8.3.1) (2026-09-07)
+
+
+### Bug Fixes
+
+* **vertx:** allow customizing server http2 windows ([#608](https://github.com/gravitee-io/gravitee-node/issues/608)) ([6ff2562](https://github.com/gravitee-io/gravitee-node/commit/6ff256292ecb983935ab54d4e86cbd256f16e90a)), closes [#607](https://github.com/gravitee-io/gravitee-node/issues/607)
+
 # [8.3.0](https://github.com/gravitee-io/gravitee-node/compare/8.2.0...8.3.0) (2026-09-01)
 
 
