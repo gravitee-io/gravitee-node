@@ -24,6 +24,7 @@ import io.gravitee.node.api.certificate.CertificateOptions;
 import io.gravitee.node.certificates.KeyStoreLoaderManager;
 import io.gravitee.node.vertx.server.tcp.VertxTcpServerOptions;
 import io.vertx.core.http.ClientAuth;
+import io.vertx.core.http.Http2Settings;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.KeyCertOptions;
 import io.vertx.core.net.TrustOptions;
@@ -78,6 +79,8 @@ class VertxHttpServerOptionsTest {
     public static final String MAX_WEBSOCKET_FRAME_SIZE = "88888";
     public static final String HAPROXY_PROTOCOL = "true";
     public static final String HAPROXY_PROTOCOL_TIMEOUT = "12000";
+    public static final String HTTP2_CONNECTION_WINDOW_SIZE = "20971520";
+    public static final String HTTP2_STREAM_WINDOW_SIZE = "10485760";
 
     @Mock
     private KeyStoreLoaderManager keyStoreLoaderManager;
@@ -119,7 +122,9 @@ class VertxHttpServerOptionsTest {
             .withProperty("servers[0].websocket.maxWebSocketMessageSize", MAX_WEBSOCKET_MESSAGE_SIZE)
             .withProperty("servers[0].websocket.maxWebSocketFrameSize", MAX_WEBSOCKET_FRAME_SIZE)
             .withProperty("servers[0].haproxy.proxyProtocol", HAPROXY_PROTOCOL)
-            .withProperty("servers[0].haproxy.proxyProtocolTimeout", HAPROXY_PROTOCOL_TIMEOUT);
+            .withProperty("servers[0].haproxy.proxyProtocolTimeout", HAPROXY_PROTOCOL_TIMEOUT)
+            .withProperty("servers[0].http2.connectionWindowSize", HTTP2_CONNECTION_WINDOW_SIZE)
+            .withProperty("servers[0].http2.streamWindowSize", HTTP2_STREAM_WINDOW_SIZE);
     }
 
     @Test
@@ -160,6 +165,8 @@ class VertxHttpServerOptionsTest {
         assertThat(options.getMaxWebSocketFrameSize()).isEqualTo(Integer.valueOf(MAX_WEBSOCKET_FRAME_SIZE));
         assertThat(options.isHaProxyProtocol()).isEqualTo(Boolean.valueOf(HAPROXY_PROTOCOL));
         assertThat(options.getHaProxyProtocolTimeout()).isEqualTo(Long.valueOf(HAPROXY_PROTOCOL_TIMEOUT));
+        assertThat(options.getHttp2ConnectionWindowSize()).isEqualTo(Integer.valueOf(HTTP2_CONNECTION_WINDOW_SIZE));
+        assertThat(options.getHttp2StreamWindowSize()).isEqualTo(Integer.valueOf(HTTP2_STREAM_WINDOW_SIZE));
     }
 
     @Test
@@ -200,6 +207,8 @@ class VertxHttpServerOptionsTest {
         assertThat(options.getMaxWebSocketFrameSize()).isEqualTo(DEFAULT_MAX_WEBSOCKET_FRAME_SIZE);
         assertThat(options.isHaProxyProtocol()).isEqualTo(DEFAULT_HAPROXY_PROTOCOL);
         assertThat(options.getHaProxyProtocolTimeout()).isEqualTo(Long.valueOf(DEFAULT_HAPROXY_PROTOCOL_TIMEOUT));
+        assertThat(options.getHttp2ConnectionWindowSize()).isEqualTo(DEFAULT_HTTP2_CONNECTION_WINDOW_SIZE);
+        assertThat(options.getHttp2StreamWindowSize()).isEqualTo(DEFAULT_HTTP2_STREAM_WINDOW_SIZE);
     }
 
     @Test
@@ -357,6 +366,8 @@ class VertxHttpServerOptionsTest {
         assertThat(options.getMaxWebSocketFrameSize()).isEqualTo(DEFAULT_MAX_WEBSOCKET_FRAME_SIZE);
         assertThat(options.isHaProxyProtocol()).isEqualTo(DEFAULT_HAPROXY_PROTOCOL);
         assertThat(options.getHaProxyProtocolTimeout()).isEqualTo(Long.valueOf(DEFAULT_HAPROXY_PROTOCOL_TIMEOUT));
+        assertThat(options.getHttp2ConnectionWindowSize()).isEqualTo(DEFAULT_HTTP2_CONNECTION_WINDOW_SIZE);
+        assertThat(options.getHttp2StreamWindowSize()).isEqualTo(DEFAULT_HTTP2_STREAM_WINDOW_SIZE);
     }
 
     @Test
@@ -439,6 +450,68 @@ class VertxHttpServerOptionsTest {
         assertThat(httpServerOptions.getMaxWebSocketFrameSize()).isEqualTo(Integer.valueOf(MAX_WEBSOCKET_FRAME_SIZE));
         assertThat(httpServerOptions.isUseProxyProtocol()).isEqualTo(Boolean.valueOf(HAPROXY_PROTOCOL));
         assertThat(httpServerOptions.getProxyProtocolTimeout()).isEqualTo(Long.valueOf(HAPROXY_PROTOCOL_TIMEOUT));
+        assertThat(httpServerOptions.getHttp2ConnectionWindowSize()).isEqualTo(Integer.valueOf(HTTP2_CONNECTION_WINDOW_SIZE));
+        assertThat(httpServerOptions.getInitialSettings().getInitialWindowSize()).isEqualTo(Integer.valueOf(HTTP2_STREAM_WINDOW_SIZE));
+    }
+
+    @Test
+    void should_create_vertx_options_keeping_protocol_http2_window_sizes_when_not_configured() {
+        final VertxHttpServerOptions options = VertxHttpServerOptions.builder().prefix("unknown").environment(environment).build();
+
+        final HttpServerOptions httpServerOptions = options.createHttpServerOptions(mock(KeyCertOptions.class), mock(TrustOptions.class));
+
+        assertThat(httpServerOptions.getHttp2ConnectionWindowSize()).isEqualTo(HttpServerOptions.DEFAULT_HTTP2_CONNECTION_WINDOW_SIZE);
+        assertThat(httpServerOptions.getInitialSettings().getInitialWindowSize()).isEqualTo(Http2Settings.DEFAULT_INITIAL_WINDOW_SIZE);
+    }
+
+    @Test
+    void should_create_vertx_options_with_connection_window_size_only_when_stream_window_size_not_configured() {
+        final VertxHttpServerOptions options = VertxHttpServerOptions
+            .builder()
+            .http2ConnectionWindowSize(Integer.parseInt(HTTP2_CONNECTION_WINDOW_SIZE))
+            .build();
+
+        final HttpServerOptions httpServerOptions = options.createHttpServerOptions(mock(KeyCertOptions.class), mock(TrustOptions.class));
+
+        assertThat(httpServerOptions.getHttp2ConnectionWindowSize()).isEqualTo(Integer.valueOf(HTTP2_CONNECTION_WINDOW_SIZE));
+        assertThat(httpServerOptions.getInitialSettings().getInitialWindowSize()).isEqualTo(Http2Settings.DEFAULT_INITIAL_WINDOW_SIZE);
+    }
+
+    @Test
+    void should_create_vertx_options_keeping_protocol_connection_window_size_when_only_stream_window_size_configured() {
+        final VertxHttpServerOptions options = VertxHttpServerOptions
+            .builder()
+            .http2StreamWindowSize(Integer.parseInt(HTTP2_STREAM_WINDOW_SIZE))
+            .build();
+
+        final HttpServerOptions httpServerOptions = options.createHttpServerOptions(mock(KeyCertOptions.class), mock(TrustOptions.class));
+
+        assertThat(httpServerOptions.getInitialSettings().getInitialWindowSize()).isEqualTo(Integer.valueOf(HTTP2_STREAM_WINDOW_SIZE));
+        // The initial settings reach streams only, and Vert.x resizes the connection window solely on a strictly
+        // positive value, so a stream window set on its own leaves the connection capped at the protocol default.
+        assertThat(httpServerOptions.getHttp2ConnectionWindowSize()).isEqualTo(HttpServerOptions.DEFAULT_HTTP2_CONNECTION_WINDOW_SIZE);
+    }
+
+    @Test
+    void should_keep_a_zero_stream_window_size_as_configured() {
+        final VertxHttpServerOptions options = VertxHttpServerOptions.builder().http2StreamWindowSize(0).build();
+
+        final HttpServerOptions httpServerOptions = options.createHttpServerOptions(mock(KeyCertOptions.class), mock(TrustOptions.class));
+
+        // Vert.x accepts 0, which stalls every stream. It is honoured as configured, the builder only warns about it.
+        assertThat(httpServerOptions.getInitialSettings().getInitialWindowSize()).isZero();
+    }
+
+    @Test
+    void should_throw_illegal_argument_exception_when_stream_window_size_is_below_the_sentinel() {
+        environment.setProperty("servers[0].http2.streamWindowSize", "-2");
+        final VertxHttpServerOptionsBuilder<?, ?> builder = builder().prefix("servers[0]");
+
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> builder.environment(environment));
+
+        // Http2Settings#setInitialWindowSize would reject it later on, when the server instance is created.
+        assertThat(exception.getMessage())
+            .isEqualTo("servers[0].http2.streamWindowSize must be 0 or greater, or -1 to keep the protocol default, but is -2");
     }
 
     @Test
