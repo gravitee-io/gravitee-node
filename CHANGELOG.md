@@ -1,3 +1,10 @@
+# [9.10.0](https://github.com/gravitee-io/gravitee-node/compare/9.9.0...9.10.0) (2026-09-07)
+
+
+### Features
+
+* **vertx:** allow customizing server http2 windows ([#607](https://github.com/gravitee-io/gravitee-node/issues/607)) ([d894100](https://github.com/gravitee-io/gravitee-node/commit/d894100a46690d52d8bc87a9149d97cac3d02eee))
+
 # [9.9.0](https://github.com/gravitee-io/gravitee-node/compare/9.8.1...9.9.0) (2026-09-02)
 
 
