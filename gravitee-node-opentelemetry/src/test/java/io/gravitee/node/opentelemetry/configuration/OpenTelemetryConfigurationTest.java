@@ -10,11 +10,14 @@ import io.gravitee.node.api.opentelemetry.redaction.RedactionConfig;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionRule;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.internal.AttributesMap;
+import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.mock.env.MockEnvironment;
 
 /**
@@ -133,6 +136,58 @@ class OpenTelemetryConfigurationTest {
         environment.setProperty("services.tracing.otel.headers[0].value", "tenant-prod");
 
         assertThat(underTest.getCustomHeaders()).containsExactly(entry("X-Scope-OrgID", "tenant-prod"));
+    }
+
+    @Test
+    void should_convert_a_header_value_that_is_not_a_string() {
+        StandardEnvironment resolvingEnvironment = environmentHolding(
+            "services.opentelemetry.exporter.headers[0].name",
+            "Authorization",
+            "services.opentelemetry.exporter.headers[0].value",
+            new ResolvedValue("Bearer xyz")
+        );
+
+        assertThat(new OpenTelemetryConfiguration(resolvingEnvironment).getCustomHeaders())
+            .containsExactly(entry("Authorization", "Bearer xyz"));
+    }
+
+    @Test
+    void should_convert_an_extra_attribute_value_that_is_not_a_string() {
+        StandardEnvironment resolvingEnvironment = environmentHolding(
+            "services.opentelemetry.extraAttributes[0].deployment.environment.name",
+            new ResolvedValue("production")
+        );
+
+        AttributesMap extraAttributes = new OpenTelemetryConfiguration(resolvingEnvironment).getExtraAttributes();
+
+        assertThat(extraAttributes).containsEntry(AttributeKey.stringKey("deployment.environment.name"), "production");
+    }
+
+    private static StandardEnvironment environmentHolding(Object... keysAndValues) {
+        StandardEnvironment environment = new StandardEnvironment();
+        environment.getConversionService().addConverter(ResolvedValue.class, String.class, ResolvedValue::value);
+
+        Map<String, Object> source = new HashMap<>();
+        for (int i = 0; i < keysAndValues.length; i += 2) {
+            source.put((String) keysAndValues[i], keysAndValues[i + 1]);
+        }
+        environment.getPropertySources().addFirst(new MapPropertySource("resolved", source));
+
+        return environment;
+    }
+
+    // no toString(), so that reading it the wrong way is visible
+    private static final class ResolvedValue {
+
+        private final String value;
+
+        private ResolvedValue(String value) {
+            this.value = value;
+        }
+
+        private String value() {
+            return value;
+        }
     }
 
     @Test
