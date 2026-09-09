@@ -35,6 +35,7 @@ import java.util.stream.Stream;
 import lombok.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 /**
@@ -339,7 +340,7 @@ public class OpenTelemetryConfiguration {
                 if (end > 0) {
                     subKeysByEntry
                         .computeIfAbsent(key.substring(0, end + 1), groupKey -> new HashMap<>())
-                        .put(key.substring(end + 2), entry.getValue().toString());
+                        .put(key.substring(end + 2), asString(entry.getValue()));
                 }
             });
         return subKeysByEntry;
@@ -352,10 +353,22 @@ public class OpenTelemetryConfiguration {
                 // keep what is after '].'
                 int end = entry.getKey().lastIndexOf("].");
                 if (end > 0) {
-                    properties.put(entry.getKey().substring(end + 2), entry.getValue().toString());
+                    properties.put(entry.getKey().substring(end + 2), asString(entry.getValue()));
                 }
             });
         return properties;
+    }
+
+    // a resolved secret arrives as an object with a converter registered for it, not as a String
+    private String asString(final Object value) {
+        if (value instanceof String string) {
+            return string;
+        }
+        ConversionService conversionService = environment.getConversionService();
+        if (conversionService.canConvert(value.getClass(), String.class)) {
+            return conversionService.convert(value, String.class);
+        }
+        return value.toString();
     }
 
     private Stream<Map.Entry<String, Object>> getPropertiesStartingWith(final String key) {
