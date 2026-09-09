@@ -1,3 +1,10 @@
+## [9.10.1](https://github.com/gravitee-io/gravitee-node/compare/9.10.0...9.10.1) (2026-09-09)
+
+
+### Bug Fixes
+
+* **opentelemetry:** convert header and attribute values instead of stringifying them ([54ec911](https://github.com/gravitee-io/gravitee-node/commit/54ec911394ae0b7e7284daedc6971fe2d760eaed))
+
 # [9.10.0](https://github.com/gravitee-io/gravitee-node/compare/9.9.0...9.10.0) (2026-09-07)
 
 
