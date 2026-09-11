@@ -38,6 +38,7 @@ packs:
             - apim-policy-interops-a-sp # policy: gravitee-policy-interops-a-sp
             - apim-policy-interops-r-sp # policy: gravitee-policy-interops-r-sp
             - apim-policy-oas-validation # policy: gravitee-policy-oas-validation
+            - apim-policy-token-exchange # policy: gravitee-policy-oauth2-token-exchange
             - apim-policy-transform-avro-json # policy: gravitee-policy-transform-avro-json
             - apim-policy-transform-avro-protobuf # policy: gravitee-policy-transform-avro-protobuf
             - apim-policy-transform-protobuf-json # policy: gravitee-policy-transform-protobuf-json
@@ -209,6 +210,7 @@ packs:
             - apim-policy-interops-a-sp # policy: gravitee-policy-interops-a-sp
             - apim-policy-interops-r-sp # policy: gravitee-policy-interops-r-sp
             - apim-policy-oas-validation # policy: gravitee-policy-oas-validation
+            - apim-policy-token-exchange # policy: gravitee-policy-oauth2-token-exchange
             - apim-policy-transform-avro-json # policy: gravitee-policy-transform-avro-json
             - apim-policy-transform-avro-protobuf # policy: gravitee-policy-transform-avro-protobuf
             - apim-policy-transform-protobuf-json # policy: gravitee-policy-transform-protobuf-json

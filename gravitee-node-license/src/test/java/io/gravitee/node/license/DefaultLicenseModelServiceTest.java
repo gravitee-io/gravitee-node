@@ -129,6 +129,7 @@ class DefaultLicenseModelServiceTest {
                         "apim-policy-interops-a-sp",
                         "apim-policy-interops-r-sp",
                         "apim-policy-oas-validation",
+                        "apim-policy-token-exchange",
                         "apim-policy-transform-avro-json",
                         "apim-policy-transform-avro-protobuf",
                         "apim-policy-transform-protobuf-json",
