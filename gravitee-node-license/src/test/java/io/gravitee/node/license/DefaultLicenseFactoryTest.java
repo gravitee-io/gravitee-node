@@ -445,6 +445,7 @@ class DefaultLicenseFactoryTest {
             "apim-policy-interops-a-sp",
             "apim-policy-interops-r-sp",
             "apim-policy-oas-validation",
+            "apim-policy-token-exchange",
             "apim-policy-data-cache",
             "apim-en-entrypoint-agent-to-agent",
             "apim-en-endpoint-agent-to-agent",
