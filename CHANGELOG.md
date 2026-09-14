@@ -1,3 +1,10 @@
+# [9.11.0](https://github.com/gravitee-io/gravitee-node/compare/9.10.1...9.11.0) (2026-09-14)
+
+
+### Features
+
+* **license:** add apim-policy-token-exchange ([ceafeac](https://github.com/gravitee-io/gravitee-node/commit/ceafeac20aca58e7c12a53ea23f918f7499bbb27))
+
 ## [9.10.1](https://github.com/gravitee-io/gravitee-node/compare/9.10.0...9.10.1) (2026-09-09)
 
 
