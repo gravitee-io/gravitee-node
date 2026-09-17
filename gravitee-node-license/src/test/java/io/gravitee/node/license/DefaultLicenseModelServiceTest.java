@@ -136,6 +136,7 @@ class DefaultLicenseModelServiceTest {
                         "alert-engine",
                         "am-certificate-aws",
                         "am-certificate-aws-cloudhsm",
+                        "am-extgrant-xaa",
                         "gravitee-en-secretprovider-aws",
                         "gravitee-en-secretprovider-azure-keyvault",
                         "gravitee-en-secretprovider-vault",
