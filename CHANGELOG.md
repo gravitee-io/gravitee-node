@@ -1,3 +1,10 @@
+# [9.12.0](https://github.com/gravitee-io/gravitee-node/compare/9.11.0...9.12.0) (2026-09-17)
+
+
+### Features
+
+* am-extensiongrant-xaa license feature ([a2b0492](https://github.com/gravitee-io/gravitee-node/commit/a2b04920aecf361e1ee62b75fcd8f2e6b0563588))
+
 # [9.11.0](https://github.com/gravitee-io/gravitee-node/compare/9.10.1...9.11.0) (2026-09-14)
 
 
