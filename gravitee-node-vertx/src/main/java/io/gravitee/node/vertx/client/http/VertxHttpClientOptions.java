@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.vertx.client.http;
 
+import io.vertx.core.http.HttpClientOptions;
 import java.io.Serial;
 import java.io.Serializable;
 import lombok.AllArgsConstructor;
@@ -55,6 +56,8 @@ public class VertxHttpClientOptions implements Serializable {
     public static final boolean DEFAULT_FOLLOW_REDIRECTS = false;
     public static final boolean DEFAULT_CLEAR_TEXT_UPGRADE = true;
     public static final VertxHttpProtocolVersion DEFAULT_PROTOCOL_VERSION = VertxHttpProtocolVersion.HTTP_1_1;
+    public static final int DEFAULT_MAX_HEADER_SIZE = HttpClientOptions.DEFAULT_MAX_HEADER_SIZE;
+    public static final int DEFAULT_MAX_CHUNK_SIZE = HttpClientOptions.DEFAULT_MAX_CHUNK_SIZE;
 
     @Builder.Default
     private int http2MultiplexingLimit = DEFAULT_HTTP2_MULTIPLEXING_LIMIT;
@@ -125,4 +128,10 @@ public class VertxHttpClientOptions implements Serializable {
 
     @Builder.Default
     private VertxHttpProtocolVersion version = DEFAULT_PROTOCOL_VERSION;
+
+    @Builder.Default
+    private int maxHeaderSize = DEFAULT_MAX_HEADER_SIZE;
+
+    @Builder.Default
+    private int maxChunkSize = DEFAULT_MAX_CHUNK_SIZE;
 }
