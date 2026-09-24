@@ -3,6 +3,7 @@ package io.gravitee.node.management.http.metrics.prometheus;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.gravitee.node.management.http.utils.ConcurrencyLimitHandler;
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.prometheusmetrics.PrometheusConfig;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.vertx.core.Future;
@@ -12,7 +13,9 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +27,7 @@ class PrometheusEndpointIntegrationTest {
     private HttpServer server;
     private HttpClient client;
     private int port;
+    private final CountDownLatch hungScrapes = new CountDownLatch(1);
 
     @BeforeEach
     void setUp() {
@@ -36,6 +40,7 @@ class PrometheusEndpointIntegrationTest {
 
     @AfterEach
     void tearDown() throws Exception {
+        hungScrapes.countDown();
         if (server != null) {
             await(server.close());
         }
@@ -95,11 +100,51 @@ class PrometheusEndpointIntegrationTest {
         assertTrue(body.contains("test_counter"), body);
     }
 
+    @Test
+    void should_recover_when_hung_scrapes_hold_every_concurrency_slot() throws Exception {
+        AtomicInteger scrapes = new AtomicInteger();
+        Gauge
+            .builder(
+                "hung_gauge",
+                () -> {
+                    if (scrapes.incrementAndGet() <= 3) {
+                        try {
+                            hungScrapes.await();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                    return 1;
+                }
+            )
+            .register(prometheusMeterRegistry);
+        startServer(new PrometheusEndpoint(prometheusMeterRegistry), new ConcurrencyLimitHandler(3, 500));
+
+        for (int i = 0; i < 3; i++) {
+            client.request(HttpMethod.GET, port, "localhost", "/metrics/prometheus").compose(req -> req.send());
+        }
+        long deadline = System.currentTimeMillis() + 5_000;
+        while (scrapes.get() == 0) {
+            assertTrue(System.currentTimeMillis() < deadline, "No scrape reached the hung gauge");
+            Thread.sleep(10);
+        }
+        Thread.sleep(200);
+        assertEquals(429, scrapeAndGetStatus());
+
+        Thread.sleep(1_000);
+
+        assertEquals(200, scrapeAndGetStatus(), "Slots held by hung scrapes were never released");
+    }
+
     private void startServer(boolean withConcurrencyLimit) throws Exception {
         startServer(new PrometheusEndpoint(prometheusMeterRegistry), withConcurrencyLimit);
     }
 
     private void startServer(PrometheusEndpoint endpoint, boolean withConcurrencyLimit) throws Exception {
+        startServer(endpoint, withConcurrencyLimit ? new ConcurrencyLimitHandler(3) : null);
+    }
+
+    private void startServer(PrometheusEndpoint endpoint, ConcurrencyLimitHandler concurrencyLimitHandler) throws Exception {
         Router router = Router.router(vertx);
         router
             .route()
@@ -110,8 +155,8 @@ class PrometheusEndpointIntegrationTest {
             });
 
         var route = router.route(HttpMethod.GET, endpoint.path());
-        if (withConcurrencyLimit) {
-            route.handler(new ConcurrencyLimitHandler(3));
+        if (concurrencyLimitHandler != null) {
+            route.handler(concurrencyLimitHandler);
         }
         route.handler(endpoint::handle);
 
