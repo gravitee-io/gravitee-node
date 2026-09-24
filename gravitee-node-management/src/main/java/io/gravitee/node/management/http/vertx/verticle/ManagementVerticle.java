@@ -59,6 +59,9 @@ public class ManagementVerticle extends AbstractVerticle {
     @Value("${services.metrics.prometheus.concurrencyLimit:3}")
     private int configuredConcurrentLimit;
 
+    @Value("${services.metrics.prometheus.timeout:" + ConcurrencyLimitHandler.DEFAULT_TIMEOUT_MS + "}")
+    private long configuredTimeoutMs;
+
     @Autowired
     @Qualifier("managementHttpServer")
     private HttpServer httpServer;
@@ -247,7 +250,7 @@ public class ManagementVerticle extends AbstractVerticle {
                 } else if (endpoint instanceof PrometheusEndpoint) {
                     nodeRouter
                         .route(convert(endpoint.method()), endpoint.path())
-                        .handler(new ConcurrencyLimitHandler(configuredConcurrentLimit))
+                        .handler(new ConcurrencyLimitHandler(configuredConcurrentLimit, configuredTimeoutMs))
                         .handler(
                             OffloadHandler.ofCtx((ctx, promise) -> {
                                 endpoint.handle(ctx);
