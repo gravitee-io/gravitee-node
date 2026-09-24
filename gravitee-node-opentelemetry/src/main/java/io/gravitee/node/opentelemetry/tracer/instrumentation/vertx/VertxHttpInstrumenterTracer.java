@@ -137,11 +137,12 @@ public class VertxHttpInstrumenterTracer extends AbstractInstrumenterTracer<Obse
         ServerAttributesExtractor serverAttributesExtractor = new ServerAttributesExtractor();
         HttpClientAttributesExtractor httpClientAttributesExtractor = new HttpClientAttributesExtractor();
 
-        InstrumenterBuilder<ObservableHttpRequest, ObservableHttpResponse> clientBuilder = io.opentelemetry.instrumentation.api.instrumenter.Instrumenter.builder(
-            openTelemetry,
-            instrumentationName(),
-            new ClientSpanNameExtractor(httpClientAttributesExtractor)
-        );
+        InstrumenterBuilder<ObservableHttpRequest, ObservableHttpResponse> clientBuilder =
+            io.opentelemetry.instrumentation.api.instrumenter.Instrumenter.builder(
+                openTelemetry,
+                instrumentationName(),
+                new ClientSpanNameExtractor(httpClientAttributesExtractor)
+            );
 
         return clientBuilder
             .setSpanStatusExtractor(HttpSpanStatusExtractor.create(serverAttributesExtractor))
