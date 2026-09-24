@@ -52,9 +52,11 @@ class VertxServerFactoryTest {
 
     @BeforeEach
     void init() {
-        DefaultKeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry = new DefaultKeyStoreLoaderFactoryRegistry<>();
+        DefaultKeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry =
+            new DefaultKeyStoreLoaderFactoryRegistry<>();
         keyStoreLoaderFactoryRegistry.registerFactory(new SelfSignedKeyStoreLoaderFactory());
-        DefaultKeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry = new DefaultKeyStoreLoaderFactoryRegistry<>();
+        DefaultKeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry =
+            new DefaultKeyStoreLoaderFactoryRegistry<>();
         trustStoreLoaderFactoryRegistry.registerFactory(new FileTrustStoreLoaderFactory());
         DefaultCRLLoaderFactoryRegistry crlLoaderFactoryRegistry = new DefaultCRLLoaderFactoryRegistry();
         crlLoaderFactoryRegistry.registerFactory(new FileCRLLoaderFactory());
