@@ -89,7 +89,7 @@ class PrometheusEndpointTest {
     @Test
     void should_set_correct_content_type_and_chunked_mode() {
         setupHandleMocks();
-        when(vertx.executeBlocking(org.mockito.ArgumentMatchers.<Callable<Void>>any())).thenReturn(Future.succeededFuture());
+        when(vertx.executeBlocking(org.mockito.ArgumentMatchers.<Callable<Void>>any(), eq(false))).thenReturn(Future.succeededFuture());
 
         cut.handle(routingContext);
 
@@ -117,7 +117,7 @@ class PrometheusEndpointTest {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Callable<Void>> callableCaptor = ArgumentCaptor.forClass(Callable.class);
 
-        when(vertx.<Void>executeBlocking(callableCaptor.capture()))
+        when(vertx.<Void>executeBlocking(callableCaptor.capture(), eq(false)))
             .thenAnswer(invocation -> {
                 // Execute the callable synchronously for testing
                 try {
@@ -144,7 +144,7 @@ class PrometheusEndpointTest {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Callable<Void>> callableCaptor = ArgumentCaptor.forClass(Callable.class);
 
-        when(vertx.<Void>executeBlocking(callableCaptor.capture()))
+        when(vertx.<Void>executeBlocking(callableCaptor.capture(), eq(false)))
             .thenAnswer(invocation -> {
                 try {
                     callableCaptor.getValue().call();
@@ -164,7 +164,7 @@ class PrometheusEndpointTest {
     @Test
     void should_close_connection_on_scrape_failure() {
         setupHandleMocks();
-        when(vertx.executeBlocking(org.mockito.ArgumentMatchers.<Callable<Void>>any()))
+        when(vertx.executeBlocking(org.mockito.ArgumentMatchers.<Callable<Void>>any(), eq(false)))
             .thenReturn(Future.failedFuture(new IOException("Scrape failed")));
         when(httpServerResponse.ended()).thenReturn(false);
         when(routingContext.request()).thenReturn(httpServerRequest);
@@ -179,7 +179,7 @@ class PrometheusEndpointTest {
     @Test
     void should_not_close_connection_if_response_already_ended_on_failure() {
         setupHandleMocks();
-        when(vertx.executeBlocking(org.mockito.ArgumentMatchers.<Callable<Void>>any()))
+        when(vertx.executeBlocking(org.mockito.ArgumentMatchers.<Callable<Void>>any(), eq(false)))
             .thenReturn(Future.failedFuture(new IOException("Scrape failed")));
         when(httpServerResponse.ended()).thenReturn(true);
 
@@ -196,7 +196,7 @@ class PrometheusEndpointTest {
         ArgumentCaptor<Callable<Void>> callableCaptor = ArgumentCaptor.forClass(Callable.class);
         ArgumentCaptor<io.vertx.core.buffer.Buffer> bufferCaptor = ArgumentCaptor.forClass(io.vertx.core.buffer.Buffer.class);
 
-        when(vertx.<Void>executeBlocking(callableCaptor.capture()))
+        when(vertx.<Void>executeBlocking(callableCaptor.capture(), eq(false)))
             .thenAnswer(invocation -> {
                 try {
                     callableCaptor.getValue().call();

@@ -90,12 +90,16 @@ public class PrometheusEndpoint implements ManagementEndpoint {
 
         routingContext
             .vertx()
-            .executeBlocking(() -> {
-                try (OutputStream os = new ResponseOutputStream(response)) {
-                    prometheusRegistry.scrape(os);
-                }
-                return null;
-            })
+            .executeBlocking(
+                () -> {
+                    try (OutputStream os = new ResponseOutputStream(response)) {
+                        prometheusRegistry.scrape(os);
+                    }
+                    return null;
+                },
+                // Unordered: an ordered task queue would park every later scrape behind one hung scrape.
+                false
+            )
             .onComplete(ar -> {
                 if (ar.failed()) {
                     log.error("Unexpected error while scraping the Prometheus endpoint", ar.cause());
