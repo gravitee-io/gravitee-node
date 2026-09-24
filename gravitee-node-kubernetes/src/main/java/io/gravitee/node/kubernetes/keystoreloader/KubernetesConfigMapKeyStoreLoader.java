@@ -54,17 +54,16 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
     }
 
     private void prepareLocations() {
-        this.options.getKubernetesLocations()
-            .forEach(location -> {
-                final Matcher matcher = CONFIGMAP_PATTERN.matcher(location);
-                if (matcher.matches()) {
-                    this.resources.put(matcher.group(1), ResourceQuery.<ConfigMap>from(location).build());
-                } else {
-                    throw new IllegalArgumentException(
-                        "You must specify a data when using configmap (ex: /my-namespace/configmaps/my-configmap/my-keystore)."
-                    );
-                }
-            });
+        this.options.getKubernetesLocations().forEach(location -> {
+            final Matcher matcher = CONFIGMAP_PATTERN.matcher(location);
+            if (matcher.matches()) {
+                this.resources.put(matcher.group(1), ResourceQuery.<ConfigMap>from(location).build());
+            } else {
+                throw new IllegalArgumentException(
+                    "You must specify a data when using configmap (ex: /my-namespace/configmaps/my-configmap/my-keystore)."
+                );
+            }
+        });
     }
 
     public static boolean canHandle(KeyStoreLoaderOptions options) {
@@ -80,8 +79,7 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
 
     @Override
     protected Completable init() {
-        return Flowable
-            .fromIterable(resources.keySet())
+        return Flowable.fromIterable(resources.keySet())
             .flatMapCompletable(location ->
                 kubernetesClient.get(ResourceQuery.<ConfigMap>from(location).build()).flatMapCompletable(this::loadKeyStore)
             )
@@ -90,8 +88,7 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
 
     @Override
     protected Flowable<ConfigMap> watch() {
-        return Flowable
-            .fromIterable(resources.keySet())
+        return Flowable.fromIterable(resources.keySet())
             .flatMap(location ->
                 kubernetesClient
                     .watch(WatchQuery.<ConfigMap>from(location).build())
@@ -109,9 +106,10 @@ public class KubernetesConfigMapKeyStoreLoader extends AbstractKubernetesKeyStor
             final Optional<ResourceQuery<ConfigMap>> optResource = resources
                 .values()
                 .stream()
-                .filter(r ->
-                    r.getNamespace().equalsIgnoreCase(configMap.getMetadata().getNamespace()) &&
-                    r.getResource().equalsIgnoreCase(configMap.getMetadata().getName())
+                .filter(
+                    r ->
+                        r.getNamespace().equalsIgnoreCase(configMap.getMetadata().getNamespace()) &&
+                        r.getResource().equalsIgnoreCase(configMap.getMetadata().getName())
                 )
                 .findFirst();
 

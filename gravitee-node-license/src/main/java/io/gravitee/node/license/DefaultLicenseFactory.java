@@ -103,8 +103,7 @@ public class DefaultLicenseFactory implements LicenseFactory {
         final Set<String> packs = readPacks(license, tier);
         final Set<String> features = readFeatures(license, packs);
 
-        return DefaultLicense
-            .builder()
+        return DefaultLicense.builder()
             .referenceType(referenceType)
             .referenceId(referenceId)
             .tier(tier)
@@ -156,11 +155,16 @@ public class DefaultLicenseFactory implements LicenseFactory {
     }
 
     private Set<String> readList(License3J license, String key) {
-        return readString(license, key).map(value -> Set.of(value.split(LIST_SEPARATOR))).orElse(Set.of());
+        return readString(license, key)
+            .map(value -> Set.of(value.split(LIST_SEPARATOR)))
+            .orElse(Set.of());
     }
 
     private Optional<String> readString(License3J license, String featureKey) {
-        return license.feature(featureKey).map(License3JFeature::getString).filter(s -> !s.isBlank());
+        return license
+            .feature(featureKey)
+            .map(License3JFeature::getString)
+            .filter(s -> !s.isBlank());
     }
 
     private Set<String> readLegacyFeatures(License3J license) {

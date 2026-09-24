@@ -43,8 +43,10 @@ class ContainerInitializerBeanRegistryPostProcessor implements BeanDefinitionReg
     @Override
     public void postProcessBeanDefinitionRegistry(@Nonnull BeanDefinitionRegistry registry) throws BeansException {
         final AnnotatedBeanDefinitionReader annotatedBeanDefinitionReader = new AnnotatedBeanDefinitionReader(registry);
-        final List<? extends Class<?>> containerInitializers = SpringFactoriesLoader
-            .loadFactories(ContainerInitializer.class, this.getClass().getClassLoader())
+        final List<? extends Class<?>> containerInitializers = SpringFactoriesLoader.loadFactories(
+            ContainerInitializer.class,
+            this.getClass().getClassLoader()
+        )
             .stream()
             .map(ContainerInitializer::getClass)
             .toList();

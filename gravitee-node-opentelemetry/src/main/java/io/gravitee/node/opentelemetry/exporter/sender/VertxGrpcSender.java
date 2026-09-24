@@ -148,8 +148,7 @@ public final class VertxGrpcSender implements GrpcSender {
         Handler<GrpcClientRequest<Buffer, Buffer>> onSuccessHandler,
         Consumer<Throwable> onFailureCallback
     ) {
-        Uni
-            .createFrom()
+        Uni.createFrom()
             .completionStage(
                 new Supplier<CompletionStage<GrpcClientRequest<Buffer, Buffer>>>() {
                     @Override
@@ -198,7 +197,7 @@ public final class VertxGrpcSender implements GrpcSender {
             "s. The request could not be executed. Full error message: " +
             (t.getMessage() == null ? t.getClass().getName() : t.getMessage());
         logger.log(Level.WARNING, message);
-        onError.accept(GrpcResponse.create(2/* UNKNOWN */, message), t);
+        onError.accept(GrpcResponse.create(2 /* UNKNOWN */, message), t);
     }
 
     private static final class ClientRequestOnSuccessHandler implements Handler<GrpcClientRequest<Buffer, Buffer>> {
@@ -329,7 +328,7 @@ public final class VertxGrpcSender implements GrpcSender {
                                 String statusMessage = getStatusMessage(response);
                                 logAppropriateWarning(status, statusMessage);
                                 onError.accept(
-                                    GrpcResponse.create(2/* UNKNOWN */, statusMessage),
+                                    GrpcResponse.create(2 /* UNKNOWN */, statusMessage),
                                     new IllegalStateException(statusMessage)
                                 );
                             }
@@ -343,11 +342,11 @@ public final class VertxGrpcSender implements GrpcSender {
                                     logger.log(
                                         Level.WARNING,
                                         "Failed to export " +
-                                        type +
-                                        "s. Server is UNAVAILABLE. " +
-                                        "Make sure your collector is running and reachable from this network. " +
-                                        "Full error message:" +
-                                        statusMessage
+                                            type +
+                                            "s. Server is UNAVAILABLE. " +
+                                            "Make sure your collector is running and reachable from this network. " +
+                                            "Full error message:" +
+                                            statusMessage
                                     );
                                 } else {
                                     if (status == null) {
@@ -355,8 +354,8 @@ public final class VertxGrpcSender implements GrpcSender {
                                             logger.log(
                                                 Level.WARNING,
                                                 "Failed to export " +
-                                                type +
-                                                "s. Perhaps the collector does not support collecting traces using grpc? Try configuring 'quarkus.otel.exporter.otlp.traces.protocol=http/protobuf'"
+                                                    type +
+                                                    "s. Perhaps the collector does not support collecting traces using grpc? Try configuring 'quarkus.otel.exporter.otlp.traces.protocol=http/protobuf'"
                                             );
                                         } else {
                                             logger.log(
@@ -368,11 +367,11 @@ public final class VertxGrpcSender implements GrpcSender {
                                         logger.log(
                                             Level.WARNING,
                                             "Failed to export " +
-                                            type +
-                                            "s. Server responded with " +
-                                            status.code +
-                                            ". Error message: " +
-                                            statusMessage
+                                                type +
+                                                "s. Server responded with " +
+                                                status.code +
+                                                ". Error message: " +
+                                                statusMessage
                                         );
                                     }
                                 }
@@ -399,16 +398,16 @@ public final class VertxGrpcSender implements GrpcSender {
                                 logger.log(
                                     Level.WARNING,
                                     "Failed to export " +
-                                    type +
-                                    "s. Server responded with UNIMPLEMENTED. " +
-                                    "This usually means that your collector is not configured with an otlp " +
-                                    "receiver in the \"pipelines\" section of the configuration. " +
-                                    "If export is not desired and you are using OpenTelemetry autoconfiguration or the javaagent, " +
-                                    "disable export by setting " +
-                                    envVar +
-                                    "=none. " +
-                                    "Full error message: " +
-                                    fullErrorMessage
+                                        type +
+                                        "s. Server responded with UNIMPLEMENTED. " +
+                                        "This usually means that your collector is not configured with an otlp " +
+                                        "receiver in the \"pipelines\" section of the configuration. " +
+                                        "If export is not desired and you are using OpenTelemetry autoconfiguration or the javaagent, " +
+                                        "disable export by setting " +
+                                        envVar +
+                                        "=none. " +
+                                        "Full error message: " +
+                                        fullErrorMessage
                                 );
                             }
 
@@ -468,7 +467,7 @@ public final class VertxGrpcSender implements GrpcSender {
                     "s. Unable to serialize payload. Full error message: " +
                     (e.getMessage() == null ? e.getClass().getName() : e.getMessage());
                 logger.log(Level.WARNING, message);
-                onError.accept(GrpcResponse.create(2/* UNKNOWN */, message), e);
+                onError.accept(GrpcResponse.create(2 /* UNKNOWN */, message), e);
             }
         }
 
@@ -481,7 +480,7 @@ public final class VertxGrpcSender implements GrpcSender {
                 " attempts. Full error message: " +
                 (t != null ? t.getMessage() : "");
             logger.log(Level.WARNING, message);
-            onError.accept(GrpcResponse.create(2/* UNKNOWN */, message), t);
+            onError.accept(GrpcResponse.create(2 /* UNKNOWN */, message), t);
         }
 
         public ClientRequestOnSuccessHandler newAttempt() {

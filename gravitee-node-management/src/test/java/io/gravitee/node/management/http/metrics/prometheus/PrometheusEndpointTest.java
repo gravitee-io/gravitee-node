@@ -43,9 +43,9 @@ class PrometheusEndpointTest {
         when(mockResponse.ended()).thenReturn(false);
         when(mockResponse.closed()).thenReturn(false);
         doAnswer(inv -> {
-                when(mockResponse.closed()).thenReturn(true);
-                return null;
-            })
+            when(mockResponse.closed()).thenReturn(true);
+            return null;
+        })
             .when(mockResponse)
             .close();
 

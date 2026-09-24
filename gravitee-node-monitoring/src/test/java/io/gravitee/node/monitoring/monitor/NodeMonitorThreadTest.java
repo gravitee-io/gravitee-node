@@ -50,17 +50,16 @@ class NodeMonitorThreadTest {
         when(node.id()).thenReturn(NODE_ID);
         cut.run();
 
-        verify(producer)
-            .write(
-                argThat(monitor -> {
-                    assertThat(monitor.getNodeId()).isEqualTo(NODE_ID);
-                    assertThat(monitor.getJvm()).isNotNull();
-                    assertThat(monitor.getOs()).isNotNull();
-                    assertThat(monitor.getProcess()).isNotNull();
+        verify(producer).write(
+            argThat(monitor -> {
+                assertThat(monitor.getNodeId()).isEqualTo(NODE_ID);
+                assertThat(monitor.getJvm()).isNotNull();
+                assertThat(monitor.getOs()).isNotNull();
+                assertThat(monitor.getProcess()).isNotNull();
 
-                    return true;
-                })
-            );
+                return true;
+            })
+        );
     }
 
     @Test
@@ -77,20 +76,19 @@ class NodeMonitorThreadTest {
         cut.run();
 
         verify(producer).write(any(Monitor.class));
-        verify(alertEventProducer)
-            .send(
-                argThat(event -> {
-                    assertThat(event.type()).isEqualTo(NODE_HEARTBEAT);
-                    assertThat(event.properties().get(PROPERTY_NODE_ID)).isEqualTo(NODE_ID);
-                    assertThat(event.properties().get(PROPERTY_NODE_HOSTNAME)).isEqualTo("HOSTNAME");
-                    assertThat(event.properties().get(PROPERTY_NODE_APPLICATION)).isEqualTo("APPLICATION");
-                    assertThat(event.properties().get(Event.PROPERTY_ORGANIZATION)).isEqualTo("ORG_ID");
-                    assertThat(event.properties().get(Event.PROPERTY_ENVIRONMENT)).isEqualTo("ENV_ID");
+        verify(alertEventProducer).send(
+            argThat(event -> {
+                assertThat(event.type()).isEqualTo(NODE_HEARTBEAT);
+                assertThat(event.properties().get(PROPERTY_NODE_ID)).isEqualTo(NODE_ID);
+                assertThat(event.properties().get(PROPERTY_NODE_HOSTNAME)).isEqualTo("HOSTNAME");
+                assertThat(event.properties().get(PROPERTY_NODE_APPLICATION)).isEqualTo("APPLICATION");
+                assertThat(event.properties().get(Event.PROPERTY_ORGANIZATION)).isEqualTo("ORG_ID");
+                assertThat(event.properties().get(Event.PROPERTY_ENVIRONMENT)).isEqualTo("ENV_ID");
 
-                    assertThat(event.properties().keySet()).contains("os.cpu.percent", "process.fd.open", "jvm.uptime");
-                    return true;
-                })
-            );
+                assertThat(event.properties().keySet()).contains("os.cpu.percent", "process.fd.open", "jvm.uptime");
+                return true;
+            })
+        );
     }
 
     @Test

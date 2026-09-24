@@ -111,18 +111,24 @@ class RefreshableX509TrustManagerDelegatorTest {
             X509Certificate untrusted = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(is);
             assertThat(cut.getAcceptedIssuers()).doesNotContain(untrusted);
             X509Certificate[] chain = new X509Certificate[] { untrusted };
-            assertThatCode(() -> cut.checkClientTrusted(chain, untrusted.getSigAlgName()))
-                .hasMessageContaining("PKIX path validation failed");
-            assertThatCode(() -> cut.checkClientTrusted(chain, untrusted.getSigAlgName(), sslEngine))
-                .hasMessageContaining("PKIX path validation failed");
-            assertThatCode(() -> cut.checkClientTrusted(chain, untrusted.getSigAlgName(), socket))
-                .hasMessageContaining("PKIX path validation failed");
-            assertThatCode(() -> cut.checkServerTrusted(chain, untrusted.getSigAlgName()))
-                .hasMessageContaining("PKIX path validation failed");
-            assertThatCode(() -> cut.checkServerTrusted(chain, untrusted.getSigAlgName(), sslEngine))
-                .hasMessageContaining("PKIX path validation failed");
-            assertThatCode(() -> cut.checkServerTrusted(chain, untrusted.getSigAlgName(), socket))
-                .hasMessageContaining("PKIX path validation failed");
+            assertThatCode(() -> cut.checkClientTrusted(chain, untrusted.getSigAlgName())).hasMessageContaining(
+                "PKIX path validation failed"
+            );
+            assertThatCode(() -> cut.checkClientTrusted(chain, untrusted.getSigAlgName(), sslEngine)).hasMessageContaining(
+                "PKIX path validation failed"
+            );
+            assertThatCode(() -> cut.checkClientTrusted(chain, untrusted.getSigAlgName(), socket)).hasMessageContaining(
+                "PKIX path validation failed"
+            );
+            assertThatCode(() -> cut.checkServerTrusted(chain, untrusted.getSigAlgName())).hasMessageContaining(
+                "PKIX path validation failed"
+            );
+            assertThatCode(() -> cut.checkServerTrusted(chain, untrusted.getSigAlgName(), sslEngine)).hasMessageContaining(
+                "PKIX path validation failed"
+            );
+            assertThatCode(() -> cut.checkServerTrusted(chain, untrusted.getSigAlgName(), socket)).hasMessageContaining(
+                "PKIX path validation failed"
+            );
         }
     }
 
@@ -257,14 +263,18 @@ class RefreshableX509TrustManagerDelegatorTest {
         X509Certificate[] chain = new X509Certificate[] { revokedCert, caCert };
 
         // Verify that the revoked certificate is rejected
-        assertThatCode(() -> cut.checkClientTrusted(chain, "RSA")).isInstanceOf(CertificateException.class).hasMessageContaining("revoked");
+        assertThatCode(() -> cut.checkClientTrusted(chain, "RSA"))
+            .isInstanceOf(CertificateException.class)
+            .hasMessageContaining("revoked");
         assertThatCode(() -> cut.checkClientTrusted(chain, "RSA", sslEngine))
             .isInstanceOf(CertificateException.class)
             .hasMessageContaining("revoked");
         assertThatCode(() -> cut.checkClientTrusted(chain, "RSA", socket))
             .isInstanceOf(CertificateException.class)
             .hasMessageContaining("revoked");
-        assertThatCode(() -> cut.checkServerTrusted(chain, "RSA")).isInstanceOf(CertificateException.class).hasMessageContaining("revoked");
+        assertThatCode(() -> cut.checkServerTrusted(chain, "RSA"))
+            .isInstanceOf(CertificateException.class)
+            .hasMessageContaining("revoked");
         assertThatCode(() -> cut.checkServerTrusted(chain, "RSA", sslEngine))
             .isInstanceOf(CertificateException.class)
             .hasMessageContaining("revoked");

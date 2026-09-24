@@ -53,22 +53,21 @@ public class RedisCacheConnectionFailureTest {
         redisConfiguration.setHostAndPort(HostAndPort.of("test", 6379));
 
         final var cm = new RedisCacheManager(redisConfiguration, Vertx.vertx());
-        redisCache =
-            cm.getOrCreateCache(
-                "test",
-                CacheConfiguration.builder().build(),
-                new ValueMapper<String, String>() {
-                    @Override
-                    public String toCachedValue(String value) {
-                        return value;
-                    }
-
-                    @Override
-                    public String toValue(String cachedValue) {
-                        return cachedValue;
-                    }
+        redisCache = cm.getOrCreateCache(
+            "test",
+            CacheConfiguration.builder().build(),
+            new ValueMapper<String, String>() {
+                @Override
+                public String toCachedValue(String value) {
+                    return value;
                 }
-            );
+
+                @Override
+                public String toValue(String cachedValue) {
+                    return cachedValue;
+                }
+            }
+        );
     }
 
     @Test

@@ -71,14 +71,13 @@ public class NodeHealthCheckService extends AbstractService {
 
             executorService = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "node-health-check"));
 
-            producer =
-                vertx
-                    .eventBus()
-                    .registerCodec(new HealthCheckCodec())
-                    .sender(
-                        GIO_NODE_HEALTHCHECK_BUS,
-                        new DeliveryOptions().setTracingPolicy(TracingPolicy.IGNORE).setCodecName(HealthCheckCodec.CODEC_NAME)
-                    );
+            producer = vertx
+                .eventBus()
+                .registerCodec(new HealthCheckCodec())
+                .sender(
+                    GIO_NODE_HEALTHCHECK_BUS,
+                    new DeliveryOptions().setTracingPolicy(TracingPolicy.IGNORE).setCodecName(HealthCheckCodec.CODEC_NAME)
+                );
 
             final NodeHealthCheckThread nodeHealthCheckThread = new NodeHealthCheckThread(
                 probeRegistry,
@@ -95,11 +94,11 @@ public class NodeHealthCheckService extends AbstractService {
             new NodeHealthCheckMicrometerHandler(probeRegistry).bindTo(micrometerRegistry);
 
             ((ScheduledExecutorService) executorService).scheduleWithFixedDelay(
-                    nodeHealthCheckThread,
-                    0,
-                    healthConfiguration.delay(),
-                    healthConfiguration.unit()
-                );
+                nodeHealthCheckThread,
+                0,
+                healthConfiguration.delay(),
+                healthConfiguration.unit()
+            );
 
             log.info("Node health check scheduled with fixed delay {} {} ", healthConfiguration.delay(), healthConfiguration.unit().name());
         }

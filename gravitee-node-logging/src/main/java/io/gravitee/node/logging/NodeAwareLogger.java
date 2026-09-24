@@ -196,7 +196,12 @@ public class NodeAwareLogger implements Logger {
     }
 
     private static @NonNull Set<LogEntry<?>> filterOutNodeLogEntries(Set<LogEntry<?>> logEntries) {
-        return Set.copyOf(logEntries.stream().filter(l -> !NODE_LOG_ENTRIES.contains(l)).collect(Collectors.toSet()));
+        return Set.copyOf(
+            logEntries
+                .stream()
+                .filter(l -> !NODE_LOG_ENTRIES.contains(l))
+                .collect(Collectors.toSet())
+        );
     }
 
     /**
@@ -277,16 +282,15 @@ public class NodeAwareLogger implements Logger {
             if (isMdcKeyExcluded(logEntry.getKey())) {
                 return;
             }
-            provideLogSource(logEntry, logSources)
-                .ifPresentOrElse(
-                    logSource -> {
-                        String logValue = logEntry.resolve(logSource);
-                        if (logValue != null) {
-                            MDC.put(logEntry.getKey(), logValue);
-                        }
-                    },
-                    () -> MDC.put(logEntry.getKey(), UNKNOWN)
-                );
+            provideLogSource(logEntry, logSources).ifPresentOrElse(
+                logSource -> {
+                    String logValue = logEntry.resolve(logSource);
+                    if (logValue != null) {
+                        MDC.put(logEntry.getKey(), logValue);
+                    }
+                },
+                () -> MDC.put(logEntry.getKey(), UNKNOWN)
+            );
         });
         try {
             logAction.run();

@@ -46,29 +46,27 @@ public class DefaultProbeEvaluator implements ProbeEvaluator {
 
         // Make sure the previous evaluation is finished.
         if (evaluating.compareAndSet(false, true)) {
-            final List<CompletableFuture<Void>> collect =
-                this.probeManager.getProbes()
-                    .stream()
-                    .filter(probe -> probeIds == null || probeIds.isEmpty() || probeIds.contains(probe.id()))
-                    .map(probe -> {
-                        final Result lastProbeResult = lastProbeResults.get(probe);
-                        if (lastProbeResult != null && probe.isCacheable() && (now - lastProbeResult.timestamp()) < cacheDurationMs) {
-                            // The probe has been evaluated once and the elapsed time is below the cache limit. Don't re-evaluate.
-                            return CompletableFuture.<Void>completedFuture(null);
-                        }
+            final List<CompletableFuture<Void>> collect = this.probeManager.getProbes()
+                .stream()
+                .filter(probe -> probeIds == null || probeIds.isEmpty() || probeIds.contains(probe.id()))
+                .map(probe -> {
+                    final Result lastProbeResult = lastProbeResults.get(probe);
+                    if (lastProbeResult != null && probe.isCacheable() && (now - lastProbeResult.timestamp()) < cacheDurationMs) {
+                        // The probe has been evaluated once and the elapsed time is below the cache limit. Don't re-evaluate.
+                        return CompletableFuture.<Void>completedFuture(null);
+                    }
 
-                        // Evaluate the probe and update the probe map.
-                        return probe
-                            .check()
-                            .exceptionally(Result::unhealthy)
-                            .thenAccept(result -> lastProbeResults.compute(probe, (probe1, result1) -> result))
-                            .toCompletableFuture();
-                    })
-                    .toList();
+                    // Evaluate the probe and update the probe map.
+                    return probe
+                        .check()
+                        .exceptionally(Result::unhealthy)
+                        .thenAccept(result -> lastProbeResults.compute(probe, (probe1, result1) -> result))
+                        .toCompletableFuture();
+                })
+                .toList();
 
             // Ensure all the probes have been resolved and return all the results.
-            return CompletableFuture
-                .allOf(collect.toArray(new CompletableFuture[0]))
+            return CompletableFuture.allOf(collect.toArray(new CompletableFuture[0]))
                 .thenApply(unused -> lastProbeResults)
                 .whenComplete((probeResultMap, throwable) -> {
                     evaluating.set(false);
