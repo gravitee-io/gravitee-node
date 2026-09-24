@@ -133,21 +133,16 @@ class PrometheusEndpointIntegrationTest {
     @Test
     void should_recover_when_hung_scrapes_hold_every_concurrency_slot() throws Exception {
         AtomicInteger scrapes = new AtomicInteger();
-        Gauge
-            .builder(
-                "hung_gauge",
-                () -> {
-                    if (scrapes.incrementAndGet() <= 3) {
-                        try {
-                            hungScrapes.await();
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-                    return 1;
+        Gauge.builder("hung_gauge", () -> {
+            if (scrapes.incrementAndGet() <= 3) {
+                try {
+                    hungScrapes.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
-            )
-            .register(prometheusMeterRegistry);
+            }
+            return 1;
+        }).register(prometheusMeterRegistry);
         startServer(new ConcurrencyLimitHandler(3, 500));
 
         for (int i = 0; i < 3; i++) {

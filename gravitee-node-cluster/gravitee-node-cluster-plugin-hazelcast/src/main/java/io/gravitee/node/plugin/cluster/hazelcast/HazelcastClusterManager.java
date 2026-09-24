@@ -108,13 +108,10 @@ public class HazelcastClusterManager extends AbstractService<ClusterManager> imp
 
     @Override
     public <T> Queue<T> queue(final String name) {
-        return (Queue<T>) queuesByName.computeIfAbsent(
-            name,
-            key -> {
-                IQueue<T> iQueue = hazelcastInstance.getQueue(key);
-                return new HazelcastQueue<>(iQueue);
-            }
-        );
+        return (Queue<T>) queuesByName.computeIfAbsent(name, key -> {
+            IQueue<T> iQueue = hazelcastInstance.getQueue(key);
+            return new HazelcastQueue<>(iQueue);
+        });
     }
 
     @Override

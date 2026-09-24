@@ -37,19 +37,19 @@ public class SafeBufferedWriterTest {
 
         CountDownLatch latch = new CountDownLatch(1);
         doAnswer(invocation -> {
-                Handler<Void> handler = invocation.getArgument(0);
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(100);
-                        handler.handle(null);
-                        latch.countDown();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                })
-                    .start();
-                return response;
+            Handler<Void> handler = invocation.getArgument(0);
+            new Thread(() -> {
+                try {
+                    Thread.sleep(100);
+                    handler.handle(null);
+                    latch.countDown();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             })
+                .start();
+            return response;
+        })
             .when(response)
             .drainHandler(any());
 

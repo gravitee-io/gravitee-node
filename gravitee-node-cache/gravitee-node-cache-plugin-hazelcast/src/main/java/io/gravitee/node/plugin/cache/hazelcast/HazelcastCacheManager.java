@@ -58,20 +58,17 @@ public class HazelcastCacheManager extends AbstractService<CacheManager> impleme
     @SuppressWarnings("unchecked")
     @Override
     public <K, V> Cache<K, V> getOrCreateCache(final String name, final CacheConfiguration configuration) {
-        return (Cache<K, V>) caches.computeIfAbsent(
-            name,
-            s -> {
-                if (configuration.isDistributed()) {
-                    // First, configure the cache using Hazelcast config
-                    configureCache(s, configuration);
+        return (Cache<K, V>) caches.computeIfAbsent(name, s -> {
+            if (configuration.isDistributed()) {
+                // First, configure the cache using Hazelcast config
+                configureCache(s, configuration);
 
-                    // Then create the cache entity
-                    return new HazelcastCache<>(hazelcastInstance.getMap(name), configuration.getTimeToLiveInMs());
-                } else {
-                    return new InMemoryCache<>(name, configuration);
-                }
+                // Then create the cache entity
+                return new HazelcastCache<>(hazelcastInstance.getMap(name), configuration.getTimeToLiveInMs());
+            } else {
+                return new InMemoryCache<>(name, configuration);
             }
-        );
+        });
     }
 
     @Override

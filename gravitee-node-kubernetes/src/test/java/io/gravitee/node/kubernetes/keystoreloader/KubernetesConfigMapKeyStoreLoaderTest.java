@@ -55,8 +55,7 @@ class KubernetesConfigMapKeyStoreLoaderTest {
 
     @Test
     void should_load_config_map() throws IOException, KeyStoreException {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .kubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
             .password("secret")
@@ -77,9 +76,9 @@ class KubernetesConfigMapKeyStoreLoaderTest {
         metadata.setNamespace("gio");
         configMap.setMetadata(metadata);
 
-        Mockito
-            .when(kubernetesClient.get(ResourceQuery.<ConfigMap>from("/gio/configmaps/my-configmap").build()))
-            .thenReturn(Maybe.just(configMap));
+        Mockito.when(kubernetesClient.get(ResourceQuery.<ConfigMap>from("/gio/configmaps/my-configmap").build())).thenReturn(
+            Maybe.just(configMap)
+        );
 
         AtomicReference<KeyStoreEvent> bundleRef = new AtomicReference<>(null);
         cut.setEventHandler(bundleRef::set);
@@ -93,8 +92,7 @@ class KubernetesConfigMapKeyStoreLoaderTest {
 
     @Test
     void should_load_config_map_from_data() throws IOException, KeyStoreException {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .kubernetesLocations(Collections.singletonList("/gio/configmaps/my-configmap/keystore"))
             .password("secret")
@@ -115,9 +113,9 @@ class KubernetesConfigMapKeyStoreLoaderTest {
         metadata.setNamespace("gio");
         configMap.setMetadata(metadata);
 
-        Mockito
-            .when(kubernetesClient.get(ResourceQuery.<ConfigMap>from("/gio/configmaps/my-configmap").build()))
-            .thenReturn(Maybe.just(configMap));
+        Mockito.when(kubernetesClient.get(ResourceQuery.<ConfigMap>from("/gio/configmaps/my-configmap").build())).thenReturn(
+            Maybe.just(configMap)
+        );
 
         AtomicReference<KeyStoreEvent> bundleRef = new AtomicReference<>(null);
         cut.setEventHandler(bundleRef::set);

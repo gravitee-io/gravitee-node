@@ -58,7 +58,10 @@ public class DefaultCRLLoaderFactoryRegistry implements CRLLoaderFactoryRegistry
             return NO_OP_CRL_LOADER;
         }
 
-        List<CRLLoaderFactory> matchingFactories = getLoaderFactories().stream().filter(factory -> factory.canHandle(options)).toList();
+        List<CRLLoaderFactory> matchingFactories = getLoaderFactories()
+            .stream()
+            .filter(factory -> factory.canHandle(options))
+            .toList();
 
         if (matchingFactories.isEmpty()) {
             throw new IllegalArgumentException("No CRL loader factory found for path: %s".formatted(options.getPath()));

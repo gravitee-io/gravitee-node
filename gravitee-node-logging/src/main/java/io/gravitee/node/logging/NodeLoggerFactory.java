@@ -2,6 +2,7 @@ package io.gravitee.node.logging;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.gravitee.node.api.Node;
+import io.gravitee.node.logging.NodeLoggerFactory;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;

@@ -87,16 +87,13 @@ public class OpenTelemetryFactory implements TracerFactory {
                 additionalResourceAttributes
             );
 
-            final OpenTelemetrySdkBuilder builder = OpenTelemetrySdk
-                .builder()
-                .setPropagators(
-                    ContextPropagators.create(
-                        TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())
-                    )
-                );
+            final OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder().setPropagators(
+                ContextPropagators.create(
+                    TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())
+                )
+            );
 
-            SdkTracerProvider tracerProvider = SdkTracerProvider
-                .builder()
+            SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
                 .addSpanProcessor(BatchSpanProcessor.builder(spanExporterFactory.getSpanExporter()).build())
                 .setResource(resource)
                 .build();
@@ -128,8 +125,7 @@ public class OpenTelemetryFactory implements TracerFactory {
             ipv4 = DEFAULT_IP;
         }
 
-        ResourceBuilder resourceBuilder = Resource
-            .getDefault()
+        ResourceBuilder resourceBuilder = Resource.getDefault()
             .toBuilder()
             .put(ResourceAttributes.SERVICE_INSTANCE_ID, serviceInstanceId)
             .put(ResourceAttributes.SERVICE_NAME, serviceName)

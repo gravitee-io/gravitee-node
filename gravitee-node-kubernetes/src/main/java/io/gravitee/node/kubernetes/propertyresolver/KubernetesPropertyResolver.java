@@ -58,9 +58,11 @@ public class KubernetesPropertyResolver implements WatchablePropertyResolver<Obj
 
         log.debug("Resolve configuration [{}]", location);
 
-        if ("secrets".equals(properties[1])) { // type
-            return resolvePropertyFromSecret(generateLocation(properties))
-                .map(encodeData -> new String(Base64.getDecoder().decode(encodeData)));
+        if ("secrets".equals(properties[1])) {
+            // type
+            return resolvePropertyFromSecret(generateLocation(properties)).map(encodeData ->
+                new String(Base64.getDecoder().decode(encodeData))
+            );
         } else if ("configmaps".equals(properties[1])) {
             return resolvePropertyFromConfigMap(generateLocation(properties)).map(String::strip);
         } else {
@@ -79,11 +81,14 @@ public class KubernetesPropertyResolver implements WatchablePropertyResolver<Obj
 
         log.debug("Start watching configuration [{}]", location);
 
-        if ("secrets".equals(properties[1])) { // type
+        if ("secrets".equals(properties[1])) {
+            // type
             return kubernetesClient
                 .watch(WatchQuery.secret(properties[0], properties[2]).resourceKey(properties[3]).build())
-                .filter(event ->
-                    event.getType().equals(KubernetesEventType.MODIFIED.name()) || event.getType().equals(KubernetesEventType.ADDED.name())
+                .filter(
+                    event ->
+                        event.getType().equals(KubernetesEventType.MODIFIED.name()) ||
+                        event.getType().equals(KubernetesEventType.ADDED.name())
                 )
                 .map(secretEvent -> {
                     String encodedData = secretEvent.getObject().getData().get(properties[3]);
@@ -92,8 +97,10 @@ public class KubernetesPropertyResolver implements WatchablePropertyResolver<Obj
         } else if ("configmaps".equals(properties[1])) {
             return kubernetesClient
                 .watch(WatchQuery.configMap(properties[0], properties[2]).resourceKey(properties[3]).build())
-                .filter(event ->
-                    event.getType().equals(KubernetesEventType.MODIFIED.name()) || event.getType().equals(KubernetesEventType.ADDED.name())
+                .filter(
+                    event ->
+                        event.getType().equals(KubernetesEventType.MODIFIED.name()) ||
+                        event.getType().equals(KubernetesEventType.ADDED.name())
                 )
                 .map(configMapEvent -> configMapEvent.getObject().getData().get(properties[3]));
         } else {

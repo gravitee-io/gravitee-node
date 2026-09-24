@@ -69,13 +69,12 @@ public class OffloadHandlerTest {
     void should_execute_simple_blocking_handler_successfully() {
         Handler<Promise<Void>> blockingHandler = promise -> promise.complete();
 
-        when(vertx.<Void>executeBlocking(ArgumentMatchers.<Handler<Promise<Void>>>any()))
-            .thenAnswer(invocation -> {
-                Handler<Promise<Void>> handler = invocation.getArgument(0);
-                Promise<Void> promise = Promise.promise();
-                handler.handle(promise);
-                return promise.future();
-            });
+        when(vertx.<Void>executeBlocking(ArgumentMatchers.<Handler<Promise<Void>>>any())).thenAnswer(invocation -> {
+            Handler<Promise<Void>> handler = invocation.getArgument(0);
+            Promise<Void> promise = Promise.promise();
+            handler.handle(promise);
+            return promise.future();
+        });
 
         var handler = OffloadHandler.of(blockingHandler);
 
@@ -86,8 +85,9 @@ public class OffloadHandlerTest {
 
     @Test
     void should_return_500_on_simple_blocking_handler_failure() {
-        when(vertx.<Void>executeBlocking(ArgumentMatchers.<Handler<Promise<Void>>>any()))
-            .thenReturn(Future.failedFuture(new RuntimeException("fail")));
+        when(vertx.<Void>executeBlocking(ArgumentMatchers.<Handler<Promise<Void>>>any())).thenReturn(
+            Future.failedFuture(new RuntimeException("fail"))
+        );
         var handler = OffloadHandler.of(promise -> {});
 
         handler.handle(routingContext);

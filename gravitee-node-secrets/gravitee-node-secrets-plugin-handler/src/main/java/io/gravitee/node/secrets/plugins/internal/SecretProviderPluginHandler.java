@@ -51,8 +51,9 @@ public class SecretProviderPluginHandler extends AbstractSimplePluginHandler<Sec
     @Override
     @SuppressWarnings({ "rawtypes, unchecked", "java:S3740" })
     protected SecretProviderPlugin<?, ?> create(final Plugin plugin, final Class<?> pluginClass) {
-        Class<? extends SecretManagerConfiguration> configurationClass = new SecretManagerConfigurationClassFinder()
-            .lookupFirst(pluginClass);
+        Class<? extends SecretManagerConfiguration> configurationClass = new SecretManagerConfigurationClassFinder().lookupFirst(
+            pluginClass
+        );
 
         return new DefaultSecretProviderPlugin(plugin, pluginClass, configurationClass);
     }

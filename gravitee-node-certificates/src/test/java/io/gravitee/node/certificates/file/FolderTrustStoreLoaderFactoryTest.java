@@ -50,8 +50,7 @@ class FolderTrustStoreLoaderFactoryTest {
 
     @Test
     void should_be_able_to_create() {
-        TrustStoreLoaderOptions options = TrustStoreLoaderOptions
-            .builder()
+        TrustStoreLoaderOptions options = TrustStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM_FOLDER)
             .paths(List.of("/tmp"))
             .build();

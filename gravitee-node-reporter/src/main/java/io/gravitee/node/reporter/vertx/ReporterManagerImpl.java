@@ -45,47 +45,44 @@ public class ReporterManagerImpl extends AbstractService<ReporterManager> implem
     protected void doStart() throws Exception {
         super.doStart();
 
-        vertx.deployVerticle(
-            SpringVerticleFactory.VERTICLE_PREFIX + ':' + ReporterVerticle.class.getName(),
-            event -> {
-                if (event.failed()) {
-                    log.error("Reporter service can not be started", event.cause());
-                } else {
-                    if (!reporters.isEmpty()) {
-                        for (Reporter reporter : reporters) {
-                            try {
-                                log.debug("Pre-starting reporter: {}", reporter);
-                                reporter.preStart();
-                            } catch (Exception ex) {
-                                log.error("Unexpected error while pre-starting reporter", ex);
-                            }
+        vertx.deployVerticle(SpringVerticleFactory.VERTICLE_PREFIX + ':' + ReporterVerticle.class.getName(), event -> {
+            if (event.failed()) {
+                log.error("Reporter service can not be started", event.cause());
+            } else {
+                if (!reporters.isEmpty()) {
+                    for (Reporter reporter : reporters) {
+                        try {
+                            log.debug("Pre-starting reporter: {}", reporter);
+                            reporter.preStart();
+                        } catch (Exception ex) {
+                            log.error("Unexpected error while pre-starting reporter", ex);
                         }
-
-                        for (Reporter reporter : reporters) {
-                            try {
-                                log.info("Starting reporter: {}", reporter);
-                                reporter.start();
-                            } catch (Exception ex) {
-                                log.error("Unexpected error while starting reporter", ex);
-                            }
-                        }
-
-                        for (Reporter reporter : reporters) {
-                            try {
-                                log.debug("Port-starting reporter: {}", reporter);
-                                reporter.postStart();
-                            } catch (Exception ex) {
-                                log.error("Unexpected error while post-starting reporter", ex);
-                            }
-                        }
-                    } else {
-                        log.info("\tThere is no reporter to start");
                     }
-                }
 
-                deploymentId = event.result();
+                    for (Reporter reporter : reporters) {
+                        try {
+                            log.info("Starting reporter: {}", reporter);
+                            reporter.start();
+                        } catch (Exception ex) {
+                            log.error("Unexpected error while starting reporter", ex);
+                        }
+                    }
+
+                    for (Reporter reporter : reporters) {
+                        try {
+                            log.debug("Port-starting reporter: {}", reporter);
+                            reporter.postStart();
+                        } catch (Exception ex) {
+                            log.error("Unexpected error while post-starting reporter", ex);
+                        }
+                    }
+                } else {
+                    log.info("\tThere is no reporter to start");
+                }
             }
-        );
+
+            deploymentId = event.result();
+        });
     }
 
     @Override
@@ -98,37 +95,34 @@ public class ReporterManagerImpl extends AbstractService<ReporterManager> implem
         super.doStop();
 
         if (deploymentId != null) {
-            vertx.undeploy(
-                deploymentId,
-                event -> {
-                    for (Reporter reporter : reporters) {
-                        try {
-                            log.debug("Pre-stopping reporter: {}", reporter);
-                            reporter.preStop();
-                        } catch (Exception ex) {
-                            log.error("Unexpected error while pre-stopping reporter", ex);
-                        }
-                    }
-
-                    for (Reporter reporter : reporters) {
-                        try {
-                            log.info("Stopping reporter: {}", reporter);
-                            reporter.stop();
-                        } catch (Exception ex) {
-                            log.error("Unexpected error while stopping reporter", ex);
-                        }
-                    }
-
-                    for (Reporter reporter : reporters) {
-                        try {
-                            log.debug("Post-stopping reporter: {}", reporter);
-                            reporter.postStop();
-                        } catch (Exception ex) {
-                            log.error("Unexpected error while post-stopping reporter", ex);
-                        }
+            vertx.undeploy(deploymentId, event -> {
+                for (Reporter reporter : reporters) {
+                    try {
+                        log.debug("Pre-stopping reporter: {}", reporter);
+                        reporter.preStop();
+                    } catch (Exception ex) {
+                        log.error("Unexpected error while pre-stopping reporter", ex);
                     }
                 }
-            );
+
+                for (Reporter reporter : reporters) {
+                    try {
+                        log.info("Stopping reporter: {}", reporter);
+                        reporter.stop();
+                    } catch (Exception ex) {
+                        log.error("Unexpected error while stopping reporter", ex);
+                    }
+                }
+
+                for (Reporter reporter : reporters) {
+                    try {
+                        log.debug("Post-stopping reporter: {}", reporter);
+                        reporter.postStop();
+                    } catch (Exception ex) {
+                        log.error("Unexpected error while post-stopping reporter", ex);
+                    }
+                }
+            });
         }
     }
 

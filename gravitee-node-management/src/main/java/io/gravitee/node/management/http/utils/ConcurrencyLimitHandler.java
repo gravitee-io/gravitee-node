@@ -69,16 +69,13 @@ public class ConcurrencyLimitHandler implements Handler<RoutingContext> {
         timerId.set(
             context
                 .vertx()
-                .setTimer(
-                    timeoutMs,
-                    id -> {
-                        log.warn("The endpoint {} did not respond within {} ms, aborting request", context.request().path(), timeoutMs);
-                        release.run();
-                        if (!response.closed()) {
-                            response.close();
-                        }
+                .setTimer(timeoutMs, id -> {
+                    log.warn("The endpoint {} did not respond within {} ms, aborting request", context.request().path(), timeoutMs);
+                    release.run();
+                    if (!response.closed()) {
+                        response.close();
                     }
-                )
+                })
         );
 
         response.bodyEndHandler(v -> release.run());

@@ -102,12 +102,10 @@ public class NotifierServiceImpl implements NotifierService {
     }
 
     private void stopAndRemoveTrigger(String id) {
-        Optional
-            .ofNullable(triggers.get(id))
-            .ifPresent(trigger -> {
-                trigger.stop();
-                triggers.remove(id);
-            });
+        Optional.ofNullable(triggers.get(id)).ifPresent(trigger -> {
+            trigger.stop();
+            triggers.remove(id);
+        });
     }
 
     private void removeDefinition(String resourceId, String resourceType, String type, String audienceId) {

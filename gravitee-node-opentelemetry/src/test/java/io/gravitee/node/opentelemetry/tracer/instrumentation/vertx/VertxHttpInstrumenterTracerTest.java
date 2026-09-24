@@ -82,7 +82,11 @@ class VertxHttpInstrumenterTracerTest {
         }
 
         List<SpanData> spans = spanExporter.getFinishedSpanItems();
-        SpanData serverSpan = spans.stream().filter(span -> span.getKind() == SpanKind.SERVER).findFirst().orElseThrow();
+        SpanData serverSpan = spans
+            .stream()
+            .filter(span -> span.getKind() == SpanKind.SERVER)
+            .findFirst()
+            .orElseThrow();
         assertThat(serverSpan.getName()).isEqualTo("POST /test");
         assertThat(serverSpan.getParentSpanContext().isValid()).isFalse();
     }
@@ -114,8 +118,16 @@ class VertxHttpInstrumenterTracerTest {
         List<SpanData> spans = spanExporter.getFinishedSpanItems();
         assertThat(spans).hasSize(2);
 
-        SpanData serverSpan = spans.stream().filter(span -> span.getKind() == SpanKind.SERVER).findFirst().orElseThrow();
-        SpanData backendSpan = spans.stream().filter(span -> span.getKind() == SpanKind.CLIENT).findFirst().orElseThrow();
+        SpanData serverSpan = spans
+            .stream()
+            .filter(span -> span.getKind() == SpanKind.SERVER)
+            .findFirst()
+            .orElseThrow();
+        SpanData backendSpan = spans
+            .stream()
+            .filter(span -> span.getKind() == SpanKind.CLIENT)
+            .findFirst()
+            .orElseThrow();
 
         assertThat(serverSpan.getName()).isEqualTo("POST /test");
         assertThat(backendSpan.getName()).isNotEqualTo("POST /test");

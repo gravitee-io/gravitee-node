@@ -63,20 +63,19 @@ class NodeMonitorServiceTest {
 
         cut.doStart();
 
-        verify(alertEventProducer)
-            .send(
-                argThat(event -> {
-                    assertThat(event.type()).isEqualTo(NODE_LIFECYCLE);
-                    assertThat(event.properties().get(PROPERTY_NODE_EVENT)).isEqualTo(NODE_EVENT_START);
-                    assertThat(event.properties().get(PROPERTY_NODE_ID)).isEqualTo(NODE_ID);
-                    assertThat(event.properties().get(PROPERTY_NODE_HOSTNAME)).isEqualTo("HOSTNAME");
-                    assertThat(event.properties().get(PROPERTY_NODE_APPLICATION)).isEqualTo("APPLICATION");
-                    assertThat(event.properties().get(Event.PROPERTY_ORGANIZATION)).isEqualTo("ORG_ID");
-                    assertThat(event.properties().get(Event.PROPERTY_ENVIRONMENT)).isEqualTo("ENV_ID");
+        verify(alertEventProducer).send(
+            argThat(event -> {
+                assertThat(event.type()).isEqualTo(NODE_LIFECYCLE);
+                assertThat(event.properties().get(PROPERTY_NODE_EVENT)).isEqualTo(NODE_EVENT_START);
+                assertThat(event.properties().get(PROPERTY_NODE_ID)).isEqualTo(NODE_ID);
+                assertThat(event.properties().get(PROPERTY_NODE_HOSTNAME)).isEqualTo("HOSTNAME");
+                assertThat(event.properties().get(PROPERTY_NODE_APPLICATION)).isEqualTo("APPLICATION");
+                assertThat(event.properties().get(Event.PROPERTY_ORGANIZATION)).isEqualTo("ORG_ID");
+                assertThat(event.properties().get(Event.PROPERTY_ENVIRONMENT)).isEqualTo("ENV_ID");
 
-                    return true;
-                })
-            );
+                return true;
+            })
+        );
     }
 
     @Test
@@ -118,20 +117,19 @@ class NodeMonitorServiceTest {
 
         cut.preStop();
 
-        verify(alertEventProducer)
-            .send(
-                argThat(event -> {
-                    assertThat(event.type()).isEqualTo(NODE_LIFECYCLE);
-                    assertThat(event.properties().get(PROPERTY_NODE_EVENT)).isEqualTo(NODE_EVENT_STOP);
-                    assertThat(event.properties().get(PROPERTY_NODE_ID)).isEqualTo(NODE_ID);
-                    assertThat(event.properties().get(PROPERTY_NODE_HOSTNAME)).isEqualTo("HOSTNAME");
-                    assertThat(event.properties().get(PROPERTY_NODE_APPLICATION)).isEqualTo("APPLICATION");
-                    assertThat(event.properties().get(Event.PROPERTY_ORGANIZATION)).isEqualTo("ORG_ID");
-                    assertThat(event.properties().get(Event.PROPERTY_ENVIRONMENT)).isEqualTo("ENV_ID");
+        verify(alertEventProducer).send(
+            argThat(event -> {
+                assertThat(event.type()).isEqualTo(NODE_LIFECYCLE);
+                assertThat(event.properties().get(PROPERTY_NODE_EVENT)).isEqualTo(NODE_EVENT_STOP);
+                assertThat(event.properties().get(PROPERTY_NODE_ID)).isEqualTo(NODE_ID);
+                assertThat(event.properties().get(PROPERTY_NODE_HOSTNAME)).isEqualTo("HOSTNAME");
+                assertThat(event.properties().get(PROPERTY_NODE_APPLICATION)).isEqualTo("APPLICATION");
+                assertThat(event.properties().get(Event.PROPERTY_ORGANIZATION)).isEqualTo("ORG_ID");
+                assertThat(event.properties().get(Event.PROPERTY_ENVIRONMENT)).isEqualTo("ENV_ID");
 
-                    return true;
-                })
-            );
+                return true;
+            })
+        );
     }
 
     @Test

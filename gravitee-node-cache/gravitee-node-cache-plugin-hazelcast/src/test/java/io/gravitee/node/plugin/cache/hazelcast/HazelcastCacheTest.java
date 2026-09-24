@@ -114,7 +114,9 @@ public class HazelcastCacheTest {
             Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
             cache.put(TEST_KEY, TEST_VALUE, 1, TimeUnit.SECONDS);
 
-            await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> assertThat(cache.values()).isEmpty());
+            await()
+                .atMost(2, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertThat(cache.values()).isEmpty());
         }
     }
 
@@ -156,7 +158,9 @@ public class HazelcastCacheTest {
             Cache<String, String> cache = hazelcastCacheManager.getOrCreateCache(CACHE_NAME, configuration);
             cache.put(TEST_KEY, TEST_VALUE, 1, TimeUnit.SECONDS);
 
-            await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> assertThat(cache.rxValues().blockingIterable()).isEmpty());
+            await()
+                .atMost(2, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertThat(cache.rxValues().blockingIterable()).isEmpty());
         }
     }
 
@@ -394,7 +398,9 @@ public class HazelcastCacheTest {
                 }
             );
             cache.putAll(Map.of(TEST_KEY, TEST_VALUE, TEST_KEY2, TEST_VALUE2));
-            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> assertThat(listenerCalled).isTrue());
         }
 
         @Test
@@ -468,7 +474,9 @@ public class HazelcastCacheTest {
                 }
             );
             cache.rxPutAll(Map.of(TEST_KEY, TEST_VALUE, TEST_KEY2, TEST_VALUE2)).blockingAwait();
-            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> assertThat(listenerCalled).isTrue());
         }
 
         @Test
@@ -558,7 +566,9 @@ public class HazelcastCacheTest {
                 }
             );
             assertThat(cache.computeIfAbsent(TEST_KEY, k -> TEST_VALUE)).isEqualTo(TEST_VALUE);
-            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> assertThat(listenerCalled).isTrue());
         }
     }
 
@@ -626,7 +636,9 @@ public class HazelcastCacheTest {
                 }
             );
             assertThat(cache.rxComputeIfAbsent(TEST_KEY, k -> TEST_VALUE).blockingGet()).isEqualTo(TEST_VALUE);
-            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> assertThat(listenerCalled).isTrue());
         }
     }
 
@@ -1011,7 +1023,9 @@ public class HazelcastCacheTest {
             cache.put(TEST_KEY, TEST_VALUE);
             assertThat(cache.evict(TEST_KEY)).isNotNull();
             assertThat(cache.get(TEST_KEY)).isNull();
-            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> assertThat(listenerCalled).isTrue());
         }
     }
 
@@ -1054,7 +1068,9 @@ public class HazelcastCacheTest {
 
             cache.rxEvict(TEST_KEY).test().awaitDone(1, TimeUnit.SECONDS).assertValue(TEST_VALUE);
 
-            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> assertThat(listenerCalled).isTrue());
         }
     }
 }

@@ -70,7 +70,9 @@ class PlainTextThreadDumpFormatter {
     }
 
     private List<MonitorInfo> lockedMonitorsForDepth(MonitorInfo[] lockedMonitors, int depth) {
-        return Stream.of(lockedMonitors).filter(lockedMonitor -> lockedMonitor.getLockedStackDepth() == depth).collect(Collectors.toList());
+        return Stream.of(lockedMonitors)
+            .filter(lockedMonitor -> lockedMonitor.getLockedStackDepth() == depth)
+            .collect(Collectors.toList());
     }
 
     private void writeStackTraceElement(

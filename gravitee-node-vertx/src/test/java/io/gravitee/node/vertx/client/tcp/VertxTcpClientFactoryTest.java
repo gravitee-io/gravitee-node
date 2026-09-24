@@ -49,8 +49,7 @@ class VertxTcpClientFactoryTest {
 
         when(nodeConfiguration.getProperty(TCP_SSL_OPENSSL_CONFIGURATION, Boolean.class, false)).thenReturn(false);
 
-        return VertxTcpClientFactory
-            .builder()
+        return VertxTcpClientFactory.builder()
             .vertx(vertx)
             .nodeConfiguration(nodeConfiguration)
             .tcpTarget(VertxTcpTarget.builder().host("localhost").port(8080).build())
@@ -362,54 +361,50 @@ class VertxTcpClientFactoryTest {
     }
 
     private static String getSslFilePath(String file) {
-        return Objects
-            .requireNonNull(VertxTcpClientFactoryTest.class.getResource("/ssl/" + file), "File /ssl/" + file + " not found")
-            .getPath();
+        return Objects.requireNonNull(
+            VertxTcpClientFactoryTest.class.getResource("/ssl/" + file),
+            "File /ssl/" + file + " not found"
+        ).getPath();
     }
 
     private static String getSslFileContent(String file) throws IOException {
         return new String(
-            Objects
-                .requireNonNull(VertxTcpClientFactoryTest.class.getResourceAsStream("/ssl/" + file), "File /ssl/" + file + " not found")
-                .readAllBytes()
+            Objects.requireNonNull(
+                VertxTcpClientFactoryTest.class.getResourceAsStream("/ssl/" + file),
+                "File /ssl/" + file + " not found"
+            ).readAllBytes()
         );
     }
 
     private static String getContentAsBase64(String file) throws IOException {
         return new String(
-            Base64
-                .getEncoder()
-                .encode(
-                    Objects
-                        .requireNonNull(
-                            VertxTcpClientFactoryTest.class.getResourceAsStream("/ssl/" + file),
-                            "File /ssl/" + file + " not found"
-                        )
-                        .readAllBytes()
-                )
+            Base64.getEncoder().encode(
+                Objects.requireNonNull(
+                    VertxTcpClientFactoryTest.class.getResourceAsStream("/ssl/" + file),
+                    "File /ssl/" + file + " not found"
+                ).readAllBytes()
+            )
         );
     }
 
-    private static final String TCP_CONFIG =
-        """
-                     {
-                         "connectTimeout": 5000,
-                         "reconnectAttempts": 5,
-                         "reconnectInterval": 1000,
-                         "idleTimeout": 100,
-                         "readIdleTimeout": "150",
-                         "writeIdleTimeout": 250
-                     }""";
+    private static final String TCP_CONFIG = """
+        {
+            "connectTimeout": 5000,
+            "reconnectAttempts": 5,
+            "reconnectInterval": 1000,
+            "idleTimeout": 100,
+            "readIdleTimeout": "150",
+            "writeIdleTimeout": 250
+        }""";
 
-    private static final String PROXY_CONFIG =
-        """
-                     {
-                         "enabled": true,
-                         "useSystemProxy": false,
-                         "host": "localhost",
-                         "port": 8080,
-                         "username": "user",
-                         "password": "pwd",
-                         "type": "SOCKS5"
-                     }""";
+    private static final String PROXY_CONFIG = """
+        {
+            "enabled": true,
+            "useSystemProxy": false,
+            "host": "localhost",
+            "port": 8080,
+            "username": "user",
+            "password": "pwd",
+            "type": "SOCKS5"
+        }""";
 }

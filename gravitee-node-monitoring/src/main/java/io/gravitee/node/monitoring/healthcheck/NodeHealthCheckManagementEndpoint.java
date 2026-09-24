@@ -60,8 +60,12 @@ public class NodeHealthCheckManagementEndpoint implements ManagementEndpoint {
     public void handle(RoutingContext ctx) {
         Set<String> probeIds;
         if (ctx.queryParams().contains(PROBE_FILTER)) {
-            probeIds =
-                ctx.queryParams().getAll(PROBE_FILTER).stream().flatMap(s -> Arrays.stream(s.split(","))).collect(Collectors.toSet());
+            probeIds = ctx
+                .queryParams()
+                .getAll(PROBE_FILTER)
+                .stream()
+                .flatMap(s -> Arrays.stream(s.split(",")))
+                .collect(Collectors.toSet());
         } else {
             probeIds = null;
         }

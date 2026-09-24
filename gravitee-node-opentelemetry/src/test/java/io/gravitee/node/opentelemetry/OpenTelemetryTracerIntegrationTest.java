@@ -98,8 +98,7 @@ public class OpenTelemetryTracerIntegrationTest {
 
     @Test
     void should_connect_to_jaeger_over_grpc(Vertx vertx) throws Exception {
-        var openTelemetryConfiguration = OpenTelemetryConfiguration
-            .builder()
+        var openTelemetryConfiguration = OpenTelemetryConfiguration.builder()
             .endpoint("http://localhost:" + container.getCollectorGrpcPort())
             .tracesEnabled(true)
             .protocol(Protocol.GRPC.value())
@@ -144,8 +143,7 @@ public class OpenTelemetryTracerIntegrationTest {
 
     @Test
     void should_report_traces_with_additional_resource_attributes(Vertx vertx) throws Exception {
-        var openTelemetryConfiguration = OpenTelemetryConfiguration
-            .builder()
+        var openTelemetryConfiguration = OpenTelemetryConfiguration.builder()
             .endpoint("http://localhost:" + container.getCollectorGrpcPort())
             .tracesEnabled(true)
             .protocol(Protocol.GRPC.value())
@@ -191,8 +189,7 @@ public class OpenTelemetryTracerIntegrationTest {
 
     @Test
     void should_report_traces_with_error_and_events(Vertx vertx) throws Exception {
-        var openTelemetryConfiguration = OpenTelemetryConfiguration
-            .builder()
+        var openTelemetryConfiguration = OpenTelemetryConfiguration.builder()
             .endpoint("http://localhost:" + container.getCollectorGrpcPort())
             .tracesEnabled(true)
             .protocol(Protocol.GRPC.value())
@@ -257,8 +254,7 @@ public class OpenTelemetryTracerIntegrationTest {
             environment.withProperty("services.tracing.otel.ssl.keystore.keys[0]", keyStore.getString("key"));
         }
 
-        var openTelemetryConfiguration = OpenTelemetryConfiguration
-            .builder()
+        var openTelemetryConfiguration = OpenTelemetryConfiguration.builder()
             .environment(environment)
             .keystoreType(keyStore.getString("type"))
             .keystorePath(keyStore.getString("path"))
@@ -309,8 +305,7 @@ public class OpenTelemetryTracerIntegrationTest {
 
     @Test
     void should_connect_to_jaeger_over_http(Vertx vertx) throws Exception {
-        var openTelemetryConfiguration = OpenTelemetryConfiguration
-            .builder()
+        var openTelemetryConfiguration = OpenTelemetryConfiguration.builder()
             .endpoint("http://localhost:" + container.getCollectorHttpPort())
             .tracesEnabled(true)
             .protocol(Protocol.HTTP_PROTOBUF.value())
@@ -364,8 +359,7 @@ public class OpenTelemetryTracerIntegrationTest {
             environment.withProperty("services.tracing.otel.ssl.keystore.keys[0]", keyStore.getString("key"));
         }
 
-        var openTelemetryConfiguration = OpenTelemetryConfiguration
-            .builder()
+        var openTelemetryConfiguration = OpenTelemetryConfiguration.builder()
             .environment(environment)
             .keystoreType(keyStore.getString("type"))
             .keystorePath(keyStore.getString("path"))
@@ -517,16 +511,14 @@ public class OpenTelemetryTracerIntegrationTest {
             tags
                 .stream()
                 .anyMatch(t -> ((JsonObject) t).getString("key").equals("custom") && ((JsonObject) t).getString("value").equals("value"))
-        )
-            .isTrue();
+        ).isTrue();
         assertThat(
             tags
                 .stream()
-                .anyMatch(t ->
-                    ((JsonObject) t).getString("key").equals("span.kind") && ((JsonObject) t).getString("value").equals("internal")
+                .anyMatch(
+                    t -> ((JsonObject) t).getString("key").equals("span.kind") && ((JsonObject) t).getString("value").equals("internal")
                 )
-        )
-            .isTrue();
+        ).isTrue();
 
         if (withAdditionalAttributes) {
             var process = trace.getJsonObject("processes").getJsonObject(span.getString("processID"));

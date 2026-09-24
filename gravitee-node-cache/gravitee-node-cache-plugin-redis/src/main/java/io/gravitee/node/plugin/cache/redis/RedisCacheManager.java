@@ -66,9 +66,8 @@ public class RedisCacheManager extends AbstractService<CacheManager> implements 
 
     @Override
     public <K, V, C> Cache<K, V> getOrCreateCache(String name, CacheConfiguration configuration, ValueMapper<V, C> valueMapper) {
-        return (Cache<K, V>) caches.computeIfAbsent(
-            name,
-            s -> new RedisCache<>(name, getOrCreateRedisAPI(), (ValueMapper<V, String>) valueMapper)
+        return (Cache<K, V>) caches.computeIfAbsent(name, s ->
+            new RedisCache<>(name, getOrCreateRedisAPI(), (ValueMapper<V, String>) valueMapper)
         );
     }
 

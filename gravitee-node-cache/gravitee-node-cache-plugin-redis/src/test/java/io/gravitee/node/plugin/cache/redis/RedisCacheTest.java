@@ -52,22 +52,21 @@ public class RedisCacheTest {
         redisConfiguration.setHostAndPort(HostAndPort.of("localhost", 6379));
 
         final var cm = new RedisCacheManager(redisConfiguration, Vertx.vertx());
-        redisCache =
-            cm.getOrCreateCache(
-                "test",
-                CacheConfiguration.builder().build(),
-                new ValueMapper<String, String>() {
-                    @Override
-                    public String toCachedValue(String value) {
-                        return value;
-                    }
-
-                    @Override
-                    public String toValue(String cachedValue) {
-                        return cachedValue;
-                    }
+        redisCache = cm.getOrCreateCache(
+            "test",
+            CacheConfiguration.builder().build(),
+            new ValueMapper<String, String>() {
+                @Override
+                public String toCachedValue(String value) {
+                    return value;
                 }
-            );
+
+                @Override
+                public String toValue(String cachedValue) {
+                    return cachedValue;
+                }
+            }
+        );
     }
 
     @Test
@@ -97,8 +96,7 @@ public class RedisCacheTest {
         test.await();
         test.assertValue("myvalue1");
 
-        Awaitility
-            .await()
+        Awaitility.await()
             .atLeast(2, TimeUnit.SECONDS)
             .atMost(5, TimeUnit.SECONDS)
             .untilAsserted(() -> {

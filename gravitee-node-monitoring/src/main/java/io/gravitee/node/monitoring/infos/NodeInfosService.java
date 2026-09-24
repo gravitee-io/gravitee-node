@@ -65,14 +65,13 @@ public class NodeInfosService extends AbstractService<NodeInfosService> {
 
         super.doStart();
 
-        messageProducer =
-            vertx
-                .eventBus()
-                .registerCodec(new NodeInfosCodec())
-                .sender(
-                    GIO_NODE_INFOS_BUS,
-                    new DeliveryOptions().setCodecName(NodeInfosCodec.CODEC_NAME).setTracingPolicy(TracingPolicy.IGNORE)
-                );
+        messageProducer = vertx
+            .eventBus()
+            .registerCodec(new NodeInfosCodec())
+            .sender(
+                GIO_NODE_INFOS_BUS,
+                new DeliveryOptions().setCodecName(NodeInfosCodec.CODEC_NAME).setTracingPolicy(TracingPolicy.IGNORE)
+            );
 
         nodeInfos = buildNodeInfos();
         nodeInfos.setStatus(NodeStatus.STARTED);
@@ -166,8 +165,7 @@ public class NodeInfosService extends AbstractService<NodeInfosService> {
     }
 
     private Map<String, String> getMetadata() {
-        return EnvironmentUtils
-            .getPropertiesStartingWith(environment, "metadata")
+        return EnvironmentUtils.getPropertiesStartingWith(environment, "metadata")
             .entrySet()
             .stream()
             .filter(entry -> Objects.nonNull(entry.getValue()))

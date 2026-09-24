@@ -49,15 +49,13 @@ class TrustStoreLoaderManagerTest {
 
     @BeforeEach
     void begin() {
-        platformKeystoreLoader =
-            trustStoreLoaderFactory.create(
-                TrustStoreLoaderOptions
-                    .builder()
-                    .paths(List.of("src/test/resources/truststores/truststore2-3.p12"))
-                    .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-                    .password("secret")
-                    .build()
-            );
+        platformKeystoreLoader = trustStoreLoaderFactory.create(
+            TrustStoreLoaderOptions.builder()
+                .paths(List.of("src/test/resources/truststores/truststore2-3.p12"))
+                .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+                .password("secret")
+                .build()
+        );
         cut = new TrustStoreLoaderManager("fake", platformKeystoreLoader);
     }
 
@@ -81,7 +79,9 @@ class TrustStoreLoaderManagerTest {
         cut.start();
         assertThat(cut.getCertificateManager()).isNotNull();
         assertThat(cut.loaders()).containsEntry(platformKeystoreLoader.id(), platformKeystoreLoader);
-        assertThat(cut.aliases()).hasSize(2).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
+        assertThat(cut.aliases())
+            .hasSize(2)
+            .allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
     }
 
     /**
@@ -126,9 +126,9 @@ class TrustStoreLoaderManagerTest {
         // nothing is advertised, yet the certificate must remain a valid trust anchor
 
         assertThat(trustManager.getAcceptedIssuers()).doesNotContain(client1);
-        Assertions
-            .assertThatCode(() -> trustManager.checkClientTrusted(new X509Certificate[] { client1 }, client1.getSigAlgName()))
-            .doesNotThrowAnyException();
+        Assertions.assertThatCode(() ->
+            trustManager.checkClientTrusted(new X509Certificate[] { client1 }, client1.getSigAlgName())
+        ).doesNotThrowAnyException();
     }
 
     @Test
@@ -151,16 +151,16 @@ class TrustStoreLoaderManagerTest {
 
         // the platform loader reloads (file watch) with a truststore holding a single certificate
         ((AbstractKeyStoreLoader) platformKeystoreLoader).onEvent(
-                new KeyStoreEvent.LoadEvent(
-                    platformKeystoreLoader.id(),
-                    KeyStoreUtils.initFromPath(
-                        KeyStoreLoader.CERTIFICATE_FORMAT_JKS,
-                        "src/test/resources/truststores/truststore1.jks",
-                        "secret"
-                    ),
+            new KeyStoreEvent.LoadEvent(
+                platformKeystoreLoader.id(),
+                KeyStoreUtils.initFromPath(
+                    KeyStoreLoader.CERTIFICATE_FORMAT_JKS,
+                    "src/test/resources/truststores/truststore1.jks",
                     "secret"
-                )
-            );
+                ),
+                "secret"
+            )
+        );
 
         assertThat(manager.getCertificateManager().getAcceptedIssuers())
             .hasSize(1)
@@ -169,8 +169,7 @@ class TrustStoreLoaderManagerTest {
 
     private AbstractKeyStoreLoader dynamicLoader() {
         return (AbstractKeyStoreLoader) trustStoreLoaderFactory.create(
-            TrustStoreLoaderOptions
-                .builder()
+            TrustStoreLoaderOptions.builder()
                 .paths(List.of("src/test/resources/truststores/truststore1.jks"))
                 .type(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
                 .password("secret")
@@ -191,8 +190,7 @@ class TrustStoreLoaderManagerTest {
         cut.start();
 
         AbstractKeyStoreLoader keyStoreLoader = (AbstractKeyStoreLoader) trustStoreLoaderFactory.create(
-            TrustStoreLoaderOptions
-                .builder()
+            TrustStoreLoaderOptions.builder()
                 .paths(List.of("src/test/resources/truststores/truststore1.jks"))
                 .type(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
                 .password("secret")
@@ -200,7 +198,9 @@ class TrustStoreLoaderManagerTest {
         );
 
         cut.registerLoader(keyStoreLoader);
-        assertThat(cut.aliases()).hasSize(3).anyMatch(alias -> alias.startsWith(keyStoreLoader.id()));
+        assertThat(cut.aliases())
+            .hasSize(3)
+            .anyMatch(alias -> alias.startsWith(keyStoreLoader.id()));
 
         String loaderId = keyStoreLoader.id();
         keyStoreLoader.onEvent(new KeyStoreEvent.UnloadEvent(loaderId));
@@ -210,30 +210,31 @@ class TrustStoreLoaderManagerTest {
 
     @Test
     void should_add_remove_p12_keystore_to_main_jks() throws Exception {
-        platformKeystoreLoader =
-            trustStoreLoaderFactory.create(
-                TrustStoreLoaderOptions
-                    .builder()
-                    .paths(List.of("src/test/resources/truststores/truststore1.jks"))
-                    .type(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
-                    .password("secret")
-                    .build()
-            );
+        platformKeystoreLoader = trustStoreLoaderFactory.create(
+            TrustStoreLoaderOptions.builder()
+                .paths(List.of("src/test/resources/truststores/truststore1.jks"))
+                .type(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
+                .password("secret")
+                .build()
+        );
         cut = new TrustStoreLoaderManager("fake", platformKeystoreLoader);
         cut.start();
 
-        assertThat(cut.aliases()).hasSize(1).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
+        assertThat(cut.aliases())
+            .hasSize(1)
+            .allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
 
         AbstractKeyStoreLoader keyStoreLoader = (AbstractKeyStoreLoader) trustStoreLoaderFactory.create(
-            TrustStoreLoaderOptions
-                .builder()
+            TrustStoreLoaderOptions.builder()
                 .paths(List.of("src/test/resources/truststores/truststore2-3.p12"))
                 .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
                 .password("secret")
                 .build()
         );
         cut.registerLoader(keyStoreLoader);
-        assertThat(cut.aliases()).hasSize(3).anyMatch(alias -> alias.startsWith(keyStoreLoader.id()));
+        assertThat(cut.aliases())
+            .hasSize(3)
+            .anyMatch(alias -> alias.startsWith(keyStoreLoader.id()));
 
         String loaderId = keyStoreLoader.id();
         keyStoreLoader.onEvent(new KeyStoreEvent.UnloadEvent(loaderId));
@@ -244,11 +245,12 @@ class TrustStoreLoaderManagerTest {
     @Test
     void should_update_platform_truststore() throws Exception {
         cut.start();
-        assertThat(cut.aliases()).hasSize(2).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
+        assertThat(cut.aliases())
+            .hasSize(2)
+            .allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
 
         AbstractKeyStoreLoader keyStoreLoader = (AbstractKeyStoreLoader) trustStoreLoaderFactory.create(
-            TrustStoreLoaderOptions
-                .builder()
+            TrustStoreLoaderOptions.builder()
                 .paths(List.of("src/test/resources/truststores/truststore1.jks"))
                 .type(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
                 .password("secret")
@@ -268,18 +270,18 @@ class TrustStoreLoaderManagerTest {
 
     @Test
     void should_add_private_ca_in_platform_truststore() throws Exception {
-        platformKeystoreLoader =
-            trustStoreLoaderFactory.create(
-                TrustStoreLoaderOptions
-                    .builder()
-                    .paths(List.of("src/test/resources/keystores/ca.p12"))
-                    .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-                    .password("ca-secret")
-                    .build()
-            );
+        platformKeystoreLoader = trustStoreLoaderFactory.create(
+            TrustStoreLoaderOptions.builder()
+                .paths(List.of("src/test/resources/keystores/ca.p12"))
+                .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+                .password("ca-secret")
+                .build()
+        );
         cut = new TrustStoreLoaderManager("fake", platformKeystoreLoader);
         cut.start();
 
-        assertThat(cut.aliases()).hasSize(1).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
+        assertThat(cut.aliases())
+            .hasSize(1)
+            .allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
     }
 }

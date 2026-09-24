@@ -41,7 +41,6 @@ public class TestSecretProvider implements SecretProvider {
                 .entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> new Secret(entry.getValue(), entry.getKey().contains("base64"))))
-        )
-            .handleWellKnownSecretKeys(secretURL.wellKnowKeyMap());
+        ).handleWellKnownSecretKeys(secretURL.wellKnowKeyMap());
     }
 }

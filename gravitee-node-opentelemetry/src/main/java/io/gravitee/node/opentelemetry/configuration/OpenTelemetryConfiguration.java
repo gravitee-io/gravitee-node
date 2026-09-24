@@ -145,8 +145,10 @@ public class OpenTelemetryConfiguration {
 
     public List<String> getKeystorePemCerts() {
         if (keystorePemCerts == null) {
-            keystorePemCerts =
-                getPropertyList("services.opentelemetry.exporter.ssl.keystore.certs", "services.tracing.otel.ssl.keystore.certs");
+            keystorePemCerts = getPropertyList(
+                "services.opentelemetry.exporter.ssl.keystore.certs",
+                "services.tracing.otel.ssl.keystore.certs"
+            );
         }
 
         return keystorePemCerts;
@@ -156,8 +158,10 @@ public class OpenTelemetryConfiguration {
 
     public List<String> getKeystorePemKeys() {
         if (keystorePemKeys == null) {
-            keystorePemKeys =
-                getPropertyList("services.opentelemetry.exporter.ssl.keystore.keys", "services.tracing.otel.ssl.keystore.keys");
+            keystorePemKeys = getPropertyList(
+                "services.opentelemetry.exporter.ssl.keystore.keys",
+                "services.tracing.otel.ssl.keystore.keys"
+            );
         }
 
         return keystorePemKeys;
@@ -209,8 +213,7 @@ public class OpenTelemetryConfiguration {
     }
 
     private List<String> toList(Map<String, Object> elements, String baseKey) {
-        return IntStream
-            .range(0, elements.size())
+        return IntStream.range(0, elements.size())
             .boxed()
             .map(i -> baseKey.concat("[%d]".formatted(i)))
             .map(k -> elements.get(k).toString())
@@ -220,20 +223,18 @@ public class OpenTelemetryConfiguration {
 
     private Map<String, String> getKeyValuePairs(String baseKey) {
         Map<String, String> properties = new HashMap<>();
-        getPropertiesStartingWith(baseKey)
-            .forEach(entry -> {
-                // keep what is after '].'
-                int end = entry.getKey().lastIndexOf("].");
-                if (end > 0) {
-                    properties.put(entry.getKey().substring(end + 2), entry.getValue().toString());
-                }
-            });
+        getPropertiesStartingWith(baseKey).forEach(entry -> {
+            // keep what is after '].'
+            int end = entry.getKey().lastIndexOf("].");
+            if (end > 0) {
+                properties.put(entry.getKey().substring(end + 2), entry.getValue().toString());
+            }
+        });
         return properties;
     }
 
     private Stream<Map.Entry<String, Object>> getPropertiesStartingWith(final String key) {
-        return EnvironmentUtils
-            .getPropertiesStartingWith(environment, key)
+        return EnvironmentUtils.getPropertiesStartingWith(environment, key)
             .entrySet()
             .stream()
             .filter(entry -> Objects.nonNull(entry.getValue()));

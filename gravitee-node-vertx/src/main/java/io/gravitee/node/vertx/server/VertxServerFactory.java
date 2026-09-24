@@ -54,10 +54,18 @@ public class VertxServerFactory<T extends VertxServer<?, C>, C extends VertxServ
         KeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry,
         CRLLoaderFactoryRegistry crlLoaderFactoryRegistry
     ) {
-        this.httpServerFactory =
-            new VertxHttpServerFactory(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry, crlLoaderFactoryRegistry);
-        this.tcpServerFactory =
-            new VertxTcpServerFactory(vertx, keyStoreLoaderFactoryRegistry, trustStoreLoaderFactoryRegistry, crlLoaderFactoryRegistry);
+        this.httpServerFactory = new VertxHttpServerFactory(
+            vertx,
+            keyStoreLoaderFactoryRegistry,
+            trustStoreLoaderFactoryRegistry,
+            crlLoaderFactoryRegistry
+        );
+        this.tcpServerFactory = new VertxTcpServerFactory(
+            vertx,
+            keyStoreLoaderFactoryRegistry,
+            trustStoreLoaderFactoryRegistry,
+            crlLoaderFactoryRegistry
+        );
     }
 
     @Override

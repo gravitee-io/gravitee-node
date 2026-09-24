@@ -84,8 +84,7 @@ public class RedisCache<V> implements Cache<String, V> {
 
     @Override
     public Flowable<String> rxKeys() {
-        return Single
-            .fromCompletionStage(this.redisAPI.keys(getRedisEntryKey("*")).toCompletionStage())
+        return Single.fromCompletionStage(this.redisAPI.keys(getRedisEntryKey("*")).toCompletionStage())
             .flatMap(this::throwExceptionOnError)
             .flattenStreamAsFlowable(Response::stream)
             .map(response -> response.toString(StandardCharsets.UTF_8).replace(getRedisEntryKey(""), ""))
@@ -124,8 +123,7 @@ public class RedisCache<V> implements Cache<String, V> {
 
     @Override
     public Single<Boolean> rxContainsKey(String key) {
-        return Single
-            .fromCompletionStage(this.redisAPI.exists(List.of(key + SEPARATOR)).toCompletionStage())
+        return Single.fromCompletionStage(this.redisAPI.exists(List.of(key + SEPARATOR)).toCompletionStage())
             .flatMap(this::throwExceptionOnError)
             .map(resp -> resp.toInteger() > 0)
             .onErrorResumeNext(ex -> Single.error(new CacheException("Key existence cannot be tested from cache", ex)));
@@ -138,8 +136,7 @@ public class RedisCache<V> implements Cache<String, V> {
 
     @Override
     public Maybe<V> rxGet(String key) {
-        return Maybe
-            .fromCompletionStage(this.redisAPI.get(getRedisEntryKey(key)).toCompletionStage())
+        return Maybe.fromCompletionStage(this.redisAPI.get(getRedisEntryKey(key)).toCompletionStage())
             .flatMapSingle(this::throwExceptionOnError)
             .map(response -> valueMapper.toValue(asString(response)))
             .onErrorResumeNext(ex -> Maybe.error(new CacheException("Keys cannot be listed from cache", ex)));
@@ -156,17 +153,15 @@ public class RedisCache<V> implements Cache<String, V> {
             .map(Optional::ofNullable)
             .switchIfEmpty(Maybe.just(Optional.empty()))
             .flatMap(oldValue ->
-                Maybe
-                    .fromCompletionStage(this.redisAPI.setnx(getRedisEntryKey(key), valueMapper.toCachedValue(value)).toCompletionStage())
+                Maybe.fromCompletionStage(this.redisAPI.setnx(getRedisEntryKey(key), valueMapper.toCachedValue(value)).toCompletionStage())
                     .map(this::throwExceptionOnError)
                     .mapOptional(r -> {
-                        this.cacheListeners.values()
-                            .forEach(listener ->
-                                oldValue.ifPresentOrElse(
-                                    old -> listener.onEntryUpdated(key, old, value),
-                                    () -> listener.onEntryAdded(key, value)
-                                )
-                            );
+                        this.cacheListeners.values().forEach(listener ->
+                            oldValue.ifPresentOrElse(
+                                old -> listener.onEntryUpdated(key, old, value),
+                                () -> listener.onEntryAdded(key, value)
+                            )
+                        );
                         return oldValue;
                     })
             )
@@ -184,22 +179,19 @@ public class RedisCache<V> implements Cache<String, V> {
             .map(Optional::ofNullable)
             .switchIfEmpty(Maybe.just(Optional.empty()))
             .flatMap(oldValue ->
-                Maybe
-                    .fromCompletionStage(
-                        this.redisAPI.set(
-                                List.of(getRedisEntryKey(key), valueMapper.toCachedValue(value), "PX", "" + ttlUnit.toMillis(ttl))
-                            )
-                            .toCompletionStage()
-                    )
+                Maybe.fromCompletionStage(
+                    this.redisAPI.set(
+                        List.of(getRedisEntryKey(key), valueMapper.toCachedValue(value), "PX", "" + ttlUnit.toMillis(ttl))
+                    ).toCompletionStage()
+                )
                     .map(this::throwExceptionOnError)
                     .mapOptional(r -> {
-                        this.cacheListeners.values()
-                            .forEach(listener ->
-                                oldValue.ifPresentOrElse(
-                                    old -> listener.onEntryUpdated(key, old, value),
-                                    () -> listener.onEntryAdded(key, value)
-                                )
-                            );
+                        this.cacheListeners.values().forEach(listener ->
+                            oldValue.ifPresentOrElse(
+                                old -> listener.onEntryUpdated(key, old, value),
+                                () -> listener.onEntryAdded(key, value)
+                            )
+                        );
                         return oldValue;
                     })
             )
@@ -213,9 +205,9 @@ public class RedisCache<V> implements Cache<String, V> {
 
     @Override
     public Completable rxPutAll(Map<? extends String, ? extends V> m) {
-        return Flowable
-            .fromIterable(m.entrySet())
-            .flatMapCompletable(entry -> this.rxPut(entry.getKey(), entry.getValue()).ignoreElement());
+        return Flowable.fromIterable(m.entrySet()).flatMapCompletable(entry ->
+            this.rxPut(entry.getKey(), entry.getValue()).ignoreElement()
+        );
     }
 
     @Override
@@ -257,8 +249,7 @@ public class RedisCache<V> implements Cache<String, V> {
     public Maybe<V> rxEvict(String key) {
         return this.rxGet(key)
             .flatMap(value ->
-                Maybe
-                    .fromCompletionStage(this.redisAPI.del(List.of(getRedisEntryKey(key))).toCompletionStage())
+                Maybe.fromCompletionStage(this.redisAPI.del(List.of(getRedisEntryKey(key))).toCompletionStage())
                     .map(this::throwExceptionOnError)
                     .map(ignore -> {
                         this.cacheListeners.values().forEach(listener -> listener.onEntryEvicted(key, value));

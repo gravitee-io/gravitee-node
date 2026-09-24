@@ -150,8 +150,9 @@ public class RefreshableX509KeyManagerDelegatorTest {
         AtomicInteger counter = new AtomicInteger(0);
 
         when(sslEngine.getHandshakeSession()).thenReturn(sslSession);
-        when(sslSession.getRequestedServerNames())
-            .thenAnswer(i -> Collections.singletonList(new SNIHostName("unknown" + counter.getAndIncrement() + ".com")));
+        when(sslSession.getRequestedServerNames()).thenAnswer(i ->
+            Collections.singletonList(new SNIHostName("unknown" + counter.getAndIncrement() + ".com"))
+        );
 
         // Populate the cache up to max size.
         int numToFake = MAX_SNI_DOMAINS - cut.getSniDomainAliases().size();
@@ -173,7 +174,9 @@ public class RefreshableX509KeyManagerDelegatorTest {
         cut = new RefreshableX509KeyManagerDelegator("http", false);
         cut.setDefaultAlias("foo");
         char[] password = PASSWORD.toCharArray();
-        assertThatCode(() -> cut.refresh(keyStore, password)).hasMessageContaining("foo").isInstanceOf(IllegalArgumentException.class);
+        assertThatCode(() -> cut.refresh(keyStore, password))
+            .hasMessageContaining("foo")
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     private KeyStore loadAllInOne() {

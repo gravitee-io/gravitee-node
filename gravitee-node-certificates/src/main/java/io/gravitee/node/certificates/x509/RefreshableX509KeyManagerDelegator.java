@@ -64,9 +64,9 @@ public class RefreshableX509KeyManagerDelegator extends X509ExtendedKeyManager i
             } else if (!keyStore.containsAlias(defaultAlias)) {
                 throw new IllegalArgumentException(
                     "Invalid configuration to load keystore, default alias [%s] not present in the keystore. target: %s".formatted(
-                            defaultAlias,
-                            target
-                        )
+                        defaultAlias,
+                        target
+                    )
                 );
             } else {
                 sniFallbackAlias = defaultAlias;

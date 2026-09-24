@@ -66,17 +66,14 @@ public class NodeEndpoint implements ManagementEndpoint {
 
         io.vertx.core.json.jackson.DatabindCodec codec = (io.vertx.core.json.jackson.DatabindCodec) io.vertx.core.json.Json.CODEC;
         DatabindCodec.prettyMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        response.write(
-            codec.toString(data, true),
-            event -> {
-                if (event.failed()) {
-                    response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
-                    log.error("Unable to transform data object to JSON", event.cause());
-                }
-
-                response.end();
+        response.write(codec.toString(data, true), event -> {
+            if (event.failed()) {
+                response.setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
+                log.error("Unable to transform data object to JSON", event.cause());
             }
-        );
+
+            response.end();
+        });
     }
 
     public static class NodeInfos {

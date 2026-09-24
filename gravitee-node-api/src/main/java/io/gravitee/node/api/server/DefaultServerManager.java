@@ -44,7 +44,12 @@ public class DefaultServerManager implements ServerManager {
 
     @Override
     public <T extends Server<?>> List<T> servers(Class<T> serverClazz) {
-        return servers.values().stream().filter(server -> serverClazz.isAssignableFrom(server.getClass())).map(serverClazz::cast).toList();
+        return servers
+            .values()
+            .stream()
+            .filter(server -> serverClazz.isAssignableFrom(server.getClass()))
+            .map(serverClazz::cast)
+            .toList();
     }
 
     @Override

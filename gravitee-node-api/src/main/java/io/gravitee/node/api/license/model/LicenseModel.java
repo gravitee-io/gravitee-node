@@ -33,10 +33,16 @@ public class LicenseModel {
     }
 
     public boolean isGraviteePack(String packName) {
-        return packs.keySet().stream().anyMatch(pack -> pack.equals(packName));
+        return packs
+            .keySet()
+            .stream()
+            .anyMatch(pack -> pack.equals(packName));
     }
 
     public boolean isGraviteeFeature(String featureName) {
-        return packs.values().stream().anyMatch(pack -> pack.getFeatures().contains(featureName));
+        return packs
+            .values()
+            .stream()
+            .anyMatch(pack -> pack.getFeatures().contains(featureName));
     }
 }

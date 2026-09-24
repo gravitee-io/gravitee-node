@@ -85,25 +85,21 @@ class KubernetesPemRegistryKeyStoreLoaderTest {
         metadata2.setUid("/namespaces/gio/secrets/my-tls-secret2");
         secret2.setMetadata(metadata2);
 
-        Mockito
-            .when(
-                kubernetesClient.get(
-                    ResourceQuery
-                        .configMaps("test")
-                        .labelSelector(LabelSelector.equals(GRAVITEEIO_PEM_REGISTRY_LABEL, CERTIFICATE_FORMAT_PEM_REGISTRY))
-                        .build()
-                )
+        Mockito.when(
+            kubernetesClient.get(
+                ResourceQuery.configMaps("test")
+                    .labelSelector(LabelSelector.equals(GRAVITEEIO_PEM_REGISTRY_LABEL, CERTIFICATE_FORMAT_PEM_REGISTRY))
+                    .build()
             )
-            .thenReturn(Maybe.just(new ConfigMapList("v1", List.of(pemRegistry), "v1", new ListMeta("1", 1L, "1234", "/selflink"))));
-        Mockito
-            .when(kubernetesClient.get(ResourceQuery.<Secret>from("/gio/secrets/my-tls-secret1").build()))
-            .thenReturn(Maybe.just(secret1));
-        Mockito
-            .when(kubernetesClient.get(ResourceQuery.<Secret>from("/gio/secrets/my-tls-secret2").build()))
-            .thenReturn(Maybe.just(secret2));
+        ).thenReturn(Maybe.just(new ConfigMapList("v1", List.of(pemRegistry), "v1", new ListMeta("1", 1L, "1234", "/selflink"))));
+        Mockito.when(kubernetesClient.get(ResourceQuery.<Secret>from("/gio/secrets/my-tls-secret1").build())).thenReturn(
+            Maybe.just(secret1)
+        );
+        Mockito.when(kubernetesClient.get(ResourceQuery.<Secret>from("/gio/secrets/my-tls-secret2").build())).thenReturn(
+            Maybe.just(secret2)
+        );
 
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM_REGISTRY)
             .password("secret")
             .watch(false)
@@ -122,8 +118,8 @@ class KubernetesPemRegistryKeyStoreLoaderTest {
     }
 
     private String readContent(String resource) throws IOException {
-        return java.util.Base64
-            .getEncoder()
-            .encodeToString(Files.readAllBytes(new File(this.getClass().getResource("/keystores/" + resource).getPath()).toPath()));
+        return java.util.Base64.getEncoder().encodeToString(
+            Files.readAllBytes(new File(this.getClass().getResource("/keystores/" + resource).getPath()).toPath())
+        );
     }
 }
