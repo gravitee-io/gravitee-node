@@ -1,3 +1,10 @@
+# [9.13.0](https://github.com/gravitee-io/gravitee-node/compare/9.12.1...9.13.0) (2026-09-25)
+
+
+### Features
+
+* am-policy-authzen license feature ([39d3a5d](https://github.com/gravitee-io/gravitee-node/commit/39d3a5d200bc04e5cf772bf757b93bf2026428f3))
+
 ## [9.12.1](https://github.com/gravitee-io/gravitee-node/compare/9.12.0...9.12.1) (2026-09-24)
 
 
