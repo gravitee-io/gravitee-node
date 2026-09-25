@@ -15,6 +15,7 @@ packs:
             - gravitee-risk-assessment # service: gravitee-risk-assessment
             - apim-bridge-gateway # repository: gravitee-apim-repository-bridge-http-server, repository: gravitee-apim-repository-bridge-http-client
             - am-extgrant-xaa # repository: gravitee-am-extensiongrant-xaa
+            - am-policy-authzen # policy: gravitee-am-policy-authzen
 
     enterprise-legacy-upgrade:
         features:
@@ -221,6 +222,7 @@ packs:
             - am-certificate-aws # certificate: gravitee-am-certificate-aws
             - am-certificate-aws-cloudhsm # certificate: gravitee-am-certificate-hsm-aws
             - am-extgrant-xaa # extension grant: gravitee-am-extensiongrant-xaa
+            - am-policy-authzen # policy: gravitee-am-policy-authzen
             - gravitee-en-secretprovider-aws # secret-provider: gravitee-secret-provider-aws
             - gravitee-en-secretprovider-azure-keyvault # secret-provider: gravitee-secret-provider-azure-keyvault
             - gravitee-en-secretprovider-vault # secret-provider: gravitee-secret-provider-hc-vault
