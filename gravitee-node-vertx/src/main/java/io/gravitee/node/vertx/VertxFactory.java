@@ -91,8 +91,7 @@ public class VertxFactory implements FactoryBean<Vertx> {
         if (metricsEnabled) {
             configureMetrics(options);
 
-            String[] ignoreLabels = Arrays
-                .stream(Label.values())
+            String[] ignoreLabels = Arrays.stream(Label.values())
                 .filter(label -> !metricsLabels.contains(label))
                 .map(Label::toString)
                 .toArray(String[]::new);
@@ -149,22 +148,19 @@ public class VertxFactory implements FactoryBean<Vertx> {
         Set<String> disabledMetricsDomains;
         // Default configuration
         if (metricsDomains.isEmpty()) {
-            disabledMetricsDomains =
-                new HashSet<>(
-                    Arrays.asList(
-                        MetricsDomain.DATAGRAM_SOCKET.toCategory(),
-                        MetricsDomain.NAMED_POOLS.toCategory(),
-                        MetricsDomain.VERTICLES.toCategory(),
-                        MetricsDomain.EVENT_BUS.toCategory()
-                    )
-                );
+            disabledMetricsDomains = new HashSet<>(
+                Arrays.asList(
+                    MetricsDomain.DATAGRAM_SOCKET.toCategory(),
+                    MetricsDomain.NAMED_POOLS.toCategory(),
+                    MetricsDomain.VERTICLES.toCategory(),
+                    MetricsDomain.EVENT_BUS.toCategory()
+                )
+            );
         } else {
-            disabledMetricsDomains =
-                Arrays
-                    .stream(MetricsDomain.values())
-                    .filter(metricsDomain -> !metricsDomains.contains(metricsDomain))
-                    .map(MetricsDomain::toCategory)
-                    .collect(Collectors.toSet());
+            disabledMetricsDomains = Arrays.stream(MetricsDomain.values())
+                .filter(metricsDomain -> !metricsDomains.contains(metricsDomain))
+                .map(MetricsDomain::toCategory)
+                .collect(Collectors.toSet());
         }
 
         MicrometerMetricsOptions micrometerMetricsOptions = new MicrometerMetricsOptions();
@@ -216,8 +212,7 @@ public class VertxFactory implements FactoryBean<Vertx> {
             final Set<Label> includedCategoryLabels = labelsByCategory.getValue();
 
             // Get the domains where these labels are not included (ie: domain on which to explicitly exclude this label).
-            Arrays
-                .stream(MetricsDomain.values())
+            Arrays.stream(MetricsDomain.values())
                 .map(MetricsDomain::toCategory)
                 .filter(otherCategory -> !otherCategory.equalsIgnoreCase(includedCategory))
                 .forEach(otherCategory -> {
@@ -301,13 +296,16 @@ public class VertxFactory implements FactoryBean<Vertx> {
                     new NettyAllocatorMetrics(UnpooledByteBufAllocator.DEFAULT).bindTo(compositeMeterRegistry);
                     new NettyAllocatorMetrics(PooledByteBufAllocator.DEFAULT).bindTo(compositeMeterRegistry);
 
-                    new NettyAllocatorMetrics((ByteBufAllocatorMetricProvider) VertxByteBufAllocator.POOLED_ALLOCATOR)
-                        .bindTo(compositeMeterRegistry);
-                    new NettyAllocatorMetrics((ByteBufAllocatorMetricProvider) VertxByteBufAllocator.DEFAULT)
-                        .bindTo(compositeMeterRegistry);
+                    new NettyAllocatorMetrics((ByteBufAllocatorMetricProvider) VertxByteBufAllocator.POOLED_ALLOCATOR).bindTo(
+                        compositeMeterRegistry
+                    );
+                    new NettyAllocatorMetrics((ByteBufAllocatorMetricProvider) VertxByteBufAllocator.DEFAULT).bindTo(
+                        compositeMeterRegistry
+                    );
                 }
-                case NETTY_EVENT_EXECUTOR -> new NettyEventExecutorMetrics(((VertxInternal) instance).nettyEventLoopGroup())
-                    .bindTo(compositeMeterRegistry);
+                case NETTY_EVENT_EXECUTOR -> new NettyEventExecutorMetrics(((VertxInternal) instance).nettyEventLoopGroup()).bindTo(
+                    compositeMeterRegistry
+                );
             }
         }
     }

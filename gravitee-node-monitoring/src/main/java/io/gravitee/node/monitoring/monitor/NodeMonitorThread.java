@@ -51,8 +51,7 @@ public class NodeMonitorThread implements Runnable {
     @Override
     public void run() {
         try {
-            Monitor monitor = Monitor
-                .on(node.id())
+            Monitor monitor = Monitor.on(node.id())
                 .at(System.currentTimeMillis())
                 .os(OsProbe.getInstance().osInfo())
                 .jvm(JvmProbe.getInstance().jvmInfo())

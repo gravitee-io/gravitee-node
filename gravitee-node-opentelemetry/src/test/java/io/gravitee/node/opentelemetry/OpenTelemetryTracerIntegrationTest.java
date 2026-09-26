@@ -109,8 +109,7 @@ public class OpenTelemetryTracerIntegrationTest {
 
     @Test
     void should_connect_to_jaeger_over_grpc(Vertx vertx) throws Exception {
-        var openTelemetryConfiguration = OpenTelemetryConfiguration
-            .builder()
+        var openTelemetryConfiguration = OpenTelemetryConfiguration.builder()
             .endpoint("http://localhost:" + container.getCollectorGrpcPort())
             .tracesEnabled(true)
             .protocol(Protocol.GRPC.value())
@@ -129,14 +128,10 @@ public class OpenTelemetryTracerIntegrationTest {
         );
         tracer.start();
 
-        emitSpan(
-            vertx,
-            tracer,
-            ctx -> {
-                var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
-                tracer.end(ctx, span);
-            }
-        );
+        emitSpan(vertx, tracer, ctx -> {
+            var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
+            tracer.end(ctx, span);
+        });
 
         await()
             .atMost(10, SECONDS)
@@ -157,8 +152,7 @@ public class OpenTelemetryTracerIntegrationTest {
 
     @Test
     void should_report_traces_with_additional_resource_attributes(Vertx vertx) throws Exception {
-        var openTelemetryConfiguration = OpenTelemetryConfiguration
-            .builder()
+        var openTelemetryConfiguration = OpenTelemetryConfiguration.builder()
             .endpoint("http://localhost:" + container.getCollectorGrpcPort())
             .tracesEnabled(true)
             .protocol(Protocol.GRPC.value())
@@ -178,14 +172,10 @@ public class OpenTelemetryTracerIntegrationTest {
         );
         tracer.start();
 
-        emitSpan(
-            vertx,
-            tracer,
-            ctx -> {
-                var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
-                tracer.end(ctx, span);
-            }
-        );
+        emitSpan(vertx, tracer, ctx -> {
+            var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
+            tracer.end(ctx, span);
+        });
 
         await()
             .atMost(10, SECONDS)
@@ -206,8 +196,7 @@ public class OpenTelemetryTracerIntegrationTest {
 
     @Test
     void should_report_traces_with_error_and_events(Vertx vertx) throws Exception {
-        var openTelemetryConfiguration = OpenTelemetryConfiguration
-            .builder()
+        var openTelemetryConfiguration = OpenTelemetryConfiguration.builder()
             .endpoint("http://localhost:" + container.getCollectorGrpcPort())
             .tracesEnabled(true)
             .protocol(Protocol.GRPC.value())
@@ -226,16 +215,12 @@ public class OpenTelemetryTracerIntegrationTest {
         );
         tracer.start();
 
-        emitSpan(
-            vertx,
-            tracer,
-            ctx -> {
-                Span span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
-                span.addEvent("my-event", Map.of("event.attribute", "event.value"));
-                span.inError();
-                tracer.end(ctx, span);
-            }
-        );
+        emitSpan(vertx, tracer, ctx -> {
+            Span span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
+            span.addEvent("my-event", Map.of("event.attribute", "event.value"));
+            span.inError();
+            tracer.end(ctx, span);
+        });
 
         await()
             .atMost(10, SECONDS)
@@ -256,8 +241,7 @@ public class OpenTelemetryTracerIntegrationTest {
 
     @Test
     void should_redact_configured_span_attributes_before_export(Vertx vertx) throws Exception {
-        var openTelemetryConfiguration = OpenTelemetryConfiguration
-            .builder()
+        var openTelemetryConfiguration = OpenTelemetryConfiguration.builder()
             .endpoint("http://localhost:" + container.getCollectorGrpcPort())
             .tracesEnabled(true)
             .protocol(Protocol.GRPC.value())
@@ -278,17 +262,10 @@ public class OpenTelemetryTracerIntegrationTest {
         );
         tracer.start();
 
-        emitSpan(
-            vertx,
-            tracer,
-            ctx -> {
-                var span = tracer.startSpanFrom(
-                    ctx,
-                    new InternalRequest("my-span", Map.of("custom", "secret-value", "http.method", "GET"))
-                );
-                tracer.end(ctx, span);
-            }
-        );
+        emitSpan(vertx, tracer, ctx -> {
+            var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "secret-value", "http.method", "GET")));
+            tracer.end(ctx, span);
+        });
 
         await()
             .atMost(10, SECONDS)
@@ -312,9 +289,10 @@ public class OpenTelemetryTracerIntegrationTest {
                 assertThat(
                     tags
                         .stream()
-                        .anyMatch(t ->
-                            ((JsonObject) t).getString("key").equals("custom") &&
-                            ((JsonObject) t).getString("value").equals(RedactionRule.DEFAULT_REPLACEMENT)
+                        .anyMatch(
+                            t ->
+                                ((JsonObject) t).getString("key").equals("custom") &&
+                                ((JsonObject) t).getString("value").equals(RedactionRule.DEFAULT_REPLACEMENT)
                         )
                 )
                     .as("Attribute 'custom' should be redacted to '%s'", RedactionRule.DEFAULT_REPLACEMENT)
@@ -323,8 +301,9 @@ public class OpenTelemetryTracerIntegrationTest {
                 assertThat(
                     tags
                         .stream()
-                        .anyMatch(t ->
-                            ((JsonObject) t).getString("key").equals("http.method") && ((JsonObject) t).getString("value").equals("GET")
+                        .anyMatch(
+                            t ->
+                                ((JsonObject) t).getString("key").equals("http.method") && ((JsonObject) t).getString("value").equals("GET")
                         )
                 )
                     .as("Non-matching attribute 'http.method' should not be redacted")
@@ -373,8 +352,7 @@ public class OpenTelemetryTracerIntegrationTest {
             environment.withProperty("services.tracing.otel.ssl.keystore.keys[0]", keyStore.getString("key"));
         }
 
-        var openTelemetryConfiguration = OpenTelemetryConfiguration
-            .builder()
+        var openTelemetryConfiguration = OpenTelemetryConfiguration.builder()
             .environment(environment)
             .keystoreType(keyStore.getString("type"))
             .keystorePath(keyStore.getString("path"))
@@ -401,14 +379,10 @@ public class OpenTelemetryTracerIntegrationTest {
         );
         tracer.start();
 
-        emitSpan(
-            vertx,
-            tracer,
-            ctx -> {
-                var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
-                tracer.end(ctx, span);
-            }
-        );
+        emitSpan(vertx, tracer, ctx -> {
+            var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
+            tracer.end(ctx, span);
+        });
 
         await()
             .atMost(10, SECONDS)
@@ -429,8 +403,7 @@ public class OpenTelemetryTracerIntegrationTest {
 
     @Test
     void should_connect_to_jaeger_over_http(Vertx vertx) throws Exception {
-        var openTelemetryConfiguration = OpenTelemetryConfiguration
-            .builder()
+        var openTelemetryConfiguration = OpenTelemetryConfiguration.builder()
             .endpoint("http://localhost:" + container.getCollectorHttpPort())
             .tracesEnabled(true)
             .protocol(Protocol.HTTP_PROTOBUF.value())
@@ -448,14 +421,10 @@ public class OpenTelemetryTracerIntegrationTest {
         );
         tracer.start();
 
-        emitSpan(
-            vertx,
-            tracer,
-            ctx -> {
-                var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
-                tracer.end(ctx, span);
-            }
-        );
+        emitSpan(vertx, tracer, ctx -> {
+            var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
+            tracer.end(ctx, span);
+        });
 
         await()
             .atMost(10, SECONDS)
@@ -486,8 +455,7 @@ public class OpenTelemetryTracerIntegrationTest {
             environment.withProperty("services.tracing.otel.ssl.keystore.keys[0]", keyStore.getString("key"));
         }
 
-        var openTelemetryConfiguration = OpenTelemetryConfiguration
-            .builder()
+        var openTelemetryConfiguration = OpenTelemetryConfiguration.builder()
             .environment(environment)
             .keystoreType(keyStore.getString("type"))
             .keystorePath(keyStore.getString("path"))
@@ -513,14 +481,10 @@ public class OpenTelemetryTracerIntegrationTest {
         );
         tracer.start();
 
-        emitSpan(
-            vertx,
-            tracer,
-            ctx -> {
-                var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
-                tracer.end(ctx, span);
-            }
-        );
+        emitSpan(vertx, tracer, ctx -> {
+            var span = tracer.startSpanFrom(ctx, new InternalRequest("my-span", Map.of("custom", "value")));
+            tracer.end(ctx, span);
+        });
 
         await()
             .atMost(10, SECONDS)
@@ -707,16 +671,14 @@ public class OpenTelemetryTracerIntegrationTest {
             tags
                 .stream()
                 .anyMatch(t -> ((JsonObject) t).getString("key").equals("custom") && ((JsonObject) t).getString("value").equals("value"))
-        )
-            .isTrue();
+        ).isTrue();
         assertThat(
             tags
                 .stream()
-                .anyMatch(t ->
-                    ((JsonObject) t).getString("key").equals("span.kind") && ((JsonObject) t).getString("value").equals("internal")
+                .anyMatch(
+                    t -> ((JsonObject) t).getString("key").equals("span.kind") && ((JsonObject) t).getString("value").equals("internal")
                 )
-        )
-            .isTrue();
+        ).isTrue();
 
         if (withAdditionalAttributes) {
             var process = trace.getJsonObject("processes").getJsonObject(span.getString("processID"));

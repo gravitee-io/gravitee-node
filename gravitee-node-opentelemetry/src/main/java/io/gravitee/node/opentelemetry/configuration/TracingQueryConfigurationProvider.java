@@ -66,7 +66,7 @@ public final class TracingQueryConfigurationProvider {
 
     private static Map<String, String> readHeaders(final Environment environment, final String prefix) {
         Map<String, String> headers = new HashMap<>();
-        for (int index = 0;; index++) {
+        for (int index = 0; ; index++) {
             String name = environment.getProperty(prefix + ".headers[" + index + "].name", String.class);
             if (name == null) {
                 break;
@@ -78,8 +78,7 @@ public final class TracingQueryConfigurationProvider {
     }
 
     private static SslOptions readSslOptions(final Environment environment, final String prefix) {
-        return SslOptions
-            .builder()
+        return SslOptions.builder()
             .trustAll(environment.getProperty(prefix + ".ssl.trustAll", Boolean.class, false))
             .hostnameVerifier(environment.getProperty(prefix + ".ssl.verifyHost", Boolean.class, true))
             .build();
@@ -89,8 +88,7 @@ public final class TracingQueryConfigurationProvider {
         if (!environment.getProperty(prefix + ".proxy.enabled", Boolean.class, false)) {
             return null;
         }
-        return VertxHttpProxyOptions
-            .builder()
+        return VertxHttpProxyOptions.builder()
             .enabled(true)
             .useSystemProxy(environment.getProperty(prefix + ".proxy.useSystemProxy", Boolean.class, false))
             .host(environment.getProperty(prefix + ".proxy.host", String.class))
@@ -102,8 +100,7 @@ public final class TracingQueryConfigurationProvider {
     }
 
     private static VertxHttpClientOptions readHttpOptions(final Environment environment, final String prefix) {
-        return VertxHttpClientOptions
-            .builder()
+        return VertxHttpClientOptions.builder()
             .connectTimeout(environment.getProperty(prefix + ".http.connectTimeout", Long.class, 5000L))
             .idleTimeout(environment.getProperty(prefix + ".http.idleTimeout", Long.class, 60000L))
             .build();

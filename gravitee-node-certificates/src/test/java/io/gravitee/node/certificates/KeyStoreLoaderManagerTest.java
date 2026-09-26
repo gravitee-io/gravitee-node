@@ -48,15 +48,13 @@ class KeyStoreLoaderManagerTest {
     @BeforeEach
     void begin() {
         keyStoreLoaderFactory = new FileKeyStoreLoaderFactory();
-        platformKeystoreLoader =
-            keyStoreLoaderFactory.create(
-                KeyStoreLoaderOptions
-                    .builder()
-                    .paths(List.of("src/test/resources/keystores/all-in-one.p12"))
-                    .password("secret")
-                    .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-                    .build()
-            );
+        platformKeystoreLoader = keyStoreLoaderFactory.create(
+            KeyStoreLoaderOptions.builder()
+                .paths(List.of("src/test/resources/keystores/all-in-one.p12"))
+                .password("secret")
+                .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+                .build()
+        );
         underTest = new KeyStoreLoaderManager("fake", platformKeystoreLoader, true, null);
     }
 
@@ -70,7 +68,9 @@ class KeyStoreLoaderManagerTest {
         underTest.start();
         assertThat(underTest.getKeyManager()).isNotNull();
         assertThat(underTest.loaders()).containsEntry(platformKeystoreLoader.id(), platformKeystoreLoader);
-        assertThat(underTest.aliases()).hasSize(4).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
+        assertThat(underTest.aliases())
+            .hasSize(4)
+            .allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
     }
 
     @Test
@@ -78,8 +78,7 @@ class KeyStoreLoaderManagerTest {
         underTest.start();
 
         AbstractKeyStoreLoader keyStoreLoader = (AbstractKeyStoreLoader) keyStoreLoaderFactory.create(
-            KeyStoreLoaderOptions
-                .builder()
+            KeyStoreLoaderOptions.builder()
                 .paths(List.of("src/test/resources/keystores/wildcard.jks"))
                 .password("secret")
                 .watch(false)
@@ -88,7 +87,9 @@ class KeyStoreLoaderManagerTest {
         );
 
         underTest.registerLoader(keyStoreLoader);
-        assertThat(underTest.aliases()).hasSize(5).anyMatch(alias -> alias.startsWith(keyStoreLoader.id()));
+        assertThat(underTest.aliases())
+            .hasSize(5)
+            .anyMatch(alias -> alias.startsWith(keyStoreLoader.id()));
 
         String loaderId = keyStoreLoader.id();
         keyStoreLoader.onEvent(new KeyStoreEvent.UnloadEvent(loaderId));
@@ -99,11 +100,12 @@ class KeyStoreLoaderManagerTest {
     @Test
     void should_update_platform_keystore() throws Exception {
         underTest.start();
-        assertThat(underTest.aliases()).hasSize(4).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
+        assertThat(underTest.aliases())
+            .hasSize(4)
+            .allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
 
         AbstractKeyStoreLoader keyStoreLoader = (AbstractKeyStoreLoader) keyStoreLoaderFactory.create(
-            KeyStoreLoaderOptions
-                .builder()
+            KeyStoreLoaderOptions.builder()
                 .paths(List.of("src/test/resources/keystores/wildcard.jks"))
                 .password("secret")
                 .watch(false)
@@ -130,11 +132,12 @@ class KeyStoreLoaderManagerTest {
     @Test
     void should_update_platform_keystore_with_mix_of_private_keys_and_trusted_entries() throws Exception {
         underTest.start();
-        assertThat(underTest.aliases()).hasSize(4).allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
+        assertThat(underTest.aliases())
+            .hasSize(4)
+            .allMatch(alias -> alias.startsWith(platformKeystoreLoader.id()));
 
         AbstractKeyStoreLoader keyStoreLoader = (AbstractKeyStoreLoader) keyStoreLoaderFactory.create(
-            KeyStoreLoaderOptions
-                .builder()
+            KeyStoreLoaderOptions.builder()
                 .paths(List.of("src/test/resources/keystores/wildcard.jks"))
                 .password("secret")
                 .watch(false)
@@ -161,15 +164,13 @@ class KeyStoreLoaderManagerTest {
     @Test
     void should_fallback_to_default_alias_when_no_sni_and_find_entry_for_it()
         throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
-        platformKeystoreLoader =
-            keyStoreLoaderFactory.create(
-                KeyStoreLoaderOptions
-                    .builder()
-                    .paths(List.of("src/test/resources/keystores/all-in-one.p12"))
-                    .password("secret")
-                    .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
-                    .build()
-            );
+        platformKeystoreLoader = keyStoreLoaderFactory.create(
+            KeyStoreLoaderOptions.builder()
+                .paths(List.of("src/test/resources/keystores/all-in-one.p12"))
+                .password("secret")
+                .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
+                .build()
+        );
         underTest = new KeyStoreLoaderManager("fake", platformKeystoreLoader, false, "localhost2");
         underTest.start();
         assertThat(underTest.aliases()).hasSize(4);

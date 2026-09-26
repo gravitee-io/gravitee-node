@@ -32,8 +32,7 @@ public record GpuInfo(long timestamp, List<Device> devices) implements Serializa
         Mem mem,
         short temperature,
         double powerWatts
-    )
-        implements Serializable {
+    ) implements Serializable {
         /** Convenience constructor for providers that only report device identity. */
         public Device(int index, String name, Mem mem) {
             this(index, name, null, null, (short) -1, (short) -1, mem, (short) -1, -1d);

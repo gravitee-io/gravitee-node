@@ -115,7 +115,11 @@ public class NotifierPluginFactoryImpl implements NotifierPluginFactory {
                     injectables.put(notifierConfiguration.getClass(), notifierConfiguration);
 
                     Class<?> type = field.getType();
-                    Optional<?> value = injectables.values().stream().filter(o -> type.isAssignableFrom(o.getClass())).findFirst();
+                    Optional<?> value = injectables
+                        .values()
+                        .stream()
+                        .filter(o -> type.isAssignableFrom(o.getClass()))
+                        .findFirst();
 
                     if (value.isPresent()) {
                         log.debug("Inject value into field {} [{}] in {}", field.getName(), type.getName(), notifierClass);
@@ -192,7 +196,9 @@ public class NotifierPluginFactoryImpl implements NotifierPluginFactory {
         return member != null
             ? member.getClass() == Method.class
                 ? ((Method) member).getParameterTypes()
-                : member.getClass() == Constructor.class ? ((Constructor) member).getParameterTypes() : null
+                : member.getClass() == Constructor.class
+                    ? ((Constructor) member).getParameterTypes()
+                    : null
             : null;
     }
 }

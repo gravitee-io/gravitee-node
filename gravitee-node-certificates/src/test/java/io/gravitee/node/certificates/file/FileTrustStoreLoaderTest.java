@@ -57,16 +57,9 @@ class FileTrustStoreLoaderTest {
 
     @Test
     void should_load_jks_truststore() throws KeyStoreException {
-        cut =
-            new FileTrustStoreLoader(
-                TrustStoreLoaderOptions
-                    .builder()
-                    .type("JKS")
-                    .password("secret")
-                    .watch(false)
-                    .paths(List.of(getPath("truststore1.jks")))
-                    .build()
-            );
+        cut = new FileTrustStoreLoader(
+            TrustStoreLoaderOptions.builder().type("JKS").password("secret").watch(false).paths(List.of(getPath("truststore1.jks"))).build()
+        );
         List<KeyStoreEvent> events = new ArrayList<>();
         cut.setEventHandler(events::add);
         cut.start();
@@ -85,16 +78,14 @@ class FileTrustStoreLoaderTest {
     void should_load_bcfks_truststore() throws KeyStoreException {
         final boolean added = Security.addProvider(new BouncyCastleProvider()) >= 0;
         try {
-            cut =
-                new FileTrustStoreLoader(
-                    TrustStoreLoaderOptions
-                        .builder()
-                        .type(KeyStoreLoader.CERTIFICATE_FORMAT_BCFKS)
-                        .password("secret")
-                        .watch(false)
-                        .paths(List.of(getPath("truststore2-3.bcfks")))
-                        .build()
-                );
+            cut = new FileTrustStoreLoader(
+                TrustStoreLoaderOptions.builder()
+                    .type(KeyStoreLoader.CERTIFICATE_FORMAT_BCFKS)
+                    .password("secret")
+                    .watch(false)
+                    .paths(List.of(getPath("truststore2-3.bcfks")))
+                    .build()
+            );
             List<KeyStoreEvent> events = new ArrayList<>();
             cut.setEventHandler(events::add);
             cut.start();
@@ -111,16 +102,14 @@ class FileTrustStoreLoaderTest {
 
     @Test
     void should_load_p12_truststore() throws KeyStoreException {
-        cut =
-            new FileTrustStoreLoader(
-                TrustStoreLoaderOptions
-                    .builder()
-                    .type("PKCS12")
-                    .password("secret")
-                    .watch(false)
-                    .paths(List.of(getPath("truststore2-3.p12")))
-                    .build()
-            );
+        cut = new FileTrustStoreLoader(
+            TrustStoreLoaderOptions.builder()
+                .type("PKCS12")
+                .password("secret")
+                .watch(false)
+                .paths(List.of(getPath("truststore2-3.p12")))
+                .build()
+        );
         List<KeyStoreEvent> events = new ArrayList<>();
         cut.setEventHandler(events::add);
         cut.start();
@@ -132,16 +121,14 @@ class FileTrustStoreLoaderTest {
 
     @Test
     void should_load_pem_truststore() throws KeyStoreException {
-        cut =
-            new FileTrustStoreLoader(
-                TrustStoreLoaderOptions
-                    .builder()
-                    .type("PEM")
-                    .password("secret")
-                    .watch(false)
-                    .paths(List.of(getPath("client1.crt"), getPath("client2.crt")))
-                    .build()
-            );
+        cut = new FileTrustStoreLoader(
+            TrustStoreLoaderOptions.builder()
+                .type("PEM")
+                .password("secret")
+                .watch(false)
+                .paths(List.of(getPath("client1.crt"), getPath("client2.crt")))
+                .build()
+        );
         List<KeyStoreEvent> events = new ArrayList<>();
         cut.setEventHandler(events::add);
         cut.start();
@@ -153,16 +140,14 @@ class FileTrustStoreLoaderTest {
 
     @Test
     void should_load_several_truststores() throws KeyStoreException {
-        cut =
-            new FileTrustStoreLoader(
-                TrustStoreLoaderOptions
-                    .builder()
-                    .type("JKS")
-                    .password("secret")
-                    .watch(false)
-                    .paths(List.of(getPath("truststore1.jks"), getPath("truststore2-3.jks")))
-                    .build()
-            );
+        cut = new FileTrustStoreLoader(
+            TrustStoreLoaderOptions.builder()
+                .type("JKS")
+                .password("secret")
+                .watch(false)
+                .paths(List.of(getPath("truststore1.jks"), getPath("truststore2-3.jks")))
+                .build()
+        );
         List<KeyStoreEvent> events = new ArrayList<>();
         cut.setEventHandler(events::add);
         cut.start();
@@ -178,10 +163,9 @@ class FileTrustStoreLoaderTest {
         Path target = tempDirectory.resolve("truststore1.jks");
         Files.copy(Path.of(getPath("truststore1.jks")), target);
 
-        cut =
-            new FileTrustStoreLoader(
-                TrustStoreLoaderOptions.builder().type("JKS").password("secret").watch(true).paths(List.of(target.toString())).build()
-            );
+        cut = new FileTrustStoreLoader(
+            TrustStoreLoaderOptions.builder().type("JKS").password("secret").watch(true).paths(List.of(target.toString())).build()
+        );
         List<KeyStoreEvent> events = new ArrayList<>();
         cut.setEventHandler(events::add);
         cut.start();
@@ -206,24 +190,21 @@ class FileTrustStoreLoaderTest {
 
     @Test
     void should_fail_load_truststore_with_wrong_password() {
-        cut =
-            new FileTrustStoreLoader(
-                TrustStoreLoaderOptions
-                    .builder()
-                    .type("JKS")
-                    .password("this ain't the right password")
-                    .watch(false)
-                    .paths(List.of(getPath("truststore1.jks")))
-                    .build()
-            );
+        cut = new FileTrustStoreLoader(
+            TrustStoreLoaderOptions.builder()
+                .type("JKS")
+                .password("this ain't the right password")
+                .watch(false)
+                .paths(List.of(getPath("truststore1.jks")))
+                .build()
+        );
         cut.setEventHandler(ignore -> {});
         assertThatCode(() -> cut.start()).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void should_not_start_on_missing_file() {
-        final TrustStoreLoaderOptions options = TrustStoreLoaderOptions
-            .builder()
+        final TrustStoreLoaderOptions options = TrustStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .paths(List.of("/path-to-unknown.p12"))
             .password("secret")
@@ -239,8 +220,7 @@ class FileTrustStoreLoaderTest {
         final File tempKeyStore = File.createTempFile("gio", ".p12");
         FileCopyUtils.copy(new byte[0], tempKeyStore);
 
-        final TrustStoreLoaderOptions options = TrustStoreLoaderOptions
-            .builder()
+        final TrustStoreLoaderOptions options = TrustStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .paths(List.of(tempKeyStore.getAbsolutePath()))
             .password("secret")

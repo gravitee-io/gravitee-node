@@ -41,8 +41,7 @@ public final class TempoTracingQueryServiceFactory {
         final Configuration nodeConfiguration,
         final TracingQueryConfiguration configuration
     ) {
-        HttpClient httpClient = VertxHttpClientFactory
-            .builder()
+        HttpClient httpClient = VertxHttpClientFactory.builder()
             .vertx(vertx)
             .nodeConfiguration(nodeConfiguration)
             .defaultTarget(configuration.getUrl())

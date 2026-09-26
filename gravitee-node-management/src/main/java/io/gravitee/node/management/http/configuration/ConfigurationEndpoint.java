@@ -87,24 +87,21 @@ public class ConfigurationEndpoint implements ManagementEndpoint {
             )
             .collect(Collectors.toMap(entry -> entry.getKey().substring(9), Map.Entry::getValue));
 
-        TreeMap<String, Object> nodeProperties = Arrays
-            .stream(nodeConfiguration.getPropertyNames())
-            .collect(
-                Collectors.toMap(
-                    s -> s,
-                    (Function<String, String>) s -> environment.getProperty(s),
-                    (v1, v2) -> {
-                        throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));
-                    },
-                    TreeMap::new
-                )
-            );
+        TreeMap<String, Object> nodeProperties = Arrays.stream(nodeConfiguration.getPropertyNames()).collect(
+            Collectors.toMap(
+                s -> s,
+                (Function<String, String>) s -> environment.getProperty(s),
+                (v1, v2) -> {
+                    throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));
+                },
+                TreeMap::new
+            )
+        );
 
         nodeProperties.putAll(prefixlessSystemEnvironment);
 
         try {
-            var body = DatabindCodec
-                .mapper()
+            var body = DatabindCodec.mapper()
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .writerWithDefaultPrettyPrinter()
                 .writeValueAsString(nodeProperties);

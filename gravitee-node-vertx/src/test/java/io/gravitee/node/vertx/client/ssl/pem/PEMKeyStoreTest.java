@@ -37,8 +37,7 @@ class PEMKeyStoreTest {
 
     @Test
     void shouldPreferMultiCertListOverSingleCertFields() {
-        var keyStore = PEMKeyStore
-            .builder()
+        var keyStore = PEMKeyStore.builder()
             .certPath("ignored.pem")
             .keyPath("ignored-key.pem")
             .certPaths(List.of("cert1.pem"))

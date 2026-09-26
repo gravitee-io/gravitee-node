@@ -34,11 +34,10 @@ final class CompiledRedactionRule {
 
     CompiledRedactionRule(RedactionRule rule, String configDefaultReplacement) {
         this.maskingStrategy = rule.maskingStrategy();
-        this.effectiveFullMaskReplacement =
-            switch (rule.maskingStrategy()) {
-                case FullMaskingStrategy full -> (full == MaskingStrategy.DEFAULT) ? configDefaultReplacement : full.replacement();
-                case PartialMaskingStrategy partial -> null;
-            };
+        this.effectiveFullMaskReplacement = switch (rule.maskingStrategy()) {
+            case FullMaskingStrategy full -> (full == MaskingStrategy.DEFAULT) ? configDefaultReplacement : full.replacement();
+            case PartialMaskingStrategy partial -> null;
+        };
 
         String raw = rule.attributeNamePattern();
         if (isShortName(raw)) {
@@ -60,11 +59,11 @@ final class CompiledRedactionRule {
             } catch (PatternSyntaxException e) {
                 throw new IllegalArgumentException(
                     "Invalid value pattern '" +
-                    rule.valuePattern() +
-                    "' in RedactionRule for key '" +
-                    rule.attributeNamePattern() +
-                    "': " +
-                    e.getMessage(),
+                        rule.valuePattern() +
+                        "' in RedactionRule for key '" +
+                        rule.attributeNamePattern() +
+                        "': " +
+                        e.getMessage(),
                     e
                 );
             }

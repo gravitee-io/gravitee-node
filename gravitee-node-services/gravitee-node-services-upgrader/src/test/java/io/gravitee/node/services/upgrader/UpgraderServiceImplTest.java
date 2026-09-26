@@ -114,11 +114,10 @@ public class UpgraderServiceImplTest {
         when(applicationContext.getBeansOfType(Upgrader.class)).thenReturn(beans);
 
         when(repository.findById(anyString())).thenReturn(Maybe.empty());
-        when(repository.create(any(UpgradeRecord.class)))
-            .thenAnswer(invocation -> {
-                UpgradeRecord upgradeRecord = invocation.getArgument(0);
-                return Single.just(new UpgradeRecord(upgradeRecord.getId(), fixedDate));
-            });
+        when(repository.create(any(UpgradeRecord.class))).thenAnswer(invocation -> {
+            UpgradeRecord upgradeRecord = invocation.getArgument(0);
+            return Single.just(new UpgradeRecord(upgradeRecord.getId(), fixedDate));
+        });
 
         try {
             cut.start();

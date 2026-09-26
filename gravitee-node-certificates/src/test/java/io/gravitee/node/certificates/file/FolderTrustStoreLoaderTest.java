@@ -59,8 +59,7 @@ class FolderTrustStoreLoaderTest {
 
     @Test
     void should_load_pems() throws KeyStoreException {
-        TrustStoreLoaderOptions options = TrustStoreLoaderOptions
-            .builder()
+        TrustStoreLoaderOptions options = TrustStoreLoaderOptions.builder()
             .paths(List.of(getPath("pems")))
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM_FOLDER)
             .watch(false)
@@ -96,18 +95,15 @@ class FolderTrustStoreLoaderTest {
     @Test
     void should_watch_file_and_detect_changes() throws IOException, KeyStoreException {
         Path tempDirectory = Files.createTempDirectory("gio");
-        Files
-            .list(Path.of(getPath("pems")))
-            .forEach(file -> {
-                try {
-                    Files.copy(file, tempDirectory.resolve(file.getFileName()));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+        Files.list(Path.of(getPath("pems"))).forEach(file -> {
+            try {
+                Files.copy(file, tempDirectory.resolve(file.getFileName()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
-        TrustStoreLoaderOptions options = TrustStoreLoaderOptions
-            .builder()
+        TrustStoreLoaderOptions options = TrustStoreLoaderOptions.builder()
             .paths(List.of(tempDirectory.toString()))
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM_FOLDER)
             .watch(true)
@@ -145,8 +141,7 @@ class FolderTrustStoreLoaderTest {
             arguments(TrustStoreLoaderOptions.builder().type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM_FOLDER).build()),
             arguments(TrustStoreLoaderOptions.builder().type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM_FOLDER).paths(List.of()).build()),
             arguments(
-                TrustStoreLoaderOptions
-                    .builder()
+                TrustStoreLoaderOptions.builder()
                     .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM_FOLDER)
                     .paths(List.of(getPath("pems/client1.crt"))) // no a directory
                     .build()
@@ -158,7 +153,9 @@ class FolderTrustStoreLoaderTest {
     @ParameterizedTest
     void should_fail_miserably(TrustStoreLoaderOptions options) {
         cut = new FolderTrustStoreLoader(options);
-        assertThatCode(() -> cut.start()).hasMessageContaining("PEM files").isInstanceOf(KeyStoreProcessingException.class);
+        assertThatCode(() -> cut.start())
+            .hasMessageContaining("PEM files")
+            .isInstanceOf(KeyStoreProcessingException.class);
     }
 
     private static String getPath(String resource) {

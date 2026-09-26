@@ -116,8 +116,11 @@ class OpenTelemetryConfigurationTest {
         environment.setProperty("services.opentelemetry.exporter.headers[0].value", "from-yaml");
         environment.setProperty("services.opentelemetry.exporter.headers[0].VALUE", "from-env");
 
-        assertThat(underTest.getCustomHeaders())
-            .containsOnly(entry("name", "Authorization"), entry("value", "from-yaml"), entry("VALUE", "from-env"));
+        assertThat(underTest.getCustomHeaders()).containsOnly(
+            entry("name", "Authorization"),
+            entry("value", "from-yaml"),
+            entry("VALUE", "from-env")
+        );
     }
 
     @Test
@@ -126,8 +129,11 @@ class OpenTelemetryConfigurationTest {
         environment.setProperty("services.opentelemetry.exporter.headers[0].value", "Bearer xyz");
         environment.setProperty("services.opentelemetry.exporter.headers[0].comment", "oops");
 
-        assertThat(underTest.getCustomHeaders())
-            .containsOnly(entry("name", "Authorization"), entry("value", "Bearer xyz"), entry("comment", "oops"));
+        assertThat(underTest.getCustomHeaders()).containsOnly(
+            entry("name", "Authorization"),
+            entry("value", "Bearer xyz"),
+            entry("comment", "oops")
+        );
     }
 
     @Test
@@ -147,8 +153,9 @@ class OpenTelemetryConfigurationTest {
             new ResolvedValue("Bearer xyz")
         );
 
-        assertThat(new OpenTelemetryConfiguration(resolvingEnvironment).getCustomHeaders())
-            .containsExactly(entry("Authorization", "Bearer xyz"));
+        assertThat(new OpenTelemetryConfiguration(resolvingEnvironment).getCustomHeaders()).containsExactly(
+            entry("Authorization", "Bearer xyz")
+        );
     }
 
     @Test

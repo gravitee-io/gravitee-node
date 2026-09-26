@@ -42,13 +42,12 @@ public class ReporterVerticle extends AbstractVerticle implements ReporterServic
         // Register specific codec
         vertx.eventBus().registerCodec(new ReportableMessageCodec());
 
-        producer =
-            vertx
-                .eventBus()
-                .<Reportable>publisher(
-                    EVENT_BUS_ADDRESS,
-                    new DeliveryOptions().setCodecName(ReportableMessageCodec.CODEC_NAME).setTracingPolicy(TracingPolicy.IGNORE)
-                );
+        producer = vertx
+            .eventBus()
+            .<Reportable>publisher(
+                EVENT_BUS_ADDRESS,
+                new DeliveryOptions().setCodecName(ReportableMessageCodec.CODEC_NAME).setTracingPolicy(TracingPolicy.IGNORE)
+            );
 
         // By default we report node monitor data.
         vertx.eventBus().<Monitor>localConsumer("gio:node:monitor", event -> producer.write(event.body()));

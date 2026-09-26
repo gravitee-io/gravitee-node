@@ -52,13 +52,10 @@ public class NodeInfosServiceTest {
         Vertx vertx = Vertx.vertx();
         vertx
             .eventBus()
-            .localConsumer(
-                NodeInfosService.GIO_NODE_INFOS_BUS,
-                event -> {
-                    nodeInfosRef.set((NodeInfos) event.body());
-                    latch.countDown();
-                }
-            );
+            .localConsumer(NodeInfosService.GIO_NODE_INFOS_BUS, event -> {
+                nodeInfosRef.set((NodeInfos) event.body());
+                latch.countDown();
+            });
         final NodeInfosService cut = new NodeInfosService(pluginRegistry, environment, node, vertx);
 
         cut.doStart();

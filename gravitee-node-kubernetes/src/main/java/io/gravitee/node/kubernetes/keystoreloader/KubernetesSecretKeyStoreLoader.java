@@ -57,15 +57,14 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
     }
 
     private void prepareLocations() {
-        this.options.getKubernetesLocations()
-            .forEach(location -> {
-                final Matcher matcher = SECRET_OPAQUE_PATTERN.matcher(location);
-                if (matcher.matches()) {
-                    this.resources.put(matcher.group(1), ResourceQuery.<Secret>from(location).build());
-                } else {
-                    this.resources.put(location, ResourceQuery.<Secret>from(location).build());
-                }
-            });
+        this.options.getKubernetesLocations().forEach(location -> {
+            final Matcher matcher = SECRET_OPAQUE_PATTERN.matcher(location);
+            if (matcher.matches()) {
+                this.resources.put(matcher.group(1), ResourceQuery.<Secret>from(location).build());
+            } else {
+                this.resources.put(location, ResourceQuery.<Secret>from(location).build());
+            }
+        });
     }
 
     public static boolean canHandle(KeyStoreLoaderOptions options) {
@@ -104,7 +103,9 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
             )
             .toList();
 
-        return Flowable.merge(toWatch).filter(event -> event.getType().equalsIgnoreCase("MODIFIED")).map(Event::getObject);
+        return Flowable.merge(toWatch)
+            .filter(event -> event.getType().equalsIgnoreCase("MODIFIED"))
+            .map(Event::getObject);
     }
 
     @Override
@@ -113,13 +114,12 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
         final KeyStore keyStore;
 
         if (secret.getType().equals(KUBERNETES_TLS_SECRET)) {
-            keyStore =
-                KeyStoreUtils.initFromPem(
-                    new String(Base64.getDecoder().decode(data.get(KUBERNETES_TLS_CRT))),
-                    new String(Base64.getDecoder().decode(data.get(KUBERNETES_TLS_KEY))),
-                    getPassword(),
-                    secret.getMetadata().getName()
-                );
+            keyStore = KeyStoreUtils.initFromPem(
+                new String(Base64.getDecoder().decode(data.get(KUBERNETES_TLS_CRT))),
+                new String(Base64.getDecoder().decode(data.get(KUBERNETES_TLS_KEY))),
+                getPassword(),
+                secret.getMetadata().getName()
+            );
         } else if (secret.getType().equals(KUBERNETES_OPAQUE_SECRET)) {
             if (this.options.getType().equalsIgnoreCase(CERTIFICATE_FORMAT_PEM)) {
                 return Completable.error(
@@ -129,13 +129,12 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
                 final Optional<ResourceQuery<Secret>> optResource = resources
                     .values()
                     .stream()
-                    .filter(r ->
-                        r.getNamespace().equalsIgnoreCase(secret.getMetadata().getNamespace()) &&
-                        (
-                            secret.getType().equalsIgnoreCase(KUBERNETES_OPAQUE_SECRET) ||
-                            r.getType().getName().equalsIgnoreCase(secret.getType())
-                        ) &&
-                        r.getResource().equalsIgnoreCase(secret.getMetadata().getName())
+                    .filter(
+                        r ->
+                            r.getNamespace().equalsIgnoreCase(secret.getMetadata().getNamespace()) &&
+                            (secret.getType().equalsIgnoreCase(KUBERNETES_OPAQUE_SECRET) ||
+                                r.getType().getName().equalsIgnoreCase(secret.getType())) &&
+                            r.getResource().equalsIgnoreCase(secret.getMetadata().getName())
                     )
                     .findFirst();
 
@@ -149,8 +148,11 @@ public class KubernetesSecretKeyStoreLoader extends AbstractKubernetesKeyStoreLo
                     );
                 }
 
-                keyStore =
-                    KeyStoreUtils.initFromContent(this.options.getType(), data.get(optResource.get().getResourceKey()), getPassword());
+                keyStore = KeyStoreUtils.initFromContent(
+                    this.options.getType(),
+                    data.get(optResource.get().getResourceKey()),
+                    getPassword()
+                );
             }
         } else {
             return Completable.error(new IllegalArgumentException(String.format("Invalid secret type [%s]", secret.getType())));

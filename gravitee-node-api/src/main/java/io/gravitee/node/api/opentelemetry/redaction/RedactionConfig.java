@@ -23,8 +23,9 @@ public record RedactionConfig(List<RedactionRule> rules, String defaultReplaceme
 
     public RedactionConfig {
         rules = (rules == null) ? List.of() : List.copyOf(rules);
-        defaultReplacement =
-            (defaultReplacement == null || defaultReplacement.isBlank()) ? RedactionRule.DEFAULT_REPLACEMENT : defaultReplacement;
+        defaultReplacement = (defaultReplacement == null || defaultReplacement.isBlank())
+            ? RedactionRule.DEFAULT_REPLACEMENT
+            : defaultReplacement;
     }
 
     public RedactionConfig(List<RedactionRule> rules) {

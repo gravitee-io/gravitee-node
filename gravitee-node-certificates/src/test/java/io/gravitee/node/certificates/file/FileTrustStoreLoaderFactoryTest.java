@@ -60,8 +60,7 @@ class FileTrustStoreLoaderFactoryTest {
             ),
             arguments(
                 "BCFKS",
-                TrustStoreLoaderOptions
-                    .builder()
+                TrustStoreLoaderOptions.builder()
                     .type(KeyStoreLoader.CERTIFICATE_FORMAT_BCFKS)
                     .paths(getPath("truststore2-3.bcfks"))
                     .build()

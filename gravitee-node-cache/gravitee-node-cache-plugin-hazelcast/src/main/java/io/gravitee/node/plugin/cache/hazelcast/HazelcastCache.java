@@ -152,37 +152,36 @@ public class HazelcastCache<K, V> implements Cache<K, V> {
 
     @Override
     public String addCacheListener(CacheListener<K, V> cacheListener) {
-        UUID id =
-            this.cache.addEntryListener(
-                    new MapListenerAdapter<K, V>() {
-                        @Override
-                        public void onEntryEvent(EntryEvent<K, V> event) {
-                            switch (event.getEventType()) {
-                                case ADDED:
-                                    cacheListener.onEntryAdded(event.getKey(), event.getValue());
-                                    break;
-                                case REMOVED:
-                                case EVICTED:
-                                    cacheListener.onEntryEvicted(event.getKey(), event.getOldValue());
-                                    break;
-                                case UPDATED:
-                                    cacheListener.onEntryUpdated(event.getKey(), event.getOldValue(), event.getValue());
-                                    break;
-                                case EXPIRED:
-                                    cacheListener.onEntryExpired(event.getKey(), event.getValue());
-                                    break;
-                                case EVICT_ALL:
-                                case CLEAR_ALL:
-                                case MERGED:
-                                case INVALIDATION:
-                                case LOADED:
-                                default:
-                                    break;
-                            }
-                        }
-                    },
-                    true
-                );
+        UUID id = this.cache.addEntryListener(
+            new MapListenerAdapter<K, V>() {
+                @Override
+                public void onEntryEvent(EntryEvent<K, V> event) {
+                    switch (event.getEventType()) {
+                        case ADDED:
+                            cacheListener.onEntryAdded(event.getKey(), event.getValue());
+                            break;
+                        case REMOVED:
+                        case EVICTED:
+                            cacheListener.onEntryEvicted(event.getKey(), event.getOldValue());
+                            break;
+                        case UPDATED:
+                            cacheListener.onEntryUpdated(event.getKey(), event.getOldValue(), event.getValue());
+                            break;
+                        case EXPIRED:
+                            cacheListener.onEntryExpired(event.getKey(), event.getValue());
+                            break;
+                        case EVICT_ALL:
+                        case CLEAR_ALL:
+                        case MERGED:
+                        case INVALIDATION:
+                        case LOADED:
+                        default:
+                            break;
+                    }
+                }
+            },
+            true
+        );
 
         return id.toString();
     }

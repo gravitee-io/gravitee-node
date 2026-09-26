@@ -46,16 +46,15 @@ class ExcludeTagsFilterTest {
         cut = new ExcludeTagsFilter(CATEGORY, List.of("label1", "label2"));
 
         when(meterId.getName()).thenReturn(CATEGORY);
-        when(meterId.getTagsAsIterable())
-            .thenReturn(
-                List.of(
-                    Tag.of("a", "valueA"),
-                    Tag.of("b", "valueB"),
-                    Tag.of("label1", "value"),
-                    Tag.of("label2", "value"),
-                    Tag.of("c", "valueC")
-                )
-            );
+        when(meterId.getTagsAsIterable()).thenReturn(
+            List.of(
+                Tag.of("a", "valueA"),
+                Tag.of("b", "valueB"),
+                Tag.of("label1", "value"),
+                Tag.of("label2", "value"),
+                Tag.of("c", "valueC")
+            )
+        );
 
         cut.map(meterId);
 
@@ -67,16 +66,15 @@ class ExcludeTagsFilterTest {
         cut = new ExcludeTagsFilter(CATEGORY, List.of("label3", "label4"));
 
         when(meterId.getName()).thenReturn(CATEGORY);
-        when(meterId.getTagsAsIterable())
-            .thenReturn(
-                List.of(
-                    Tag.of("a", "valueA"),
-                    Tag.of("b", "valueB"),
-                    Tag.of("label1", "value"),
-                    Tag.of("label2", "value"),
-                    Tag.of("c", "valueC")
-                )
-            );
+        when(meterId.getTagsAsIterable()).thenReturn(
+            List.of(
+                Tag.of("a", "valueA"),
+                Tag.of("b", "valueB"),
+                Tag.of("label1", "value"),
+                Tag.of("label2", "value"),
+                Tag.of("c", "valueC")
+            )
+        );
 
         final Meter.Id mapped = cut.map(meterId);
 

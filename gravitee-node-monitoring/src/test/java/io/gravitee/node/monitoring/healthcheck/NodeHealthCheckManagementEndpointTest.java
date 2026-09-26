@@ -62,11 +62,10 @@ public class NodeHealthCheckManagementEndpointTest {
 
     @BeforeEach
     public void beforeEach() {
-        nodeHealthCheckManagementEndpoint =
-            new NodeHealthCheckManagementEndpoint(
-                probeEvaluator,
-                new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).setSerializationInclusion(JsonInclude.Include.NON_NULL)
-            );
+        nodeHealthCheckManagementEndpoint = new NodeHealthCheckManagementEndpoint(
+            probeEvaluator,
+            new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        );
 
         when(routingContext.response()).thenReturn(httpServerResponse);
     }
@@ -139,8 +138,9 @@ public class NodeHealthCheckManagementEndpointTest {
     @Test
     void should_filter_all_healthy() {
         Map<Probe, Result> probeResultMap = fakeProbeResults(true);
-        when(probeEvaluator.evaluate(Set.of("ratelimit-repository", "management-repository")))
-            .thenReturn(CompletableFuture.completedFuture(probeResultMap));
+        when(probeEvaluator.evaluate(Set.of("ratelimit-repository", "management-repository"))).thenReturn(
+            CompletableFuture.completedFuture(probeResultMap)
+        );
         when(routingContext.queryParams()).thenReturn(queryParams);
         when(queryParams.contains(PROBE_FILTER)).thenReturn(true);
         when(queryParams.getAll(PROBE_FILTER)).thenReturn(List.of("ratelimit-repository,management-repository"));
@@ -170,8 +170,9 @@ public class NodeHealthCheckManagementEndpointTest {
     @Test
     void should_filter_by_probe_id() {
         Map<Probe, Result> probeResultMap = fakeProbeResults(false);
-        when(probeEvaluator.evaluate(Set.of("ratelimit-repository", "management-repository", "cpu")))
-            .thenReturn(CompletableFuture.completedFuture(probeResultMap));
+        when(probeEvaluator.evaluate(Set.of("ratelimit-repository", "management-repository", "cpu"))).thenReturn(
+            CompletableFuture.completedFuture(probeResultMap)
+        );
         when(routingContext.queryParams()).thenReturn(queryParams);
         when(queryParams.contains(PROBE_FILTER)).thenReturn(true);
         when(queryParams.getAll(PROBE_FILTER)).thenReturn(List.of("ratelimit-repository,management-repository,cpu"));
@@ -204,8 +205,9 @@ public class NodeHealthCheckManagementEndpointTest {
     @Test
     void should_return_unhealthy_when_filtering_including_unknown_probe_id() {
         Map<Probe, Result> probeResultMap = fakeProbeResults(true);
-        when(probeEvaluator.evaluate(Set.of("ratelimit-repository", "management-repository", "cpu", "unknown")))
-            .thenReturn(CompletableFuture.completedFuture(probeResultMap));
+        when(probeEvaluator.evaluate(Set.of("ratelimit-repository", "management-repository", "cpu", "unknown"))).thenReturn(
+            CompletableFuture.completedFuture(probeResultMap)
+        );
         when(routingContext.queryParams()).thenReturn(queryParams);
         when(queryParams.contains(PROBE_FILTER)).thenReturn(true);
         when(queryParams.getAll(PROBE_FILTER)).thenReturn(List.of("ratelimit-repository,management-repository,cpu,unknown"));

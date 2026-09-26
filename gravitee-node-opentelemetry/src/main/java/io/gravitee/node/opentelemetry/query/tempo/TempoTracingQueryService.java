@@ -219,13 +219,12 @@ public class TempoTracingQueryService implements TracingQueryService, AutoClosea
         // proto enum name ("STATUS_CODE_UNSET"/"STATUS_CODE_OK"/"STATUS_CODE_ERROR") depending on the version, so both forms
         // are normalised here.
         if (span.status() != null && span.status().code() != null) {
-            String statusCode =
-                switch (span.status().code()) {
-                    case "0", "STATUS_CODE_UNSET" -> "UNSET";
-                    case "1", "STATUS_CODE_OK" -> "OK";
-                    case "2", "STATUS_CODE_ERROR" -> "ERROR";
-                    default -> span.status().code();
-                };
+            String statusCode = switch (span.status().code()) {
+                case "0", "STATUS_CODE_UNSET" -> "UNSET";
+                case "1", "STATUS_CODE_OK" -> "OK";
+                case "2", "STATUS_CODE_ERROR" -> "ERROR";
+                default -> span.status().code();
+            };
             attrs.put("otel.status_code", statusCode);
         }
 

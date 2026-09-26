@@ -83,15 +83,14 @@ class TempoHttpClientTest {
 
     @Test
     void should_decode_a_successful_get_trace_response() {
-        stubHandler =
-            req ->
-                req
-                    .response()
-                    .putHeader("Content-Type", "application/json")
-                    .end(
-                        "{\"batches\":[{\"resource\":{\"attributes\":[{\"key\":\"service.name\",\"value\":{\"stringValue\":\"gateway\"}}]}," +
+        stubHandler = req ->
+            req
+                .response()
+                .putHeader("Content-Type", "application/json")
+                .end(
+                    "{\"batches\":[{\"resource\":{\"attributes\":[{\"key\":\"service.name\",\"value\":{\"stringValue\":\"gateway\"}}]}," +
                         "\"scopeSpans\":[{\"scope\":{\"name\":\"scope\"},\"spans\":[]}]}]}"
-                    );
+                );
 
         TempoTraceResponse response = client.getTrace("abc-123", null).blockingGet();
 
@@ -125,7 +124,9 @@ class TempoHttpClientTest {
         client.getTrace("abc-123", "acme").blockingGet();
         client.searchTracesTraceQL("{}", 10, 1700000000L, 1700000060L, "acme").blockingGet();
 
-        assertThat(recorded).hasSize(2).allSatisfy(r -> assertThat(r.headers().get("X-Scope-OrgID")).isEqualTo("acme"));
+        assertThat(recorded)
+            .hasSize(2)
+            .allSatisfy(r -> assertThat(r.headers().get("X-Scope-OrgID")).isEqualTo("acme"));
     }
 
     @Test
@@ -148,8 +149,7 @@ class TempoHttpClientTest {
                         r.uri().substring(r.uri().indexOf("q=") + 2, r.uri().indexOf("&")),
                         java.nio.charset.StandardCharsets.UTF_8
                     )
-                )
-                    .isEqualTo(traceQL);
+                ).isEqualTo(traceQL);
             });
     }
 
@@ -159,7 +159,9 @@ class TempoHttpClientTest {
 
         client.getTrace("abc/with weird?chars", null).blockingGet();
 
-        assertThat(recorded).singleElement().satisfies(r -> assertThat(r.uri()).isEqualTo("/api/traces/abc%2Fwith+weird%3Fchars"));
+        assertThat(recorded)
+            .singleElement()
+            .satisfies(r -> assertThat(r.uri()).isEqualTo("/api/traces/abc%2Fwith+weird%3Fchars"));
     }
 
     @Test
@@ -181,8 +183,7 @@ class TempoHttpClientTest {
     }
 
     private io.vertx.rxjava3.core.http.HttpClient buildHttpClient(int port) {
-        return VertxHttpClientFactory
-            .builder()
+        return VertxHttpClientFactory.builder()
             .vertx(io.vertx.rxjava3.core.Vertx.newInstance(vertx))
             .nodeConfiguration(staticConfiguration())
             .defaultTarget("http://127.0.0.1:" + port)

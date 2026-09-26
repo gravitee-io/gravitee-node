@@ -85,7 +85,7 @@ public class MockSecretProvider implements SecretProvider {
 
     private void handleErrors(ConfiguredError error, MockSecretLocation location) {
         AtomicInteger errorReturned = this.errorsReturned.computeIfAbsent(location.secret(), ignore -> new AtomicInteger());
-        if (error.repeat() == 0 || error.repeat() > 0 && errorReturned.getAndIncrement() < error.repeat()) {
+        if (error.repeat() == 0 || (error.repeat() > 0 && errorReturned.getAndIncrement() < error.repeat())) {
             String message = "fake error while getting secret [%s]: %s".formatted(location.secret(), error.message());
             log.info("{}-{} simulating error: {}", PLUGIN_ID, SECRET_PROVIDER, message);
             throw new MockSecretProviderException(message);
@@ -94,11 +94,14 @@ public class MockSecretProvider implements SecretProvider {
 
     @Override
     public Flowable<SecretEvent> watch(SecretURL secretURL) {
-        return Flowable
-            .fromCallable(() -> {
-                MockSecretLocation location = MockSecretLocation.fromUrl(secretURL);
-                return configuration.getConfiguredEvents().stream().filter(e -> e.secret().equals(location.secret())).toList();
-            })
+        return Flowable.fromCallable(() -> {
+            MockSecretLocation location = MockSecretLocation.fromUrl(secretURL);
+            return configuration
+                .getConfiguredEvents()
+                .stream()
+                .filter(e -> e.secret().equals(location.secret()))
+                .toList();
+        })
             .flatMapIterable(list -> list)
             .delay(configuration.getWatchesDelayDuration(), configuration.getWatchesDelayUnit())
             .flatMapSingle(event -> {

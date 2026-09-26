@@ -60,8 +60,7 @@ class FileKeyStoreLoaderFactoryTest {
             ),
             arguments(
                 "PEM",
-                KeyStoreLoaderOptions
-                    .builder()
+                KeyStoreLoaderOptions.builder()
                     .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
                     .certificates(List.of(CertificateOptions.builder().certificate("ca.pem").certificate("ca.key").build()))
                     .build()

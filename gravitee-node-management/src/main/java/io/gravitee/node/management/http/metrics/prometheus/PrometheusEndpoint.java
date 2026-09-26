@@ -50,12 +50,15 @@ public class PrometheusEndpoint implements ManagementEndpoint {
             (CompositeMeterRegistry) BackendRegistries.getDefaultNow()
         );
 
-        this.prometheusRegistry =
-            (PrometheusMeterRegistry) compositeMeterRegistry
-                .flatMap(c ->
-                    c.getRegistries().stream().filter(meterRegistry -> meterRegistry instanceof PrometheusMeterRegistry).findFirst()
-                )
-                .orElse(null);
+        this.prometheusRegistry = (PrometheusMeterRegistry) compositeMeterRegistry
+            .flatMap(c ->
+                c
+                    .getRegistries()
+                    .stream()
+                    .filter(meterRegistry -> meterRegistry instanceof PrometheusMeterRegistry)
+                    .findFirst()
+            )
+            .orElse(null);
     }
 
     // Package-private constructor for testing

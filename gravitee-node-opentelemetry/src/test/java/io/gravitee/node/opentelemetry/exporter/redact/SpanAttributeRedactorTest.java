@@ -361,8 +361,9 @@ class SpanAttributeRedactorTest {
         var redactor = redactor("user-id");
         var attrs = Attributes.of(AttributeKey.stringKey("gravitee.attribute.user-id"), "alice");
 
-        assertThat(redactor.redact(attrs).get(AttributeKey.stringKey("gravitee.attribute.user-id")))
-            .isEqualTo(RedactionRule.DEFAULT_REPLACEMENT);
+        assertThat(redactor.redact(attrs).get(AttributeKey.stringKey("gravitee.attribute.user-id"))).isEqualTo(
+            RedactionRule.DEFAULT_REPLACEMENT
+        );
     }
 
     @Test
@@ -386,8 +387,9 @@ class SpanAttributeRedactorTest {
         var redactor = redactor("content_length");
         var attrs = Attributes.of(AttributeKey.stringKey("http.response_content_length"), "1024");
 
-        assertThat(redactor.redact(attrs).get(AttributeKey.stringKey("http.response_content_length")))
-            .isEqualTo(RedactionRule.DEFAULT_REPLACEMENT);
+        assertThat(redactor.redact(attrs).get(AttributeKey.stringKey("http.response_content_length"))).isEqualTo(
+            RedactionRule.DEFAULT_REPLACEMENT
+        );
     }
 
     @Test
@@ -396,10 +398,12 @@ class SpanAttributeRedactorTest {
         var dotAttrs = Attributes.of(AttributeKey.stringKey("http.response.status_code"), "200");
         var underscoreAttrs = Attributes.of(AttributeKey.stringKey("http.status_code"), "200");
 
-        assertThat(redactor.redact(dotAttrs).get(AttributeKey.stringKey("http.response.status_code")))
-            .isEqualTo(RedactionRule.DEFAULT_REPLACEMENT);
-        assertThat(redactor.redact(underscoreAttrs).get(AttributeKey.stringKey("http.status_code")))
-            .isEqualTo(RedactionRule.DEFAULT_REPLACEMENT);
+        assertThat(redactor.redact(dotAttrs).get(AttributeKey.stringKey("http.response.status_code"))).isEqualTo(
+            RedactionRule.DEFAULT_REPLACEMENT
+        );
+        assertThat(redactor.redact(underscoreAttrs).get(AttributeKey.stringKey("http.status_code"))).isEqualTo(
+            RedactionRule.DEFAULT_REPLACEMENT
+        );
     }
 
     @Test
@@ -417,8 +421,9 @@ class SpanAttributeRedactorTest {
         var redactor = redactor("gravitee.attribute.user-id");
         var attrs = Attributes.of(AttributeKey.stringKey("gravitee.attribute.user-id"), "alice");
 
-        assertThat(redactor.redact(attrs).get(AttributeKey.stringKey("gravitee.attribute.user-id")))
-            .isEqualTo(RedactionRule.DEFAULT_REPLACEMENT);
+        assertThat(redactor.redact(attrs).get(AttributeKey.stringKey("gravitee.attribute.user-id"))).isEqualTo(
+            RedactionRule.DEFAULT_REPLACEMENT
+        );
     }
 
     @Test
@@ -426,8 +431,9 @@ class SpanAttributeRedactorTest {
         var redactor = redactor("http.request.header.authorization");
         var attrs = Attributes.of(AttributeKey.stringKey("http.request.header.Authorization"), "Bearer secret");
 
-        assertThat(redactor.redact(attrs).get(AttributeKey.stringKey("http.request.header.Authorization")))
-            .isEqualTo(RedactionRule.DEFAULT_REPLACEMENT);
+        assertThat(redactor.redact(attrs).get(AttributeKey.stringKey("http.request.header.Authorization"))).isEqualTo(
+            RedactionRule.DEFAULT_REPLACEMENT
+        );
     }
 
     @Test
@@ -435,8 +441,9 @@ class SpanAttributeRedactorTest {
         var redactor = redactor("HTTP.REQUEST.HEADER.AUTHORIZATION");
         var attrs = Attributes.of(AttributeKey.stringKey("http.request.header.authorization"), "Bearer secret");
 
-        assertThat(redactor.redact(attrs).get(AttributeKey.stringKey("http.request.header.authorization")))
-            .isEqualTo(RedactionRule.DEFAULT_REPLACEMENT);
+        assertThat(redactor.redact(attrs).get(AttributeKey.stringKey("http.request.header.authorization"))).isEqualTo(
+            RedactionRule.DEFAULT_REPLACEMENT
+        );
     }
 
     @Test
@@ -444,8 +451,9 @@ class SpanAttributeRedactorTest {
         var redactor = redactor("http.request.header.**");
         var attrs = Attributes.of(AttributeKey.stringKey("http.request.header.X-Api-Key"), "my-key");
 
-        assertThat(redactor.redact(attrs).get(AttributeKey.stringKey("http.request.header.X-Api-Key")))
-            .isEqualTo(RedactionRule.DEFAULT_REPLACEMENT);
+        assertThat(redactor.redact(attrs).get(AttributeKey.stringKey("http.request.header.X-Api-Key"))).isEqualTo(
+            RedactionRule.DEFAULT_REPLACEMENT
+        );
     }
 
     // -------------------------------------------------------------------------

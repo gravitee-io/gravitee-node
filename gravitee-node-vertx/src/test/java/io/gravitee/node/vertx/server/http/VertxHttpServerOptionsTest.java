@@ -158,8 +158,9 @@ class VertxHttpServerOptionsTest {
         assertThat(options.isOpenssl()).isEqualTo(Boolean.valueOf(OPENSSL));
         assertThat(options.isWebsocketEnabled()).isEqualTo(Boolean.valueOf(WEBSOCKET_ENABLED));
         assertThat(options.getWebsocketSubProtocols()).isEqualTo(WEBSOCKET_SUB_PROTOCOLS);
-        assertThat(options.isPerMessageWebSocketCompressionSupported())
-            .isEqualTo(Boolean.valueOf(WEBSOCKET_PER_MESSAGE_COMPRESSION_SUPPORTED));
+        assertThat(options.isPerMessageWebSocketCompressionSupported()).isEqualTo(
+            Boolean.valueOf(WEBSOCKET_PER_MESSAGE_COMPRESSION_SUPPORTED)
+        );
         assertThat(options.isPerFrameWebSocketCompressionSupported()).isEqualTo(Boolean.valueOf(WEBSOCKET_PER_FRAME_COMPRESSION_SUPPORTED));
         assertThat(options.getMaxWebSocketMessageSize()).isEqualTo(Integer.valueOf(MAX_WEBSOCKET_MESSAGE_SIZE));
         assertThat(options.getMaxWebSocketFrameSize()).isEqualTo(Integer.valueOf(MAX_WEBSOCKET_FRAME_SIZE));
@@ -273,8 +274,10 @@ class VertxHttpServerOptionsTest {
 
         final VertxTcpServerOptions options = VertxTcpServerOptions.builder().prefix("servers[0]").environment(environment).build();
 
-        assertThat(options.getKeyStoreLoaderOptions().getKubernetesLocations())
-            .containsExactly("kubernetes://default/my-secret", "kubernetes://default/my-secret2");
+        assertThat(options.getKeyStoreLoaderOptions().getKubernetesLocations()).containsExactly(
+            "kubernetes://default/my-secret",
+            "kubernetes://default/my-secret2"
+        );
         assertThat(options.getKeyStoreLoaderOptions().getPaths()).isEmpty();
     }
 
@@ -285,7 +288,8 @@ class VertxHttpServerOptionsTest {
             .getPropertySources()
             .stream()
             .findFirst()
-            .ifPresent(propertySource -> ((PropertySource<Properties>) propertySource).getSource().remove("servers[0].ssl.truststore.path")
+            .ifPresent(propertySource ->
+                ((PropertySource<Properties>) propertySource).getSource().remove("servers[0].ssl.truststore.path")
             );
         environment.setProperty("servers[0].ssl.truststore.path[0]", "cert1.pem");
         environment.setProperty("servers[0].ssl.truststore.path[1]", "cert2.pem");
@@ -327,9 +331,8 @@ class VertxHttpServerOptionsTest {
     @Test
     void should_throw_illegal_argument_exception_from_default_port_when_environment_is_set() {
         VertxHttpServerOptionsBuilder<?, ?> builder = builder();
-        final IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> builder.prefix("servers[0]").environment(environment).defaultPort(8080)
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            builder.prefix("servers[0]").environment(environment).defaultPort(8080)
         );
         assertThat(exception.getMessage()).isEqualTo("Default port must be set before environment");
     }
@@ -393,8 +396,7 @@ class VertxHttpServerOptionsTest {
             .findFirst()
             .ifPresent(propertySource -> ((PropertySource<Properties>) propertySource).getSource().remove("servers[0].port"));
 
-        final VertxHttpServerOptions options = VertxHttpServerOptions
-            .builder()
+        final VertxHttpServerOptions options = VertxHttpServerOptions.builder()
             .defaultPort(9876)
             .prefix("servers[0]")
             .environment(environment)
@@ -405,8 +407,7 @@ class VertxHttpServerOptionsTest {
 
     @Test
     void should_build_with_default_and_not_use_specified_default_port_when_port_explicitly_set_using_environment_configuration() {
-        final VertxHttpServerOptions options = VertxHttpServerOptions
-            .builder()
+        final VertxHttpServerOptions options = VertxHttpServerOptions.builder()
             .defaultPort(1234)
             .prefix("servers[0]")
             .environment(environment)
@@ -442,10 +443,12 @@ class VertxHttpServerOptionsTest {
         assertThat(httpServerOptions.isSsl()).isEqualTo(Boolean.valueOf(SECURED));
         assertThat(httpServerOptions.isSni()).isEqualTo(Boolean.valueOf(SNI));
         assertThat(httpServerOptions.getWebSocketSubProtocols()).containsAll(List.of(WEBSOCKET_SUB_PROTOCOLS.split(",\\s?")));
-        assertThat(httpServerOptions.getPerMessageWebSocketCompressionSupported())
-            .isEqualTo(Boolean.valueOf(WEBSOCKET_PER_MESSAGE_COMPRESSION_SUPPORTED));
-        assertThat(httpServerOptions.getPerFrameWebSocketCompressionSupported())
-            .isEqualTo(Boolean.valueOf(WEBSOCKET_PER_FRAME_COMPRESSION_SUPPORTED));
+        assertThat(httpServerOptions.getPerMessageWebSocketCompressionSupported()).isEqualTo(
+            Boolean.valueOf(WEBSOCKET_PER_MESSAGE_COMPRESSION_SUPPORTED)
+        );
+        assertThat(httpServerOptions.getPerFrameWebSocketCompressionSupported()).isEqualTo(
+            Boolean.valueOf(WEBSOCKET_PER_FRAME_COMPRESSION_SUPPORTED)
+        );
         assertThat(httpServerOptions.getMaxWebSocketMessageSize()).isEqualTo(Integer.valueOf(MAX_WEBSOCKET_MESSAGE_SIZE));
         assertThat(httpServerOptions.getMaxWebSocketFrameSize()).isEqualTo(Integer.valueOf(MAX_WEBSOCKET_FRAME_SIZE));
         assertThat(httpServerOptions.isUseProxyProtocol()).isEqualTo(Boolean.valueOf(HAPROXY_PROTOCOL));
@@ -466,8 +469,7 @@ class VertxHttpServerOptionsTest {
 
     @Test
     void should_create_vertx_options_with_connection_window_size_only_when_stream_window_size_not_configured() {
-        final VertxHttpServerOptions options = VertxHttpServerOptions
-            .builder()
+        final VertxHttpServerOptions options = VertxHttpServerOptions.builder()
             .http2ConnectionWindowSize(Integer.parseInt(HTTP2_CONNECTION_WINDOW_SIZE))
             .build();
 
@@ -479,8 +481,7 @@ class VertxHttpServerOptionsTest {
 
     @Test
     void should_create_vertx_options_keeping_protocol_connection_window_size_when_only_stream_window_size_configured() {
-        final VertxHttpServerOptions options = VertxHttpServerOptions
-            .builder()
+        final VertxHttpServerOptions options = VertxHttpServerOptions.builder()
             .http2StreamWindowSize(Integer.parseInt(HTTP2_STREAM_WINDOW_SIZE))
             .build();
 
@@ -510,8 +511,9 @@ class VertxHttpServerOptionsTest {
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> builder.environment(environment));
 
         // Http2Settings#setInitialWindowSize would reject it later on, when the server instance is created.
-        assertThat(exception.getMessage())
-            .isEqualTo("servers[0].http2.streamWindowSize must be 0 or greater, or -1 to keep the protocol default, but is -2");
+        assertThat(exception.getMessage()).isEqualTo(
+            "servers[0].http2.streamWindowSize must be 0 or greater, or -1 to keep the protocol default, but is -2"
+        );
     }
 
     @Test
@@ -521,7 +523,8 @@ class VertxHttpServerOptionsTest {
             .getPropertySources()
             .stream()
             .findFirst()
-            .ifPresent(propertySource -> ((PropertySource<Properties>) propertySource).getSource().remove("servers[0].ssl.truststore.path")
+            .ifPresent(propertySource ->
+                ((PropertySource<Properties>) propertySource).getSource().remove("servers[0].ssl.truststore.path")
             );
         environment.setProperty("servers[0].ssl.truststore.path[0]", "cert1.pem");
         environment.setProperty("servers[0].ssl.truststore.path[1]", "cert2.pem");
@@ -549,8 +552,7 @@ class VertxHttpServerOptionsTest {
 
     @Test
     void should_create_vertx_options_without_keystore_and_truststore_when_not_secured() {
-        final VertxHttpServerOptions options = VertxHttpServerOptions
-            .builder()
+        final VertxHttpServerOptions options = VertxHttpServerOptions.builder()
             .prefix("servers[0]")
             .environment(environment)
             .secured(false)
@@ -565,8 +567,7 @@ class VertxHttpServerOptionsTest {
 
     @Test
     void should_create_vertx_options_without_websocket_options_when_websocket_disabled() {
-        final VertxHttpServerOptions options = VertxHttpServerOptions
-            .builder()
+        final VertxHttpServerOptions options = VertxHttpServerOptions.builder()
             .prefix("servers[0]")
             .environment(environment)
             .secured(false)

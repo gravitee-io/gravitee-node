@@ -37,8 +37,7 @@ public class SelfSignedKeyStoreLoaderFactoryTest {
 
     @Test
     public void shouldHandleOptionsWithSelfSigned() {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED)
             .paths(null)
             .build();

@@ -29,7 +29,11 @@ final class SpanAttributeRedactor {
 
     SpanAttributeRedactor(RedactionConfig config) {
         String defaultReplacement = config.defaultReplacement();
-        this.rules = config.rules().stream().map(rule -> new CompiledRedactionRule(rule, defaultReplacement)).toList();
+        this.rules = config
+            .rules()
+            .stream()
+            .map(rule -> new CompiledRedactionRule(rule, defaultReplacement))
+            .toList();
     }
 
     boolean hasRules() {

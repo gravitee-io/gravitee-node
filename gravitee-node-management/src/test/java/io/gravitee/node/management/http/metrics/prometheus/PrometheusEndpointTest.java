@@ -117,16 +117,15 @@ class PrometheusEndpointTest {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Callable<Void>> callableCaptor = ArgumentCaptor.forClass(Callable.class);
 
-        when(vertx.<Void>executeBlocking(callableCaptor.capture(), eq(false)))
-            .thenAnswer(invocation -> {
-                // Execute the callable synchronously for testing
-                try {
-                    callableCaptor.getValue().call();
-                    return Future.succeededFuture();
-                } catch (Exception e) {
-                    return Future.failedFuture(e);
-                }
-            });
+        when(vertx.<Void>executeBlocking(callableCaptor.capture(), eq(false))).thenAnswer(invocation -> {
+            // Execute the callable synchronously for testing
+            try {
+                callableCaptor.getValue().call();
+                return Future.succeededFuture();
+            } catch (Exception e) {
+                return Future.failedFuture(e);
+            }
+        });
         when(httpServerResponse.ended()).thenReturn(false);
         when(httpServerResponse.write(any(io.vertx.core.buffer.Buffer.class))).thenReturn(Future.succeededFuture());
 
@@ -144,15 +143,14 @@ class PrometheusEndpointTest {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Callable<Void>> callableCaptor = ArgumentCaptor.forClass(Callable.class);
 
-        when(vertx.<Void>executeBlocking(callableCaptor.capture(), eq(false)))
-            .thenAnswer(invocation -> {
-                try {
-                    callableCaptor.getValue().call();
-                    return Future.succeededFuture();
-                } catch (Exception e) {
-                    return Future.failedFuture(e);
-                }
-            });
+        when(vertx.<Void>executeBlocking(callableCaptor.capture(), eq(false))).thenAnswer(invocation -> {
+            try {
+                callableCaptor.getValue().call();
+                return Future.succeededFuture();
+            } catch (Exception e) {
+                return Future.failedFuture(e);
+            }
+        });
         when(httpServerResponse.ended()).thenReturn(true);
         when(httpServerResponse.write(any(io.vertx.core.buffer.Buffer.class))).thenReturn(Future.succeededFuture());
 
@@ -164,8 +162,9 @@ class PrometheusEndpointTest {
     @Test
     void should_close_connection_on_scrape_failure() {
         setupHandleMocks();
-        when(vertx.executeBlocking(org.mockito.ArgumentMatchers.<Callable<Void>>any(), eq(false)))
-            .thenReturn(Future.failedFuture(new IOException("Scrape failed")));
+        when(vertx.executeBlocking(org.mockito.ArgumentMatchers.<Callable<Void>>any(), eq(false))).thenReturn(
+            Future.failedFuture(new IOException("Scrape failed"))
+        );
         when(httpServerResponse.ended()).thenReturn(false);
         when(routingContext.request()).thenReturn(httpServerRequest);
         when(httpServerRequest.connection()).thenReturn(httpConnection);
@@ -179,8 +178,9 @@ class PrometheusEndpointTest {
     @Test
     void should_not_close_connection_if_response_already_ended_on_failure() {
         setupHandleMocks();
-        when(vertx.executeBlocking(org.mockito.ArgumentMatchers.<Callable<Void>>any(), eq(false)))
-            .thenReturn(Future.failedFuture(new IOException("Scrape failed")));
+        when(vertx.executeBlocking(org.mockito.ArgumentMatchers.<Callable<Void>>any(), eq(false))).thenReturn(
+            Future.failedFuture(new IOException("Scrape failed"))
+        );
         when(httpServerResponse.ended()).thenReturn(true);
 
         cut.handle(routingContext);
@@ -196,22 +196,25 @@ class PrometheusEndpointTest {
         ArgumentCaptor<Callable<Void>> callableCaptor = ArgumentCaptor.forClass(Callable.class);
         ArgumentCaptor<io.vertx.core.buffer.Buffer> bufferCaptor = ArgumentCaptor.forClass(io.vertx.core.buffer.Buffer.class);
 
-        when(vertx.<Void>executeBlocking(callableCaptor.capture(), eq(false)))
-            .thenAnswer(invocation -> {
-                try {
-                    callableCaptor.getValue().call();
-                    return Future.succeededFuture();
-                } catch (Exception e) {
-                    return Future.failedFuture(e);
-                }
-            });
+        when(vertx.<Void>executeBlocking(callableCaptor.capture(), eq(false))).thenAnswer(invocation -> {
+            try {
+                callableCaptor.getValue().call();
+                return Future.succeededFuture();
+            } catch (Exception e) {
+                return Future.failedFuture(e);
+            }
+        });
         when(httpServerResponse.ended()).thenReturn(false);
         when(httpServerResponse.write(bufferCaptor.capture())).thenReturn(Future.succeededFuture());
 
         cut.handle(routingContext);
 
         // Verify that the scraped content contains our test metric
-        String writtenContent = bufferCaptor.getAllValues().stream().map(buffer -> buffer.toString()).reduce("", String::concat);
+        String writtenContent = bufferCaptor
+            .getAllValues()
+            .stream()
+            .map(buffer -> buffer.toString())
+            .reduce("", String::concat);
 
         assertThat(writtenContent).contains("test_counter");
     }

@@ -70,15 +70,15 @@ class KeyStoreLoaderFactoryRegistryTest {
         final KeyStoreLoaderOptions unconfigured = KeyStoreLoaderOptions.builder().type("JKS").build();
 
         assertThat(cutKS.createLoader(unconfigured)).isInstanceOf(DefaultKeyStoreLoaderFactoryRegistry.NoOpKeyStoreLoader.class);
-        assertThat(cutTS.createLoader(TrustStoreLoaderOptions.builder().type("JKS").build()))
-            .isInstanceOf(DefaultKeyStoreLoaderFactoryRegistry.NoOpKeyStoreLoader.class);
+        assertThat(cutTS.createLoader(TrustStoreLoaderOptions.builder().type("JKS").build())).isInstanceOf(
+            DefaultKeyStoreLoaderFactoryRegistry.NoOpKeyStoreLoader.class
+        );
     }
 
     @Test
     void should_return_no_op_loader_when_a_configured_store_matches_no_factory() {
         // A source is named, so something was meant to load: the registry has nothing for this pair and says so.
-        final KeyStoreLoaderOptions unmatched = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions unmatched = KeyStoreLoaderOptions.builder()
             .type("BCFKS")
             .secretLocation("secret://kubernetes/my-tls-secret")
             .build();

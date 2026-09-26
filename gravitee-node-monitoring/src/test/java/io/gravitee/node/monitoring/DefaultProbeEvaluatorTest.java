@@ -55,12 +55,11 @@ class DefaultProbeEvaluatorTest {
 
         final CompletableFuture<Map<Probe, Result>> result = cut.evaluate();
 
-        assertThat(result)
-            .isCompletedWithValueMatching(probeResultMap -> {
-                assertThat(probeResultMap.get(probe1)).isEqualTo(Result.healthy());
-                assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy());
-                return true;
-            });
+        assertThat(result).isCompletedWithValueMatching(probeResultMap -> {
+            assertThat(probeResultMap.get(probe1)).isEqualTo(Result.healthy());
+            assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy());
+            return true;
+        });
 
         verify(probe1).check();
         verify(probe2).check();
@@ -76,12 +75,11 @@ class DefaultProbeEvaluatorTest {
 
         final CompletableFuture<Map<Probe, Result>> result = cut.evaluate();
 
-        assertThat(result)
-            .isCompletedWithValueMatching(probeResultMap -> {
-                assertThat(probeResultMap.get(probe1)).isEqualTo(Result.unhealthy("unhealthy"));
-                assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy());
-                return true;
-            });
+        assertThat(result).isCompletedWithValueMatching(probeResultMap -> {
+            assertThat(probeResultMap.get(probe1)).isEqualTo(Result.unhealthy("unhealthy"));
+            assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy());
+            return true;
+        });
 
         verify(probe1).check();
         verify(probe2).check();
@@ -99,12 +97,11 @@ class DefaultProbeEvaluatorTest {
 
         final CompletableFuture<Map<Probe, Result>> result = cut.evaluate();
 
-        assertThat(result)
-            .isCompletedWithValueMatching(probeResultMap -> {
-                assertThat(probeResultMap.get(probe1)).isEqualTo(Result.unhealthy(error));
-                assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy());
-                return true;
-            });
+        assertThat(result).isCompletedWithValueMatching(probeResultMap -> {
+            assertThat(probeResultMap.get(probe1)).isEqualTo(Result.unhealthy(error));
+            assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy());
+            return true;
+        });
 
         verify(probe1).check();
         verify(probe2).check();
@@ -124,12 +121,11 @@ class DefaultProbeEvaluatorTest {
         // Re-evaluate and check the probe1 cached result has been returned.
         final CompletableFuture<Map<Probe, Result>> result = cut.evaluate();
 
-        assertThat(result)
-            .isCompletedWithValueMatching(probeResultMap -> {
-                assertThat(probeResultMap.get(probe1)).isEqualTo(Result.healthy());
-                assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy());
-                return true;
-            });
+        assertThat(result).isCompletedWithValueMatching(probeResultMap -> {
+            assertThat(probeResultMap.get(probe1)).isEqualTo(Result.healthy());
+            assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy());
+            return true;
+        });
 
         // Should have been called once.
         verify(probe1).check();
@@ -139,20 +135,19 @@ class DefaultProbeEvaluatorTest {
     @Test
     @SneakyThrows
     void should_use_cached_results_when_another_evaluation_is_already_in_progress() {
-        when(probe1.check())
-            .thenReturn(
-                CompletableFuture.supplyAsync(() -> {
-                    try {
-                        log.info("Simulating slow probe during for 1 seconds");
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+        when(probe1.check()).thenReturn(
+            CompletableFuture.supplyAsync(() -> {
+                try {
+                    log.info("Simulating slow probe during for 1 seconds");
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
-                    log.info("Simulating slow probe done");
-                    return Result.healthy();
-                })
-            );
+                log.info("Simulating slow probe done");
+                return Result.healthy();
+            })
+        );
         when(probe2.check()).thenReturn(CompletableFuture.completedFuture(Result.healthy()));
         when(probeManager.getProbes()).thenReturn(List.of(probe1, probe2));
 
@@ -166,12 +161,11 @@ class DefaultProbeEvaluatorTest {
         final CompletableFuture<Map<Probe, Result>> result = cut.evaluate();
 
         // Cached results are returned.
-        assertThat(result)
-            .isCompletedWithValueMatching(probeResultMap -> {
-                assertThat(probeResultMap.get(probe1)).isNull(); // Probe still evaluating. No cache.
-                assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy()); // Probe evaluated, cache is returned.
-                return true;
-            });
+        assertThat(result).isCompletedWithValueMatching(probeResultMap -> {
+            assertThat(probeResultMap.get(probe1)).isNull(); // Probe still evaluating. No cache.
+            assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy()); // Probe evaluated, cache is returned.
+            return true;
+        });
 
         Map<Probe, Result> probeResultMap = firstEvaluate.get(10, TimeUnit.SECONDS);
 
@@ -205,12 +199,11 @@ class DefaultProbeEvaluatorTest {
             // Re-evaluate and check the probe1 cached result has been returned.
             final CompletableFuture<Map<Probe, Result>> result = cut.evaluate();
 
-            assertThat(result)
-                .isCompletedWithValueMatching(probeResultMap -> {
-                    assertThat(probeResultMap.get(probe1)).isEqualTo(Result.healthy());
-                    assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy());
-                    return true;
-                });
+            assertThat(result).isCompletedWithValueMatching(probeResultMap -> {
+                assertThat(probeResultMap.get(probe1)).isEqualTo(Result.healthy());
+                assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy());
+                return true;
+            });
 
             verify(probe1).check();
             verify(probe2, times(2)).check();
@@ -243,12 +236,11 @@ class DefaultProbeEvaluatorTest {
             // Re-evaluate and check the probe1 cached result has been returned.
             final CompletableFuture<Map<Probe, Result>> result = cut.evaluate();
 
-            assertThat(result)
-                .isCompletedWithValueMatching(probeResultMap -> {
-                    assertThat(probeResultMap.get(probe1)).isEqualTo(Result.healthy());
-                    assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy());
-                    return true;
-                });
+            assertThat(result).isCompletedWithValueMatching(probeResultMap -> {
+                assertThat(probeResultMap.get(probe1)).isEqualTo(Result.healthy());
+                assertThat(probeResultMap.get(probe2)).isEqualTo(Result.healthy());
+                return true;
+            });
 
             verify(probe1, times(2)).check();
             verify(probe2, times(2)).check();

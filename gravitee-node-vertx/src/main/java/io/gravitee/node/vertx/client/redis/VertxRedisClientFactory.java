@@ -95,19 +95,16 @@ public class VertxRedisClientFactory {
             throw new IllegalArgumentException("RedisClientOptions must not be null");
         }
         String key = dedupKey(options);
-        SharedRedisClient shared = sharedClients.compute(
-            key,
-            (k, existing) -> {
-                if (existing != null) {
-                    existing.refCount.incrementAndGet();
-                    log.debug("Reusing Redis client for {}, refs={}", summary(options), existing.refCount.get());
-                    return existing;
-                }
-                Redis client = Redis.createClient(vertx, buildRedisOptions(options));
-                log.info("Created Redis client for {}", summary(options));
-                return new SharedRedisClient(client, new AtomicInteger(1));
+        SharedRedisClient shared = sharedClients.compute(key, (k, existing) -> {
+            if (existing != null) {
+                existing.refCount.incrementAndGet();
+                log.debug("Reusing Redis client for {}, refs={}", summary(options), existing.refCount.get());
+                return existing;
             }
-        );
+            Redis client = Redis.createClient(vertx, buildRedisOptions(options));
+            log.info("Created Redis client for {}", summary(options));
+            return new SharedRedisClient(client, new AtomicInteger(1));
+        });
         return shared.client;
     }
 
@@ -121,27 +118,24 @@ public class VertxRedisClientFactory {
             return;
         }
         String key = dedupKey(options);
-        sharedClients.compute(
-            key,
-            (k, existing) -> {
-                if (existing == null) {
-                    log.warn("Attempted to release unknown Redis client for {}", summary(options));
-                    return null;
-                }
-                int remaining = existing.refCount.decrementAndGet();
-                if (remaining <= 0) {
-                    log.info("Closing Redis client for {}, no more references", summary(options));
-                    try {
-                        existing.client.close();
-                    } catch (Exception e) {
-                        log.warn("Failed to close Redis client: {}", e.getMessage());
-                    }
-                    return null;
-                }
-                log.debug("Released Redis client for {}, refs={}", summary(options), remaining);
-                return existing;
+        sharedClients.compute(key, (k, existing) -> {
+            if (existing == null) {
+                log.warn("Attempted to release unknown Redis client for {}", summary(options));
+                return null;
             }
-        );
+            int remaining = existing.refCount.decrementAndGet();
+            if (remaining <= 0) {
+                log.info("Closing Redis client for {}, no more references", summary(options));
+                try {
+                    existing.client.close();
+                } catch (Exception e) {
+                    log.warn("Failed to close Redis client: {}", e.getMessage());
+                }
+                return null;
+            }
+            log.debug("Released Redis client for {}, refs={}", summary(options), remaining);
+            return existing;
+        });
     }
 
     /**

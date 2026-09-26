@@ -53,7 +53,8 @@ public class PropertySourceBeanProcessor implements BeanFactoryPostProcessor, Or
             .stream()
             .collect(Collectors.toMap(entry -> entry.getKey().toString(), Map.Entry::getValue));
 
-        ((ConfigurableEnvironment) environment).getPropertySources()
-            .addLast(new GraviteeYamlPropertySource("graviteeYamlConfiguration", source, applicationContext));
+        ((ConfigurableEnvironment) environment).getPropertySources().addLast(
+            new GraviteeYamlPropertySource("graviteeYamlConfiguration", source, applicationContext)
+        );
     }
 }

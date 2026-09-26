@@ -67,8 +67,9 @@ class TempoTracingQueryServiceTest {
 
     @Test
     void should_route_resource_attributes_under_resource_prefix() {
-        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any()))
-            .thenReturn(Single.just(new TempoSearchResponse(List.of())));
+        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any())).thenReturn(
+            Single.just(new TempoSearchResponse(List.of()))
+        );
 
         Map<String, String> attributeFilters = new LinkedHashMap<>();
         attributeFilters.put("service.name", "gateway");
@@ -84,8 +85,9 @@ class TempoTracingQueryServiceTest {
 
     @Test
     void should_run_both_primary_and_error_passes() {
-        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any()))
-            .thenReturn(Single.just(new TempoSearchResponse(List.of())));
+        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any())).thenReturn(
+            Single.just(new TempoSearchResponse(List.of()))
+        );
 
         underTest.searchTraces(TracingQueryContext.EMPTY, new TraceSearchCriteria(Map.of(), 20, null, null)).blockingGet();
 
@@ -130,8 +132,9 @@ class TempoTracingQueryServiceTest {
 
     @Test
     void should_default_start_to_seven_days_before_end_when_only_end_is_set() {
-        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any()))
-            .thenReturn(Single.just(new TempoSearchResponse(List.of())));
+        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any())).thenReturn(
+            Single.just(new TempoSearchResponse(List.of()))
+        );
 
         Instant end = Instant.parse("2026-04-29T12:00:00Z");
         underTest.searchTraces(TracingQueryContext.EMPTY, new TraceSearchCriteria(Map.of(), 20, null, end)).blockingGet();
@@ -151,8 +154,9 @@ class TempoTracingQueryServiceTest {
             Instant.parse("2026-04-29T12:00:00Z").toEpochMilli() * 1_000_000L,
             42L
         );
-        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any()))
-            .thenReturn(Single.just(new TempoSearchResponse(List.of(result))));
+        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any())).thenReturn(
+            Single.just(new TempoSearchResponse(List.of(result)))
+        );
 
         List<Trace> traces = underTest
             .searchTraces(TracingQueryContext.EMPTY, new TraceSearchCriteria(Map.of(), 20, null, null))
@@ -239,8 +243,9 @@ class TempoTracingQueryServiceTest {
 
     @Test
     void should_forward_context_tenant_to_http_client_on_search_and_get() {
-        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any()))
-            .thenReturn(Single.just(new TempoSearchResponse(List.of())));
+        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any())).thenReturn(
+            Single.just(new TempoSearchResponse(List.of()))
+        );
         when(tempoClient.getTrace(eq("trace"), any())).thenReturn(Single.just(new TempoTraceResponse(List.of())));
 
         underTest.searchTraces(TracingQueryContext.forTenant("acme"), new TraceSearchCriteria(Map.of(), 20, null, null)).blockingGet();
@@ -257,8 +262,9 @@ class TempoTracingQueryServiceTest {
 
     @Test
     void should_pass_null_tenant_when_context_is_empty() {
-        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any()))
-            .thenReturn(Single.just(new TempoSearchResponse(List.of())));
+        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any())).thenReturn(
+            Single.just(new TempoSearchResponse(List.of()))
+        );
 
         underTest.searchTraces(TracingQueryContext.EMPTY, new TraceSearchCriteria(Map.of(), 20, null, null)).blockingGet();
 
@@ -269,8 +275,9 @@ class TempoTracingQueryServiceTest {
 
     @Test
     void should_inject_resource_attribute_filters_into_traceql_when_set() {
-        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any()))
-            .thenReturn(Single.just(new TempoSearchResponse(List.of())));
+        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any())).thenReturn(
+            Single.just(new TempoSearchResponse(List.of()))
+        );
 
         underTest
             .searchTraces(
@@ -290,8 +297,9 @@ class TempoTracingQueryServiceTest {
 
     @Test
     void should_combine_multiple_resource_attribute_filters_with_and() {
-        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any()))
-            .thenReturn(Single.just(new TempoSearchResponse(List.of())));
+        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any())).thenReturn(
+            Single.just(new TempoSearchResponse(List.of()))
+        );
 
         // Use a LinkedHashMap so the clause order in the assertion is stable.
         Map<String, String> filters = new LinkedHashMap<>();
@@ -309,8 +317,9 @@ class TempoTracingQueryServiceTest {
 
     @Test
     void should_omit_resource_attribute_clauses_when_map_is_empty() {
-        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any()))
-            .thenReturn(Single.just(new TempoSearchResponse(List.of())));
+        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any())).thenReturn(
+            Single.just(new TempoSearchResponse(List.of()))
+        );
 
         underTest.searchTraces(TracingQueryContext.forTenant("acme"), new TraceSearchCriteria(Map.of(), 20, null, null)).blockingGet();
 
@@ -441,8 +450,9 @@ class TempoTracingQueryServiceTest {
     void should_escape_quotes_and_backslashes_in_attribute_filter_values() {
         // Values flowing into TraceQL clauses must escape " and \ — without escaping, a value carrying either
         // breaks the query syntactically. Pin both the span-attribute and the resource-attribute paths.
-        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any()))
-            .thenReturn(Single.just(new TempoSearchResponse(List.of())));
+        when(tempoClient.searchTracesTraceQL(any(), any(), any(), any(), any())).thenReturn(
+            Single.just(new TempoSearchResponse(List.of()))
+        );
 
         Map<String, String> attributeFilters = new LinkedHashMap<>();
         attributeFilters.put("http.url", "https://api.example.com/\"with-quote\"");

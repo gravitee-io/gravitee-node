@@ -29,63 +29,63 @@ class MockSecretProviderTest {
     void setup() {
         InMemoryResource inMemoryResource = new InMemoryResource(
             """
-                enabled: true
-                secrets:
-                    redis:
-                        password: r3d1s
-                    ldap:
-                        password: 1da9
-                    flaky:
-                        value: now it works
-                    retry-test:
-                        value: after several retries it works
-                    loop:
-                        value: loop 1
-                    renewable:
-                        value: once
-                errors:
-                    - secret: flaky
-                      message: next attempt it should work
-                      repeat: 1
-                    - secret: kafka
-                      message: that's just ain't working
-                renewals:
-                  - secret: loop
-                    loop: true
-                    revisions:
-                      - data:
-                          value: loop 2
-                      - data:
-                          value: loop 3
-                  - secret: renewable
-                    revisions:
-                      - data:
-                          value: twice and no more
-                watches:
-                    delay:
-                        unit: SECONDS
-                        duration: 2
-                    events:
-                        - secret: apikeys
-                          data:
-                            partner1: "123"
-                            partner2: "456"
-                          type: CREATED
-                        - secret: apikeys
-                          data:
-                            partner1: "789"
-                            partner2: "101112"
-                          type: UPDATED
-                        - secret: apikeys
-                          data: {}
-                          error: odd enough message to be unique
-                """
+            enabled: true
+            secrets:
+                redis:
+                    password: r3d1s
+                ldap:
+                    password: 1da9
+                flaky:
+                    value: now it works
+                retry-test:
+                    value: after several retries it works
+                loop:
+                    value: loop 1
+                renewable:
+                    value: once
+            errors:
+                - secret: flaky
+                  message: next attempt it should work
+                  repeat: 1
+                - secret: kafka
+                  message: that's just ain't working
+            renewals:
+              - secret: loop
+                loop: true
+                revisions:
+                  - data:
+                      value: loop 2
+                  - data:
+                      value: loop 3
+              - secret: renewable
+                revisions:
+                  - data:
+                      value: twice and no more
+            watches:
+                delay:
+                    unit: SECONDS
+                    duration: 2
+                events:
+                    - secret: apikeys
+                      data:
+                        partner1: "123"
+                        partner2: "456"
+                      type: CREATED
+                    - secret: apikeys
+                      data:
+                        partner1: "789"
+                        partner2: "101112"
+                      type: UPDATED
+                    - secret: apikeys
+                      data: {}
+                      error: odd enough message to be unique
+            """
         );
         final YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
         yaml.setResources(inMemoryResource);
-        this.cut =
-            (MockSecretProvider) new MockSecretProviderFactory()
-                .create(new MockSecretProviderConfiguration((Map) new LinkedHashMap<>(yaml.getObject())));
+        this.cut = (MockSecretProvider) new MockSecretProviderFactory().create(
+            new MockSecretProviderConfiguration((Map) new LinkedHashMap<>(yaml.getObject()))
+        );
     }
 
     @Test

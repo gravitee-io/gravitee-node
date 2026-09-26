@@ -69,7 +69,11 @@ public class StandaloneTopic<T> implements Topic<T> {
     @Override
     public boolean removeMessageListener(final String subscriptionId) {
         if (consumerMap.containsKey(subscriptionId)) {
-            return consumerMap.get(subscriptionId).unregister().onSuccess(event -> consumerMap.remove(subscriptionId)).succeeded();
+            return consumerMap
+                .get(subscriptionId)
+                .unregister()
+                .onSuccess(event -> consumerMap.remove(subscriptionId))
+                .succeeded();
         }
         return false;
     }

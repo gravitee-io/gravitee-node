@@ -49,8 +49,7 @@ class VertxWebSocketClientFactoryTest {
     private Configuration nodeConfiguration;
 
     private VertxWebSocketClientFactory.VertxWebSocketClientFactoryBuilder builder() {
-        final VertxHttpClientOptions httpOptions = VertxHttpClientOptions
-            .builder()
+        final VertxHttpClientOptions httpOptions = VertxHttpClientOptions.builder()
             .keepAlive(true)
             .readTimeout(10000)
             .idleTimeout(60000)
@@ -60,8 +59,7 @@ class VertxWebSocketClientFactoryTest {
             .maxConcurrentConnections(100)
             .pipelining(false)
             .build();
-        final VertxHttpProxyOptions proxyOptions = VertxHttpProxyOptions
-            .builder()
+        final VertxHttpProxyOptions proxyOptions = VertxHttpProxyOptions.builder()
             .enabled(true)
             .useSystemProxy(false)
             .host("localhost")
@@ -73,8 +71,7 @@ class VertxWebSocketClientFactoryTest {
 
         when(nodeConfiguration.getProperty(HTTP_SSL_OPENSSL_CONFIGURATION, Boolean.class, false)).thenReturn(false);
 
-        return VertxWebSocketClientFactory
-            .builder()
+        return VertxWebSocketClientFactory.builder()
             .vertx(vertx)
             .nodeConfiguration(nodeConfiguration)
             .name("test")
@@ -119,8 +116,7 @@ class VertxWebSocketClientFactoryTest {
     @Test
     @SneakyThrows
     void should_build_websocket_client_with_custom_client_options() {
-        final VertxHttpClientOptions httpOptions = VertxHttpClientOptions
-            .builder()
+        final VertxHttpClientOptions httpOptions = VertxHttpClientOptions.builder()
             .idleTimeout(30000)
             .connectTimeout(3000)
             .maxConcurrentConnections(50)
@@ -138,8 +134,7 @@ class VertxWebSocketClientFactoryTest {
     @Test
     @SneakyThrows
     void should_build_websocket_client_with_custom_proxy() {
-        final VertxHttpProxyOptions proxyOptions = VertxHttpProxyOptions
-            .builder()
+        final VertxHttpProxyOptions proxyOptions = VertxHttpProxyOptions.builder()
             .enabled(true)
             .useSystemProxy(false)
             .host("proxy.example.com")
@@ -161,8 +156,7 @@ class VertxWebSocketClientFactoryTest {
 
     @Test
     void should_build_websocket_client_with_system_proxy() {
-        final VertxHttpProxyOptions proxyOptions = VertxHttpProxyOptions
-            .builder()
+        final VertxHttpProxyOptions proxyOptions = VertxHttpProxyOptions.builder()
             .enabled(true)
             .useSystemProxy(true)
             .host("localhost")
@@ -432,34 +426,29 @@ class VertxWebSocketClientFactoryTest {
     }
 
     private static String getSslFilePath(String file) {
-        return Objects
-            .requireNonNull(VertxWebSocketClientFactoryTest.class.getResource("/ssl/" + file), "File /ssl/" + file + " not found")
-            .getPath();
+        return Objects.requireNonNull(
+            VertxWebSocketClientFactoryTest.class.getResource("/ssl/" + file),
+            "File /ssl/" + file + " not found"
+        ).getPath();
     }
 
     private static String getSslFileContent(String file) throws IOException {
         return new String(
-            Objects
-                .requireNonNull(
-                    VertxWebSocketClientFactoryTest.class.getResourceAsStream("/ssl/" + file),
-                    "File /ssl/" + file + " not found"
-                )
-                .readAllBytes()
+            Objects.requireNonNull(
+                VertxWebSocketClientFactoryTest.class.getResourceAsStream("/ssl/" + file),
+                "File /ssl/" + file + " not found"
+            ).readAllBytes()
         );
     }
 
     private static String getContentAsBase64(String file) throws IOException {
         return new String(
-            Base64
-                .getEncoder()
-                .encode(
-                    Objects
-                        .requireNonNull(
-                            VertxWebSocketClientFactoryTest.class.getResourceAsStream("/ssl/" + file),
-                            "File /ssl/" + file + " not found"
-                        )
-                        .readAllBytes()
-                )
+            Base64.getEncoder().encode(
+                Objects.requireNonNull(
+                    VertxWebSocketClientFactoryTest.class.getResourceAsStream("/ssl/" + file),
+                    "File /ssl/" + file + " not found"
+                ).readAllBytes()
+            )
         );
     }
 }

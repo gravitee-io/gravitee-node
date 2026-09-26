@@ -176,8 +176,7 @@ class SslStoreCertificateExpiryTest {
             Date.from(notAfter),
             subject,
             keyPair.getPublic()
-        )
-            .build(signer);
+        ).build(signer);
         return new JcaX509CertificateConverter().getCertificate(holder);
     }
 

@@ -143,19 +143,16 @@ public class OpenTelemetryFactory implements TracerFactory, LoggerFactory {
                 exporter = redactExporter;
             }
 
-            SdkTracerProvider tracerProvider = SdkTracerProvider
-                .builder()
+            SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
                 .addSpanProcessor(BatchSpanProcessor.builder(exporter).build())
                 .setResource(resource)
                 .build();
 
-            final OpenTelemetrySdkBuilder builder = OpenTelemetrySdk
-                .builder()
-                .setPropagators(
-                    ContextPropagators.create(
-                        TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())
-                    )
-                );
+            final OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder().setPropagators(
+                ContextPropagators.create(
+                    TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())
+                )
+            );
 
             builder.setTracerProvider(tracerProvider);
             OpenTelemetrySdk openTelemetrySdk = builder.build();
@@ -185,16 +182,13 @@ public class OpenTelemetryFactory implements TracerFactory, LoggerFactory {
             additionalResourceAttributes
         );
 
-        final OpenTelemetrySdkBuilder builder = OpenTelemetrySdk
-            .builder()
-            .setPropagators(
-                ContextPropagators.create(
-                    TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())
-                )
-            );
+        final OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder().setPropagators(
+            ContextPropagators.create(
+                TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())
+            )
+        );
 
-        var exporterBuilder = OtlpHttpLogRecordExporter
-            .builder()
+        var exporterBuilder = OtlpHttpLogRecordExporter.builder()
             .setEndpoint(configuration.getLogsEndpoint())
             .setTimeout(configuration.getTimeout())
             .setCompression(configuration.getCompressionType().name().toLowerCase());
@@ -203,8 +197,7 @@ public class OpenTelemetryFactory implements TracerFactory, LoggerFactory {
             configuration.getCustomHeaders().forEach(exporterBuilder::addHeader);
         }
 
-        SdkLoggerProvider loggerProvider = SdkLoggerProvider
-            .builder()
+        SdkLoggerProvider loggerProvider = SdkLoggerProvider.builder()
             .addLogRecordProcessor(BatchLogRecordProcessor.builder(exporterBuilder.build()).build())
             .setResource(resource)
             .build();
@@ -233,8 +226,7 @@ public class OpenTelemetryFactory implements TracerFactory, LoggerFactory {
             ipv4 = DEFAULT_IP;
         }
 
-        ResourceBuilder resourceBuilder = Resource
-            .getDefault()
+        ResourceBuilder resourceBuilder = Resource.getDefault()
             .toBuilder()
             .put(ResourceAttributes.SERVICE_INSTANCE_ID, serviceInstanceId)
             .put(ResourceAttributes.SERVICE_NAME, serviceName)

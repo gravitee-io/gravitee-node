@@ -40,20 +40,19 @@ public class SecretProviderKeyStoreLoader extends AbstractKeyStoreLoader<KeyStor
                 createBundleAndNotify(secretMap, secretURL);
                 skip = 1;
             }
-            this.watch =
-                configurationSecretResolver
-                    .watch(secretURL, SecretEvent.Type.CREATED, SecretEvent.Type.UPDATED)
-                    .skip(skip)
-                    .subscribe(
-                        secretMap -> {
-                            try {
-                                createBundleAndNotify(secretMap, secretURL);
-                            } catch (Exception ex) {
-                                log.error("cannot create keystore, will keep watching for next update", ex);
-                            }
-                        },
-                        ex -> log.error("secret watch terminated with error", ex)
-                    );
+            this.watch = configurationSecretResolver
+                .watch(secretURL, SecretEvent.Type.CREATED, SecretEvent.Type.UPDATED)
+                .skip(skip)
+                .subscribe(
+                    secretMap -> {
+                        try {
+                            createBundleAndNotify(secretMap, secretURL);
+                        } catch (Exception ex) {
+                            log.error("cannot create keystore, will keep watching for next update", ex);
+                        }
+                    },
+                    ex -> log.error("secret watch terminated with error", ex)
+                );
         } else {
             SecretMap secretMap = configurationSecretResolver.resolve(secretURL).blockingGet();
             createBundleAndNotify(secretMap, secretURL);

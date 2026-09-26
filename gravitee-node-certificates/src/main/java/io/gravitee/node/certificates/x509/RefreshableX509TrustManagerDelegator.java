@@ -172,10 +172,10 @@ public class RefreshableX509TrustManagerDelegator extends X509ExtendedTrustManag
                 if (crl.isRevoked(cert)) {
                     throw new CertificateException(
                         "Certificate with serial number " +
-                        cert.getSerialNumber() +
-                        " and subject '" +
-                        cert.getSubjectX500Principal() +
-                        "' is revoked."
+                            cert.getSerialNumber() +
+                            " and subject '" +
+                            cert.getSubjectX500Principal() +
+                            "' is revoked."
                     );
                 }
             }
