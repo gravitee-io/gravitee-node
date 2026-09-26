@@ -55,9 +55,11 @@ class VertxServerFactoryTest {
 
     @BeforeEach
     void init() {
-        DefaultKeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry = new DefaultKeyStoreLoaderFactoryRegistry<>();
+        DefaultKeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions> keyStoreLoaderFactoryRegistry =
+            new DefaultKeyStoreLoaderFactoryRegistry<>();
         keyStoreLoaderFactoryRegistry.registerFactory(new SelfSignedKeyStoreLoaderFactory());
-        DefaultKeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry = new DefaultKeyStoreLoaderFactoryRegistry<>();
+        DefaultKeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions> trustStoreLoaderFactoryRegistry =
+            new DefaultKeyStoreLoaderFactoryRegistry<>();
         trustStoreLoaderFactoryRegistry.registerFactory(new FileTrustStoreLoaderFactory());
         DefaultCRLLoaderFactoryRegistry crlLoaderFactoryRegistry = new DefaultCRLLoaderFactoryRegistry();
         crlLoaderFactoryRegistry.registerFactory(new FileCRLLoaderFactory());
@@ -66,8 +68,7 @@ class VertxServerFactoryTest {
 
     @Test
     void should_create_vertx_unsecured_http_server() {
-        final VertxHttpServerOptions options = VertxHttpServerOptions
-            .builder()
+        final VertxHttpServerOptions options = VertxHttpServerOptions.builder()
             .prefix(ID)
             .environment(new MockEnvironment())
             // forcing ID
@@ -85,8 +86,7 @@ class VertxServerFactoryTest {
 
     @Test
     void should_create_vertx_net_server() {
-        final VertxTcpServerOptions options = VertxTcpServerOptions
-            .builder()
+        final VertxTcpServerOptions options = VertxTcpServerOptions.builder()
             .prefix(ID)
             .environment(new MockEnvironment())
             // forcing ID
@@ -131,8 +131,7 @@ class VertxServerFactoryTest {
     }
 
     private VertxHttpServerOptions securedOptions(boolean sendClientCertificateAuthorities) {
-        return VertxHttpServerOptions
-            .builder()
+        return VertxHttpServerOptions.builder()
             .prefix(ID)
             .environment(new MockEnvironment())
             .id(ID)
@@ -140,8 +139,7 @@ class VertxServerFactoryTest {
             .sendClientCertificateAuthorities(sendClientCertificateAuthorities)
             .keyStoreLoaderOptions(KeyStoreLoaderOptions.builder().build())
             .trustStoreLoaderOptions(
-                TrustStoreLoaderOptions
-                    .builder()
+                TrustStoreLoaderOptions.builder()
                     .paths(List.of("src/test/resources/ssl/truststore.p12"))
                     .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
                     .password("gravitee")
@@ -155,7 +153,8 @@ class VertxServerFactoryTest {
         final VertxServerOptions options = mock(VertxServerOptions.class);
         final IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> cut.create(options));
 
-        assertThat(illegalArgumentException.getMessage())
-            .isEqualTo("Server type is not a supported vertx server (option class=[VertxServerOptions])");
+        assertThat(illegalArgumentException.getMessage()).isEqualTo(
+            "Server type is not a supported vertx server (option class=[VertxServerOptions])"
+        );
     }
 }

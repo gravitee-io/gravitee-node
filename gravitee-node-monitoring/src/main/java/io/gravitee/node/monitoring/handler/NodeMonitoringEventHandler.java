@@ -71,98 +71,83 @@ public class NodeMonitoringEventHandler extends AbstractService<NodeMonitoringEv
 
     private void registerClusterListener() {
         nodeInfosTopic = clusterManager.topic("node-infos");
-        nodeInfoSubscription =
-            nodeInfosTopic.addMessageListener(message -> {
-                log.debug("Received node infos message from cluster");
-                if (clusterManager.self().primary()) {
-                    log.debug("Processing node infos message");
-                    nodeMonitoringService
-                        .createOrUpdate(convert(message.content()))
-                        .ignoreElement()
-                        .onErrorResumeNext(throwable -> {
-                            if (log.isDebugEnabled()) {
-                                log.error("Unable to process node infos message", throwable);
-                            } else {
-                                log.error("Unable to process node infos message, ex={}", throwable.toString());
-                            }
-                            return Completable.complete();
-                        })
-                        .subscribe();
-                }
-            });
+        nodeInfoSubscription = nodeInfosTopic.addMessageListener(message -> {
+            log.debug("Received node infos message from cluster");
+            if (clusterManager.self().primary()) {
+                log.debug("Processing node infos message");
+                nodeMonitoringService
+                    .createOrUpdate(convert(message.content()))
+                    .ignoreElement()
+                    .onErrorResumeNext(throwable -> {
+                        if (log.isDebugEnabled()) {
+                            log.error("Unable to process node infos message", throwable);
+                        } else {
+                            log.error("Unable to process node infos message, ex={}", throwable.toString());
+                        }
+                        return Completable.complete();
+                    })
+                    .subscribe();
+            }
+        });
         healthCheckTopic = clusterManager.topic("node-healthcheck");
-        healthCheckSubscription =
-            healthCheckTopic.addMessageListener(message -> {
-                log.debug("Received health check message from cluster");
-                if (clusterManager.self().primary()) {
-                    log.debug("Processing health check message");
-                    nodeMonitoringService
-                        .createOrUpdate(convert(message.content()))
-                        .ignoreElement()
-                        .onErrorResumeNext(throwable -> {
-                            if (log.isDebugEnabled()) {
-                                log.error("Unable to process health check message", throwable);
-                            } else {
-                                log.error("Unable to process health check message, ex={}", throwable.toString());
-                            }
-                            return Completable.complete();
-                        })
-                        .subscribe();
-                }
-            });
+        healthCheckSubscription = healthCheckTopic.addMessageListener(message -> {
+            log.debug("Received health check message from cluster");
+            if (clusterManager.self().primary()) {
+                log.debug("Processing health check message");
+                nodeMonitoringService
+                    .createOrUpdate(convert(message.content()))
+                    .ignoreElement()
+                    .onErrorResumeNext(throwable -> {
+                        if (log.isDebugEnabled()) {
+                            log.error("Unable to process health check message", throwable);
+                        } else {
+                            log.error("Unable to process health check message, ex={}", throwable.toString());
+                        }
+                        return Completable.complete();
+                    })
+                    .subscribe();
+            }
+        });
         monitorTopic = clusterManager.topic("node-monitor");
-        monitorSubscriptionId =
-            monitorTopic.addMessageListener(message -> {
-                log.debug("Received monitor message from cluster");
-                if (clusterManager.self().primary()) {
-                    log.debug("Processing monitor message");
-                    nodeMonitoringService
-                        .createOrUpdate(convert(message.content()))
-                        .ignoreElement()
-                        .onErrorResumeNext(throwable -> {
-                            if (log.isDebugEnabled()) {
-                                log.error("Unable to process monitor message", throwable);
-                            } else {
-                                log.error("Unable to process monitor message, ex={}", throwable.toString());
-                            }
-                            return Completable.complete();
-                        })
-                        .subscribe();
-                }
-            });
+        monitorSubscriptionId = monitorTopic.addMessageListener(message -> {
+            log.debug("Received monitor message from cluster");
+            if (clusterManager.self().primary()) {
+                log.debug("Processing monitor message");
+                nodeMonitoringService
+                    .createOrUpdate(convert(message.content()))
+                    .ignoreElement()
+                    .onErrorResumeNext(throwable -> {
+                        if (log.isDebugEnabled()) {
+                            log.error("Unable to process monitor message", throwable);
+                        } else {
+                            log.error("Unable to process monitor message, ex={}", throwable.toString());
+                        }
+                        return Completable.complete();
+                    })
+                    .subscribe();
+            }
+        });
     }
 
     private void registerInternalListener() {
-        nodeInfosMessageConsumer =
-            vertx
-                .eventBus()
-                .localConsumer(
-                    NodeInfosService.GIO_NODE_INFOS_BUS,
-                    event -> {
-                        log.debug("Received node infos message from internal bus");
-                        nodeInfosTopic.publish(event.body());
-                    }
-                );
-        healthCheckMessageConsumer =
-            vertx
-                .eventBus()
-                .localConsumer(
-                    NodeHealthCheckService.GIO_NODE_HEALTHCHECK_BUS,
-                    event -> {
-                        log.debug("Received health check message from internal bus");
-                        healthCheckTopic.publish(event.body());
-                    }
-                );
-        monitorMessageConsumer =
-            vertx
-                .eventBus()
-                .localConsumer(
-                    NodeMonitorService.GIO_NODE_MONITOR_BUS,
-                    event -> {
-                        log.debug("Received monitor message from internal bus");
-                        monitorTopic.publish(event.body());
-                    }
-                );
+        nodeInfosMessageConsumer = vertx
+            .eventBus()
+            .localConsumer(NodeInfosService.GIO_NODE_INFOS_BUS, event -> {
+                log.debug("Received node infos message from internal bus");
+                nodeInfosTopic.publish(event.body());
+            });
+        healthCheckMessageConsumer = vertx
+            .eventBus()
+            .localConsumer(NodeHealthCheckService.GIO_NODE_HEALTHCHECK_BUS, event -> {
+                log.debug("Received health check message from internal bus");
+                healthCheckTopic.publish(event.body());
+            });
+        monitorMessageConsumer = vertx
+            .eventBus()
+            .localConsumer(NodeMonitorService.GIO_NODE_MONITOR_BUS, event -> {
+                log.debug("Received monitor message from internal bus");
+                monitorTopic.publish(event.body());
+            });
     }
 
     @Override

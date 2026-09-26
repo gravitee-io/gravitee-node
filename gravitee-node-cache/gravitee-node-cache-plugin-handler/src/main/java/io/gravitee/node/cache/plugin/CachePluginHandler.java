@@ -72,9 +72,8 @@ public class CachePluginHandler extends AbstractPluginHandler {
 
                 // Retrieve actual CacheManager bean and register it as Singleton
                 CacheManager cacheManager = (CacheManager) context.getBean(pluginClass);
-                DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) (
-                    (ConfigurableApplicationContext) applicationContext
-                ).getBeanFactory();
+                DefaultListableBeanFactory beanFactory =
+                    (DefaultListableBeanFactory) ((ConfigurableApplicationContext) applicationContext).getBeanFactory();
                 beanFactory.registerSingleton(CacheManager.class.getName(), cacheManager);
                 log.info("Cache manager plugin '{}' installed.", plugin.id());
             } else {

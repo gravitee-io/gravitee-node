@@ -48,16 +48,16 @@ public class EnvironmentPropertySourceBeanProcessor implements BeanFactoryPostPr
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
         Map<String, Object> source = new ConcurrentHashMap<>();
-        ((StandardEnvironment) environment).getSystemEnvironment()
-            .forEach((key, value) -> {
-                for (String propertyPrefix : PROPERTY_PREFIXES) {
-                    if (key.startsWith(propertyPrefix)) {
-                        source.put(key.substring(propertyPrefix.length()), value);
-                    }
+        ((StandardEnvironment) environment).getSystemEnvironment().forEach((key, value) -> {
+            for (String propertyPrefix : PROPERTY_PREFIXES) {
+                if (key.startsWith(propertyPrefix)) {
+                    source.put(key.substring(propertyPrefix.length()), value);
                 }
-            });
+            }
+        });
 
-        ((ConfigurableEnvironment) environment).getPropertySources()
-            .addFirst(new GraviteeEnvironmentPropertySource("graviteeEnvironmentPropertySource", source, applicationContext));
+        ((ConfigurableEnvironment) environment).getPropertySources().addFirst(
+            new GraviteeEnvironmentPropertySource("graviteeEnvironmentPropertySource", source, applicationContext)
+        );
     }
 }

@@ -113,13 +113,12 @@ class VertxFactoryTest {
             staticMetricsNaming.when(MetricsNaming::v3Names).thenReturn(v3Naming);
             cut.getObject();
 
-            verify(vertxBuilder)
-                .with(
-                    argThat(options -> {
-                        final MicrometerMetricsOptions metricsOptions = (MicrometerMetricsOptions) options.getMetricsOptions();
-                        return Objects.equals(v3Naming, metricsOptions.getMetricsNaming());
-                    })
-                );
+            verify(vertxBuilder).with(
+                argThat(options -> {
+                    final MicrometerMetricsOptions metricsOptions = (MicrometerMetricsOptions) options.getMetricsOptions();
+                    return Objects.equals(v3Naming, metricsOptions.getMetricsNaming());
+                })
+            );
         }
     }
 
@@ -146,13 +145,12 @@ class VertxFactoryTest {
 
         cut.getObject();
 
-        verify(vertxBuilder)
-            .with(
-                argThat(options -> {
-                    final MicrometerMetricsOptions metricsOptions = (MicrometerMetricsOptions) options.getMetricsOptions();
-                    return metricsOptions.getLabels().equals(EnumSet.of(Label.LOCAL, Label.REMOTE, Label.HTTP_METHOD, Label.HTTP_PATH));
-                })
-            );
+        verify(vertxBuilder).with(
+            argThat(options -> {
+                final MicrometerMetricsOptions metricsOptions = (MicrometerMetricsOptions) options.getMetricsOptions();
+                return metricsOptions.getLabels().equals(EnumSet.of(Label.LOCAL, Label.REMOTE, Label.HTTP_METHOD, Label.HTTP_PATH));
+            })
+        );
     }
 
     @Test
@@ -196,13 +194,17 @@ class VertxFactoryTest {
         //Check exclude labels
         var httpClientFilter = new ExcludeTagsFilter("http.client", List.of("local"));
         var httpServerFilter = new ExcludeTagsFilter("http.server", List.of("remote"));
-        assertThat(filters).filteredOn(f -> f instanceof ExcludeTagsFilter).containsAll(List.of(httpClientFilter, httpServerFilter));
+        assertThat(filters)
+            .filteredOn(f -> f instanceof ExcludeTagsFilter)
+            .containsAll(List.of(httpClientFilter, httpServerFilter));
 
         //Check allowed labels
         assertThat(filters)
             .filteredOn(f -> f instanceof ExcludeTagsFilter)
-            .filteredOn(f ->
-                !((ExcludeTagsFilter) f).category().contains("http.server") && !((ExcludeTagsFilter) f).category().contains("http.client")
+            .filteredOn(
+                f ->
+                    !((ExcludeTagsFilter) f).category().contains("http.server") &&
+                    !((ExcludeTagsFilter) f).category().contains("http.client")
             )
             .allSatisfy(f -> assertThat(((ExcludeTagsFilter) f).excludedLabels()).isEmpty());
     }
@@ -219,7 +221,9 @@ class VertxFactoryTest {
         verifyGlobalLabels(List.of(Label.LOCAL, Label.HTTP_METHOD, Label.HTTP_CODE, Label.POOL_NAME, Label.POOL_TYPE, Label.REMOTE));
 
         var httpClientFilter = new ExcludeTagsFilter("http.client", List.of());
-        assertThat(filters).filteredOn(f -> f instanceof ExcludeTagsFilter).containsAll(List.of(httpClientFilter));
+        assertThat(filters)
+            .filteredOn(f -> f instanceof ExcludeTagsFilter)
+            .containsAll(List.of(httpClientFilter));
 
         assertThat(filters)
             .filteredOn(f -> f instanceof ExcludeTagsFilter)
@@ -254,46 +258,44 @@ class VertxFactoryTest {
 
         cut.getObject();
 
-        verify(vertxBuilder)
-            .withMetrics(
-                argThat(metricsFactory -> {
-                    MeterRegistry meterRegistry = (MeterRegistry) ReflectionTestUtils.getField(metricsFactory, "micrometerRegistry");
-                    assertThat(meterRegistry).isNotNull();
-                    Set<String> meterNames = meterRegistry
-                        .getMeters()
-                        .stream()
-                        .map(meter -> meter.getId().getName())
-                        .collect(Collectors.toSet());
+        verify(vertxBuilder).withMetrics(
+            argThat(metricsFactory -> {
+                MeterRegistry meterRegistry = (MeterRegistry) ReflectionTestUtils.getField(metricsFactory, "micrometerRegistry");
+                assertThat(meterRegistry).isNotNull();
+                Set<String> meterNames = meterRegistry
+                    .getMeters()
+                    .stream()
+                    .map(meter -> meter.getId().getName())
+                    .collect(Collectors.toSet());
 
-                    assertThat(meterNames)
-                        .containsExactly(
-                            "system.load.average.1m",
-                            "jvm.gc.max.data.size",
-                            "system.cpu.usage",
-                            "jvm.memory.committed",
-                            "jvm.threads.peak",
-                            "process.cpu.usage",
-                            "jvm.threads.live",
-                            "jvm.gc.live.data.size",
-                            "process.files.max",
-                            "jvm.threads.started",
-                            "jvm.memory.max",
-                            "jvm.gc.memory.promoted",
-                            "jvm.memory.used",
-                            "system.cpu.count",
-                            "process.files.open",
-                            "jvm.gc.memory.allocated",
-                            "jvm.classes.loaded",
-                            "jvm.classes.unloaded",
-                            "jvm.buffer.memory.used",
-                            "jvm.buffer.count",
-                            "jvm.threads.daemon",
-                            "jvm.threads.states",
-                            "jvm.buffer.total.capacity"
-                        );
-                    return true;
-                })
-            );
+                assertThat(meterNames).containsExactly(
+                    "system.load.average.1m",
+                    "jvm.gc.max.data.size",
+                    "system.cpu.usage",
+                    "jvm.memory.committed",
+                    "jvm.threads.peak",
+                    "process.cpu.usage",
+                    "jvm.threads.live",
+                    "jvm.gc.live.data.size",
+                    "process.files.max",
+                    "jvm.threads.started",
+                    "jvm.memory.max",
+                    "jvm.gc.memory.promoted",
+                    "jvm.memory.used",
+                    "system.cpu.count",
+                    "process.files.open",
+                    "jvm.gc.memory.allocated",
+                    "jvm.classes.loaded",
+                    "jvm.classes.unloaded",
+                    "jvm.buffer.memory.used",
+                    "jvm.buffer.count",
+                    "jvm.threads.daemon",
+                    "jvm.threads.states",
+                    "jvm.buffer.total.capacity"
+                );
+                return true;
+            })
+        );
     }
 
     @Test
@@ -304,21 +306,20 @@ class VertxFactoryTest {
 
         cut.getObject();
 
-        verify(vertxBuilder)
-            .withMetrics(
-                argThat(metricsFactory -> {
-                    MeterRegistry meterRegistry = (MeterRegistry) ReflectionTestUtils.getField(metricsFactory, "micrometerRegistry");
-                    assertThat(meterRegistry).isNotNull();
-                    Set<String> meterNames = meterRegistry
-                        .getMeters()
-                        .stream()
-                        .map(meter -> meter.getId().getName())
-                        .collect(Collectors.toSet());
+        verify(vertxBuilder).withMetrics(
+            argThat(metricsFactory -> {
+                MeterRegistry meterRegistry = (MeterRegistry) ReflectionTestUtils.getField(metricsFactory, "micrometerRegistry");
+                assertThat(meterRegistry).isNotNull();
+                Set<String> meterNames = meterRegistry
+                    .getMeters()
+                    .stream()
+                    .map(meter -> meter.getId().getName())
+                    .collect(Collectors.toSet());
 
-                    assertThat(meterNames).containsExactly("process.files.open", "process.files.max");
-                    return true;
-                })
-            );
+                assertThat(meterNames).containsExactly("process.files.open", "process.files.max");
+                return true;
+            })
+        );
     }
 
     @Test
@@ -381,7 +382,10 @@ class VertxFactoryTest {
 
     private void verifyGlobalLabels(List<Label> expectedLabels) {
         //Create a tag list with all labels
-        List<Tag> tagList = Arrays.stream(Label.values()).map(Label::toString).map(name -> Tag.of(name, name)).toList();
+        List<Tag> tagList = Arrays.stream(Label.values())
+            .map(Label::toString)
+            .map(name -> Tag.of(name, name))
+            .toList();
 
         List<Tag> expectedTags = expectedLabels
             .stream()

@@ -51,8 +51,7 @@ class VertxHttpClientFactoryTest {
     private Configuration nodeConfiguration;
 
     private VertxHttpClientFactory.VertxHttpClientFactoryBuilder builder() {
-        final VertxHttpClientOptions httpOptions = VertxHttpClientOptions
-            .builder()
+        final VertxHttpClientOptions httpOptions = VertxHttpClientOptions.builder()
             .keepAlive(true)
             .readTimeout(10000)
             .idleTimeout(60000)
@@ -64,8 +63,7 @@ class VertxHttpClientFactoryTest {
             .pipelining(false)
             .clearTextUpgrade(true)
             .build();
-        final VertxHttpProxyOptions proxyOptions = VertxHttpProxyOptions
-            .builder()
+        final VertxHttpProxyOptions proxyOptions = VertxHttpProxyOptions.builder()
             .enabled(true)
             .useSystemProxy(false)
             .host("localhost")
@@ -77,8 +75,7 @@ class VertxHttpClientFactoryTest {
 
         when(nodeConfiguration.getProperty(HTTP_SSL_OPENSSL_CONFIGURATION, Boolean.class, false)).thenReturn(false);
 
-        return VertxHttpClientFactory
-            .builder()
+        return VertxHttpClientFactory.builder()
             .vertx(vertx)
             .nodeConfiguration(nodeConfiguration)
             .name("test")
@@ -113,8 +110,7 @@ class VertxHttpClientFactoryTest {
         VertxHttpClientFactory.VertxHttpClientFactoryBuilder builder = builder();
 
         builder.httpOptions(
-            VertxHttpClientOptions
-                .builder()
+            VertxHttpClientOptions.builder()
                 .version(HTTP_2)
                 .http2MultiplexingLimit(13)
                 .http2ConnectionWindowSize(128000)
@@ -169,8 +165,7 @@ class VertxHttpClientFactoryTest {
 
     @Test
     void should_build_client_with_system_proxy() {
-        final VertxHttpProxyOptions proxyOptions = VertxHttpProxyOptions
-            .builder()
+        final VertxHttpProxyOptions proxyOptions = VertxHttpProxyOptions.builder()
             .enabled(true)
             .useSystemProxy(true)
             .host("localhost")
@@ -485,31 +480,29 @@ class VertxHttpClientFactoryTest {
     }
 
     private static String getSslFilePath(String file) {
-        return Objects
-            .requireNonNull(VertxHttpClientFactoryTest.class.getResource("/ssl/" + file), "File /ssl/" + file + " not found")
-            .getPath();
+        return Objects.requireNonNull(
+            VertxHttpClientFactoryTest.class.getResource("/ssl/" + file),
+            "File /ssl/" + file + " not found"
+        ).getPath();
     }
 
     private static String getSslFileContent(String file) throws IOException {
         return new String(
-            Objects
-                .requireNonNull(VertxHttpClientFactoryTest.class.getResourceAsStream("/ssl/" + file), "File /ssl/" + file + " not found")
-                .readAllBytes()
+            Objects.requireNonNull(
+                VertxHttpClientFactoryTest.class.getResourceAsStream("/ssl/" + file),
+                "File /ssl/" + file + " not found"
+            ).readAllBytes()
         );
     }
 
     private static String getContentAsBase64(String file) throws IOException {
         return new String(
-            Base64
-                .getEncoder()
-                .encode(
-                    Objects
-                        .requireNonNull(
-                            VertxHttpClientFactoryTest.class.getResourceAsStream("/ssl/" + file),
-                            "File /ssl/" + file + " not found"
-                        )
-                        .readAllBytes()
-                )
+            Base64.getEncoder().encode(
+                Objects.requireNonNull(
+                    VertxHttpClientFactoryTest.class.getResourceAsStream("/ssl/" + file),
+                    "File /ssl/" + file + " not found"
+                ).readAllBytes()
+            )
         );
     }
 }

@@ -74,7 +74,9 @@ public class GraviteeConfigurationSecretResolver {
         Objects.requireNonNull(location);
         return (
             location.startsWith(SecretProvider.PLUGIN_URL_SCHEME) &&
-            enabledProviders().stream().anyMatch(pluginId -> location.startsWith("%s%s/".formatted(SecretURL.SCHEME, pluginId)))
+            enabledProviders()
+                .stream()
+                .anyMatch(pluginId -> location.startsWith("%s%s/".formatted(SecretURL.SCHEME, pluginId)))
         );
     }
 
@@ -92,8 +94,8 @@ public class GraviteeConfigurationSecretResolver {
                 if (secretURL.isKeyEmpty()) {
                     throw new IllegalArgumentException(
                         "Secret URL must specify a 'key' in order to resolve a single value, it should like this '%s:<KEY>'".formatted(
-                                location
-                            )
+                            location
+                        )
                     );
                 }
                 return true;
@@ -221,8 +223,10 @@ public class GraviteeConfigurationSecretResolver {
             final SecretProviderFactory<SecretManagerConfiguration> factory = secretProviderPluginManager.getFactoryById(id);
             if (configurationClass != null && factory != null) {
                 // read the config using the plugin class loader
-                SecretManagerConfiguration config =
-                    this.readConfiguration(id, factory.getClass().getClassLoader().loadClass(configurationClass.getName()));
+                SecretManagerConfiguration config = this.readConfiguration(
+                    id,
+                    factory.getClass().getClassLoader().loadClass(configurationClass.getName())
+                );
                 // register and start
                 secretProviders.put(id, factory.create(config).start());
             } else {

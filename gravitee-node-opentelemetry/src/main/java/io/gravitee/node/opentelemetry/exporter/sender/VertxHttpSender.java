@@ -85,10 +85,12 @@ public final class VertxHttpSender implements HttpSender {
         if (path.isEmpty() || path.equals("/")) {
             return "";
         }
-        if (path.endsWith("/")) { // strip ending slash
+        if (path.endsWith("/")) {
+            // strip ending slash
             path = path.substring(0, path.length() - 1);
         }
-        if (!path.startsWith("/")) { // prepend leading slash
+        if (!path.startsWith("/")) {
+            // prepend leading slash
             path = "/" + path;
         }
         return path;
@@ -125,8 +127,7 @@ public final class VertxHttpSender implements HttpSender {
         Consumer<Throwable> onError,
         Supplier<Boolean> isShutdown
     ) {
-        Uni
-            .createFrom()
+        Uni.createFrom()
             .completionStage(
                 new Supplier<CompletionStage<HttpClientRequest>>() {
                     @Override

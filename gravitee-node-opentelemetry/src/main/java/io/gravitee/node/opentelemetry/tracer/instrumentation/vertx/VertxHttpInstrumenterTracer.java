@@ -72,9 +72,9 @@ public class VertxHttpInstrumenterTracer extends AbstractInstrumenterTracer<Obse
             if (VertxContext.isDuplicatedContext(runningCtx)) {
                 String pathTemplate = runningCtx.getLocal("ClientUrlPathTemplate");
                 if (pathTemplate != null && !pathTemplate.isEmpty()) {
-                    io.opentelemetry.api.trace.Span
-                        .fromContext(requestSpan.otelContext())
-                        .updateName(((HttpRequest) requestSpan.request()).method().name() + " " + pathTemplate);
+                    io.opentelemetry.api.trace.Span.fromContext(requestSpan.otelContext()).updateName(
+                        ((HttpRequest) requestSpan.request()).method().name() + " " + pathTemplate
+                    );
                 }
             }
         }
@@ -137,11 +137,12 @@ public class VertxHttpInstrumenterTracer extends AbstractInstrumenterTracer<Obse
         ServerAttributesExtractor serverAttributesExtractor = new ServerAttributesExtractor();
         HttpClientAttributesExtractor httpClientAttributesExtractor = new HttpClientAttributesExtractor();
 
-        InstrumenterBuilder<ObservableHttpRequest, ObservableHttpResponse> clientBuilder = io.opentelemetry.instrumentation.api.instrumenter.Instrumenter.builder(
-            openTelemetry,
-            instrumentationName(),
-            new ClientSpanNameExtractor(httpClientAttributesExtractor)
-        );
+        InstrumenterBuilder<ObservableHttpRequest, ObservableHttpResponse> clientBuilder =
+            io.opentelemetry.instrumentation.api.instrumenter.Instrumenter.builder(
+                openTelemetry,
+                instrumentationName(),
+                new ClientSpanNameExtractor(httpClientAttributesExtractor)
+            );
 
         return clientBuilder
             .setSpanStatusExtractor(HttpSpanStatusExtractor.create(serverAttributesExtractor))

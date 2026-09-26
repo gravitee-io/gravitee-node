@@ -71,17 +71,16 @@ class NodeLicenseManagementEndpointTest {
         verify(httpServerResponse).setStatusCode(200);
         verify(httpServerResponse).putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         verify(httpServerResponse).setChunked(true);
-        verify(httpServerResponse)
-            .end(
-                """
-                                {
-                                  "expiryDate" : "2024-12-31 23:59:59.999",
-                                  "features" : null,
-                                  "tier" : "test",
-                                  "legacy-feature" : "included",
-                                  "packs" : "test-pack1,test-pack2"
-                                }"""
-            );
+        verify(httpServerResponse).end(
+            """
+            {
+              "expiryDate" : "2024-12-31 23:59:59.999",
+              "features" : null,
+              "tier" : "test",
+              "legacy-feature" : "included",
+              "packs" : "test-pack1,test-pack2"
+            }"""
+        );
     }
 
     @Test
@@ -96,9 +95,11 @@ class NodeLicenseManagementEndpointTest {
         verify(httpServerResponse).setStatusCode(200);
         verify(httpServerResponse).putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         verify(httpServerResponse).setChunked(true);
-        verify(httpServerResponse).end("""
-                {
-                  "tier" : "oss"
-                }""");
+        verify(httpServerResponse).end(
+            """
+            {
+              "tier" : "oss"
+            }"""
+        );
     }
 }

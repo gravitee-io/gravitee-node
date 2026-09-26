@@ -53,8 +53,7 @@ class FileKeyStoreLoaderTest {
     @Test
     void should_not_start_on_missing_file() {
         // Make sure an exception is thrown in case of missing file.
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .paths(List.of("/path-to-unknown.p12"))
             .password("secret")
@@ -72,8 +71,7 @@ class FileKeyStoreLoaderTest {
         final File tempKeyStore = File.createTempFile("gio", ".p12");
         FileCopyUtils.copy(new byte[0], tempKeyStore);
 
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .paths(List.of(tempKeyStore.getAbsolutePath()))
             .password("secret")
@@ -86,8 +84,7 @@ class FileKeyStoreLoaderTest {
 
     @Test
     void should_load_pkcs12() throws KeyStoreException {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .paths(List.of(getPath("all-in-one.p12")))
             .password("secret")
@@ -114,8 +111,7 @@ class FileKeyStoreLoaderTest {
 
     @Test
     void should_load_pkcs12_with_mix_of_private_keys_and_trusted_entries() throws KeyStoreException {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .paths(List.of(getPath("mixed-entries.p12")))
             .password("secret")
@@ -142,8 +138,7 @@ class FileKeyStoreLoaderTest {
 
     @Test
     void should_load_jks() throws KeyStoreException {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_JKS)
             .paths(getPaths("all-in-one.jks"))
             .password("secret")
@@ -175,8 +170,7 @@ class FileKeyStoreLoaderTest {
         certificates.add(new CertificateOptions(getPath("localhost3.cer"), getPath("localhost3.key")));
         certificates.add(new CertificateOptions(getPath("wildcard.cer"), getPath("wildcard.key")));
 
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
             .certificates(certificates)
             .password("secret")
@@ -204,8 +198,7 @@ class FileKeyStoreLoaderTest {
         final File tempKeyStore = File.createTempFile("gio", ".p12");
         FileCopyUtils.copy(new File(getPath("localhost.p12")), tempKeyStore);
 
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .paths(List.of(tempKeyStore.getAbsolutePath()))
             .password("secret")
@@ -240,8 +233,7 @@ class FileKeyStoreLoaderTest {
 
     @Test
     void should_load_multiple_key_stores() throws KeyStoreException {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .paths(List.of(getPath("localhost.p12"), getPath("localhost2.p12")))
             .password("secret")

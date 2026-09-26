@@ -50,23 +50,18 @@ public class OpenTelemetryTracer extends AbstractService<Tracer> implements Trac
     protected void doStart() throws Exception {
         super.doStart();
         if (instrumenterTracerFactories != null) {
-            instrumenterTracers =
-                instrumenterTracerFactories
-                    .stream()
-                    .map(instrumenterTracerFactory -> {
-                        try {
-                            return instrumenterTracerFactory.createInstrumenterTracer(openTelemetrySdk);
-                        } catch (Exception e) {
-                            log.warn(
-                                "Unable to register extra instrumenter factory [{}]",
-                                instrumenterTracerFactory.getClass().getName(),
-                                e
-                            );
-                        }
-                        return null;
-                    })
-                    .filter(Objects::nonNull)
-                    .toList();
+            instrumenterTracers = instrumenterTracerFactories
+                .stream()
+                .map(instrumenterTracerFactory -> {
+                    try {
+                        return instrumenterTracerFactory.createInstrumenterTracer(openTelemetrySdk);
+                    } catch (Exception e) {
+                        log.warn("Unable to register extra instrumenter factory [{}]", instrumenterTracerFactory.getClass().getName(), e);
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .toList();
         }
     }
 
@@ -169,18 +164,18 @@ public class OpenTelemetryTracer extends AbstractService<Tracer> implements Trac
     public void injectSpanContext(final Context vertxContext, final BiConsumer<String, String> textMapSetter) {
         io.opentelemetry.context.Context currentContext = VertxContextStorage.getContext(vertxContext);
         if (currentContext != null) {
-            W3CTraceContextPropagator
-                .getInstance()
-                .inject(currentContext, null, (nullCarrier, key, value) -> textMapSetter.accept(key, value));
+            W3CTraceContextPropagator.getInstance().inject(currentContext, null, (nullCarrier, key, value) ->
+                textMapSetter.accept(key, value)
+            );
         }
     }
 
     @Override
     public void injectSpanContext(final Context vertxContext, final Span span, final BiConsumer<String, String> textMapSetter) {
         if (span instanceof OpenTelemetrySpan<?> openTelemetrySpan) {
-            W3CTraceContextPropagator
-                .getInstance()
-                .inject(openTelemetrySpan.otelContext(), null, (nullCarrier, key, value) -> textMapSetter.accept(key, value));
+            W3CTraceContextPropagator.getInstance().inject(openTelemetrySpan.otelContext(), null, (nullCarrier, key, value) ->
+                textMapSetter.accept(key, value)
+            );
         }
     }
 }
