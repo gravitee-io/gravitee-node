@@ -64,8 +64,7 @@ class VertxRedisClientFactoryTest {
 
         @Test
         void shouldBuildSentinelRedisOptions() {
-            var sentinel = RedisSentinelOptions
-                .builder()
+            var sentinel = RedisSentinelOptions.builder()
                 .masterId("mymaster")
                 .password("sentinelpw")
                 .nodes(List.of(HostAndPort.builder().host("s1").port(26379).build(), HostAndPort.builder().host("s2").port(26380).build()))
@@ -81,8 +80,7 @@ class VertxRedisClientFactoryTest {
 
         @Test
         void shouldBuildClusterRedisOptions() {
-            var cluster = RedisClusterOptions
-                .builder()
+            var cluster = RedisClusterOptions.builder()
                 .nodes(List.of(HostAndPort.builder().host("c1").port(6379).build(), HostAndPort.builder().host("c2").port(6379).build()))
                 .build();
 
@@ -120,8 +118,7 @@ class VertxRedisClientFactoryTest {
 
         @Test
         void shouldApplyPoolAndTimeoutSettings() {
-            var options = RedisClientOptions
-                .builder()
+            var options = RedisClientOptions.builder()
                 .host("redis.local")
                 .port(6379)
                 .maxPoolSize(10)
@@ -208,12 +205,10 @@ class VertxRedisClientFactoryTest {
 
         @Test
         void shouldShareClientForSameClusterNodesRegardlessOfOrder() {
-            var clusterA = RedisClusterOptions
-                .builder()
+            var clusterA = RedisClusterOptions.builder()
                 .nodes(List.of(HostAndPort.builder().host("c1").port(6379).build(), HostAndPort.builder().host("c2").port(6379).build()))
                 .build();
-            var clusterB = RedisClusterOptions
-                .builder()
+            var clusterB = RedisClusterOptions.builder()
                 .nodes(List.of(HostAndPort.builder().host("c2").port(6379).build(), HostAndPort.builder().host("c1").port(6379).build()))
                 .build();
 
@@ -241,13 +236,11 @@ class VertxRedisClientFactoryTest {
 
         @Test
         void shouldCreateSeparateClientsForDifferentSentinelNodes() {
-            var sentinelA = RedisSentinelOptions
-                .builder()
+            var sentinelA = RedisSentinelOptions.builder()
                 .masterId("mymaster")
                 .nodes(List.of(HostAndPort.builder().host("s1").port(26379).build()))
                 .build();
-            var sentinelB = RedisSentinelOptions
-                .builder()
+            var sentinelB = RedisSentinelOptions.builder()
                 .masterId("mymaster")
                 .nodes(List.of(HostAndPort.builder().host("s2").port(26379).build()))
                 .build();
@@ -461,8 +454,7 @@ class VertxRedisClientFactoryTest {
 
         @Test
         void shouldUseExplicitAlgorithmWhenProvided() {
-            var ssl = io.gravitee.node.vertx.client.ssl.SslOptions
-                .builder()
+            var ssl = io.gravitee.node.vertx.client.ssl.SslOptions.builder()
                 .hostnameVerifier(true)
                 .hostnameVerificationAlgorithm("LDAPS")
                 .build();
@@ -471,8 +463,7 @@ class VertxRedisClientFactoryTest {
 
         @Test
         void shouldFallBackToHttpsWhenAlgorithmNoneAndVerifierTrue() {
-            var ssl = io.gravitee.node.vertx.client.ssl.SslOptions
-                .builder()
+            var ssl = io.gravitee.node.vertx.client.ssl.SslOptions.builder()
                 .hostnameVerifier(true)
                 .hostnameVerificationAlgorithm("NONE")
                 .build();
@@ -481,8 +472,7 @@ class VertxRedisClientFactoryTest {
 
         @Test
         void shouldFallBackToEmptyWhenAlgorithmNoneAndVerifierFalse() {
-            var ssl = io.gravitee.node.vertx.client.ssl.SslOptions
-                .builder()
+            var ssl = io.gravitee.node.vertx.client.ssl.SslOptions.builder()
                 .hostnameVerifier(false)
                 .hostnameVerificationAlgorithm("NONE")
                 .build();
@@ -501,8 +491,7 @@ class VertxRedisClientFactoryTest {
         void explicitAlgorithmTakesPrecedenceOverVerifierFalse() {
             // Verifier=false would normally disable verification, but an explicit
             // algorithm string opts the operator into algorithm-driven verification.
-            var ssl = io.gravitee.node.vertx.client.ssl.SslOptions
-                .builder()
+            var ssl = io.gravitee.node.vertx.client.ssl.SslOptions.builder()
                 .hostnameVerifier(false)
                 .hostnameVerificationAlgorithm("HTTPS")
                 .build();

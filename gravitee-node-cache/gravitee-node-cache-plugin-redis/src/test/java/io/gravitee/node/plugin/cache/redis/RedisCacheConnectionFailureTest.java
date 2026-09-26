@@ -52,22 +52,21 @@ public class RedisCacheConnectionFailureTest {
         final var options = RedisClientOptions.builder().host("test").port(6379).build();
         final var vertx = Vertx.vertx();
         final var cm = new RedisCacheManager(options, new VertxRedisClientFactory(vertx));
-        redisCache =
-            cm.getOrCreateCache(
-                "test",
-                CacheConfiguration.builder().build(),
-                new ValueMapper<String, String>() {
-                    @Override
-                    public String toCachedValue(String value) {
-                        return value;
-                    }
-
-                    @Override
-                    public String toValue(String cachedValue) {
-                        return cachedValue;
-                    }
+        redisCache = cm.getOrCreateCache(
+            "test",
+            CacheConfiguration.builder().build(),
+            new ValueMapper<String, String>() {
+                @Override
+                public String toCachedValue(String value) {
+                    return value;
                 }
-            );
+
+                @Override
+                public String toValue(String cachedValue) {
+                    return cachedValue;
+                }
+            }
+        );
     }
 
     @Test

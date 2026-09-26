@@ -251,23 +251,15 @@ class RedisConfigurationProviderTest {
 
             SslOptions ssl = RedisConfigurationProvider.from(env, PREFIX).getSsl();
 
-            assertThat(ssl.getKeyStore())
-                .isInstanceOfSatisfying(
-                    JKSKeyStore.class,
-                    ks -> {
-                        assertThat(ks.getPath()).isEqualTo("/etc/redis/keystore.jks");
-                        assertThat(ks.getPassword()).isEqualTo("kspass");
-                        assertThat(ks.getAlias()).isEqualTo("redis");
-                    }
-                );
-            assertThat(ssl.getTrustStore())
-                .isInstanceOfSatisfying(
-                    JKSTrustStore.class,
-                    ts -> {
-                        assertThat(ts.getPath()).isEqualTo("/etc/redis/truststore.jks");
-                        assertThat(ts.getPassword()).isEqualTo("tspass");
-                    }
-                );
+            assertThat(ssl.getKeyStore()).isInstanceOfSatisfying(JKSKeyStore.class, ks -> {
+                assertThat(ks.getPath()).isEqualTo("/etc/redis/keystore.jks");
+                assertThat(ks.getPassword()).isEqualTo("kspass");
+                assertThat(ks.getAlias()).isEqualTo("redis");
+            });
+            assertThat(ssl.getTrustStore()).isInstanceOfSatisfying(JKSTrustStore.class, ts -> {
+                assertThat(ts.getPath()).isEqualTo("/etc/redis/truststore.jks");
+                assertThat(ts.getPassword()).isEqualTo("tspass");
+            });
         }
 
         @Test
@@ -295,16 +287,13 @@ class RedisConfigurationProviderTest {
 
             SslOptions ssl = RedisConfigurationProvider.from(env, PREFIX).getSsl();
 
-            assertThat(ssl.getKeyStore())
-                .isInstanceOfSatisfying(
-                    PEMKeyStore.class,
-                    ks -> {
-                        assertThat(ks.getCertPath()).isEqualTo("/etc/redis/client.crt");
-                        assertThat(ks.getKeyPath()).isEqualTo("/etc/redis/client.key");
-                    }
-                );
-            assertThat(ssl.getTrustStore())
-                .isInstanceOfSatisfying(PEMTrustStore.class, ts -> assertThat(ts.getPath()).isEqualTo("/etc/redis/ca.crt"));
+            assertThat(ssl.getKeyStore()).isInstanceOfSatisfying(PEMKeyStore.class, ks -> {
+                assertThat(ks.getCertPath()).isEqualTo("/etc/redis/client.crt");
+                assertThat(ks.getKeyPath()).isEqualTo("/etc/redis/client.key");
+            });
+            assertThat(ssl.getTrustStore()).isInstanceOfSatisfying(PEMTrustStore.class, ts ->
+                assertThat(ts.getPath()).isEqualTo("/etc/redis/ca.crt")
+            );
         }
 
         @Test

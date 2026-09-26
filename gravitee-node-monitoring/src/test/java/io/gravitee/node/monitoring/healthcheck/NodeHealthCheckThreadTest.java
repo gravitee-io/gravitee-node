@@ -70,33 +70,32 @@ class NodeHealthCheckThreadTest {
 
         cut.run();
 
-        verify(producer)
-            .write(
-                argThat(healthCheck -> {
-                    assertThat(healthCheck.isHealthy()).isFalse();
-                    assertThat(healthCheck.getEvaluatedAt()).isNotNull();
-                    assertThat(healthCheck.getResults()).isNotNull();
-                    assertThat(healthCheck.getResults().keySet())
-                        .containsAll(probeResultMap.keySet().stream().filter(Probe::isVisibleByDefault).map(Probe::id).toList());
+        verify(producer).write(
+            argThat(healthCheck -> {
+                assertThat(healthCheck.isHealthy()).isFalse();
+                assertThat(healthCheck.getEvaluatedAt()).isNotNull();
+                assertThat(healthCheck.getResults()).isNotNull();
+                assertThat(healthCheck.getResults().keySet()).containsAll(
+                    probeResultMap.keySet().stream().filter(Probe::isVisibleByDefault).map(Probe::id).toList()
+                );
 
-                    return true;
-                })
-            );
+                return true;
+            })
+        );
 
-        verify(alertEventProducer)
-            .send(
-                argThat(event -> {
-                    assertThat(event.type()).isEqualTo(NODE_HEALTHCHECK);
-                    assertThat(event.properties().get(PROPERTY_NODE_ID)).isEqualTo(NODE_ID);
-                    assertThat(event.properties().get(PROPERTY_NODE_HEALTHY)).isEqualTo("false");
-                    assertThat(event.properties().get(PROPERTY_NODE_HOSTNAME)).isEqualTo("HOSTNAME");
-                    assertThat(event.properties().get(PROPERTY_NODE_APPLICATION)).isEqualTo("APPLICATION");
-                    assertThat(event.properties().get(Event.PROPERTY_ORGANIZATION)).isEqualTo("ORG_ID");
-                    assertThat(event.properties().get(Event.PROPERTY_ENVIRONMENT)).isEqualTo("ENV_ID");
+        verify(alertEventProducer).send(
+            argThat(event -> {
+                assertThat(event.type()).isEqualTo(NODE_HEALTHCHECK);
+                assertThat(event.properties().get(PROPERTY_NODE_ID)).isEqualTo(NODE_ID);
+                assertThat(event.properties().get(PROPERTY_NODE_HEALTHY)).isEqualTo("false");
+                assertThat(event.properties().get(PROPERTY_NODE_HOSTNAME)).isEqualTo("HOSTNAME");
+                assertThat(event.properties().get(PROPERTY_NODE_APPLICATION)).isEqualTo("APPLICATION");
+                assertThat(event.properties().get(Event.PROPERTY_ORGANIZATION)).isEqualTo("ORG_ID");
+                assertThat(event.properties().get(Event.PROPERTY_ENVIRONMENT)).isEqualTo("ENV_ID");
 
-                    return true;
-                })
-            );
+                return true;
+            })
+        );
     }
 
     private Map<Probe, Result> fakeProbeResults() {

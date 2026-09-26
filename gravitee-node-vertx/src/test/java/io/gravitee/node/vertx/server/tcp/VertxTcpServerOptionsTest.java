@@ -191,8 +191,10 @@ class VertxTcpServerOptionsTest {
 
         final VertxTcpServerOptions options = VertxTcpServerOptions.builder().prefix("servers[0]").environment(environment).build();
 
-        assertThat(options.getKeyStoreLoaderOptions().getKubernetesLocations())
-            .containsExactly("kubernetes://default/my-secret", "kubernetes://default/my-secret2");
+        assertThat(options.getKeyStoreLoaderOptions().getKubernetesLocations()).containsExactly(
+            "kubernetes://default/my-secret",
+            "kubernetes://default/my-secret2"
+        );
         assertThat(options.getKeyStoreLoaderOptions().getPaths()).isEmpty();
     }
 
@@ -203,7 +205,8 @@ class VertxTcpServerOptionsTest {
             .getPropertySources()
             .stream()
             .findFirst()
-            .ifPresent(propertySource -> ((PropertySource<Properties>) propertySource).getSource().remove("servers[0].ssl.truststore.path")
+            .ifPresent(propertySource ->
+                ((PropertySource<Properties>) propertySource).getSource().remove("servers[0].ssl.truststore.path")
             );
         environment.setProperty("servers[0].ssl.truststore.path[0]", "cert1.pem");
         environment.setProperty("servers[0].ssl.truststore.path[1]", "cert2.pem");
@@ -246,9 +249,8 @@ class VertxTcpServerOptionsTest {
     @Test
     void should_throw_illegal_argument_exception_from_default_port_when_environment_is_set() {
         VertxServerOptionsBuilder<?, ?> builder = VertxTcpServerOptions.builder();
-        final IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> builder.prefix("servers[0]").environment(environment).defaultPort(8080)
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            builder.prefix("servers[0]").environment(environment).defaultPort(8080)
         );
         assertThat(exception.getMessage()).isEqualTo("Default port must be set before environment");
     }
@@ -297,8 +299,7 @@ class VertxTcpServerOptionsTest {
             .findFirst()
             .ifPresent(propertySource -> ((PropertySource<Properties>) propertySource).getSource().remove("servers[0].port"));
 
-        final VertxTcpServerOptions options = VertxTcpServerOptions
-            .builder()
+        final VertxTcpServerOptions options = VertxTcpServerOptions.builder()
             .defaultPort(9876)
             .prefix("servers[0]")
             .environment(environment)
@@ -309,8 +310,7 @@ class VertxTcpServerOptionsTest {
 
     @Test
     void should_build_with_default_and_not_use_specified_default_port_when_port_explicitly_set_using_environment_configuration() {
-        final VertxTcpServerOptions options = VertxTcpServerOptions
-            .builder()
+        final VertxTcpServerOptions options = VertxTcpServerOptions.builder()
             .defaultPort(1234)
             .prefix("servers[0]")
             .environment(environment)

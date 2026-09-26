@@ -125,14 +125,13 @@ class JettyHttpServerProbeTest {
 
     private int startServer() {
         serverSideClose = new CountDownLatch(1);
-        server =
-            vertx
-                .createNetServer()
-                .connectHandler(socket -> socket.closeHandler(event -> serverSideClose.countDown()))
-                .listen(0, "localhost")
-                .toCompletionStage()
-                .toCompletableFuture()
-                .join();
+        server = vertx
+            .createNetServer()
+            .connectHandler(socket -> socket.closeHandler(event -> serverSideClose.countDown()))
+            .listen(0, "localhost")
+            .toCompletionStage()
+            .toCompletableFuture()
+            .join();
         return server.actualPort();
     }
 }

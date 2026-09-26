@@ -114,8 +114,10 @@ public class NotificationTriggerTest {
         );
 
         when(condition.test(any())).thenReturn(true);
-        when(notificationAcknowledgeRepository.findByResourceIdAndTypeAndAudienceId(any(), any(), any(), any()))
-            .thenReturn(Maybe.empty(), Maybe.just(new NotificationAcknowledge()));
+        when(notificationAcknowledgeRepository.findByResourceIdAndTypeAndAudienceId(any(), any(), any(), any())).thenReturn(
+            Maybe.empty(),
+            Maybe.just(new NotificationAcknowledge())
+        );
         when(notifierFactory.create(any())).thenReturn(Optional.of(notifier));
         when(notifier.send(any(), any())).thenReturn(CompletableFuture.allOf());
         when(notificationAcknowledgeRepository.create(any())).thenReturn(Single.just(new NotificationAcknowledge()));
@@ -126,8 +128,9 @@ public class NotificationTriggerTest {
         Thread.sleep(2000);
 
         verify(notificationAcknowledgeRepository, atLeast(1)).findByResourceIdAndTypeAndAudienceId(any(), any(), any(), any());
-        verify(notificationAcknowledgeRepository)
-            .create(argThat(na -> na.getResourceId().equals("notifid") && na.getType().equals("email")));
+        verify(notificationAcknowledgeRepository).create(
+            argThat(na -> na.getResourceId().equals("notifid") && na.getType().equals("email"))
+        );
         verify(vertx, times(2)).setTimer(anyLong(), any());
 
         cut.stop();
@@ -151,8 +154,10 @@ public class NotificationTriggerTest {
         );
 
         when(condition.test(any())).thenReturn(true);
-        when(notificationAcknowledgeRepository.findByResourceIdAndTypeAndAudienceId(any(), any(), any(), any()))
-            .thenReturn(Maybe.empty(), Maybe.just(new NotificationAcknowledge()));
+        when(notificationAcknowledgeRepository.findByResourceIdAndTypeAndAudienceId(any(), any(), any(), any())).thenReturn(
+            Maybe.empty(),
+            Maybe.just(new NotificationAcknowledge())
+        );
         when(notifierFactory.create(any())).thenReturn(Optional.of(notifier));
         when(notifier.send(any(), any())).thenReturn(CompletableFuture.allOf());
         when(notificationAcknowledgeRepository.create(any())).thenReturn(Single.just(new NotificationAcknowledge()));
@@ -164,8 +169,9 @@ public class NotificationTriggerTest {
         Thread.sleep(2000);
 
         verify(notificationAcknowledgeRepository, atLeast(1)).findByResourceIdAndTypeAndAudienceId(any(), any(), any(), any());
-        verify(notificationAcknowledgeRepository)
-            .create(argThat(na -> na.getResourceId().equals("notifid") && na.getType().equals("email")));
+        verify(notificationAcknowledgeRepository).create(
+            argThat(na -> na.getResourceId().equals("notifid") && na.getType().equals("email"))
+        );
         verify(vertx, times(1)).setTimer(anyLong(), any());
     }
 
@@ -188,8 +194,9 @@ public class NotificationTriggerTest {
 
         when(condition.test(any())).thenReturn(true);
         when(resendCondition.apply(any(), any())).thenReturn(false);
-        when(notificationAcknowledgeRepository.findByResourceIdAndTypeAndAudienceId(any(), any(), any(), any()))
-            .thenReturn(Maybe.just(new NotificationAcknowledge()));
+        when(notificationAcknowledgeRepository.findByResourceIdAndTypeAndAudienceId(any(), any(), any(), any())).thenReturn(
+            Maybe.just(new NotificationAcknowledge())
+        );
         cut.start();
         cut.handle(1l);
 
@@ -227,8 +234,9 @@ public class NotificationTriggerTest {
         notificationAcknowledge.setResourceId(definition.getResourceId());
         notificationAcknowledge.setResourceType(definition.getResourceType());
 
-        when(notificationAcknowledgeRepository.findByResourceIdAndTypeAndAudienceId(any(), any(), any(), any()))
-            .thenReturn(Maybe.just(notificationAcknowledge));
+        when(notificationAcknowledgeRepository.findByResourceIdAndTypeAndAudienceId(any(), any(), any(), any())).thenReturn(
+            Maybe.just(notificationAcknowledge)
+        );
         when(notifierFactory.create(any())).thenReturn(Optional.of(notifier));
         when(notifier.send(any(), any())).thenReturn(CompletableFuture.allOf());
 
@@ -239,8 +247,9 @@ public class NotificationTriggerTest {
 
         verify(notificationAcknowledgeRepository, atLeast(1)).findByResourceIdAndTypeAndAudienceId(any(), any(), any(), any());
         verify(notificationAcknowledgeRepository, never()).create(any());
-        verify(notificationAcknowledgeRepository)
-            .update(argThat(na -> na.getResourceId().equals("notifid") && na.getType().equals("email")));
+        verify(notificationAcknowledgeRepository).update(
+            argThat(na -> na.getResourceId().equals("notifid") && na.getType().equals("email"))
+        );
         cut.stop();
     }
 }

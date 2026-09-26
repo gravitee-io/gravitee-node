@@ -41,8 +41,9 @@ class OTelSslOptionsFactoryTest {
 
     @Test
     void should_build_jks_keystore_from_content_when_path_is_not_set() {
-        var result = factory(configuration().keystoreType("JKS").keystoreContent(STORE_CONTENT).keystorePassword("secret").build())
-            .buildKeyCertOptions();
+        var result = factory(
+            configuration().keystoreType("JKS").keystoreContent(STORE_CONTENT).keystorePassword("secret").build()
+        ).buildKeyCertOptions();
 
         assertThat(result).isInstanceOf(JksOptions.class);
         var jks = (JksOptions) result;
@@ -53,8 +54,9 @@ class OTelSslOptionsFactoryTest {
 
     @Test
     void should_build_pkcs12_keystore_from_content_when_path_is_not_set() {
-        var result = factory(configuration().keystoreType("PKCS12").keystoreContent(STORE_CONTENT).keystorePassword("secret").build())
-            .buildKeyCertOptions();
+        var result = factory(
+            configuration().keystoreType("PKCS12").keystoreContent(STORE_CONTENT).keystorePassword("secret").build()
+        ).buildKeyCertOptions();
 
         assertThat(result).isInstanceOf(PfxOptions.class);
         var pfx = (PfxOptions) result;
@@ -66,8 +68,7 @@ class OTelSslOptionsFactoryTest {
     void should_prefer_keystore_path_over_content() {
         var result = factory(
             configuration().keystoreType("JKS").keystorePath("/path/to/keystore.jks").keystoreContent(STORE_CONTENT).build()
-        )
-            .buildKeyCertOptions();
+        ).buildKeyCertOptions();
 
         var jks = (JksOptions) result;
         assertThat(jks.getPath()).isEqualTo("/path/to/keystore.jks");
@@ -116,8 +117,9 @@ class OTelSslOptionsFactoryTest {
 
     @Test
     void should_build_jks_truststore_from_content_when_path_is_not_set() {
-        var result = factory(configuration().truststoreType("JKS").truststoreContent(STORE_CONTENT).truststorePassword("secret").build())
-            .buildTrustOptions();
+        var result = factory(
+            configuration().truststoreType("JKS").truststoreContent(STORE_CONTENT).truststorePassword("secret").build()
+        ).buildTrustOptions();
 
         assertThat(result).isInstanceOf(JksOptions.class);
         var jks = (JksOptions) result;
@@ -138,8 +140,7 @@ class OTelSslOptionsFactoryTest {
     void should_prefer_truststore_path_over_content() {
         var result = factory(
             configuration().truststoreType("JKS").truststorePath("/path/to/truststore.jks").truststoreContent(STORE_CONTENT).build()
-        )
-            .buildTrustOptions();
+        ).buildTrustOptions();
 
         var jks = (JksOptions) result;
         assertThat(jks.getPath()).isEqualTo("/path/to/truststore.jks");
@@ -162,8 +163,9 @@ class OTelSslOptionsFactoryTest {
 
     @Test
     void should_leave_truststore_empty_when_content_is_not_valid_base64() {
-        var result = (PfxOptions) factory(configuration().truststoreType("PKCS12").truststoreContent("not base64!").build())
-            .buildTrustOptions();
+        var result = (PfxOptions) factory(
+            configuration().truststoreType("PKCS12").truststoreContent("not base64!").build()
+        ).buildTrustOptions();
 
         assertThat(result).isNotNull();
         assertThat(result.getValue()).isNull();

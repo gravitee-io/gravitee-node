@@ -66,13 +66,12 @@ public abstract class AbstractKubernetesKeyStoreLoader<T> extends AbstractKeySto
     }
 
     protected void startWatch() {
-        this.disposable =
-            watch()
-                .observeOn(Schedulers.computation())
-                .flatMapCompletable(t -> loadKeyStore(t).andThen(Completable.fromRunnable(this::emitKeyStoreEvent)))
-                .doOnError(throwable -> log.error("An error occurred during keystore refresh. Restarting watch.", throwable))
-                .retry()
-                .subscribe();
+        this.disposable = watch()
+            .observeOn(Schedulers.computation())
+            .flatMapCompletable(t -> loadKeyStore(t).andThen(Completable.fromRunnable(this::emitKeyStoreEvent)))
+            .doOnError(throwable -> log.error("An error occurred during keystore refresh. Restarting watch.", throwable))
+            .retry()
+            .subscribe();
     }
 
     @Override

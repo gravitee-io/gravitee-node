@@ -132,8 +132,7 @@ class DefaultLicenseManagerTest {
         mockPluginRegistry();
 
         final License3J license3J = mock(License3J.class);
-        final License license = DefaultLicense
-            .builder()
+        final License license = DefaultLicense.builder()
             .referenceType(License.REFERENCE_TYPE_PLATFORM)
             .referenceId(License.REFERENCE_ID_PLATFORM)
             .license3j(license3J)
@@ -153,8 +152,7 @@ class DefaultLicenseManagerTest {
         mockPluginRegistry();
 
         final License3J license3J = mock(License3J.class);
-        final License license = DefaultLicense
-            .builder()
+        final License license = DefaultLicense.builder()
             .referenceType(License.REFERENCE_TYPE_PLATFORM)
             .referenceId(License.REFERENCE_ID_PLATFORM)
             .license3j(license3J)
@@ -182,13 +180,13 @@ class DefaultLicenseManagerTest {
 
         cut.registerOrganizationLicense("orgId", license);
 
-        final ForbiddenFeatureException exception = assertThrows(
-            ForbiddenFeatureException.class,
-            () -> cut.validatePluginFeatures("orgId", List.of(kafkaPlugin, mqtt5Plugin))
+        final ForbiddenFeatureException exception = assertThrows(ForbiddenFeatureException.class, () ->
+            cut.validatePluginFeatures("orgId", List.of(kafkaPlugin, mqtt5Plugin))
         );
 
-        assertThat(exception.getMessage())
-            .isEqualTo("Plugin [kafka] cannot be loaded because the feature [apim-en-endpoint-kafka] is not allowed by the license.");
+        assertThat(exception.getMessage()).isEqualTo(
+            "Plugin [kafka] cannot be loaded because the feature [apim-en-endpoint-kafka] is not allowed by the license."
+        );
         assertThat(exception.getFeatures()).contains(new LicenseManager.ForbiddenFeature("apim-en-endpoint-kafka", "kafka"));
     }
 

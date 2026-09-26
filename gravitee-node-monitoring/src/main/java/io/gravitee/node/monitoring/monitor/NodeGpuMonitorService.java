@@ -63,13 +63,9 @@ public class NodeGpuMonitorService extends AbstractService<NodeGpuMonitorService
             // Codec already registered (e.g. on service restart), ignore.
         }
 
-        producer =
-            vertx
-                .eventBus()
-                .sender(
-                    GIO_NODE_GPU_BUS,
-                    new DeliveryOptions().setTracingPolicy(TracingPolicy.IGNORE).setCodecName(GpuInfoCodec.CODEC_NAME)
-                );
+        producer = vertx
+            .eventBus()
+            .sender(GIO_NODE_GPU_BUS, new DeliveryOptions().setTracingPolicy(TracingPolicy.IGNORE).setCodecName(GpuInfoCodec.CODEC_NAME));
 
         executorService = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "node-gpu-monitor"));
         executorService.scheduleWithFixedDelay(this::collectAndPublish, 0, gpuConfiguration.delay(), gpuConfiguration.unit());

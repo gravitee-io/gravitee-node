@@ -72,9 +72,8 @@ public class ClusterPluginHandler extends AbstractPluginHandler {
 
                 // Retrieve actual ClusterManager bean and register it as Singleton
                 ClusterManager clusterManager = (ClusterManager) context.getBean(pluginClass);
-                DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) (
-                    (ConfigurableApplicationContext) applicationContext
-                ).getBeanFactory();
+                DefaultListableBeanFactory beanFactory =
+                    (DefaultListableBeanFactory) ((ConfigurableApplicationContext) applicationContext).getBeanFactory();
                 beanFactory.registerSingleton(ClusterManager.class.getName(), clusterManager);
                 log.info("Cluster manager plugin '{}' installed.", plugin.id());
             } else {

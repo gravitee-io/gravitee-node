@@ -101,8 +101,7 @@ class RedactSpanExporterTest {
         var tracer = buildTracer(new RedactionConfig(List.of(new RedactionRule("http.request.header.*"))));
         var vertxCtx = VertxContext.createNewDuplicatedContext(vertx.getOrCreateContext());
 
-        var request = InternalRequest
-            .builder()
+        var request = InternalRequest.builder()
             .name("test-span")
             .attributes(
                 Map.of("http.request.header.authorization", "Bearer token", "http.request.header.x-api-key", "my-key", "http.method", "GET")
@@ -177,8 +176,9 @@ class RedactSpanExporterTest {
             assertThat(resultList.get(0)).isSameAs(safe);
             // Second span was wrapped — reference is NOT the original
             assertThat(resultList.get(1)).isNotSameAs(sensitive);
-            assertThat(resultList.get(1).getAttributes().get(AttributeKey.stringKey("secret.key")))
-                .isEqualTo(RedactionRule.DEFAULT_REPLACEMENT);
+            assertThat(resultList.get(1).getAttributes().get(AttributeKey.stringKey("secret.key"))).isEqualTo(
+                RedactionRule.DEFAULT_REPLACEMENT
+            );
         }
     }
 
@@ -198,8 +198,7 @@ class RedactSpanExporterTest {
                 new RedactionConfig(List.of(new RedactionRule("secret.key")))
             );
 
-            SpanData span = TestSpanData
-                .builder()
+            SpanData span = TestSpanData.builder()
                 .setName("test")
                 .setKind(SpanKind.INTERNAL)
                 .setStartEpochNanos(0)
@@ -219,8 +218,9 @@ class RedactSpanExporterTest {
             // Span was wrapped — not the original reference
             assertThat(result.get(0)).isNotSameAs(span);
             // Event attribute is redacted
-            assertThat(result.get(0).getEvents().get(0).getAttributes().get(AttributeKey.stringKey("secret.key")))
-                .isEqualTo(RedactionRule.DEFAULT_REPLACEMENT);
+            assertThat(result.get(0).getEvents().get(0).getAttributes().get(AttributeKey.stringKey("secret.key"))).isEqualTo(
+                RedactionRule.DEFAULT_REPLACEMENT
+            );
         }
 
         @Test
@@ -231,8 +231,7 @@ class RedactSpanExporterTest {
                 new RedactionConfig(List.of(new RedactionRule("never.matches")))
             );
 
-            SpanData span = TestSpanData
-                .builder()
+            SpanData span = TestSpanData.builder()
                 .setName("test")
                 .setKind(SpanKind.INTERNAL)
                 .setStartEpochNanos(0)
@@ -265,8 +264,7 @@ class RedactSpanExporterTest {
             EventData sensitiveEvent = EventData.create(2L, "evt2", Attributes.of(AttributeKey.stringKey("secret.key"), "password"), 1);
             EventData safeEvent2 = EventData.create(3L, "evt3", Attributes.of(AttributeKey.stringKey("safe"), "b"), 1);
 
-            SpanData span = TestSpanData
-                .builder()
+            SpanData span = TestSpanData.builder()
                 .setName("test")
                 .setKind(SpanKind.INTERNAL)
                 .setStartEpochNanos(0)
@@ -286,8 +284,9 @@ class RedactSpanExporterTest {
             assertThat(events.get(2)).isSameAs(safeEvent2);
             // Second is a new EventData with the redacted value
             assertThat(events.get(1)).isNotSameAs(sensitiveEvent);
-            assertThat(events.get(1).getAttributes().get(AttributeKey.stringKey("secret.key")))
-                .isEqualTo(RedactionRule.DEFAULT_REPLACEMENT);
+            assertThat(events.get(1).getAttributes().get(AttributeKey.stringKey("secret.key"))).isEqualTo(
+                RedactionRule.DEFAULT_REPLACEMENT
+            );
         }
     }
 
@@ -359,8 +358,7 @@ class RedactSpanExporterTest {
 
     /** Builds a minimal {@link SpanData} with a single string attribute for unit tests. */
     private static SpanData testSpan(String attrKey, String attrValue) {
-        return TestSpanData
-            .builder()
+        return TestSpanData.builder()
             .setName("test")
             .setKind(SpanKind.INTERNAL)
             .setStartEpochNanos(0)

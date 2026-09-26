@@ -83,15 +83,14 @@ class NodeMonitoringEventHandlerTest {
 
         when(nodeMonitoringService.createOrUpdate(any())).thenAnswer(invocation -> Single.just(invocation.getArgument(0)));
         vertx.eventBus().publish(NodeInfosService.GIO_NODE_INFOS_BUS, nodeInfos);
-        verify(nodeMonitoringService, timeout(500))
-            .createOrUpdate(
-                argThat(monitoring -> {
-                    assertThat(monitoring.getNodeId()).isEqualTo("nodeId");
-                    assertThat(monitoring.getEvaluatedAt().getTime()).isEqualTo(nodeInfos.getEvaluatedAt());
-                    assertThat(monitoring.getType()).isEqualTo(Monitoring.NODE_INFOS);
-                    return true;
-                })
-            );
+        verify(nodeMonitoringService, timeout(500)).createOrUpdate(
+            argThat(monitoring -> {
+                assertThat(monitoring.getNodeId()).isEqualTo("nodeId");
+                assertThat(monitoring.getEvaluatedAt().getTime()).isEqualTo(nodeInfos.getEvaluatedAt());
+                assertThat(monitoring.getType()).isEqualTo(Monitoring.NODE_INFOS);
+                return true;
+            })
+        );
     }
 
     @Test
@@ -99,21 +98,19 @@ class NodeMonitoringEventHandlerTest {
         final HealthCheck healthCheck = new HealthCheck(System.currentTimeMillis(), Map.of("test", Result.healthy("ok")));
         vertx.eventBus().publish(NodeHealthCheckService.GIO_NODE_HEALTHCHECK_BUS, healthCheck);
 
-        verify(nodeMonitoringService, timeout(500))
-            .createOrUpdate(
-                argThat(monitoring -> {
-                    assertThat(monitoring.getNodeId()).isEqualTo("nodeId");
-                    assertThat(monitoring.getEvaluatedAt().getTime()).isEqualTo(healthCheck.getEvaluatedAt());
-                    assertThat(monitoring.getType()).isEqualTo(Monitoring.HEALTH_CHECK);
-                    return true;
-                })
-            );
+        verify(nodeMonitoringService, timeout(500)).createOrUpdate(
+            argThat(monitoring -> {
+                assertThat(monitoring.getNodeId()).isEqualTo("nodeId");
+                assertThat(monitoring.getEvaluatedAt().getTime()).isEqualTo(healthCheck.getEvaluatedAt());
+                assertThat(monitoring.getType()).isEqualTo(Monitoring.HEALTH_CHECK);
+                return true;
+            })
+        );
     }
 
     @Test
     void should_handle_monitor_event(Vertx vertx) {
-        final Monitor monitor = Monitor
-            .on(NODE_ID)
+        final Monitor monitor = Monitor.on(NODE_ID)
             .at(System.currentTimeMillis())
             .os(OsProbe.getInstance().osInfo())
             .jvm(JvmProbe.getInstance().jvmInfo())
@@ -121,14 +118,13 @@ class NodeMonitoringEventHandlerTest {
             .build();
         vertx.eventBus().publish(NodeMonitorService.GIO_NODE_MONITOR_BUS, monitor);
 
-        verify(nodeMonitoringService, timeout(500))
-            .createOrUpdate(
-                argThat(monitoring -> {
-                    assertThat(monitoring.getNodeId()).isEqualTo("nodeId");
-                    assertThat(monitoring.getEvaluatedAt().getTime()).isEqualTo(monitor.getTimestamp());
-                    assertThat(monitoring.getType()).isEqualTo(Monitoring.MONITOR);
-                    return true;
-                })
-            );
+        verify(nodeMonitoringService, timeout(500)).createOrUpdate(
+            argThat(monitoring -> {
+                assertThat(monitoring.getNodeId()).isEqualTo("nodeId");
+                assertThat(monitoring.getEvaluatedAt().getTime()).isEqualTo(monitor.getTimestamp());
+                assertThat(monitoring.getType()).isEqualTo(Monitoring.MONITOR);
+                return true;
+            })
+        );
     }
 }

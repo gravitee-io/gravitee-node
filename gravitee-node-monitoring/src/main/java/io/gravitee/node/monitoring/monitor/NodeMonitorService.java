@@ -65,21 +65,19 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
 
             executorService = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "node-monitor"));
 
-            producer =
-                vertx
-                    .eventBus()
-                    .registerCodec(new MonitorCodec())
-                    .sender(
-                        GIO_NODE_MONITOR_BUS,
-                        new DeliveryOptions().setTracingPolicy(TracingPolicy.IGNORE).setCodecName(MonitorCodec.CODEC_NAME)
-                    );
+            producer = vertx
+                .eventBus()
+                .registerCodec(new MonitorCodec())
+                .sender(
+                    GIO_NODE_MONITOR_BUS,
+                    new DeliveryOptions().setTracingPolicy(TracingPolicy.IGNORE).setCodecName(MonitorCodec.CODEC_NAME)
+                );
 
             NodeMonitorThread monitorThread = new NodeMonitorThread(producer, node, alertEventProducer, gpuSnapshotRegistry);
 
             // Send an event to notify about the node status
             alertEventProducer.send(
-                Event
-                    .now()
+                Event.now()
                     .type(NODE_LIFECYCLE)
                     .property(PROPERTY_NODE_EVENT, NODE_EVENT_START)
                     .property(PROPERTY_NODE_ID, node.id())
@@ -97,11 +95,11 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
             );
 
             ((ScheduledExecutorService) executorService).scheduleWithFixedDelay(
-                    monitorThread,
-                    0,
-                    monitoringConfiguration.delay(),
-                    monitoringConfiguration.unit()
-                );
+                monitorThread,
+                0,
+                monitoringConfiguration.delay(),
+                monitoringConfiguration.unit()
+            );
 
             managementEndpointManager.register(nodeMonitorManagementEndpoint);
         }
@@ -112,8 +110,7 @@ public class NodeMonitorService extends AbstractService<NodeMonitorService> {
         if (monitoringConfiguration.enabled()) {
             // Send an event to notify about the node status
             alertEventProducer.send(
-                Event
-                    .now()
+                Event.now()
                     .type(NODE_LIFECYCLE)
                     .property(PROPERTY_NODE_EVENT, NODE_EVENT_STOP)
                     .property(PROPERTY_NODE_ID, node.id())
