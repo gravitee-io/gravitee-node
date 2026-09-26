@@ -30,7 +30,6 @@
     <name>Gravitee.io - Plugin - Secret Provider - Mock</name>
 
     <properties>
-        <maven-plugin-assembly.version>3.7.1</maven-plugin-assembly.version>
         <maven-plugin-properties.version>1.2.1</maven-plugin-properties.version>
         <!-- Property used by the publication job in CI-->
         <publish-folder-path>plugins/secret-providers</publish-folder-path>
@@ -97,7 +96,6 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>${maven-plugin-assembly.version}</version>
                 <configuration>
                     <appendAssemblyId>false</appendAssemblyId>
                     <descriptors>

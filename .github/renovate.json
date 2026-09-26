@@ -1,11 +1,3 @@
 {
-    "extends": ["config:base", "schedule:earlyMondays"],
-    "prConcurrentLimit": 3,
-    "rebaseWhen": "conflicted",
-    "packageRules": [
-        {
-            "matchDatasources": ["orb"],
-            "rangeStrategy": "replace"
-        }
-    ]
+    "extends": ["github>gravitee-io/renovate-config:plugin"]
 }
