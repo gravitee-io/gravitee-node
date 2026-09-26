@@ -1,3 +1,10 @@
+## [9.13.1](https://github.com/gravitee-io/gravitee-node/compare/9.13.0...9.13.1) (2026-09-26)
+
+
+### Bug Fixes
+
+* **license:** guard organization license lookup against null id ([#592](https://github.com/gravitee-io/gravitee-node/issues/592)) ([de32b96](https://github.com/gravitee-io/gravitee-node/commit/de32b969679e604cb47baf44caa47d8fb889e433))
+
 # [9.13.0](https://github.com/gravitee-io/gravitee-node/compare/9.12.1...9.13.0) (2026-09-25)
 
 
