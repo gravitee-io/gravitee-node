@@ -70,6 +70,11 @@ public class DefaultLicenseManager extends AbstractService<LicenseManager> imple
 
     @Override
     public License getOrganizationLicense(String organizationId) {
+        if (organizationId == null) {
+            // The backing ConcurrentHashMap rejects null keys; a missing organization degrades to the
+            // platform license via getOrganizationLicenseOrPlatform instead of throwing.
+            return null;
+        }
         return organizationLicenses.getOrDefault(organizationId, Optional.empty()).orElse(null);
     }
 
