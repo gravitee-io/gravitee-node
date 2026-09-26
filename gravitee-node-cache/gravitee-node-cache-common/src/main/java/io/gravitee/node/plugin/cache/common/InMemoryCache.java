@@ -225,48 +225,36 @@ public class InMemoryCache<K, V> implements Cache<K, V> {
 
     @Override
     public V computeIfAbsent(final K key, final Function<? super K, ? extends V> remappingFunction) {
-        this.internalCache.asMap()
-            .computeIfAbsent(
-                key,
-                k -> {
-                    V applied = remappingFunction.apply(k);
-                    notifyListeners(k, applied, null);
-                    return buildExpiringValue(applied);
-                }
-            );
+        this.internalCache.asMap().computeIfAbsent(key, k -> {
+            V applied = remappingFunction.apply(k);
+            notifyListeners(k, applied, null);
+            return buildExpiringValue(applied);
+        });
         return get(key);
     }
 
     @Override
     public V computeIfPresent(final K key, final BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        this.internalCache.asMap()
-            .computeIfPresent(
-                key,
-                (k, v) -> {
-                    V applied = remappingFunction.apply(k, v.value);
-                    notifyListeners(k, applied, v.value);
-                    return buildExpiringValue(applied);
-                }
-            );
+        this.internalCache.asMap().computeIfPresent(key, (k, v) -> {
+            V applied = remappingFunction.apply(k, v.value);
+            notifyListeners(k, applied, v.value);
+            return buildExpiringValue(applied);
+        });
         return get(key);
     }
 
     @Override
     public V compute(final K key, final BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        this.internalCache.asMap()
-            .compute(
-                key,
-                (k, v) -> {
-                    V old = null;
-                    V applied;
-                    if (v != null) {
-                        old = v.value;
-                    }
-                    applied = remappingFunction.apply(k, old);
-                    notifyListeners(k, applied, old);
-                    return buildExpiringValue(applied);
-                }
-            );
+        this.internalCache.asMap().compute(key, (k, v) -> {
+            V old = null;
+            V applied;
+            if (v != null) {
+                old = v.value;
+            }
+            applied = remappingFunction.apply(k, old);
+            notifyListeners(k, applied, old);
+            return buildExpiringValue(applied);
+        });
         return get(key);
     }
 

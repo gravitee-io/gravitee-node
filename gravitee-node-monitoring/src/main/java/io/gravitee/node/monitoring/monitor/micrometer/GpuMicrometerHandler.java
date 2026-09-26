@@ -81,8 +81,7 @@ public class GpuMicrometerHandler implements MeterBinder {
         if (deviceValue(index, accessor) < 0) {
             return;
         }
-        Gauge
-            .builder(name, snapshotSupplier, supplier -> deviceValue(index, accessor))
+        Gauge.builder(name, snapshotSupplier, supplier -> deviceValue(index, accessor))
             .tags(tags)
             .baseUnit(unit)
             .description("GPU metrics of the node")
@@ -94,6 +93,12 @@ public class GpuMicrometerHandler implements MeterBinder {
         if (snapshot == null || snapshot.devices() == null) {
             return Double.NaN;
         }
-        return snapshot.devices().stream().filter(d -> d.index() == index).findFirst().map(accessor::applyAsDouble).orElse(Double.NaN);
+        return snapshot
+            .devices()
+            .stream()
+            .filter(d -> d.index() == index)
+            .findFirst()
+            .map(accessor::applyAsDouble)
+            .orElse(Double.NaN);
     }
 }

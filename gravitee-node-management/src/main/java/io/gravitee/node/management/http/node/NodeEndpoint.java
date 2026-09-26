@@ -65,8 +65,7 @@ public class NodeEndpoint implements ManagementEndpoint {
         data.setMetadata(node.metadata());
 
         try {
-            var body = DatabindCodec
-                .mapper()
+            var body = DatabindCodec.mapper()
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .writerWithDefaultPrettyPrinter()
                 .writeValueAsString(data);

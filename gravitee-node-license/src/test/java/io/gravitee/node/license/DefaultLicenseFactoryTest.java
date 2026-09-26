@@ -95,25 +95,24 @@ class DefaultLicenseFactoryTest {
 
         assertThat(license.getTier()).isNull();
         assertThat(license.getPacks()).containsExactly("event-native");
-        assertThat(license.getFeatures())
-            .containsExactlyInAnyOrder(
-                "apim-en-schema-registry-provider",
-                "apim-en-entrypoint-webhook",
-                "apim-en-endpoint-rabbitmq",
-                "apim-en-entrypoint-websocket",
-                "apim-en-entrypoint-sse",
-                "apim-en-endpoint-solace",
-                "apim-en-entrypoint-http-get",
-                "apim-connectors-advanced",
-                "apim-en-message-reactor",
-                "apim-en-endpoint-jms",
-                "apim-en-endpoint-mqtt5",
-                "apim-en-entrypoint-http-post",
-                "apim-en-endpoint-kafka",
-                "apim-en-endpoint-asb",
-                "apim-en-entrypoint-agent-to-agent",
-                "apim-en-endpoint-agent-to-agent"
-            );
+        assertThat(license.getFeatures()).containsExactlyInAnyOrder(
+            "apim-en-schema-registry-provider",
+            "apim-en-entrypoint-webhook",
+            "apim-en-endpoint-rabbitmq",
+            "apim-en-entrypoint-websocket",
+            "apim-en-entrypoint-sse",
+            "apim-en-endpoint-solace",
+            "apim-en-entrypoint-http-get",
+            "apim-connectors-advanced",
+            "apim-en-message-reactor",
+            "apim-en-endpoint-jms",
+            "apim-en-endpoint-mqtt5",
+            "apim-en-entrypoint-http-post",
+            "apim-en-endpoint-kafka",
+            "apim-en-endpoint-asb",
+            "apim-en-entrypoint-agent-to-agent",
+            "apim-en-endpoint-agent-to-agent"
+        );
         assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_PLATFORM);
         assertThat(license.getReferenceId()).isEqualTo(REFERENCE_ID_PLATFORM);
     }
@@ -128,8 +127,10 @@ class DefaultLicenseFactoryTest {
 
         assertThat(license.getTier()).isNull();
         assertThat(license.getPacks()).containsExactly("enterprise-authorization-engine");
-        assertThat(license.getFeatures())
-            .containsExactlyInAnyOrder("am-authorizationengine-openfga", "am-authorization-gateway-handler-authzen");
+        assertThat(license.getFeatures()).containsExactlyInAnyOrder(
+            "am-authorizationengine-openfga",
+            "am-authorization-gateway-handler-authzen"
+        );
         assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_PLATFORM);
         assertThat(license.getReferenceId()).isEqualTo(REFERENCE_ID_PLATFORM);
     }
@@ -199,38 +200,41 @@ class DefaultLicenseFactoryTest {
         );
 
         assertThat(license.getTier()).isEqualTo("planet");
-        assertThat(license.getPacks())
-            .containsExactlyInAnyOrder("enterprise-features", "enterprise-legacy-upgrade", "enterprise-identity-provider", "unknown");
-        assertThat(license.getFeatures())
-            .containsExactlyInAnyOrder(
-                "apim-api-designer",
-                "apim-dcr-registration",
-                "apim-custom-roles",
-                "apim-audit-trail",
-                "apim-sharding-tags",
-                "apim-openid-connect-sso",
-                "apim-debug-mode",
-                "gravitee-risk-assessment",
-                "risk-assessment",
-                "apim-bridge-gateway",
-                "apim-api-products",
-                "apim-policy-xslt",
-                "apim-policy-ws-security-authentication",
-                "am-idp-salesforce",
-                "am-idp-saml",
-                "am-idp-ldap",
-                "am-idp-kerberos",
-                "am-idp-azure-ad",
-                "am-idp-gateway-handler-saml",
-                "am-gateway-handler-saml-idp",
-                "am-extgrant-xaa",
-                "am-policy-authzen",
-                "am-idp-http-flow",
-                "http-flow-am-idp",
-                "am-idp-france-connect",
-                "am-idp-cas",
-                "cas-am-idp"
-            );
+        assertThat(license.getPacks()).containsExactlyInAnyOrder(
+            "enterprise-features",
+            "enterprise-legacy-upgrade",
+            "enterprise-identity-provider",
+            "unknown"
+        );
+        assertThat(license.getFeatures()).containsExactlyInAnyOrder(
+            "apim-api-designer",
+            "apim-dcr-registration",
+            "apim-custom-roles",
+            "apim-audit-trail",
+            "apim-sharding-tags",
+            "apim-openid-connect-sso",
+            "apim-debug-mode",
+            "gravitee-risk-assessment",
+            "risk-assessment",
+            "apim-bridge-gateway",
+            "apim-api-products",
+            "apim-policy-xslt",
+            "apim-policy-ws-security-authentication",
+            "am-idp-salesforce",
+            "am-idp-saml",
+            "am-idp-ldap",
+            "am-idp-kerberos",
+            "am-idp-azure-ad",
+            "am-idp-gateway-handler-saml",
+            "am-gateway-handler-saml-idp",
+            "am-extgrant-xaa",
+            "am-policy-authzen",
+            "am-idp-http-flow",
+            "http-flow-am-idp",
+            "am-idp-france-connect",
+            "am-idp-cas",
+            "cas-am-idp"
+        );
         assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_PLATFORM);
         assertThat(license.getReferenceId()).isEqualTo(REFERENCE_ID_PLATFORM);
     }
@@ -242,22 +246,19 @@ class DefaultLicenseFactoryTest {
 
     @Test
     void should_throw_invalid_license_when_platform_license_is_expired() {
-        assertThrows(
-            InvalidLicenseException.class,
-            () ->
-                cut.create(
-                    REFERENCE_TYPE_PLATFORM,
-                    REFERENCE_ID_PLATFORM,
-                    generateBytesLicense("universe", null, null, new Date(System.currentTimeMillis() - 3600000))
-                )
+        assertThrows(InvalidLicenseException.class, () ->
+            cut.create(
+                REFERENCE_TYPE_PLATFORM,
+                REFERENCE_ID_PLATFORM,
+                generateBytesLicense("universe", null, null, new Date(System.currentTimeMillis() - 3600000))
+            )
         );
     }
 
     @Test
     void should_throw_malformed_license_when_platform_license_is_unreadable() {
-        assertThrows(
-            MalformedLicenseException.class,
-            () -> cut.create(REFERENCE_TYPE_PLATFORM, REFERENCE_ID_PLATFORM, "unreadable license".getBytes(StandardCharsets.UTF_8))
+        assertThrows(MalformedLicenseException.class, () ->
+            cut.create(REFERENCE_TYPE_PLATFORM, REFERENCE_ID_PLATFORM, "unreadable license".getBytes(StandardCharsets.UTF_8))
         );
     }
 
@@ -351,19 +352,18 @@ class DefaultLicenseFactoryTest {
 
     private void assertUniverseLicense(License license) {
         assertThat(license.getTier()).isEqualTo("universe");
-        assertThat(license.getPacks())
-            .containsExactlyInAnyOrder(
-                "enterprise-features",
-                "enterprise-identity-provider",
-                "enterprise-alert-engine",
-                "enterprise-mfa-factor",
-                "enterprise-secret-manager",
-                "enterprise-legacy-upgrade",
-                "observability",
-                "enterprise-policy",
-                "event-native",
-                "enterprise-authenticator"
-            );
+        assertThat(license.getPacks()).containsExactlyInAnyOrder(
+            "enterprise-features",
+            "enterprise-identity-provider",
+            "enterprise-alert-engine",
+            "enterprise-mfa-factor",
+            "enterprise-secret-manager",
+            "enterprise-legacy-upgrade",
+            "observability",
+            "enterprise-policy",
+            "event-native",
+            "enterprise-authenticator"
+        );
 
         final String[] features = {
             "apim-en-schema-registry-provider",

@@ -93,11 +93,9 @@ public class VertxHttpClientFactory {
     public static String toAbsoluteUri(RequestOptions requestOptions, String defaultHost, int defaultPort) {
         return (
             (Boolean.TRUE.equals(requestOptions.isSsl()) ? "https://" : "http://") +
-            (
-                (requestOptions.getHost() != null ? requestOptions.getHost() : defaultHost) +
+            ((requestOptions.getHost() != null ? requestOptions.getHost() : defaultHost) +
                 (requestOptions.getPort() != null ? ":" + requestOptions.getPort() : (defaultPort != -1 ? ":" + defaultPort : "")) +
-                requestOptions.getURI()
-            )
+                requestOptions.getURI())
         );
     }
 

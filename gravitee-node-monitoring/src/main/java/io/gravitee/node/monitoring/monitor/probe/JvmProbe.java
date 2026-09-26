@@ -70,7 +70,8 @@ public class JvmProbe {
                 MemoryUsage usage = memoryPoolMXBean.getUsage();
                 MemoryUsage peakUsage = memoryPoolMXBean.getPeakUsage();
                 String name = getByMemoryPoolName(memoryPoolMXBean.getName(), null);
-                if (name == null) { // if we can't resolve it, its not interesting.... (Per Gen, Code Cache)
+                if (name == null) {
+                    // if we can't resolve it, its not interesting.... (Per Gen, Code Cache)
                     continue;
                 }
                 pools.add(

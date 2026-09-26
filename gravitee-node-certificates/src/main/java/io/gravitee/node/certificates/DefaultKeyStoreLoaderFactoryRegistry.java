@@ -60,11 +60,9 @@ public class DefaultKeyStoreLoaderFactoryRegistry<O extends AbstractStoreLoaderO
         return (
             options != null &&
             options.getType() != null &&
-            (
-                (options.getPaths() != null && !options.getPaths().isEmpty()) ||
+            ((options.getPaths() != null && !options.getPaths().isEmpty()) ||
                 options.getSecretLocation() != null ||
-                (options.getKubernetesLocations() != null && !options.getKubernetesLocations().isEmpty())
-            )
+                (options.getKubernetesLocations() != null && !options.getKubernetesLocations().isEmpty()))
         );
     }
 
@@ -78,8 +76,8 @@ public class DefaultKeyStoreLoaderFactoryRegistry<O extends AbstractStoreLoaderO
         if (factories.size() > 1) {
             throw new IllegalArgumentException(
                 "KeyStore or TrustStore options are not properly set. Several ways where found to load a keystore, there can only be one. Options were: %s".formatted(
-                        options
-                    )
+                    options
+                )
             );
         }
         if (factories.isEmpty()) {

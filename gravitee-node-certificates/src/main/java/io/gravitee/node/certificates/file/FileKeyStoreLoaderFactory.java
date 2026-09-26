@@ -39,10 +39,8 @@ public class FileKeyStoreLoaderFactory implements KeyStoreLoaderFactory<KeyStore
         return (
             options.getType() != null &&
             SUPPORTED_TYPES.contains(options.getType().toLowerCase()) &&
-            (
-                (options.getPaths() != null && !options.getPaths().isEmpty()) ||
-                (options.getCertificates() != null && !options.getCertificates().isEmpty())
-            )
+            ((options.getPaths() != null && !options.getPaths().isEmpty()) ||
+                (options.getCertificates() != null && !options.getCertificates().isEmpty()))
         );
     }
 

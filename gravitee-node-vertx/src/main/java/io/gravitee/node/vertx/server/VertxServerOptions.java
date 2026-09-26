@@ -136,7 +136,8 @@ public class VertxServerOptions implements ServerOptions {
     }
 
     public abstract static class VertxServerOptionsBuilder<
-        C extends VertxServerOptions, B extends VertxServerOptions.VertxServerOptionsBuilder<C, B>
+        C extends VertxServerOptions,
+        B extends VertxServerOptions.VertxServerOptionsBuilder<C, B>
     > {
 
         protected int defaultPort = DEFAULT_PORT;
@@ -188,12 +189,12 @@ public class VertxServerOptions implements ServerOptions {
             this.openssl(environment.getProperty(prefix + ".ssl.openssl", Boolean.class, DEFAULT_OPENSSL));
             this.tlsProtocols(environment.getProperty(prefix + ".ssl.tlsProtocols"));
             this.sendClientCertificateAuthorities(
-                    environment.getProperty(
-                        prefix + ".ssl.sendClientCertificateAuthorities",
-                        Boolean.class,
-                        DEFAULT_SEND_CLIENT_CERTIFICATE_AUTHORITIES
-                    )
-                );
+                environment.getProperty(
+                    prefix + ".ssl.sendClientCertificateAuthorities",
+                    Boolean.class,
+                    DEFAULT_SEND_CLIENT_CERTIFICATE_AUTHORITIES
+                )
+            );
             this.authorizedTlsCipherSuites(environment.getProperty(prefix + ".ssl.tlsCiphers", List.class));
 
             final String clientAuthValue = environment.getProperty(prefix + ".ssl.clientAuth", DEFAULT_CLIENT_AUTH).toUpperCase();
@@ -210,41 +211,38 @@ public class VertxServerOptions implements ServerOptions {
 
             this.haProxyProtocol(environment.getProperty(prefix + ".haproxy.proxyProtocol", Boolean.class, DEFAULT_HAPROXY_PROTOCOL));
             this.haProxyProtocolTimeout(
-                    environment.getProperty(prefix + ".haproxy.proxyProtocolTimeout", Long.class, DEFAULT_HAPROXY_PROTOCOL_TIMEOUT)
-                );
+                environment.getProperty(prefix + ".haproxy.proxyProtocolTimeout", Long.class, DEFAULT_HAPROXY_PROTOCOL_TIMEOUT)
+            );
 
             this.keyStoreLoaderOptions(
-                    KeyStoreLoaderOptions
-                        .builder()
-                        .type(environment.getProperty(prefix + ".ssl.keystore.type", DEFAULT_STORE_TYPE))
-                        .paths(getArrayValues(prefix + ".ssl.keystore.path"))
-                        .password(environment.getProperty(prefix + ".ssl.keystore.password"))
-                        .certificates(getCertificateValues(prefix + ".ssl.keystore.certificates"))
-                        .kubernetesLocations(getArrayValues(prefix + ".ssl.keystore.kubernetes"))
-                        .secretLocation(environment.getProperty(prefix + ".ssl.keystore.secret"))
-                        .watch(environment.getProperty(prefix + ".ssl.keystore.watch", Boolean.class, DEFAULT_TRUSTSTORE_WATCH))
-                        .defaultAlias(environment.getProperty(prefix + ".ssl.keystore.defaultAlias"))
-                        .build()
-                );
+                KeyStoreLoaderOptions.builder()
+                    .type(environment.getProperty(prefix + ".ssl.keystore.type", DEFAULT_STORE_TYPE))
+                    .paths(getArrayValues(prefix + ".ssl.keystore.path"))
+                    .password(environment.getProperty(prefix + ".ssl.keystore.password"))
+                    .certificates(getCertificateValues(prefix + ".ssl.keystore.certificates"))
+                    .kubernetesLocations(getArrayValues(prefix + ".ssl.keystore.kubernetes"))
+                    .secretLocation(environment.getProperty(prefix + ".ssl.keystore.secret"))
+                    .watch(environment.getProperty(prefix + ".ssl.keystore.watch", Boolean.class, DEFAULT_TRUSTSTORE_WATCH))
+                    .defaultAlias(environment.getProperty(prefix + ".ssl.keystore.defaultAlias"))
+                    .build()
+            );
 
             this.trustStoreLoaderOptions(
-                    TrustStoreLoaderOptions
-                        .builder()
-                        .type(environment.getProperty(prefix + ".ssl.truststore.type", DEFAULT_STORE_TYPE))
-                        .paths(getArrayValues(prefix + ".ssl.truststore.path"))
-                        .password(environment.getProperty(prefix + ".ssl.truststore.password"))
-                        .secretLocation(environment.getProperty(prefix + ".ssl.truststore.secret"))
-                        .watch(environment.getProperty(prefix + ".ssl.truststore.watch", Boolean.class, DEFAULT_TRUSTSTORE_WATCH))
-                        .build()
-                );
+                TrustStoreLoaderOptions.builder()
+                    .type(environment.getProperty(prefix + ".ssl.truststore.type", DEFAULT_STORE_TYPE))
+                    .paths(getArrayValues(prefix + ".ssl.truststore.path"))
+                    .password(environment.getProperty(prefix + ".ssl.truststore.password"))
+                    .secretLocation(environment.getProperty(prefix + ".ssl.truststore.secret"))
+                    .watch(environment.getProperty(prefix + ".ssl.truststore.watch", Boolean.class, DEFAULT_TRUSTSTORE_WATCH))
+                    .build()
+            );
 
             this.crlLoaderOptions(
-                    CRLLoaderOptions
-                        .builder()
-                        .path(environment.getProperty(prefix + ".ssl.crl.path"))
-                        .watch(environment.getProperty(prefix + ".ssl.crl.watch", Boolean.class, true))
-                        .build()
-                );
+                CRLLoaderOptions.builder()
+                    .path(environment.getProperty(prefix + ".ssl.crl.path"))
+                    .watch(environment.getProperty(prefix + ".ssl.crl.watch", Boolean.class, true))
+                    .build()
+            );
             return self();
         }
 

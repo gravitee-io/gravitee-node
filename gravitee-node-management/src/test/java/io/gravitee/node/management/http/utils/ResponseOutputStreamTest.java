@@ -107,11 +107,11 @@ class ResponseOutputStreamTest {
 
         // Capture the drain handler and invoke it immediately
         doAnswer(invocation -> {
-                Handler<Void> handler = invocation.getArgument(0);
-                // Simulate drain by calling the handler
-                handler.handle(null);
-                return response;
-            })
+            Handler<Void> handler = invocation.getArgument(0);
+            // Simulate drain by calling the handler
+            handler.handle(null);
+            return response;
+        })
             .when(response)
             .drainHandler(any());
 

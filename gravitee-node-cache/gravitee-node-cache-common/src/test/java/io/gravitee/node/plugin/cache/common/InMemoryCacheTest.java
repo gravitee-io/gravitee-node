@@ -197,7 +197,9 @@ class InMemoryCacheTest {
                 }
             );
             cache.put(TEST_KEY, TEST_VALUE);
-            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> assertThat(listenerCalled).isTrue());
         }
 
         @Test
@@ -286,7 +288,9 @@ class InMemoryCacheTest {
                 }
             );
             assertThat(cache.rxPut(TEST_KEY, TEST_VALUE).blockingGet()).isNull();
-            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> assertThat(listenerCalled).isTrue());
         }
 
         @Test
@@ -361,7 +365,9 @@ class InMemoryCacheTest {
                 }
             );
             cache.putAll(Map.of(TEST_KEY, TEST_VALUE, TEST_KEY2, TEST_VALUE2));
-            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> assertThat(listenerCalled).isTrue());
         }
 
         @Test
@@ -435,7 +441,9 @@ class InMemoryCacheTest {
                 }
             );
             cache.rxPutAll(Map.of(TEST_KEY, TEST_VALUE, TEST_KEY2, TEST_VALUE2)).blockingAwait();
-            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> assertThat(listenerCalled).isTrue());
         }
 
         @Test
@@ -525,7 +533,9 @@ class InMemoryCacheTest {
                 }
             );
             assertThat(cache.computeIfAbsent(TEST_KEY, k -> TEST_VALUE)).isEqualTo(TEST_VALUE);
-            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> assertThat(listenerCalled).isTrue());
         }
     }
 
@@ -593,7 +603,9 @@ class InMemoryCacheTest {
                 }
             );
             assertThat(cache.rxComputeIfAbsent(TEST_KEY, k -> TEST_VALUE).blockingGet()).isEqualTo(TEST_VALUE);
-            await().atMost(500, TimeUnit.MILLISECONDS).untilAsserted(() -> assertThat(listenerCalled).isTrue());
+            await()
+                .atMost(500, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> assertThat(listenerCalled).isTrue());
         }
     }
 

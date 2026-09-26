@@ -49,17 +49,13 @@ public class GpuMonitorEventHandler extends AbstractService<GpuMonitorEventHandl
     protected void doStart() throws Exception {
         super.doStart();
 
-        consumer =
-            vertx
-                .eventBus()
-                .localConsumer(
-                    NodeGpuMonitorService.GIO_NODE_GPU_BUS,
-                    event -> {
-                        GpuInfo info = event.body();
-                        registry.update(info);
-                        bindMicrometer(info);
-                    }
-                );
+        consumer = vertx
+            .eventBus()
+            .localConsumer(NodeGpuMonitorService.GIO_NODE_GPU_BUS, event -> {
+                GpuInfo info = event.body();
+                registry.update(info);
+                bindMicrometer(info);
+            });
     }
 
     private void bindMicrometer(GpuInfo info) {

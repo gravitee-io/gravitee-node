@@ -126,7 +126,8 @@ public class VertxHttpServerOptions extends VertxServerOptions {
     private int http2StreamWindowSize = DEFAULT_HTTP2_STREAM_WINDOW_SIZE;
 
     public abstract static class VertxHttpServerOptionsBuilder<
-        C extends VertxHttpServerOptions, B extends VertxHttpServerOptionsBuilder<C, B>
+        C extends VertxHttpServerOptions,
+        B extends VertxHttpServerOptionsBuilder<C, B>
     >
         extends VertxServerOptionsBuilder<C, B> {
 
@@ -140,45 +141,41 @@ public class VertxHttpServerOptions extends VertxServerOptions {
             this.maxHeaderSize(environment.getProperty(prefix + ".maxHeaderSize", Integer.class, DEFAULT_MAX_HEADER_SIZE));
             this.maxChunkSize(environment.getProperty(prefix + ".maxChunkSize", Integer.class, DEFAULT_MAX_CHUNK_SIZE));
             this.compressionSupported(
-                    environment.getProperty(prefix + ".compressionSupported", Boolean.class, DEFAULT_COMPRESSION_SUPPORTED)
-                );
+                environment.getProperty(prefix + ".compressionSupported", Boolean.class, DEFAULT_COMPRESSION_SUPPORTED)
+            );
             this.maxInitialLineLength(
-                    environment.getProperty(prefix + ".maxInitialLineLength", Integer.class, DEFAULT_MAX_INITIAL_LINE_LENGTH)
-                );
+                environment.getProperty(prefix + ".maxInitialLineLength", Integer.class, DEFAULT_MAX_INITIAL_LINE_LENGTH)
+            );
             this.maxFormAttributeSize(
-                    environment.getProperty(prefix + ".maxFormAttributeSize", Integer.class, DEFAULT_MAX_FORM_ATTRIBUTE_SIZE)
-                );
+                environment.getProperty(prefix + ".maxFormAttributeSize", Integer.class, DEFAULT_MAX_FORM_ATTRIBUTE_SIZE)
+            );
 
             this.compressionSupported(
-                    environment.getProperty(prefix + ".compressionSupported", Boolean.class, DEFAULT_COMPRESSION_SUPPORTED)
-                );
+                environment.getProperty(prefix + ".compressionSupported", Boolean.class, DEFAULT_COMPRESSION_SUPPORTED)
+            );
             this.websocketEnabled(environment.getProperty(prefix + ".websocket.enabled", Boolean.class, DEFAULT_WEBSOCKET_ENABLED));
             this.websocketSubProtocols(environment.getProperty(prefix + ".websocket.subProtocols"));
             this.perMessageWebSocketCompressionSupported(
-                    environment.getProperty(
-                        prefix + ".websocket.perMessageWebSocketCompressionSupported",
-                        Boolean.class,
-                        DEFAULT_PER_MESSAGE_WEBSOCKET_COMPRESSION_SUPPORTED
-                    )
-                );
+                environment.getProperty(
+                    prefix + ".websocket.perMessageWebSocketCompressionSupported",
+                    Boolean.class,
+                    DEFAULT_PER_MESSAGE_WEBSOCKET_COMPRESSION_SUPPORTED
+                )
+            );
             this.perFrameWebSocketCompressionSupported(
-                    environment.getProperty(
-                        prefix + ".websocket.perFrameWebSocketCompressionSupported",
-                        Boolean.class,
-                        DEFAULT_PER_FRAME_WEBSOCKET_COMPRESSION_SUPPORTED
-                    )
-                );
+                environment.getProperty(
+                    prefix + ".websocket.perFrameWebSocketCompressionSupported",
+                    Boolean.class,
+                    DEFAULT_PER_FRAME_WEBSOCKET_COMPRESSION_SUPPORTED
+                )
+            );
 
             this.maxWebSocketMessageSize(
-                    environment.getProperty(
-                        prefix + ".websocket.maxWebSocketMessageSize",
-                        Integer.class,
-                        DEFAULT_MAX_WEBSOCKET_MESSAGE_SIZE
-                    )
-                );
+                environment.getProperty(prefix + ".websocket.maxWebSocketMessageSize", Integer.class, DEFAULT_MAX_WEBSOCKET_MESSAGE_SIZE)
+            );
             this.maxWebSocketFrameSize(
-                    environment.getProperty(prefix + ".websocket.maxWebSocketFrameSize", Integer.class, DEFAULT_MAX_WEBSOCKET_FRAME_SIZE)
-                );
+                environment.getProperty(prefix + ".websocket.maxWebSocketFrameSize", Integer.class, DEFAULT_MAX_WEBSOCKET_FRAME_SIZE)
+            );
 
             final int connectionWindowSize = environment.getProperty(
                 prefix + ".http2.connectionWindowSize",

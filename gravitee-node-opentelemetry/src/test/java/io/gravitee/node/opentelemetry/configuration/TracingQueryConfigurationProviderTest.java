@@ -61,8 +61,9 @@ class TracingQueryConfigurationProviderTest {
         environment.setProperty(PREFIX + ".headers[1].name", "Authorization");
         environment.setProperty(PREFIX + ".headers[1].value", "Bearer secret");
 
-        assertThat(TracingQueryConfigurationProvider.from(environment, PREFIX).getHeaders())
-            .containsExactlyInAnyOrderEntriesOf(Map.of("X-Scope-OrgID", "tenant-1", "Authorization", "Bearer secret"));
+        assertThat(TracingQueryConfigurationProvider.from(environment, PREFIX).getHeaders()).containsExactlyInAnyOrderEntriesOf(
+            Map.of("X-Scope-OrgID", "tenant-1", "Authorization", "Bearer secret")
+        );
     }
 
     @Test
@@ -124,7 +125,8 @@ class TracingQueryConfigurationProviderTest {
         environment.setProperty("apim.tracing.tempo.url", "http://tempo-staging:3200");
 
         assertThat(TracingQueryConfigurationProvider.from(environment, PREFIX).getUrl()).isEqualTo("http://tempo-prod:3200");
-        assertThat(TracingQueryConfigurationProvider.from(environment, "apim.tracing.tempo").getUrl())
-            .isEqualTo("http://tempo-staging:3200");
+        assertThat(TracingQueryConfigurationProvider.from(environment, "apim.tracing.tempo").getUrl()).isEqualTo(
+            "http://tempo-staging:3200"
+        );
     }
 }

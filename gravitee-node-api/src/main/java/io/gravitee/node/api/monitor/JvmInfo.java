@@ -50,7 +50,7 @@ public final class JvmInfo implements Serializable {
             if (heapMax == 0) {
                 return -1;
             }
-            return (short) (heapUsed * 100 / heapMax);
+            return (short) ((heapUsed * 100) / heapMax);
         }
     }
 

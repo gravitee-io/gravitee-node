@@ -68,14 +68,12 @@ public class KubernetesPemRegistryKeyStoreLoader extends AbstractKubernetesKeySt
 
     @Override
     protected Completable init() {
-        return Flowable
-            .fromIterable(resources.keySet())
+        return Flowable.fromIterable(resources.keySet())
             .flatMapCompletable(location -> {
                 if (CERTIFICATE_FORMAT_PEM_REGISTRY.equals(location)) {
                     String currentNamespace = KubernetesConfig.getInstance().getCurrentNamespace();
                     return this.kubernetesClient.get(
-                            ResourceQuery
-                                .configMaps(currentNamespace)
+                            ResourceQuery.configMaps(currentNamespace)
                                 .labelSelector(
                                     LabelSelector.equals(GRAVITEEIO_PEM_REGISTRY_LABEL, CERTIFICATE_FORMAT_PEM_REGISTRY.toLowerCase())
                                 )
@@ -108,8 +106,7 @@ public class KubernetesPemRegistryKeyStoreLoader extends AbstractKubernetesKeySt
 
     @Override
     protected Flowable<ConfigMap> watch() {
-        return Flowable
-            .fromIterable(resources.keySet())
+        return Flowable.fromIterable(resources.keySet())
             .flatMap(location ->
                 kubernetesClient
                     .watch(WatchQuery.<ConfigMap>from(location).build())
@@ -141,8 +138,7 @@ public class KubernetesPemRegistryKeyStoreLoader extends AbstractKubernetesKeySt
     }
 
     private Completable generateKeystoreFromPemRegistry(ConfigMap configMap) {
-        return Flowable
-            .fromIterable(configMap.getData().values())
+        return Flowable.fromIterable(configMap.getData().values())
             .map(objectMapper::readTree)
             .filter(JsonNode::isArray)
             .flatMap(Flowable::fromIterable)

@@ -94,39 +94,36 @@ public class License3J {
             .entrySet()
             .stream()
             .collect(
-                Collectors.toMap(
-                    Map.Entry::getKey,
-                    entry -> {
-                        javax0.license3j.Feature feature = entry.getValue();
-                        if (feature.isBigDecimal()) {
-                            return feature.getBigDecimal();
-                        } else if (feature.isBigInteger()) {
-                            return feature.getBigInteger();
-                        } else if (feature.isBinary()) {
-                            return feature.getBinary();
-                        } else if (feature.isByte()) {
-                            return feature.getByte();
-                        } else if (feature.isDate()) {
-                            return feature.getDate();
-                        } else if (feature.isDouble()) {
-                            return feature.getDouble();
-                        } else if (feature.isFloat()) {
-                            return feature.getFloat();
-                        } else if (feature.isInt()) {
-                            return feature.getInt();
-                        } else if (feature.isLong()) {
-                            return feature.getLong();
-                        } else if (feature.isShort()) {
-                            return feature.getShort();
-                        } else if (feature.isString()) {
-                            return feature.getString();
-                        } else if (feature.isUUID()) {
-                            return feature.getUUID();
-                        }
-                        // Unreachable code.
-                        return feature.valueString();
+                Collectors.toMap(Map.Entry::getKey, entry -> {
+                    javax0.license3j.Feature feature = entry.getValue();
+                    if (feature.isBigDecimal()) {
+                        return feature.getBigDecimal();
+                    } else if (feature.isBigInteger()) {
+                        return feature.getBigInteger();
+                    } else if (feature.isBinary()) {
+                        return feature.getBinary();
+                    } else if (feature.isByte()) {
+                        return feature.getByte();
+                    } else if (feature.isDate()) {
+                        return feature.getDate();
+                    } else if (feature.isDouble()) {
+                        return feature.getDouble();
+                    } else if (feature.isFloat()) {
+                        return feature.getFloat();
+                    } else if (feature.isInt()) {
+                        return feature.getInt();
+                    } else if (feature.isLong()) {
+                        return feature.getLong();
+                    } else if (feature.isShort()) {
+                        return feature.getShort();
+                    } else if (feature.isString()) {
+                        return feature.getString();
+                    } else if (feature.isUUID()) {
+                        return feature.getUUID();
                     }
-                )
+                    // Unreachable code.
+                    return feature.valueString();
+                })
             );
     }
 
@@ -136,13 +133,10 @@ public class License3J {
             .entrySet()
             .stream()
             .collect(
-                Collectors.toMap(
-                    Map.Entry::getKey,
-                    entry -> {
-                        javax0.license3j.Feature feature = entry.getValue();
-                        return feature.valueString();
-                    }
-                )
+                Collectors.toMap(Map.Entry::getKey, entry -> {
+                    javax0.license3j.Feature feature = entry.getValue();
+                    return feature.valueString();
+                })
             );
     }
 

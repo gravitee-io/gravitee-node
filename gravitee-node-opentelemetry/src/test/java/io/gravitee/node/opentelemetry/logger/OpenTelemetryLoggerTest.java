@@ -53,8 +53,7 @@ class OpenTelemetryLoggerTest {
     @BeforeEach
     void setUp() throws Exception {
         logExporter = InMemoryLogRecordExporter.create();
-        SdkLoggerProvider loggerProvider = SdkLoggerProvider
-            .builder()
+        SdkLoggerProvider loggerProvider = SdkLoggerProvider.builder()
             .addLogRecordProcessor(SimpleLogRecordProcessor.create(logExporter))
             .build();
         openTelemetry = OpenTelemetrySdk.builder().setLoggerProvider(loggerProvider).build();

@@ -68,8 +68,7 @@ class KubernetesSecretKeyStoreLoaderTest {
 
     @Test
     void should_load_tls_secret() throws IOException, KeyStoreException {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
             .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret"))
             .watch(false)
@@ -90,9 +89,9 @@ class KubernetesSecretKeyStoreLoaderTest {
         metadata.setUid("/namespaces/gio/secrets/my-tls-secret");
         secret.setMetadata(metadata);
 
-        Mockito
-            .when(kubernetesClient.get(ResourceQuery.<Secret>from(options.getKubernetesLocations().get(0)).build()))
-            .thenReturn(Maybe.just(secret));
+        Mockito.when(kubernetesClient.get(ResourceQuery.<Secret>from(options.getKubernetesLocations().get(0)).build())).thenReturn(
+            Maybe.just(secret)
+        );
 
         AtomicReference<KeyStoreEvent> bundleRef = new AtomicReference<>(null);
         cut.setEventHandler(bundleRef::set);
@@ -106,8 +105,7 @@ class KubernetesSecretKeyStoreLoaderTest {
 
     @Test
     void should_load_opaque_secret() throws IOException, KeyStoreException {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret/keystore"))
             .password("secret")
@@ -143,8 +141,7 @@ class KubernetesSecretKeyStoreLoaderTest {
 
     @Test
     void should_not_load_opaque_secret_pem() {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
             .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret/pem"))
             .password("secret")
@@ -163,8 +160,7 @@ class KubernetesSecretKeyStoreLoaderTest {
 
     @Test
     void should_not_load_opaque_secret_with_no_data_key() {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret"))
             .password("secret")
@@ -188,8 +184,7 @@ class KubernetesSecretKeyStoreLoaderTest {
 
     @Test
     void should_not_load_with_invalid_secret_type() {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PKCS12)
             .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret/invalid-keystore"))
             .password("secret")
@@ -208,8 +203,7 @@ class KubernetesSecretKeyStoreLoaderTest {
 
     @Test
     void should_watch_secret() throws IOException, KeyStoreException, InterruptedException {
-        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions
-            .builder()
+        final KeyStoreLoaderOptions options = KeyStoreLoaderOptions.builder()
             .type(KeyStoreLoader.CERTIFICATE_FORMAT_PEM)
             .kubernetesLocations(Collections.singletonList("/gio/secrets/my-tls-secret"))
             .watch(true)
@@ -247,12 +241,12 @@ class KubernetesSecretKeyStoreLoaderTest {
         modifiedSecretEvent.setType("MODIFIED");
         modifiedSecretEvent.setObject(modifiedSecret);
 
-        Mockito
-            .when(kubernetesClient.get(ResourceQuery.<Secret>from(options.getKubernetesLocations().get(0)).build()))
-            .thenReturn(Maybe.just(secret));
-        Mockito
-            .when(kubernetesClient.watch(WatchQuery.<Secret>from(options.getKubernetesLocations().get(0)).build()))
-            .thenReturn(Flowable.just(modifiedSecretEvent));
+        Mockito.when(kubernetesClient.get(ResourceQuery.<Secret>from(options.getKubernetesLocations().get(0)).build())).thenReturn(
+            Maybe.just(secret)
+        );
+        Mockito.when(kubernetesClient.watch(WatchQuery.<Secret>from(options.getKubernetesLocations().get(0)).build())).thenReturn(
+            Flowable.just(modifiedSecretEvent)
+        );
 
         CountDownLatch latch = new CountDownLatch(2);
         AtomicReference<KeyStoreEvent> bundleRef = new AtomicReference<>(null);
