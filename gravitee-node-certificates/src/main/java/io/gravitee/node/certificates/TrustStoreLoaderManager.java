@@ -32,13 +32,34 @@ public class TrustStoreLoaderManager extends AbstractKeyStoreLoaderManager {
 
     private final boolean sendClientCertificateAuthorities;
 
-    public TrustStoreLoaderManager(String target, KeyStoreLoader platformKeyStoreLoader) {
-        this(target, platformKeyStoreLoader, false);
+    /**
+     * @param sendClientCertificateAuthorities whether the configured trust store is advertised to clients as
+     *        {@code certificate_authorities} during the handshake. Never covers entries registered at runtime.
+     * @param failOnUntrustedClientCertificate whether a client certificate that no trust anchor validates breaks
+     *        the handshake. See {@link RefreshableX509TrustManagerDelegator#RefreshableX509TrustManagerDelegator(String, boolean)}.
+     */
+    public record Options(boolean sendClientCertificateAuthorities, boolean failOnUntrustedClientCertificate) {
+        public static Options strict() {
+            return new Options(false, true);
+        }
     }
 
+    public TrustStoreLoaderManager(String target, KeyStoreLoader platformKeyStoreLoader) {
+        this(target, platformKeyStoreLoader, Options.strict());
+    }
+
+    /**
+     * @deprecated use {@link #TrustStoreLoaderManager(String, KeyStoreLoader, Options)}, which also carries how an
+     *             untrusted client certificate is treated.
+     */
+    @Deprecated
     public TrustStoreLoaderManager(String target, KeyStoreLoader platformKeyStoreLoader, boolean sendClientCertificateAuthorities) {
-        super(target, platformKeyStoreLoader, new RefreshableX509TrustManagerDelegator(target));
-        this.sendClientCertificateAuthorities = sendClientCertificateAuthorities;
+        this(target, platformKeyStoreLoader, new Options(sendClientCertificateAuthorities, true));
+    }
+
+    public TrustStoreLoaderManager(String target, KeyStoreLoader platformKeyStoreLoader, Options options) {
+        super(target, platformKeyStoreLoader, new RefreshableX509TrustManagerDelegator(target, options.failOnUntrustedClientCertificate()));
+        this.sendClientCertificateAuthorities = options.sendClientCertificateAuthorities();
     }
 
     /**

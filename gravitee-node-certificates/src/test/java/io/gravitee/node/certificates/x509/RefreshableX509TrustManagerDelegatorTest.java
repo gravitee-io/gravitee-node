@@ -213,8 +213,8 @@ class RefreshableX509TrustManagerDelegatorTest {
         assertThat(cut.getAcceptedIssuers()).containsExactly(certificate);
     }
 
-    private X509Certificate readCertificate(String path) throws Exception {
-        URL resource = this.getClass().getResource(path);
+    private static X509Certificate readCertificate(String path) throws Exception {
+        URL resource = RefreshableX509TrustManagerDelegatorTest.class.getResource(path);
         assertThat(resource).isNotNull();
         try (var is = resource.openStream()) {
             return (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(is);
@@ -404,5 +404,63 @@ class RefreshableX509TrustManagerDelegatorTest {
         assertThatCode(() -> cut.checkServerTrusted(chain, "RSA")).doesNotThrowAnyException();
         assertThatCode(() -> cut.checkServerTrusted(chain, "RSA", sslEngine)).doesNotThrowAnyException();
         assertThatCode(() -> cut.checkServerTrusted(chain, "RSA", socket)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void should_reject_revoked_certificate_with_crl_even_when_an_unknown_certificate_would_be_tolerated() throws Exception {
+        RefreshableX509TrustManagerDelegator lenient = new RefreshableX509TrustManagerDelegator("http", false);
+        lenient.refresh(
+            KeyStoreUtils.initFromPath(
+                CERTIFICATE_FORMAT_JKS,
+                RefreshableX509TrustManagerDelegatorTest.class.getResource("/crls/ca-truststore.jks").getPath(),
+                PASSWORD
+            )
+        );
+        lenient.refresh(List.of(crl()));
+        X509Certificate[] chain = new X509Certificate[] {
+            readCertificate("/crls/cert-client-revoked.pem"),
+            readCertificate("/crls/ca.pem"),
+        };
+
+        assertThatCode(() -> lenient.checkClientTrusted(chain, "RSA"))
+            .isInstanceOf(CertificateException.class)
+            .hasMessageContaining("revoked");
+        assertThatCode(() -> lenient.checkClientTrusted(chain, "RSA", sslEngine))
+            .isInstanceOf(CertificateException.class)
+            .hasMessageContaining("revoked");
+        assertThatCode(() -> lenient.checkClientTrusted(chain, "RSA", socket))
+            .isInstanceOf(CertificateException.class)
+            .hasMessageContaining("revoked");
+    }
+
+    @Test
+    void should_still_validate_server_certificates_when_an_unknown_client_certificate_would_be_tolerated() throws Exception {
+        RefreshableX509TrustManagerDelegator lenient = new RefreshableX509TrustManagerDelegator("http", false);
+        lenient.refresh(loadTruststore());
+        X509Certificate[] untrustedChain = new X509Certificate[] { readCertificate("/crls/ca.pem") };
+
+        assertThatCode(() -> lenient.checkServerTrusted(untrustedChain, "RSA")).isInstanceOf(CertificateException.class);
+        assertThatCode(() -> lenient.checkServerTrusted(untrustedChain, "RSA", sslEngine)).isInstanceOf(CertificateException.class);
+        assertThatCode(() -> lenient.checkServerTrusted(untrustedChain, "RSA", socket)).isInstanceOf(CertificateException.class);
+    }
+
+    @Test
+    void should_still_refuse_server_certificates_with_an_empty_trust_store_when_client_certificates_are_tolerated() throws Exception {
+        RefreshableX509TrustManagerDelegator lenient = new RefreshableX509TrustManagerDelegator("http", false);
+        KeyStore emptyTrustStore = KeyStore.getInstance("PKCS12");
+        emptyTrustStore.load(null, PASSWORD.toCharArray());
+        lenient.refresh(emptyTrustStore);
+        X509Certificate[] chain = new X509Certificate[] { readCertificate("/crls/ca.pem") };
+
+        // the client path skips an anchorless trust manager, the server path must not
+        assertThatCode(() -> lenient.checkServerTrusted(chain, "RSA")).isInstanceOf(Throwable.class);
+    }
+
+    private static CRL crl() throws Exception {
+        URL resource = RefreshableX509TrustManagerDelegatorTest.class.getResource("/crls/crl-with-revocations.pem");
+        assertThat(resource).isNotNull();
+        try (InputStream is = resource.openStream()) {
+            return CertificateFactory.getInstance("X.509").generateCRL(is);
+        }
     }
 }

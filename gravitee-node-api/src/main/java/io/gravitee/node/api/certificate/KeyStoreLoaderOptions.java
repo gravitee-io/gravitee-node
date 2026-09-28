@@ -31,4 +31,19 @@ public class KeyStoreLoaderOptions extends AbstractStoreLoaderOptions {
 
     private final List<CertificateOptions> certificates;
     private final String defaultAlias;
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * A key store has two sources the common ones do not cover: inline certificates, and a self-signed type that
+     * needs no source at all since it generates its own.
+     */
+    @Override
+    public boolean namesASource() {
+        return (
+            super.namesASource() ||
+            (certificates != null && !certificates.isEmpty()) ||
+            KeyStoreLoader.CERTIFICATE_FORMAT_SELF_SIGNED.equalsIgnoreCase(getType())
+        );
+    }
 }
