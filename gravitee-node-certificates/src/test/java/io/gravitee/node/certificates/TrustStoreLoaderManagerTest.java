@@ -60,7 +60,11 @@ class TrustStoreLoaderManagerTest {
     }
 
     private TrustStoreLoaderManager managerSendingClientCertificateAuthorities() throws Exception {
-        TrustStoreLoaderManager manager = new TrustStoreLoaderManager("fake", platformKeystoreLoader, true);
+        TrustStoreLoaderManager manager = new TrustStoreLoaderManager(
+            "fake",
+            platformKeystoreLoader,
+            new TrustStoreLoaderManager.Options(true, true)
+        );
         // registered before start, so the file watcher threads are released even if an assertion fails
         managers.add(manager);
         manager.start();

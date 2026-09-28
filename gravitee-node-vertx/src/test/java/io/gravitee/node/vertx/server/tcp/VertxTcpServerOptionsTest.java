@@ -113,7 +113,7 @@ class VertxTcpServerOptionsTest {
         assertThat(options.getKeyStoreLoaderOptions().getPaths()).containsExactly(KEYSTORE_PATH);
         assertThat(options.getKeyStoreLoaderOptions().getPassword()).isEqualTo(KEYSTORE_PASSWORD);
         assertThat(options.getKeyStoreLoaderOptions().getType()).isEqualTo(KEYSTORE_TYPE);
-        assertThat(options.getTrustStoreLoaderOptions().isConfigured()).isTrue();
+        assertThat(options.getTrustStoreLoaderOptions().namesASource()).isTrue();
         assertThat(options.getTrustStoreLoaderOptions().getPassword()).isEqualTo(TRUSTSTORE_PASSWORD);
         assertThat(options.getTrustStoreLoaderOptions().getPaths()).containsExactly(TRUSTSTORE_PATH);
         assertThat(options.getTrustStoreLoaderOptions().getType()).isEqualTo(TRUSTSTORE_TYPE);
@@ -137,7 +137,7 @@ class VertxTcpServerOptionsTest {
         assertThat(options.getKeyStoreLoaderOptions().getType()).isEqualTo(DEFAULT_STORE_TYPE);
         assertThat(options.getKeyStoreLoaderOptions().getPaths()).isEmpty();
         assertThat(options.getTrustStoreLoaderOptions()).isNotNull();
-        assertThat(options.getTrustStoreLoaderOptions().isConfigured()).isFalse();
+        assertThat(options.getTrustStoreLoaderOptions().namesASource()).isFalse();
         assertThat(options.getKeyStoreLoaderOptions().getPaths()).isEmpty();
         assertThat(options.isSni()).isEqualTo(DEFAULT_SNI);
         assertThat(options.isOpenssl()).isEqualTo(DEFAULT_OPENSSL);
