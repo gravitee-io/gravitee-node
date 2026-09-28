@@ -194,7 +194,7 @@ class VertxHttpServerOptionsTest {
         assertThat(options.getKeyStoreLoaderOptions().getType()).isEqualToIgnoringCase(DEFAULT_STORE_TYPE);
         assertThat(options.getKeyStoreLoaderOptions().getPaths()).isEmpty();
         assertThat(options.getKeyStoreLoaderOptions().getPassword()).isNull();
-        assertThat(options.getTrustStoreLoaderOptions().isConfigured()).isFalse();
+        assertThat(options.getTrustStoreLoaderOptions().namesASource()).isFalse();
         assertThat(options.getTrustStoreLoaderOptions().getType()).isEqualToIgnoringCase(DEFAULT_STORE_TYPE);
         assertThat(options.getTrustStoreLoaderOptions().getPassword()).isNull();
         assertThat(options.getTrustStoreLoaderOptions().getType()).isEqualTo(DEFAULT_STORE_TYPE);

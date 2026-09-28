@@ -48,24 +48,6 @@ public class DefaultKeyStoreLoaderFactoryRegistry<O extends AbstractStoreLoaderO
         return loaderFactories;
     }
 
-    /**
-     * Whether the options point at anything to load from. The fields are the ones every store shares; the
-     * per-format extras (certificates, self-signed) are matched by their own factory, so a configuration
-     * carrying one of those never reaches this test.
-     *
-     * <p>Deliberately not {@code TrustStoreLoaderOptions#isConfigured()}: that one looks at paths alone,
-     * and reusing it here would treat a secret or Kubernetes location as nothing at all.
-     */
-    private static boolean namesASource(final AbstractStoreLoaderOptions options) {
-        return (
-            options != null &&
-            options.getType() != null &&
-            ((options.getPaths() != null && !options.getPaths().isEmpty()) ||
-                options.getSecretLocation() != null ||
-                (options.getKubernetesLocations() != null && !options.getKubernetesLocations().isEmpty()))
-        );
-    }
-
     @Override
     public KeyStoreLoader createLoader(O options) {
         List<KeyStoreLoaderFactory<O>> factories = getLoaderFactories()
@@ -81,9 +63,11 @@ public class DefaultKeyStoreLoaderFactoryRegistry<O extends AbstractStoreLoaderO
             );
         }
         if (factories.isEmpty()) {
-            if (!namesASource(options)) {
+            if (options == null || !options.namesASource()) {
                 // The common case, not a misconfiguration: createLoader is called for every server whether or not
                 // it is secured, and the options are always built, with a default type and nothing to load from.
+                // The per-format extras (certificates, self-signed) are claimed by their own factory above, so a
+                // configuration carrying one of those never reaches this branch.
                 log.debug("No store configured, returning a no-op loader");
             } else {
                 // Something was configured and no source claimed it — most often a type that is only wired for
