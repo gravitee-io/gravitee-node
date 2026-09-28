@@ -57,7 +57,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class TrustManagerHandshakeTest {
 
-    private static final String PASSWORD = "secret";
+    private static final String PASSWORD = HandshakeSupport.PASSWORD;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -95,11 +95,11 @@ class TrustManagerHandshakeTest {
         );
 
         SSLContext serverContext = SSLContext.getInstance("TLS");
-        serverContext.init(serverKeyManagers(), new TrustManager[] { trustManager }, null);
+        serverContext.init(HandshakeSupport.serverKeyManagers(), new TrustManager[] { trustManager }, null);
 
         CapturingKeyManager clientKeyManager = new CapturingKeyManager();
         SSLContext clientContext = SSLContext.getInstance("TLS");
-        clientContext.init(new KeyManager[] { clientKeyManager }, new TrustManager[] { new TrustEverything() }, null);
+        clientContext.init(new KeyManager[] { clientKeyManager }, new TrustManager[] { new HandshakeSupport.TrustEverything() }, null);
 
         try (SSLServerSocket server = (SSLServerSocket) serverContext.getServerSocketFactory().createServerSocket(0)) {
             server.setEnabledProtocols(new String[] { protocol });
@@ -121,13 +121,6 @@ class TrustManagerHandshakeTest {
             accepted.get(30, TimeUnit.SECONDS);
         }
         return clientKeyManager.sentAuthorities;
-    }
-
-    private static KeyManager[] serverKeyManagers() throws Exception {
-        KeyStore keyStore = KeyStoreUtils.initFromPath(CERTIFICATE_FORMAT_PKCS12, resource("/keystores/localhost.p12"), PASSWORD);
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        keyManagerFactory.init(keyStore, PASSWORD.toCharArray());
-        return keyManagerFactory.getKeyManagers();
     }
 
     private static String resource(String path) {
@@ -175,35 +168,6 @@ class TrustManagerHandshakeTest {
         @Override
         public PrivateKey getPrivateKey(String alias) {
             return null;
-        }
-    }
-
-    /**
-     * The client is not what is under test here, it only has to complete the handshake.
-     */
-    private static class TrustEverything extends X509ExtendedTrustManager {
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) {}
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) {}
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {}
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) {}
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) {}
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {}
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[0];
         }
     }
 }

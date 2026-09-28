@@ -30,4 +30,22 @@ public abstract class AbstractStoreLoaderOptions {
 
     @Builder.Default
     private boolean watch = DEFAULT_WATCH;
+
+    /**
+     * Whether these options point at anything to load from. The default options every server is given, secured
+     * or not, carry a type and no source at all, which is how an operator who configured a store is told apart
+     * from one who did not.
+     * <p>
+     * Only the fields every store shares are tested here. A subclass with sources of its own overrides this.
+     *
+     * @return {@code true} when a type and at least one source (paths, secret or Kubernetes location) are set.
+     */
+    public boolean namesASource() {
+        return (
+            type != null &&
+            ((paths != null && !paths.isEmpty()) ||
+                secretLocation != null ||
+                (kubernetesLocations != null && !kubernetesLocations.isEmpty()))
+        );
+    }
 }

@@ -28,6 +28,13 @@ import lombok.experimental.SuperBuilder;
 @ToString
 public class TrustStoreLoaderOptions extends AbstractStoreLoaderOptions {
 
+    /**
+     * Kept as-is, answering on file paths alone, so that no existing caller changes behaviour.
+     *
+     * @deprecated use {@link #namesASource()}, which answers the question this name asks: it also counts a trust
+     *             store mounted from a secret or from a Kubernetes location, which this method reports as absent.
+     */
+    @Deprecated
     public boolean isConfigured() {
         return getType() != null && getPaths() != null && !getPaths().isEmpty();
     }
