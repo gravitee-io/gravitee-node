@@ -1,3 +1,10 @@
+## [7.28.2](https://github.com/gravitee-io/gravitee-node/compare/7.28.1...7.28.2) (2026-09-29)
+
+
+### Bug Fixes
+
+* **management:** release prometheus concurrency slot when scrape hangs ([#615](https://github.com/gravitee-io/gravitee-node/issues/615)) ([9aac925](https://github.com/gravitee-io/gravitee-node/commit/9aac925819d9e4057adb1ea6135656190b90b934))
+
 ## [7.28.1](https://github.com/gravitee-io/gravitee-node/compare/7.28.0...7.28.1) (2026-09-07)
 
 
