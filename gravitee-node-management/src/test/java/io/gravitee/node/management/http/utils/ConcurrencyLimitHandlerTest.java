@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
@@ -250,6 +251,7 @@ class ConcurrencyLimitHandlerTest {
         HttpServerRequest req = mock(HttpServerRequest.class);
         HttpServerResponse resp = mock(HttpServerResponse.class);
         when(ctx.request()).thenReturn(req);
+        when(ctx.vertx()).thenReturn(mock(Vertx.class));
         when(req.path()).thenReturn("/test");
         when(ctx.response()).thenReturn(resp);
         when(resp.setStatusCode(anyInt())).thenReturn(resp);

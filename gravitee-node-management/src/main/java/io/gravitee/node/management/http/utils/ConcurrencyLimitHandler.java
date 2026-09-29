@@ -8,6 +8,7 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,12 +16,19 @@ public class ConcurrencyLimitHandler implements Handler<RoutingContext> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConcurrencyLimitHandler.class);
     private static final int TOO_MANY_REQUESTS = 429;
+    public static final long DEFAULT_TIMEOUT_MS = 30_000;
 
     private final Semaphore semaphore;
     private final int maxConcurrentRequests;
+    private final long timeoutMs;
 
     public ConcurrencyLimitHandler(int maxConcurrentRequests) {
+        this(maxConcurrentRequests, DEFAULT_TIMEOUT_MS);
+    }
+
+    public ConcurrencyLimitHandler(int maxConcurrentRequests, long timeoutMs) {
         this.maxConcurrentRequests = maxConcurrentRequests;
+        this.timeoutMs = timeoutMs;
         this.semaphore = new Semaphore(maxConcurrentRequests);
     }
 
@@ -49,11 +57,30 @@ public class ConcurrencyLimitHandler implements Handler<RoutingContext> {
         // limit — permanently breaking the concurrency gate. The AtomicBoolean ensures we
         // release exactly once regardless of how many handlers fire.
         AtomicBoolean released = new AtomicBoolean(false);
+        AtomicLong timerId = new AtomicLong(-1);
         Runnable release = () -> {
             if (released.compareAndSet(false, true)) {
+                context.vertx().cancelTimer(timerId.get());
                 semaphore.release();
             }
         };
+
+        // A request whose work never completes fires none of the handlers below, so the permit
+        // would be lost for good. Abort it after the timeout; the worker thread may stay stuck.
+        timerId.set(
+            context
+                .vertx()
+                .setTimer(
+                    timeoutMs,
+                    id -> {
+                        LOGGER.warn("The endpoint {} did not respond within {} ms, aborting request", context.request().path(), timeoutMs);
+                        release.run();
+                        if (!response.closed()) {
+                            response.close();
+                        }
+                    }
+                )
+        );
 
         response.bodyEndHandler(v -> release.run());
         response.exceptionHandler(e -> {

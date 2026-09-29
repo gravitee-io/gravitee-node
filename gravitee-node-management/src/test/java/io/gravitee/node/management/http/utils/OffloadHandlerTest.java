@@ -40,7 +40,7 @@ public class OffloadHandlerTest {
     void should_execute_blocking_handler_successfully() {
         Promise<Void> promise = Promise.promise();
 
-        when(vertx.<Void>executeBlocking(handlerCaptor.capture())).thenReturn(Future.succeededFuture());
+        when(vertx.<Void>executeBlocking(handlerCaptor.capture(), eq(false))).thenReturn(Future.succeededFuture());
 
         var handler = OffloadHandler.ofCtx((ctx, p) -> {
             assertEquals(routingContext, ctx);
@@ -55,7 +55,7 @@ public class OffloadHandlerTest {
 
     @Test
     void should_execute_blocking_handler_with_failure() {
-        when(vertx.<Void>executeBlocking(any(Handler.class))).thenReturn(Future.failedFuture(new RuntimeException("fail")));
+        when(vertx.<Void>executeBlocking(any(Handler.class), eq(false))).thenReturn(Future.failedFuture(new RuntimeException("fail")));
 
         var handler = OffloadHandler.ofCtx((ctx, p) -> {});
 

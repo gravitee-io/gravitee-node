@@ -39,13 +39,17 @@ public class OffloadHandler {
             }
             ctx
                 .vertx()
-                .<Void>executeBlocking(promise -> {
-                    try {
-                        blockingHandler.handle(ctx, promise);
-                    } catch (Throwable t) {
-                        promise.tryFail(t);
-                    }
-                })
+                .<Void>executeBlocking(
+                    promise -> {
+                        try {
+                            blockingHandler.handle(ctx, promise);
+                        } catch (Throwable t) {
+                            promise.tryFail(t);
+                        }
+                    },
+                    // Unordered: an ordered task queue would park every later request behind one hung task.
+                    false
+                )
                 .onSuccess(v -> {
                     // Endpoint is responsible for ending the response.
                 })
