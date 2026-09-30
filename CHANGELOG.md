@@ -1,3 +1,10 @@
+## [8.3.3](https://github.com/gravitee-io/gravitee-node/compare/8.3.2...8.3.3) (2026-09-30)
+
+
+### Bug Fixes
+
+* **certificates:** stop failing the handshake on an unknown client certificate ([2b45989](https://github.com/gravitee-io/gravitee-node/commit/2b45989ae18672fd9d31bbe2b650c1376fbdcdfa))
+
 ## [8.3.2](https://github.com/gravitee-io/gravitee-node/compare/8.3.1...8.3.2) (2026-09-24)
 
 
