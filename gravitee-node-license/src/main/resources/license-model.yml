@@ -152,6 +152,7 @@ packs:
             - apim-native-kafka-policy-virtual-topics # policy: gravitee-policy-kafka-virtual-topics
             - apim-native-kafka-policy-rules # policy: gravitee-policy-kafka-fetch-rules, policy: gravitee-policy-kafka-produce-rules, policy: gravitee-policy-kafka-alter-topic-rules, policy: gravitee-policy-kafka-create-topics-rules
             - apim-native-kafka-policy-namespace # policy: gravitee-policy-kafka-namespace
+            - apim-native-kafka-policy-data-contract # policy: gravitee-policy-data-contract
             - apim-native-policy-ip-filtering # policy: gravitee-policy-native-ip-filtering
 
     agent-mesh:
@@ -313,6 +314,7 @@ packs:
             - apim-native-kafka-policy-virtual-topics # policy: gravitee-policy-kafka-virtual-topics
             - apim-native-kafka-policy-rules # policy: gravitee-policy-kafka-fetch-rules, policy: gravitee-policy-kafka-produce-rules, policy: gravitee-policy-kafka-alter-topic-rules, policy: gravitee-policy-kafka-create-topics-rules
             - apim-native-kafka-policy-namespace # policy: gravitee-policy-kafka-namespace
+            - apim-native-kafka-policy-data-contract # policy: gravitee-policy-data-contract
             - apim-native-policy-ip-filtering # policy: gravitee-policy-native-ip-filtering
 
             - gamma-esm-module # module: gravitee-gamma-module-esm
