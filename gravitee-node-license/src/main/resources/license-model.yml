@@ -164,8 +164,10 @@ packs:
             - apim-mcp-tool-server # entrypoint: gravitee-entrypoint-mcp-tool-server
             - apim-ai-policy-semantic-cache # policy: gravitee-policy-ai-semantic-caching
             - apim-policy-pii-filtering # policy: gravitee-policy-pii-filtering
+            - apim-policy-token-ratelimit # policy: gravitee-policy-token-ratelimit
             - apim-ai-resource-text-embedding # resource: gravitee-resource-ai-text-embedding
             - apim-ai-resource-vector-store-redis # resource: gravitee-resource-ai-vector-store-redis
+            - apim-ai-resource-vector-store-aws-s3 # resource: gravitee-resource-ai-vector-store-aws-s3
 
     ############################### Gamma packs ################################
     standard:
@@ -263,8 +265,13 @@ packs:
             - apim-mcp-tool-server # entrypoint: gravitee-entrypoint-mcp-tool-server
             - apim-ai-policy-semantic-cache # policy: gravitee-policy-ai-semantic-caching
             - apim-policy-pii-filtering # policy: gravitee-policy-pii-filtering
+            - apim-ai-policy-routing # policy: gravitee-policy-ai-routing
+            - apim-ai-policy-token-compression # policy: gravitee-policy-ai-token-compression
+            - apim-policy-cost-ratelimit # policy: gravitee-policy-cost-ratelimit
+            - apim-policy-token-ratelimit # policy: gravitee-policy-token-ratelimit
             - apim-ai-resource-text-embedding # resource: gravitee-resource-ai-text-embedding
             - apim-ai-resource-vector-store-redis # resource: gravitee-resource-ai-vector-store-redis
+            - apim-ai-resource-vector-store-aws-s3 # resource: gravitee-resource-ai-vector-store-aws-s3
 
             - gamma-aim-module # module: gravitee-gamma-module-aim
             - gamma-aim-endpoint-tools-http # endpoint: gravitee-endpoint-tools-http
