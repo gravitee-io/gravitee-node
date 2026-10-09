@@ -195,6 +195,27 @@ class DefaultLicenseModelServiceTest {
                     "gamma-aim-policy-prompt-template",
                     "gamma-aim-policy-semantic-prompt-guard",
                     "gamma-aim-policy-semantic-response-guard",
+                    "apim-policy-token-ratelimit",
+                    "apim-ai-policy-token-compression",
+                    "apim-ai-policy-routing",
+                    "apim-policy-cost-ratelimit",
+                    "apim-ai-resource-vector-store-aws-s3",
+                }
+            ),
+            arguments(
+                "agent-mesh",
+                new String[] {
+                    "apim-mcp-proxy-reactor",
+                    "apim-mcp-tool-server",
+                    "apim-llm-proxy-reactor",
+                    "apim-a2a-proxy-reactor",
+                    "apim-ai-resource-text-embedding",
+                    "apim-ai-resource-model-token-classification",
+                    "apim-ai-resource-vector-store-redis",
+                    "apim-ai-policy-semantic-cache",
+                    "apim-policy-token-ratelimit",
+                    "apim-policy-pii-filtering",
+                    "apim-ai-resource-vector-store-aws-s3",
                 }
             ),
             arguments(
