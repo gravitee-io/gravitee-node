@@ -1,3 +1,10 @@
+# [9.14.0](https://github.com/gravitee-io/gravitee-node/compare/9.13.2...9.14.0) (2026-10-13)
+
+
+### Features
+
+* new features for new AI policies in 4.13 ([63852f3](https://github.com/gravitee-io/gravitee-node/commit/63852f3a719b26ecac524b5ee525fae0e8675b1a))
+
 ## [9.13.2](https://github.com/gravitee-io/gravitee-node/compare/9.13.1...9.13.2) (2026-09-30)
 
 
