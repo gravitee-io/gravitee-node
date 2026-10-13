@@ -144,7 +144,7 @@ packs:
 
             - apim-native-kafka-reactor # reactor: gravitee-reactor-native-kafka, endpoint: gravitee-endpoint-native-kafka, entrypoint: gravitee-entrypoint-native-kafka
             - apim-native-kafka-policy-acl # policy: gravitee-policy-kafka-acl
-            - apim-native-kafka-policy-encryption # policy: gravitee-policy-kafka-encryption
+            - apim-native-kafka-policy-encryption # policy: gravitee-policy-kafka-message-encryption-decryption
             - apim-native-kafka-policy-offloading # policy: gravitee-policy-kafka-offloading
             - apim-native-kafka-policy-quota # policy: gravitee-policy-kafka-quota
             - apim-native-kafka-policy-topic-mapping # policy: gravitee-policy-kafka-topic-mapping
@@ -152,6 +152,7 @@ packs:
             - apim-native-kafka-policy-virtual-topics # policy: gravitee-policy-kafka-virtual-topics
             - apim-native-kafka-policy-rules # policy: gravitee-policy-kafka-fetch-rules, policy: gravitee-policy-kafka-produce-rules, policy: gravitee-policy-kafka-alter-topic-rules, policy: gravitee-policy-kafka-create-topics-rules
             - apim-native-kafka-policy-namespace # policy: gravitee-policy-kafka-namespace
+            - apim-native-kafka-policy-message-filtering # policy: gravitee-policy-kafka-message-filtering
             - apim-native-policy-ip-filtering # policy: gravitee-policy-native-ip-filtering
 
     agent-mesh:
@@ -305,7 +306,7 @@ packs:
 
             - apim-native-kafka-reactor # reactor: gravitee-reactor-native-kafka, endpoint: gravitee-endpoint-native-kafka, entrypoint: gravitee-entrypoint-native-kafka
             - apim-native-kafka-policy-acl # policy: gravitee-policy-kafka-acl
-            - apim-native-kafka-policy-encryption # policy: gravitee-policy-kafka-encryption
+            - apim-native-kafka-policy-encryption # policy: gravitee-policy-kafka-message-encryption-decryption
             - apim-native-kafka-policy-offloading # policy: gravitee-policy-kafka-offloading
             - apim-native-kafka-policy-quota # policy: gravitee-policy-kafka-quota
             - apim-native-kafka-policy-topic-mapping # policy: gravitee-policy-kafka-topic-mapping
@@ -313,6 +314,7 @@ packs:
             - apim-native-kafka-policy-virtual-topics # policy: gravitee-policy-kafka-virtual-topics
             - apim-native-kafka-policy-rules # policy: gravitee-policy-kafka-fetch-rules, policy: gravitee-policy-kafka-produce-rules, policy: gravitee-policy-kafka-alter-topic-rules, policy: gravitee-policy-kafka-create-topics-rules
             - apim-native-kafka-policy-namespace # policy: gravitee-policy-kafka-namespace
+            - apim-native-kafka-policy-message-filtering # policy: gravitee-policy-kafka-message-filtering
             - apim-native-policy-ip-filtering # policy: gravitee-policy-native-ip-filtering
 
             - gamma-esm-module # module: gravitee-gamma-module-esm
