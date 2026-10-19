@@ -1,3 +1,10 @@
+## [9.14.1](https://github.com/gravitee-io/gravitee-node/compare/9.14.0...9.14.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* add apim-native-kafka-policy-message-filtering feature ([76452c8](https://github.com/gravitee-io/gravitee-node/commit/76452c844d4bfa77cf37bf9b0150da47b1732476))
+
 # [9.14.0](https://github.com/gravitee-io/gravitee-node/compare/9.13.2...9.14.0) (2026-10-13)
 
 
