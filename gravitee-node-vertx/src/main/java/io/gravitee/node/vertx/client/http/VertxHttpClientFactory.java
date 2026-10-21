@@ -32,6 +32,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.Builder;
 import lombok.CustomLog;
@@ -71,6 +72,21 @@ public class VertxHttpClientFactory {
             httpOptions = new VertxHttpClientOptions();
         }
         return vertx.createHttpClient(createHttpClientOptions(), createPoolOptions());
+    }
+
+    /**
+     * Every client is created as a Vert.x shared client: Vert.x 5.0 keeps a non-shared client registered on the close
+     * future of the context that created it even after {@code close()}, so clients built on each API deployment pile up
+     * until the node stops. A shared client is registered through a nested close future that unregisters itself on close.
+     * Callers that did not ask for sharing get a unique name, so they never share a pool with another client.
+     * <p>
+     * Fixed upstream in Vert.x 5.2: go back to plain non-shared clients when upgrading.
+     */
+    static String sharedClientName(boolean shared, String name) {
+        if (shared) {
+            return name;
+        }
+        return (name != null ? name : "gio-client") + "-" + UUID.randomUUID();
     }
 
     public static boolean isSecureProtocol(String protocol) {
@@ -155,12 +171,13 @@ public class VertxHttpClientFactory {
         configureHttpProxy(options);
         configureSsl(options, target);
 
-        if (name != null) {
-            options.setName(name);
+        final String clientName = sharedClientName(shared, name);
+        if (clientName != null) {
+            options.setName(clientName);
         }
 
         return options
-            .setShared(shared)
+            .setShared(true)
             .setDefaultPort(getPort(target, isSecureProtocol(target.getProtocol())))
             .setDefaultHost(target.getHost());
     }

@@ -76,12 +76,14 @@ public class VertxWebSocketClientFactory {
         configureProxy(options);
         configureSsl(options, target);
 
-        if (name != null) {
-            options.setName(name);
+        // See VertxHttpClientFactory#sharedClientName.
+        final String clientName = VertxHttpClientFactory.sharedClientName(shared, name);
+        if (clientName != null) {
+            options.setName(clientName);
         }
 
         return options
-            .setShared(shared)
+            .setShared(true)
             .setDefaultPort(VertxHttpClientFactory.getPort(target, VertxHttpClientFactory.isSecureProtocol(target.getProtocol())))
             .setDefaultHost(target.getHost());
     }
