@@ -1,3 +1,10 @@
+## [9.14.2](https://github.com/gravitee-io/gravitee-node/compare/9.14.1...9.14.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* **vertx:** create http and websocket clients as uniquely named shared clients ([56c335f](https://github.com/gravitee-io/gravitee-node/commit/56c335f4e71fb90d1eb1c635711663cad65041a2))
+
 ## [9.14.1](https://github.com/gravitee-io/gravitee-node/compare/9.14.0...9.14.1) (2026-10-19)
 
 
