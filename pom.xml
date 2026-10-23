@@ -131,13 +131,31 @@
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-cache-plugin-hazelcast</artifactId>
+                <version>${project.version}</version>
+                <type>zip</type>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-cache-plugin-redis</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-cache-plugin-redis</artifactId>
+                <version>${project.version}</version>
+                <type>zip</type>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-cache-plugin-standalone</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-cache-plugin-standalone</artifactId>
                 <version>${project.version}</version>
+                <type>zip</type>
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
@@ -161,8 +179,20 @@
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-cluster-plugin-hazelcast</artifactId>
+                <version>${project.version}</version>
+                <type>zip</type>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
                 <artifactId>gravitee-node-cluster-plugin-standalone</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.gravitee.node</groupId>
+                <artifactId>gravitee-node-cluster-plugin-standalone</artifactId>
+                <version>${project.version}</version>
+                <type>zip</type>
             </dependency>
             <dependency>
                 <groupId>io.gravitee.node</groupId>
