@@ -21,10 +21,14 @@ import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import io.gravitee.node.vertx.cert.VertxKeyCertOptions;
 import io.gravitee.node.vertx.cert.VertxTrustOptions;
 import io.gravitee.node.vertx.server.VertxServer;
+import io.vertx.core.internal.VertxInternal;
+import io.vertx.core.net.NetServerOptions;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.net.NetServer;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * @author Benoit BORDIGONI (benoit.bordigoni at graviteesource.com)
@@ -34,6 +38,9 @@ public class VertxTcpServer extends VertxServer<NetServer, VertxTcpServerOptions
 
     public static final String KIND = "tcp";
 
+    private final ConnectionLimiter limiter;
+    private volatile Predicate<SocketAddress> exempt;
+
     public VertxTcpServer(
         Vertx vertx,
         VertxTcpServerOptions options,
@@ -41,7 +48,21 @@ public class VertxTcpServer extends VertxServer<NetServer, VertxTcpServerOptions
         TrustStoreLoaderManager trustStoreLoaderManager,
         CRLLoaderManager crlLoaderManager
     ) {
+        this(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, crlLoaderManager, ConnectionLimiter::isLoopback);
+    }
+
+    VertxTcpServer(
+        Vertx vertx,
+        VertxTcpServerOptions options,
+        KeyStoreLoaderManager keyStoreLoaderManager,
+        TrustStoreLoaderManager trustStoreLoaderManager,
+        CRLLoaderManager crlLoaderManager,
+        Predicate<SocketAddress> exempt
+    ) {
         super(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, crlLoaderManager);
+        this.exempt = exempt;
+        // One count for every NetServer of this server (several listeners share the budget).
+        this.limiter = options != null && options.getMaxConnections() > 0 ? new ConnectionLimiter(options.getMaxConnections()) : null;
     }
 
     @Override
@@ -52,14 +73,38 @@ public class VertxTcpServer extends VertxServer<NetServer, VertxTcpServerOptions
     @Override
     public NetServer newInstance() {
         startKeyStoreManagers();
-        final NetServer netServer = vertx.createNetServer(
-            options.createNetServerOptions(
-                new VertxKeyCertOptions(keyStoreLoaderManager.getKeyManager()),
-                new VertxTrustOptions(trustStoreLoaderManager.getCertificateManager())
-            )
+        final NetServerOptions netServerOptions = options.createNetServerOptions(
+            new VertxKeyCertOptions(keyStoreLoaderManager.getKeyManager()),
+            new VertxTrustOptions(trustStoreLoaderManager.getCertificateManager())
         );
+        final NetServer netServer = limiter == null ? vertx.createNetServer(netServerOptions) : createLimitedNetServer(netServerOptions);
         delegates.add(netServer);
         return netServer;
+    }
+
+    private NetServer createLimitedNetServer(NetServerOptions netServerOptions) {
+        SynchronousTlsInstaller tls = null;
+        if (netServerOptions.isSsl()) {
+            // Accept plain: TLS is started by the limited server, only on connections that were admitted.
+            tls = new SynchronousTlsInstaller((VertxInternal) vertx.getDelegate(), netServerOptions);
+            netServerOptions.setSsl(false);
+        }
+        return new LimitedNetServer(vertx.getDelegate().createNetServer(netServerOptions), limiter, exempt, tls);
+    }
+
+    /**
+     * Replaces the predicate of the connections that are neither counted nor refused. Must be called before
+     * {@link #newInstance()}. For tests, which connect from the loopback addresses.
+     */
+    void exemptConnections(Predicate<SocketAddress> exempt) {
+        this.exempt = exempt;
+    }
+
+    /**
+     * @return the number of counted connections currently held, 0 when the server is not limited.
+     */
+    int currentConnections() {
+        return limiter == null ? 0 : limiter.count();
     }
 
     @Override

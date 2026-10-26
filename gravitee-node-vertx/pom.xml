@@ -112,6 +112,12 @@
             <artifactId>bcpkix-jdk18on</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Needed by the tests of the connection limit with the PROXY protocol (APIM provides it at runtime) -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-haproxy</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Jackson dependencies -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
