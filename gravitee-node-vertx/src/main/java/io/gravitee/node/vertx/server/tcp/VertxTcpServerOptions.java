@@ -20,6 +20,15 @@ public class VertxTcpServerOptions extends VertxServerOptions {
 
     public static final String TCP_PREFIX = "tcp";
 
+    /**
+     * Maximum number of client connections held at the same time, shared by every listener of the server.
+     * A new connection past this number is closed as soon as it is accepted, before any TLS byte. Connections
+     * from the loopback addresses are neither counted nor refused. {@code 0} (the default) means no limit.
+     * <p>
+     * Only set by the caller: no configuration key is read for it.
+     */
+    protected int maxConnections;
+
     public NetServerOptions createNetServerOptions(KeyCertOptions vertxKeyCertOptions, TrustOptions vertxTrustOptions) {
         var options = new NetServerOptions();
 
