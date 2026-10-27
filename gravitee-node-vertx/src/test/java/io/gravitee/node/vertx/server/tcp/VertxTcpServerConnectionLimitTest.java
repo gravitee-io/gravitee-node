@@ -30,25 +30,31 @@ import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import io.gravitee.node.certificates.crl.FileCRLLoaderFactory;
 import io.gravitee.node.certificates.file.FileKeyStoreLoaderFactory;
 import io.gravitee.node.certificates.file.FileTrustStoreLoaderFactory;
+import io.gravitee.node.vertx.server.VertxServerOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.net.NetServer;
+import io.vertx.rxjava3.core.net.NetSocket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.net.ssl.SNIHostName;
 import javax.net.ssl.SSLContext;
@@ -76,7 +82,6 @@ class VertxTcpServerConnectionLimitTest {
 
     private final Vertx vertx = Vertx.vertx();
     private final List<Socket> sockets = new ArrayList<>();
-    private final List<VertxTcpServer> servers = new ArrayList<>();
     private final List<NetServer> netServers = new ArrayList<>();
     private final AtomicInteger admitted = new AtomicInteger();
     private final AtomicInteger maxSeenAtAccept = new AtomicInteger();
@@ -154,10 +159,9 @@ class VertxTcpServerConnectionLimitTest {
             final Socket client = connect(port);
             assertThat(readGreeting(client)).isEqualTo("OK");
             client.close();
+            waitUntil(() -> server.currentConnections() == 0);
         }
-        // a second decrement for the same connection would leave the count below zero
-        waitUntil(() -> server.currentConnections() == 0);
-        Thread.sleep(200);
+        // a second decrement for the same connection leaves the count at -1, which the wait above never accepts
         assertThat(server.currentConnections()).isZero();
     }
 
@@ -185,7 +189,7 @@ class VertxTcpServerConnectionLimitTest {
         final int threads = 16;
         final ExecutorService pool = Executors.newFixedThreadPool(threads);
         final CountDownLatch start = new CountDownLatch(1);
-        final List<java.util.concurrent.Future<?>> futures = new ArrayList<>();
+        final List<Future<?>> futures = new ArrayList<>();
         for (int t = 0; t < threads; t++) {
             final Random random = new Random(t);
             futures.add(
@@ -281,16 +285,66 @@ class VertxTcpServerConnectionLimitTest {
 
     @Test
     void should_use_the_unwrapped_net_server_when_no_limit_is_set() throws Exception {
-        for (int unlimited : new int[] { 0, -1 }) {
-            final VertxTcpServer server = plainServer(unlimited, NOBODY_EXEMPT, 0);
-            final NetServer netServer = server.newInstance();
-            assertThat(netServer).isNotInstanceOf(LimitedNetServer.class);
-            assertThat(server.currentConnections()).isZero();
-            final int port = listen(netServer);
-            for (int i = 0; i < 4; i++) {
-                assertThat(readGreeting(connect(port))).isEqualTo("OK");
-            }
+        final VertxTcpServer server = plainServer(0, NOBODY_EXEMPT, 0);
+        final NetServer netServer = server.newInstance();
+        assertThat(netServer).isNotInstanceOf(LimitedNetServer.class);
+        assertThat(server.currentConnections()).isZero();
+        final int port = listen(netServer);
+        for (int i = 0; i < 4; i++) {
+            assertThat(readGreeting(connect(port))).isEqualTo("OK");
         }
+    }
+
+    @Test
+    void should_reject_a_negative_limit_instead_of_silently_running_unlimited() {
+        assertThatThrownBy(() -> plainServer(-1, NOBODY_EXEMPT, 0)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    // ---- loopback exemption is a builder option
+
+    @Test
+    void should_exempt_loopback_by_default_and_let_the_caller_turn_it_off() throws Exception {
+        assertThat(VertxTcpServerOptions.builder().build().isExemptLoopback()).isTrue();
+        assertThat(VertxTcpServerOptions.builder().exemptLoopback(false).build().isExemptLoopback()).isFalse();
+
+        // through the public constructor: the connections of this test come from 127.0.0.1
+        final VertxTcpServer exempting = publicServer(1, true);
+        final int exemptingPort = listen(exempting);
+        for (int i = 0; i < 3; i++) {
+            assertThat(readGreeting(connect(exemptingPort))).isEqualTo("OK");
+        }
+        assertThat(exempting.currentConnections()).isZero();
+
+        final VertxTcpServer counting = publicServer(1, false);
+        final int countingPort = listen(counting);
+        assertThat(readGreeting(connect(countingPort))).isEqualTo("OK");
+        assertThat(readUntilEnd(connect(countingPort))).as("bytes received by a refused client").isEmpty();
+        assertThat(counting.currentConnections()).isEqualTo(1);
+    }
+
+    @Test
+    void should_judge_the_exemption_on_the_real_peer_and_not_on_the_address_declared_by_the_proxy_header() throws Exception {
+        final List<String> judged = new CopyOnWriteArrayList<>();
+        final VertxTcpServer server = plainServer(
+            2,
+            address -> {
+                judged.add(address.host());
+                return false;
+            },
+            0,
+            true
+        );
+        final int port = listen(server);
+
+        final Socket client = connect(port);
+        client.getOutputStream().write("PROXY TCP4 127.0.0.1 127.0.0.1 40000 1234\r\n".getBytes(StandardCharsets.US_ASCII));
+        assertThat(readGreeting(client)).isEqualTo("OK");
+        final Socket spoofing = connect(port);
+        spoofing.getOutputStream().write("PROXY TCP4 203.0.113.9 127.0.0.1 40001 1234\r\n".getBytes(StandardCharsets.US_ASCII));
+        assertThat(readGreeting(spoofing)).isEqualTo("OK");
+
+        assertThat(judged).as("addresses handed to the exemption").hasSize(2).containsOnly("127.0.0.1");
+        assertThat(server.currentConnections()).isEqualTo(2);
     }
 
     // ---- AC8: builder option only, no configuration key
@@ -299,9 +353,7 @@ class VertxTcpServerConnectionLimitTest {
     void should_expose_max_connections_on_the_tcp_options_builder_only() {
         assertThat(VertxTcpServerOptions.builder().build().getMaxConnections()).isZero();
         assertThat(VertxTcpServerOptions.builder().maxConnections(42).build().getMaxConnections()).isEqualTo(42);
-        assertThatThrownBy(() -> io.gravitee.node.vertx.server.VertxServerOptions.class.getDeclaredField("maxConnections")).isInstanceOf(
-            NoSuchFieldException.class
-        );
+        assertThatThrownBy(() -> VertxServerOptions.class.getDeclaredField("maxConnections")).isInstanceOf(NoSuchFieldException.class);
     }
 
     @Test
@@ -312,7 +364,7 @@ class VertxTcpServerConnectionLimitTest {
             .withProperty("tcp.max-connections", "3")
             .withProperty("tcp.maxConnectionsPerGiB", "3");
 
-        final var options = io.gravitee.node.vertx.server.VertxServerOptions.builder(environment, "tcp").build();
+        final var options = VertxServerOptions.builder(environment, "tcp").build();
 
         assertThat(options).isInstanceOf(VertxTcpServerOptions.class);
         assertThat(((VertxTcpServerOptions) options).getMaxConnections()).isZero();
@@ -374,7 +426,7 @@ class VertxTcpServerConnectionLimitTest {
     @Test
     void should_close_without_any_tls_byte_a_connection_past_the_limit_on_a_tls_server() throws Exception {
         final TlsFixture tls = new TlsFixture();
-        final VertxTcpServer server = tlsServer(tls, 1, 10_000);
+        final VertxTcpServer server = tlsServer(tls, 1);
         final int port = listen(server);
 
         final SSLSocket first = tls.handshake(connect(port), port);
@@ -389,9 +441,27 @@ class VertxTcpServerConnectionLimitTest {
     }
 
     @Test
+    void should_close_and_release_the_slot_of_an_admitted_client_that_sends_garbage_instead_of_a_client_hello() throws Exception {
+        final TlsFixture tls = new TlsFixture();
+        final VertxTcpServer server = tlsServer(tls, 1);
+        final int port = listen(server);
+
+        final Socket garbage = connect(port);
+        garbage.getOutputStream().write("GET / HTTP/1.1\r\nHost: a.example.test\r\n\r\n".getBytes(StandardCharsets.US_ASCII));
+        try {
+            readUntilEnd(garbage); // closed by the server, possibly after a TLS alert
+        } catch (SocketException reset) {
+            // closing with unread bytes may reset the connection: the slot is what matters here
+        }
+
+        waitUntil(() -> server.currentConnections() == 0);
+        assertThat(readGreeting(tls.handshake(connect(port), port))).as("the slot is usable again").isEqualTo("OK");
+    }
+
+    @Test
     void should_serve_the_configured_sni_certificate_below_the_limit_and_release_the_slot() throws Exception {
         final TlsFixture tls = new TlsFixture();
-        final VertxTcpServer server = tlsServer(tls, 1, 10_000);
+        final VertxTcpServer server = tlsServer(tls, 1);
         final int port = listen(server);
 
         final SSLSocket client = tls.handshake(connect(port), port);
@@ -408,7 +478,7 @@ class VertxTcpServerConnectionLimitTest {
         final int rounds = 200;
         for (int i = 0; i < rounds; i++) {
             // a fresh server each time: the first connection is where the ClientHello used to be lost
-            final VertxTcpServer server = tlsServer(tls, 100, 10_000);
+            final VertxTcpServer server = tlsServer(tls, 100);
             final int port = listen(server);
             try {
                 final SSLSocket client = tls.handshake(connect(port), port);
@@ -433,12 +503,7 @@ class VertxTcpServerConnectionLimitTest {
         return plainServer(limit, exempt, idleTimeoutSeconds, proxyProtocol, null);
     }
 
-    private VertxTcpServer plainServer(
-        int limit,
-        Predicate<SocketAddress> exempt,
-        int idleTimeoutSeconds,
-        java.util.function.Consumer<io.vertx.rxjava3.core.net.NetSocket> handler
-    ) {
+    private VertxTcpServer plainServer(int limit, Predicate<SocketAddress> exempt, int idleTimeoutSeconds, Consumer<NetSocket> handler) {
         return plainServer(limit, exempt, idleTimeoutSeconds, false, handler);
     }
 
@@ -447,7 +512,7 @@ class VertxTcpServerConnectionLimitTest {
         Predicate<SocketAddress> exempt,
         int idleTimeoutSeconds,
         boolean proxyProtocol,
-        java.util.function.Consumer<io.vertx.rxjava3.core.net.NetSocket> handler
+        Consumer<NetSocket> handler
     ) {
         final VertxTcpServerOptions options = VertxTcpServerOptions.builder()
             .id("limited")
@@ -471,11 +536,10 @@ class VertxTcpServerConnectionLimitTest {
             exempt
         );
         appHandler = handler;
-        servers.add(server);
         return server;
     }
 
-    private java.util.function.Consumer<io.vertx.rxjava3.core.net.NetSocket> appHandler;
+    private Consumer<NetSocket> appHandler;
 
     /** Creates a listener on the server, wired with the greeting handler, and returns its port. */
     private int listen(VertxTcpServer server) throws Exception {
@@ -607,7 +671,24 @@ class VertxTcpServerConnectionLimitTest {
         }
     }
 
-    private VertxTcpServer tlsServer(TlsFixture tls, int limit, long handshakeTimeoutMs) {
+    /** A limited server built through the public constructor, i.e. with the exemption derived from the options. */
+    private VertxTcpServer publicServer(int limit, boolean exemptLoopback) {
+        final VertxTcpServerOptions options = VertxTcpServerOptions.builder()
+            .id("limited")
+            .host("127.0.0.1")
+            .port(0)
+            .maxConnections(limit)
+            .exemptLoopback(exemptLoopback)
+            .build();
+        final KeyStoreLoaderManager keyStoreLoaderManager = Mockito.mock(KeyStoreLoaderManager.class);
+        Mockito.when(keyStoreLoaderManager.getKeyManager()).thenReturn(Mockito.mock(X509KeyManager.class));
+        final TrustStoreLoaderManager trustStoreLoaderManager = Mockito.mock(TrustStoreLoaderManager.class);
+        Mockito.when(trustStoreLoaderManager.getCertificateManager()).thenReturn(Mockito.mock(X509TrustManager.class));
+        appHandler = null;
+        return new VertxTcpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, Mockito.mock(CRLLoaderManager.class));
+    }
+
+    private VertxTcpServer tlsServer(TlsFixture tls, int limit) {
         final var keyStores = new DefaultKeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions>();
         keyStores.registerFactory(new FileKeyStoreLoaderFactory());
         final var trustStores = new DefaultKeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions>();
@@ -648,7 +729,6 @@ class VertxTcpServerConnectionLimitTest {
         // the tests connect from loopback, which is exempt by default: exempt nobody
         server.exemptConnections(NOBODY_EXEMPT);
         appHandler = null;
-        servers.add(server);
         return server;
     }
 }
