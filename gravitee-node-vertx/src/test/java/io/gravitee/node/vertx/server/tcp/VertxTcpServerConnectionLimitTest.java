@@ -35,8 +35,10 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.net.NetServer;
 import io.vertx.rxjava3.core.net.NetSocket;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
@@ -441,6 +443,45 @@ class VertxTcpServerConnectionLimitTest {
     }
 
     @Test
+    void should_complete_the_tls_handshake_after_a_proxy_header_on_a_limited_server() throws Exception {
+        final TlsFixture tls = new TlsFixture();
+        final VertxTcpServer server = tlsServer(tls, 1, true);
+        final int port = listen(server);
+
+        // the header and the first bytes of the ClientHello travel in the same TCP segment
+        final Socket raw = new Socket("127.0.0.1", port) {
+            private boolean headerSent;
+
+            @Override
+            public OutputStream getOutputStream() throws IOException {
+                final OutputStream out = super.getOutputStream();
+                return new FilterOutputStream(out) {
+                    @Override
+                    public void write(byte[] b, int off, int len) throws IOException {
+                        if (!headerSent) {
+                            headerSent = true;
+                            final byte[] header = "PROXY TCP4 203.0.113.9 127.0.0.1 40000 1234\r\n".getBytes(StandardCharsets.US_ASCII);
+                            final byte[] all = new byte[header.length + len];
+                            System.arraycopy(header, 0, all, 0, header.length);
+                            System.arraycopy(b, off, all, header.length, len);
+                            out.write(all, 0, all.length);
+                        } else {
+                            out.write(b, off, len);
+                        }
+                    }
+                };
+            }
+        };
+        sockets.add(raw);
+        final SSLSocket client = tls.handshake(raw, port);
+        assertThat(client.getSession().isValid()).isTrue();
+        assertThat(readGreeting(client)).isEqualTo("OK");
+        assertThat(server.currentConnections()).isEqualTo(1);
+        client.close();
+        waitUntil(() -> server.currentConnections() == 0);
+    }
+
+    @Test
     void should_close_and_release_the_slot_of_an_admitted_client_that_sends_garbage_instead_of_a_client_hello() throws Exception {
         final TlsFixture tls = new TlsFixture();
         final VertxTcpServer server = tlsServer(tls, 1);
@@ -689,6 +730,10 @@ class VertxTcpServerConnectionLimitTest {
     }
 
     private VertxTcpServer tlsServer(TlsFixture tls, int limit) {
+        return tlsServer(tls, limit, false);
+    }
+
+    private VertxTcpServer tlsServer(TlsFixture tls, int limit, boolean proxyProtocol) {
         final var keyStores = new DefaultKeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions>();
         keyStores.registerFactory(new FileKeyStoreLoaderFactory());
         final var trustStores = new DefaultKeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions>();
@@ -705,6 +750,8 @@ class VertxTcpServerConnectionLimitTest {
             .secured(true)
             .sni(true)
             .maxConnections(limit)
+            .haProxyProtocol(proxyProtocol)
+            .haProxyProtocolTimeout(1)
             .keyStoreLoaderOptions(
                 KeyStoreLoaderOptions.builder()
                     .type("PKCS12")
