@@ -43,6 +43,9 @@ import java.util.concurrent.TimeUnit;
  */
 final class SynchronousTlsInstaller {
 
+    /** Simple class name of the netty haproxy codec decoder, matched by name (see {@link #proxyDecoderName}). */
+    private static final String PROXY_DECODER_SUFFIX = ".HAProxyMessageDecoder";
+
     private final VertxInternal vertx;
     private final ServerSSLOptions sslOptions;
     private final long handshakeTimeout;
@@ -114,7 +117,7 @@ final class SynchronousTlsInstaller {
      */
     private static String proxyDecoderName(ChannelPipeline pipeline) {
         for (Map.Entry<String, ChannelHandler> entry : pipeline) {
-            if (entry.getValue().getClass().getName().endsWith(".HAProxyMessageDecoder")) {
+            if (entry.getValue().getClass().getName().endsWith(PROXY_DECODER_SUFFIX)) {
                 return entry.getKey();
             }
         }

@@ -455,29 +455,7 @@ class VertxTcpServerConnectionLimitTest {
         final int port = listen(server);
 
         // the header and the first bytes of the ClientHello travel in the same TCP segment
-        final Socket raw = new Socket("127.0.0.1", port) {
-            private boolean headerSent;
-
-            @Override
-            public OutputStream getOutputStream() throws IOException {
-                final OutputStream out = super.getOutputStream();
-                return new FilterOutputStream(out) {
-                    @Override
-                    public void write(byte[] b, int off, int len) throws IOException {
-                        if (!headerSent) {
-                            headerSent = true;
-                            final byte[] header = "PROXY TCP4 203.0.113.9 127.0.0.1 40000 1234\r\n".getBytes(StandardCharsets.US_ASCII);
-                            final byte[] all = new byte[header.length + len];
-                            System.arraycopy(header, 0, all, 0, header.length);
-                            System.arraycopy(b, off, all, header.length, len);
-                            out.write(all, 0, all.length);
-                        } else {
-                            out.write(b, off, len);
-                        }
-                    }
-                };
-            }
-        };
+        final Socket raw = new ProxyHeaderSocket("127.0.0.1", port);
         sockets.add(raw);
         final SSLSocket client = tls.handshake(raw, port);
         assertThat(client.getSession().isValid()).isTrue();
@@ -676,6 +654,43 @@ class VertxTcpServerConnectionLimitTest {
 
     private static void waitUntil(BooleanSupplier condition) {
         await().atMost(Duration.ofSeconds(10)).pollInterval(Duration.ofMillis(20)).until(condition::getAsBoolean);
+    }
+
+    /** A client socket that prepends a PROXY protocol v1 header to its first write, in the same TCP segment. */
+    private static final class ProxyHeaderSocket extends Socket {
+
+        private static final byte[] HEADER = "PROXY TCP4 203.0.113.9 127.0.0.1 40000 1234\r\n".getBytes(StandardCharsets.US_ASCII);
+
+        private boolean headerSent;
+
+        ProxyHeaderSocket(String host, int port) throws IOException {
+            super(host, port);
+        }
+
+        @Override
+        public OutputStream getOutputStream() throws IOException {
+            return new HeaderPrependingStream(super.getOutputStream());
+        }
+
+        private final class HeaderPrependingStream extends FilterOutputStream {
+
+            HeaderPrependingStream(OutputStream out) {
+                super(out);
+            }
+
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                if (headerSent) {
+                    out.write(b, off, len);
+                    return;
+                }
+                headerSent = true;
+                final byte[] all = new byte[HEADER.length + len];
+                System.arraycopy(HEADER, 0, all, 0, HEADER.length);
+                System.arraycopy(b, off, all, HEADER.length, len);
+                out.write(all, 0, all.length);
+            }
+        }
     }
 
     // ---- TLS fixture
