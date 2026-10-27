@@ -15,6 +15,7 @@
  */
 package io.gravitee.node.vertx.server.tcp;
 
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.vertx.core.Future;
@@ -28,6 +29,7 @@ import io.vertx.core.net.HostAndPort;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.ServerSSLOptions;
 import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -82,15 +84,20 @@ final class SynchronousTlsInstaller {
         final SslChannelProvider channelProvider = new SslChannelProvider(vertx, provider.result(), sslOptions.isSni());
         final InetSocketAddress remote = (InetSocketAddress) context.channel().remoteAddress();
 
-        pipeline.addFirst(
-            "ssl",
-            channelProvider.createServerHandler(
-                false,
-                handshakeTimeout,
-                handshakeTimeoutUnit,
-                HostAndPort.create(remote.getHostString(), remote.getPort())
-            )
+        final ChannelHandler sslHandler = channelProvider.createServerHandler(
+            false,
+            handshakeTimeout,
+            handshakeTimeoutUnit,
+            HostAndPort.create(remote.getHostString(), remote.getPort())
         );
+        // With the PROXY protocol the header decoder is still in the pipeline and forwards the bytes that followed the
+        // header (possibly the start of the ClientHello) to the handlers after it: TLS must sit behind it, not in front.
+        final String proxyDecoder = proxyDecoderName(pipeline);
+        if (proxyDecoder == null) {
+            pipeline.addFirst("ssl", sslHandler);
+        } else {
+            pipeline.addAfter(proxyDecoder, "ssl", sslHandler);
+        }
         final var handshake = context.channel().newPromise();
         pipeline.addAfter("ssl", "handshaker", new SslHandshakeCompletionHandler(handshake));
         handshake.addListener(f -> {
@@ -100,5 +107,17 @@ final class SynchronousTlsInstaller {
                 socket.close();
             }
         });
+    }
+
+    /**
+     * The decoder is looked up by name: the netty haproxy codec is not a compile dependency of this module.
+     */
+    private static String proxyDecoderName(ChannelPipeline pipeline) {
+        for (Map.Entry<String, ChannelHandler> entry : pipeline) {
+            if ("HAProxyMessageDecoder".equals(entry.getValue().getClass().getSimpleName())) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 }
