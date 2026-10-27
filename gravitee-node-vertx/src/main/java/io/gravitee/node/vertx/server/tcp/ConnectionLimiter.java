@@ -58,10 +58,6 @@ final class ConnectionLimiter {
         return count.get();
     }
 
-    int limit() {
-        return limit;
-    }
-
     /**
      * Connections from the loopback addresses are never counted nor refused: they are the pod's own probes.
      * Only the two literal addresses are exempt, not the whole 127.0.0.0/8 range, so that a service-mesh sidecar

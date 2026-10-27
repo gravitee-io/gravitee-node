@@ -48,7 +48,7 @@ public class VertxTcpServer extends VertxServer<NetServer, VertxTcpServerOptions
         TrustStoreLoaderManager trustStoreLoaderManager,
         CRLLoaderManager crlLoaderManager
     ) {
-        this(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, crlLoaderManager, ConnectionLimiter::isLoopback);
+        this(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, crlLoaderManager, loopbackExemption(options));
     }
 
     VertxTcpServer(
@@ -60,9 +60,16 @@ public class VertxTcpServer extends VertxServer<NetServer, VertxTcpServerOptions
         Predicate<SocketAddress> exempt
     ) {
         super(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, crlLoaderManager);
+        if (options != null && options.getMaxConnections() < 0) {
+            throw new IllegalArgumentException("maxConnections must not be negative: " + options.getMaxConnections());
+        }
         this.exempt = exempt;
         // One count for every NetServer of this server (several listeners share the budget).
         this.limiter = options != null && options.getMaxConnections() > 0 ? new ConnectionLimiter(options.getMaxConnections()) : null;
+    }
+
+    private static Predicate<SocketAddress> loopbackExemption(VertxTcpServerOptions options) {
+        return options != null && options.isExemptLoopback() ? ConnectionLimiter::isLoopback : address -> false;
     }
 
     @Override
