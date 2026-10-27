@@ -23,6 +23,7 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.rxjava3.core.net.NetServer;
 import io.vertx.rxjava3.core.net.NetSocket;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * A {@link NetServer} that closes new connections as soon as they are accepted when its {@link ConnectionLimiter}
@@ -96,8 +97,9 @@ final class LimitedNetServer extends NetServer {
 
     // The SSL context must be resolved before the first connection can be accepted.
 
-    private Completable tlsReady() {
-        return tls == null ? Completable.complete() : Completable.fromCompletionStage(tls.ready().toCompletionStage());
+    private Single<NetServer> afterTlsReady(Supplier<Single<NetServer>> listen) {
+        final Completable ready = tls == null ? Completable.complete() : Completable.fromCompletionStage(tls.ready().toCompletionStage());
+        return ready.andThen(Single.defer(listen::get));
     }
 
     @Override
@@ -107,7 +109,7 @@ final class LimitedNetServer extends NetServer {
 
     @Override
     public Single<NetServer> rxListen() {
-        return tlsReady().andThen(Single.defer(super::rxListen));
+        return afterTlsReady(super::rxListen);
     }
 
     @Override
@@ -117,7 +119,7 @@ final class LimitedNetServer extends NetServer {
 
     @Override
     public Single<NetServer> rxListen(int port, String host) {
-        return tlsReady().andThen(Single.defer(() -> super.rxListen(port, host)));
+        return afterTlsReady(() -> super.rxListen(port, host));
     }
 
     @Override
@@ -127,7 +129,7 @@ final class LimitedNetServer extends NetServer {
 
     @Override
     public Single<NetServer> rxListen(int port) {
-        return tlsReady().andThen(Single.defer(() -> super.rxListen(port)));
+        return afterTlsReady(() -> super.rxListen(port));
     }
 
     @Override
@@ -137,6 +139,6 @@ final class LimitedNetServer extends NetServer {
 
     @Override
     public Single<NetServer> rxListen(SocketAddress localAddress) {
-        return tlsReady().andThen(Single.defer(() -> super.rxListen(localAddress)));
+        return afterTlsReady(() -> super.rxListen(localAddress));
     }
 }

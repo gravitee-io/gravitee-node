@@ -48,22 +48,11 @@ public class VertxTcpServer extends VertxServer<NetServer, VertxTcpServerOptions
         TrustStoreLoaderManager trustStoreLoaderManager,
         CRLLoaderManager crlLoaderManager
     ) {
-        this(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, crlLoaderManager, loopbackExemption(options));
-    }
-
-    VertxTcpServer(
-        Vertx vertx,
-        VertxTcpServerOptions options,
-        KeyStoreLoaderManager keyStoreLoaderManager,
-        TrustStoreLoaderManager trustStoreLoaderManager,
-        CRLLoaderManager crlLoaderManager,
-        Predicate<SocketAddress> exempt
-    ) {
         super(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, crlLoaderManager);
         if (options != null && options.getMaxConnections() < 0) {
             throw new IllegalArgumentException("maxConnections must not be negative: " + options.getMaxConnections());
         }
-        this.exempt = exempt;
+        this.exempt = loopbackExemption(options);
         // One count for every NetServer of this server (several listeners share the budget).
         this.limiter = options != null && options.getMaxConnections() > 0 ? new ConnectionLimiter(options.getMaxConnections()) : null;
     }

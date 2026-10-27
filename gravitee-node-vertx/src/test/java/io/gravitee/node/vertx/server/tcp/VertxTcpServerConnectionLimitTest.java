@@ -274,11 +274,11 @@ class VertxTcpServerConnectionLimitTest {
         final int port = listen(server);
 
         final Socket first = connect(port);
-        first.getOutputStream().write("PROXY TCP4 203.0.113.9 127.0.0.1 40000 1234\r\n".getBytes(StandardCharsets.US_ASCII));
+        sendProxyHeader(first, "203.0.113.9", 40000);
         assertThat(readGreeting(first)).isEqualTo("OK");
 
         final Socket second = connect(port);
-        second.getOutputStream().write("PROXY TCP4 203.0.113.10 127.0.0.1 40001 1234\r\n".getBytes(StandardCharsets.US_ASCII));
+        sendProxyHeader(second, "203.0.113.10", 40001);
         assertThat(readUntilEnd(second)).as("bytes received by a refused client").isEmpty();
 
         final Socket silent = connect(port);
@@ -345,10 +345,10 @@ class VertxTcpServerConnectionLimitTest {
         final int port = listen(server);
 
         final Socket client = connect(port);
-        client.getOutputStream().write("PROXY TCP4 127.0.0.1 127.0.0.1 40000 1234\r\n".getBytes(StandardCharsets.US_ASCII));
+        sendProxyHeader(client, "127.0.0.1", 40000);
         assertThat(readGreeting(client)).isEqualTo("OK");
         final Socket spoofing = connect(port);
-        spoofing.getOutputStream().write("PROXY TCP4 203.0.113.9 127.0.0.1 40001 1234\r\n".getBytes(StandardCharsets.US_ASCII));
+        sendProxyHeader(spoofing, "203.0.113.9", 40001);
         assertThat(readGreeting(spoofing)).isEqualTo("OK");
 
         assertThat(judged).as("addresses handed to the exemption").hasSize(2).containsOnly("127.0.0.1");
@@ -548,18 +548,8 @@ class VertxTcpServerConnectionLimitTest {
             .haProxyProtocol(proxyProtocol)
             .haProxyProtocolTimeout(1) // seconds
             .build();
-        final KeyStoreLoaderManager keyStoreLoaderManager = Mockito.mock(KeyStoreLoaderManager.class);
-        Mockito.when(keyStoreLoaderManager.getKeyManager()).thenReturn(Mockito.mock(X509KeyManager.class));
-        final TrustStoreLoaderManager trustStoreLoaderManager = Mockito.mock(TrustStoreLoaderManager.class);
-        Mockito.when(trustStoreLoaderManager.getCertificateManager()).thenReturn(Mockito.mock(X509TrustManager.class));
-        final VertxTcpServer server = new VertxTcpServer(
-            vertx,
-            options,
-            keyStoreLoaderManager,
-            trustStoreLoaderManager,
-            Mockito.mock(CRLLoaderManager.class),
-            exempt
-        );
+        final VertxTcpServer server = serverWithMockedStores(options);
+        server.exemptConnections(exempt);
         appHandler = handler;
         return server;
     }
@@ -736,12 +726,22 @@ class VertxTcpServerConnectionLimitTest {
             .maxConnections(limit)
             .exemptLoopback(exemptLoopback)
             .build();
+        appHandler = null;
+        return serverWithMockedStores(options);
+    }
+
+    private VertxTcpServer serverWithMockedStores(VertxTcpServerOptions options) {
         final KeyStoreLoaderManager keyStoreLoaderManager = Mockito.mock(KeyStoreLoaderManager.class);
         Mockito.when(keyStoreLoaderManager.getKeyManager()).thenReturn(Mockito.mock(X509KeyManager.class));
         final TrustStoreLoaderManager trustStoreLoaderManager = Mockito.mock(TrustStoreLoaderManager.class);
         Mockito.when(trustStoreLoaderManager.getCertificateManager()).thenReturn(Mockito.mock(X509TrustManager.class));
-        appHandler = null;
         return new VertxTcpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, Mockito.mock(CRLLoaderManager.class));
+    }
+
+    private static void sendProxyHeader(Socket socket, String sourceAddress, int sourcePort) throws IOException {
+        socket
+            .getOutputStream()
+            .write(("PROXY TCP4 " + sourceAddress + " 127.0.0.1 " + sourcePort + " 1234\r\n").getBytes(StandardCharsets.US_ASCII));
     }
 
     private VertxTcpServer tlsServer(TlsFixture tls, int limit) {

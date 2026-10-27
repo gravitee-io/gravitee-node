@@ -9,7 +9,9 @@ import io.gravitee.node.certificates.KeyStoreLoaderManager;
 import io.gravitee.node.certificates.TrustStoreLoaderManager;
 import io.gravitee.node.vertx.cert.VertxKeyCertOptions;
 import io.gravitee.node.vertx.cert.VertxTrustOptions;
+import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.net.NetServerOptions;
+import io.vertx.core.net.impl.NetServerInternal;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.net.NetServer;
 import javax.net.ssl.X509KeyManager;
@@ -105,8 +107,8 @@ class VertxTcpServerTest {
     @Test
     void should_return_a_limited_net_server_when_a_limit_is_set() {
         when(options.getMaxConnections()).thenReturn(10);
-        final io.vertx.core.internal.VertxInternal coreVertx = mock(io.vertx.core.internal.VertxInternal.class);
-        final io.vertx.core.net.impl.NetServerInternal coreNetServer = mock(io.vertx.core.net.impl.NetServerInternal.class);
+        final VertxInternal coreVertx = mock(VertxInternal.class);
+        final NetServerInternal coreNetServer = mock(NetServerInternal.class);
         when(coreVertx.createNetServer(netServerOptions)).thenReturn(coreNetServer);
         when(vertx.getDelegate()).thenReturn(coreVertx);
         cut = new VertxTcpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, crlLoaderManager);

@@ -60,12 +60,7 @@ final class TestPki {
             kp.getPublic()
         );
         b.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(new GeneralName(GeneralName.dNSName, san)));
-        return new Ident(
-            kp,
-            new JcaX509CertificateConverter().getCertificate(
-                b.build(new JcaContentSignerBuilder("SHA256withRSA").build(ca.keys.getPrivate()))
-            )
-        );
+        return new Ident(kp, new JcaX509CertificateConverter().getCertificate(b.build(signer(ca.keys))));
     }
 
     static void writeKeyStore(Path file, Ident ca, Ident leaf) throws Exception {
