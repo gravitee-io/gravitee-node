@@ -32,6 +32,7 @@ import io.gravitee.node.certificates.crl.FileCRLLoaderFactory;
 import io.gravitee.node.certificates.file.FileKeyStoreLoaderFactory;
 import io.gravitee.node.certificates.file.FileTrustStoreLoaderFactory;
 import io.gravitee.node.vertx.server.VertxServerOptions;
+import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.core.net.NetServer;
@@ -484,6 +485,25 @@ class VertxTcpServerConnectionLimitTest {
     }
 
     @Test
+    void should_apply_the_configured_ssl_handshake_timeout_to_an_admitted_client_that_never_sends_a_client_hello() throws Exception {
+        final TlsFixture tls = new TlsFixture();
+        final VertxTcpServer server = tlsServer(tls, 1, false, Duration.ofMillis(300));
+        final int port = listen(server);
+
+        final Socket silent = connect(port);
+        silent.setSoTimeout(3000); // far below the 10 s default, well above the configured 300 ms
+        final long start = System.nanoTime();
+        try {
+            assertThat(readUntilEnd(silent)).as("bytes received by a client that never started the handshake").isEmpty();
+        } catch (SocketException reset) {
+            // a reset is as good as a close: the server gave up on the client
+        }
+
+        assertThat(Duration.ofNanos(System.nanoTime() - start)).isLessThan(Duration.ofSeconds(3));
+        waitUntil(() -> server.currentConnections() == 0);
+    }
+
+    @Test
     void should_serve_the_configured_sni_certificate_below_the_limit_and_release_the_slot() throws Exception {
         final TlsFixture tls = new TlsFixture();
         final VertxTcpServer server = tlsServer(tls, 1);
@@ -730,6 +750,17 @@ class VertxTcpServerConnectionLimitTest {
         return serverWithMockedStores(options);
     }
 
+    private static VertxTcpServerOptions withHandshakeTimeout(VertxTcpServerOptions options, Duration timeout) {
+        final VertxTcpServerOptions spied = Mockito.spy(options);
+        Mockito.doAnswer(invocation -> {
+            final NetServerOptions netServerOptions = (NetServerOptions) invocation.callRealMethod();
+            return netServerOptions.setSslHandshakeTimeout(timeout.toMillis()).setSslHandshakeTimeoutUnit(TimeUnit.MILLISECONDS);
+        })
+            .when(spied)
+            .createNetServerOptions(Mockito.any(), Mockito.any());
+        return spied;
+    }
+
     private VertxTcpServer serverWithMockedStores(VertxTcpServerOptions options) {
         final KeyStoreLoaderManager keyStoreLoaderManager = Mockito.mock(KeyStoreLoaderManager.class);
         Mockito.when(keyStoreLoaderManager.getKeyManager()).thenReturn(Mockito.mock(X509KeyManager.class));
@@ -749,6 +780,11 @@ class VertxTcpServerConnectionLimitTest {
     }
 
     private VertxTcpServer tlsServer(TlsFixture tls, int limit, boolean proxyProtocol) {
+        return tlsServer(tls, limit, proxyProtocol, null);
+    }
+
+    /** @param handshakeTimeout the SSL handshake timeout set on the Vert.x server options, null for the default. */
+    private VertxTcpServer tlsServer(TlsFixture tls, int limit, boolean proxyProtocol, Duration handshakeTimeout) {
         final var keyStores = new DefaultKeyStoreLoaderFactoryRegistry<KeyStoreLoaderOptions>();
         keyStores.registerFactory(new FileKeyStoreLoaderFactory());
         final var trustStores = new DefaultKeyStoreLoaderFactoryRegistry<TrustStoreLoaderOptions>();
@@ -756,7 +792,7 @@ class VertxTcpServerConnectionLimitTest {
         final var crls = new DefaultCRLLoaderFactoryRegistry();
         crls.registerFactory(new FileCRLLoaderFactory());
 
-        final VertxTcpServerOptions options = VertxTcpServerOptions.builder()
+        final VertxTcpServerOptions built = VertxTcpServerOptions.builder()
             .id("limited-tls")
             .prefix("limited-tls")
             .environment(new MockEnvironment())
@@ -786,6 +822,7 @@ class VertxTcpServerConnectionLimitTest {
             )
             .crlLoaderOptions(CRLLoaderOptions.builder().watch(false).build())
             .build();
+        final VertxTcpServerOptions options = handshakeTimeout == null ? built : withHandshakeTimeout(built, handshakeTimeout);
 
         final VertxTcpServer server = new VertxTcpServerFactory(vertx, keyStores, trustStores, crls).create(options);
         // the tests connect from loopback, which is exempt by default: exempt nobody
