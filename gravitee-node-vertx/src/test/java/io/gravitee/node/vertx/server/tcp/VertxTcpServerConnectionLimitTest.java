@@ -589,11 +589,11 @@ class VertxTcpServerConnectionLimitTest {
     private Consumer<NetSocket> appHandler;
 
     /** Creates a listener on the server, wired with the greeting handler, and returns its port. */
-    private int listen(VertxTcpServer server) throws Exception {
+    private int listen(VertxTcpServer server) {
         return listen(server.newInstance(), server);
     }
 
-    private int listen(NetServer netServer) throws Exception {
+    private int listen(NetServer netServer) {
         return listen(netServer, null);
     }
 
