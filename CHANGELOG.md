@@ -1,3 +1,17 @@
+# [9.15.0](https://github.com/gravitee-io/gravitee-node/compare/9.14.2...9.15.0) (2026-10-27)
+
+
+### Bug Fixes
+
+* **vertx:** avoid class name equality check flagged by static analysis ([b2fa62b](https://github.com/gravitee-io/gravitee-node/commit/b2fa62b753ad0022a8788503af63b73f1736a93c))
+* **vertx:** install TLS behind the PROXY header decoder on limited servers ([1e7f7d1](https://github.com/gravitee-io/gravitee-node/commit/1e7f7d193637b86c806d0de3830444934b97afc1))
+* **vertx:** let callers disable the loopback exemption and reject negative limits ([7b1084b](https://github.com/gravitee-io/gravitee-node/commit/7b1084b51720cba66ade6262d45186c2458f05da))
+
+
+### Features
+
+* **vertx:** add an accept-time connection limit to the TCP server ([7f6d069](https://github.com/gravitee-io/gravitee-node/commit/7f6d069053c31246670e956f38c8a7b96b748809))
+
 ## [9.14.2](https://github.com/gravitee-io/gravitee-node/compare/9.14.1...9.14.2) (2026-10-22)
 
 
