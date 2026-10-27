@@ -50,6 +50,20 @@ final class LimitedNetServer extends NetServer {
         this.tls = tls;
     }
 
+    /**
+     * The inherited equality only compares the wrapped delegate; two wrappers around it with different limiters
+     * are different servers, so a wrapper is only equal to itself.
+     */
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
+    }
+
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(this);
+    }
+
     @Override
     public NetServer connectHandler(Handler<NetSocket> handler) {
         getDelegate().connectHandler(socket -> accept(socket, handler));

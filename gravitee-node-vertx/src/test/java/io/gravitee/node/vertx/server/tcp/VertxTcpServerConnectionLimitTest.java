@@ -17,6 +17,7 @@ package io.gravitee.node.vertx.server.tcp;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import io.gravitee.node.api.certificate.CRLLoaderOptions;
@@ -45,6 +46,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -96,7 +98,9 @@ class VertxTcpServerConnectionLimitTest {
         for (Socket s : sockets) {
             try {
                 s.close();
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+                // best-effort cleanup
+            }
         }
         for (NetServer n : netServers) {
             n.close().blockingAwait(5, TimeUnit.SECONDS);
@@ -205,9 +209,11 @@ class VertxTcpServerConnectionLimitTest {
                                 case 0 -> s.setSoLinger(true, 0); // abort at once
                                 case 1 -> s.getOutputStream().write(new byte[] { 1, 2, 3 }); // abort after a write
                                 case 2 -> s.getInputStream().read(); // abort after the greeting or the refusal
-                                default -> {} // plain close
+                                default -> s.close(); // plain close (closing again on exit is a no-op)
                             }
-                        } catch (IOException ignored) {}
+                        } catch (IOException ignored) {
+                            // the server may reset the connection; that is part of the scenario
+                        }
                     }
                     return null;
                 })
@@ -591,7 +597,7 @@ class VertxTcpServerConnectionLimitTest {
         return listen(netServer, null);
     }
 
-    private int listen(NetServer netServer, VertxTcpServer server) throws Exception {
+    private int listen(NetServer netServer, VertxTcpServer server) {
         final var handler = appHandler;
         netServer.connectHandler(socket -> {
             admitted.incrementAndGet();
@@ -668,14 +674,8 @@ class VertxTcpServerConnectionLimitTest {
         return new String(buffer, StandardCharsets.US_ASCII);
     }
 
-    private static void waitUntil(BooleanSupplier condition) throws InterruptedException {
-        final long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
-        while (!condition.getAsBoolean()) {
-            if (System.nanoTime() > deadline) {
-                throw new AssertionError("condition not reached within 10 s");
-            }
-            Thread.sleep(20);
-        }
+    private static void waitUntil(BooleanSupplier condition) {
+        await().atMost(Duration.ofSeconds(10)).pollInterval(Duration.ofMillis(20)).until(condition::getAsBoolean);
     }
 
     // ---- TLS fixture

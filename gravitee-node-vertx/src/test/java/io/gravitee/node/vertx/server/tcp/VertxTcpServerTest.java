@@ -106,7 +106,8 @@ class VertxTcpServerTest {
     void should_return_a_limited_net_server_when_a_limit_is_set() {
         when(options.getMaxConnections()).thenReturn(10);
         final io.vertx.core.internal.VertxInternal coreVertx = mock(io.vertx.core.internal.VertxInternal.class);
-        when(coreVertx.createNetServer(netServerOptions)).thenReturn(mock(io.vertx.core.net.impl.NetServerInternal.class));
+        final io.vertx.core.net.impl.NetServerInternal coreNetServer = mock(io.vertx.core.net.impl.NetServerInternal.class);
+        when(coreVertx.createNetServer(netServerOptions)).thenReturn(coreNetServer);
         when(vertx.getDelegate()).thenReturn(coreVertx);
         cut = new VertxTcpServer(vertx, options, keyStoreLoaderManager, trustStoreLoaderManager, crlLoaderManager);
 
