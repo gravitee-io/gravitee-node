@@ -114,7 +114,7 @@ final class SynchronousTlsInstaller {
      */
     private static String proxyDecoderName(ChannelPipeline pipeline) {
         for (Map.Entry<String, ChannelHandler> entry : pipeline) {
-            if ("HAProxyMessageDecoder".equals(entry.getValue().getClass().getSimpleName())) {
+            if (entry.getValue().getClass().getName().endsWith(".HAProxyMessageDecoder")) {
                 return entry.getKey();
             }
         }
