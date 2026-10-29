@@ -76,8 +76,8 @@
         <jmockit.version>1.49</jmockit.version>
         <awaitability.version>4.3.0</awaitability.version>
 
-        <!-- WARNING: the next two dependencies versions must be kept in sync regarding vertx-micrometer-metrics -->
-        <micrometer-registry-prometheus.version>1.15.10</micrometer-registry-prometheus.version>
+        <!-- WARNING: micrometer.version (registry, core, commons) and LatencyUtils must be kept in sync regarding vertx-micrometer-metrics -->
+        <micrometer.version>1.15.12</micrometer.version>
         <LatencyUtils.version>2.0.3</LatencyUtils.version>
         <guava.version>32.0.1-jre</guava.version>
         <license3j.version>3.2.0</license3j.version>
@@ -85,6 +85,15 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Declared before gravitee-bom so that its micrometer version wins -->
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-bom</artifactId>
+                <version>${micrometer.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+
             <!-- Import bom to properly inherit all dependencies -->
             <dependency>
                 <groupId>io.gravitee</groupId>
