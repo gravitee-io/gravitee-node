@@ -1,3 +1,10 @@
+## [9.15.1](https://github.com/gravitee-io/gravitee-node/compare/9.15.0...9.15.1) (2026-10-29)
+
+
+### Bug Fixes
+
+* **deps:** bump micrometer to 1.15.12 ([525b823](https://github.com/gravitee-io/gravitee-node/commit/525b8237491833df03e07a38f3991eade84195c6))
+
 # [9.15.0](https://github.com/gravitee-io/gravitee-node/compare/9.14.2...9.15.0) (2026-10-27)
 
 
