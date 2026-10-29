@@ -79,7 +79,7 @@
         <!-- WARNING: micrometer.version (registry, core, commons) and LatencyUtils must be kept in sync regarding vertx-micrometer-metrics -->
         <micrometer.version>1.15.12</micrometer.version>
         <LatencyUtils.version>2.0.3</LatencyUtils.version>
-        <guava.version>32.0.1-jre</guava.version>
+        <guava.version>33.7.2-android</guava.version>
         <license3j.version>3.2.0</license3j.version>
     </properties>
 
