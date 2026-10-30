@@ -24,6 +24,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.instance.BuildInfoProvider;
 import com.hazelcast.spi.properties.ClusterProperty;
 import com.hazelcast.version.Version;
+import io.gravitee.common.util.KeyStoreUtils;
 import io.gravitee.node.api.Node;
 import java.io.FileNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,13 @@ public class HazelcastClusterConfiguration {
         // Force Hazelcast to use SLF4J before loading any HZ classes
         System.setProperty(ClusterProperty.LOGGING_TYPE.getName(), "slf4j");
         System.setProperty(ClusterProperty.SHUTDOWNHOOK_ENABLED.getName(), "false");
+        /*
+         * Hazelcast builds the trust store for the Kubernetes API CA with a hardcoded <code>PKCS12</code> default, which a BC-FIPS
+         * "approved only" JVM does not provide. A value set by the operator (e.g. through <code>JAVA_OPTS</code>) is kept.
+         */
+        if (System.getProperty("hazelcast.restclient.ca.storetype") == null) {
+            System.setProperty("hazelcast.restclient.ca.storetype", KeyStoreUtils.DEFAULT_KEYSTORE_TYPE);
+        }
 
         Config config = fromFilePath(hazelcastConfigFilePath);
         if (!config.getClusterName().contains("cluster")) {
