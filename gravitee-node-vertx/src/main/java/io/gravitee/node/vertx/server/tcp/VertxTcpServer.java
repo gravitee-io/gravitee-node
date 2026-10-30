@@ -97,10 +97,20 @@ public class VertxTcpServer extends VertxServer<NetServer, VertxTcpServerOptions
     }
 
     /**
-     * @return the number of counted connections currently held, 0 when the server is not limited.
+     * @return the number of counted connections currently held, 0 when the server is not limited. Connections of the
+     * exempted addresses are not counted.
      */
-    int currentConnections() {
+    public int currentConnections() {
         return limiter == null ? 0 : limiter.count();
+    }
+
+    /**
+     * Mirrors the configured maximum, for symmetry with {@link #currentConnections()}.
+     *
+     * @return the maximum number of counted connections, 0 when the server is not limited.
+     */
+    public int maxConnections() {
+        return limiter == null ? 0 : limiter.limit();
     }
 
     @Override

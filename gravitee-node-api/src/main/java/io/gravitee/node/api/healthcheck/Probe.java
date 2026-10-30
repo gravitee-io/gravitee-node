@@ -55,4 +55,19 @@ public interface Probe {
     default boolean isVisibleByDefault() {
         return true;
     }
+
+    /**
+     * Indicates if the probe must be evaluated by every call that names it, bypassing the evaluator's reuse of recent
+     * results. For probes that read an in-memory state and whose result must not be older than the call, for example a
+     * readiness check that follows a connection count.
+     * <p>
+     * {@link #check()} must be cheap, non-blocking (in-memory reads only) and thread-safe: it runs on every call that
+     * names the probe, on the caller's thread, with no deduplication. When a probe is both real time and cacheable,
+     * real time wins and {@link #isCacheable()} is ignored.
+     *
+     * @return <code>true</code> if the probe must be recomputed on every call that names it, <code>false</code> otherwise. Default is <code>false</code>.
+     */
+    default boolean isRealTime() {
+        return false;
+    }
 }

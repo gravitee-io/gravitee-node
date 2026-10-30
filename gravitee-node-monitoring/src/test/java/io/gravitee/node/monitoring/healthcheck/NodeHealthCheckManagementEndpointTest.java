@@ -263,6 +263,26 @@ public class NodeHealthCheckManagementEndpointTest {
         assertThat(writeCaptor.getValue()).isEqualTo(expected);
     }
 
+    @Test
+    void should_return_ok_without_probes_parameter_when_only_a_hidden_probe_is_unhealthy() {
+        Map<Probe, Result> probeResultMap = new HashMap<>();
+        probeResultMap.put(new TestingProbe("http-server"), mockResult(true));
+        probeResultMap.put(new TestingProbe("kafka-readiness", false), Result.unhealthy("not ready"));
+        when(probeEvaluator.evaluate(null)).thenReturn(CompletableFuture.completedFuture(probeResultMap));
+        when(routingContext.queryParams()).thenReturn(queryParams);
+        when(queryParams.contains(any())).thenReturn(false);
+
+        ArgumentCaptor<Integer> statusCaptor = ArgumentCaptor.forClass(Integer.class);
+        ArgumentCaptor<String> writeCaptor = ArgumentCaptor.forClass(String.class);
+
+        nodeHealthCheckManagementEndpoint.handle(routingContext);
+
+        verify(httpServerResponse).setStatusCode(statusCaptor.capture());
+        assertThat((int) statusCaptor.getValue()).isEqualTo(HttpStatusCode.OK_200);
+        verify(httpServerResponse).write(writeCaptor.capture());
+        assertThat(writeCaptor.getValue()).doesNotContain("kafka-readiness");
+    }
+
     private Map<Probe, Result> fakeProbeResults(boolean allHealthy) {
         Map<Probe, Result> probesMap = new HashMap<>();
         probesMap.put(new TestingProbe("http-server"), mockResult(true));
