@@ -1,3 +1,10 @@
+# [9.16.0](https://github.com/gravitee-io/gravitee-node/compare/9.15.1...9.16.0) (2026-10-30)
+
+
+### Features
+
+* **monitoring:** recompute real time probes on every call and expose tcp connection capacity ([4b7ff9e](https://github.com/gravitee-io/gravitee-node/commit/4b7ff9e4b19f2267be39a87a8ad0863562bab316))
+
 ## [9.15.1](https://github.com/gravitee-io/gravitee-node/compare/9.15.0...9.15.1) (2026-10-29)
 
 
