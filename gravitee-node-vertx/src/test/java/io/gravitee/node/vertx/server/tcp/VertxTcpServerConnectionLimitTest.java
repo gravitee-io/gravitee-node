@@ -126,6 +126,12 @@ class VertxTcpServerConnectionLimitTest {
         assertThat(server.currentConnections()).isEqualTo(2);
     }
 
+    @Test
+    void should_expose_the_maximum_of_a_limited_server_and_zero_for_an_unlimited_one() {
+        assertThat(plainServer(7, NOBODY_EXEMPT, 0).maxConnections()).isEqualTo(7);
+        assertThat(plainServer(0, NOBODY_EXEMPT, 0).maxConnections()).isZero();
+    }
+
     // ---- AC2: decrement exactly once, whatever closes the connection
 
     @Test

@@ -54,6 +54,10 @@ final class ConnectionLimiter {
         count.decrementAndGet();
     }
 
+    int limit() {
+        return limit;
+    }
+
     int count() {
         return count.get();
     }
