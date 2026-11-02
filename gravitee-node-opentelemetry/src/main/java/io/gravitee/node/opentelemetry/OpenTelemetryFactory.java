@@ -21,12 +21,15 @@ import io.gravitee.node.api.opentelemetry.LoggerFactory;
 import io.gravitee.node.api.opentelemetry.Tracer;
 import io.gravitee.node.api.opentelemetry.TracerFactory;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionConfig;
+import io.gravitee.node.api.opentelemetry.sampling.SamplingConfig;
 import io.gravitee.node.opentelemetry.configuration.OpenTelemetryConfiguration;
 import io.gravitee.node.opentelemetry.exporter.SpanExporterFactory;
 import io.gravitee.node.opentelemetry.exporter.redact.RedactSpanExporter;
 import io.gravitee.node.opentelemetry.logger.OpenTelemetryLogger;
 import io.gravitee.node.opentelemetry.tracer.OpenTelemetryTracer;
 import io.gravitee.node.opentelemetry.tracer.noop.NoOpTracer;
+import io.gravitee.node.opentelemetry.tracer.sampling.GraviteeSampler;
+import io.gravitee.node.opentelemetry.tracer.sampling.TailSamplingMarker;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -47,6 +50,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 
@@ -116,6 +120,30 @@ public class OpenTelemetryFactory implements TracerFactory, LoggerFactory {
         final Map<String, String> additionalResourceAttributes,
         final RedactionConfig redactionConfig
     ) {
+        final SamplingConfig gatewaySampling = configuration.getSamplingConfig();
+        return createTracer(
+            serviceInstanceId,
+            serviceName,
+            serviceNamespace,
+            serviceVersion,
+            instrumenterTracerFactories,
+            additionalResourceAttributes,
+            redactionConfig,
+            () -> gatewaySampling
+        );
+    }
+
+    @Override
+    public Tracer createTracer(
+        final String serviceInstanceId,
+        final String serviceName,
+        final String serviceNamespace,
+        final String serviceVersion,
+        final List<InstrumenterTracerFactory> instrumenterTracerFactories,
+        final Map<String, String> additionalResourceAttributes,
+        final RedactionConfig redactionConfig,
+        final Supplier<SamplingConfig> samplingConfig
+    ) {
         if (configuration.isTracesEnabled()) {
             Resource resource = createResource(
                 serviceInstanceId,
@@ -144,6 +172,8 @@ public class OpenTelemetryFactory implements TracerFactory, LoggerFactory {
             }
 
             SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
+                .setSampler(new GraviteeSampler(samplingConfig))
+                .addSpanProcessor(new TailSamplingMarker(samplingConfig))
                 .addSpanProcessor(BatchSpanProcessor.builder(exporter).build())
                 .setResource(resource)
                 .build();

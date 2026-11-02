@@ -16,8 +16,10 @@
 package io.gravitee.node.api.opentelemetry;
 
 import io.gravitee.node.api.opentelemetry.redaction.RedactionConfig;
+import io.gravitee.node.api.opentelemetry.sampling.SamplingConfig;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
@@ -68,5 +70,30 @@ public interface TracerFactory {
         final RedactionConfig redactionConfig
     ) {
         return createTracer(id, serviceName, serviceNamespace, version, instrumenterTracerFactories, additionalResourceAttributes);
+    }
+
+    /**
+     * Same as above, with a sampling decision taken on each root span from the config the supplier returns at that
+     * moment: changing what it returns changes sampling without recreating the tracer.
+     */
+    default Tracer createTracer(
+        final String id,
+        final String serviceName,
+        final String serviceNamespace,
+        final String version,
+        final List<InstrumenterTracerFactory> instrumenterTracerFactories,
+        final Map<String, String> additionalResourceAttributes,
+        final RedactionConfig redactionConfig,
+        final Supplier<SamplingConfig> samplingConfig
+    ) {
+        return createTracer(
+            id,
+            serviceName,
+            serviceNamespace,
+            version,
+            instrumenterTracerFactories,
+            additionalResourceAttributes,
+            redactionConfig
+        );
     }
 }

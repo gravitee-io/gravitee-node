@@ -19,6 +19,7 @@ import io.gravitee.common.util.EnvironmentUtils;
 import io.gravitee.node.api.opentelemetry.redaction.MaskingStrategy;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionConfig;
 import io.gravitee.node.api.opentelemetry.redaction.RedactionRule;
+import io.gravitee.node.api.opentelemetry.sampling.SamplingConfig;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import java.time.Duration;
@@ -60,6 +61,19 @@ public class OpenTelemetryConfiguration {
 
     @Value("${services.opentelemetry.verbose:false}")
     private boolean verboseEnabled = false;
+
+    @Value("${services.opentelemetry.tracing.sampling.ratio:1.0}")
+    @Getter(AccessLevel.NONE)
+    private double samplingRatio = 1.0;
+
+    @Value("${services.opentelemetry.tracing.sampling.respectRemoteParent:true}")
+    @Getter(AccessLevel.NONE)
+    private boolean samplingRespectRemoteParent = true;
+
+    /** Gateway-wide sampling, used by tracers created without their own sampling config. */
+    public SamplingConfig getSamplingConfig() {
+        return new SamplingConfig(samplingRatio, samplingRespectRemoteParent, Set.of(), List.of(), Set.of(), false);
+    }
 
     /**
      * Key-value pairs to be used as extra resources attributes associated to any span
