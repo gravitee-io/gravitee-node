@@ -65,11 +65,11 @@ class HazelcastClusterConfigurationTest {
 
     @Test
     void should_keep_the_rest_client_ca_store_type_set_by_the_operator() throws Exception {
-        System.setProperty(REST_CLIENT_CA_STORE_TYPE_PROPERTY, "BCFKS");
+        System.setProperty(REST_CLIENT_CA_STORE_TYPE_PROPERTY, "JKS");
 
         HazelcastInstance instance = configuration.clusterHazelcastInstance();
         try {
-            assertThat(System.getProperty(REST_CLIENT_CA_STORE_TYPE_PROPERTY)).isEqualTo("BCFKS");
+            assertThat(System.getProperty(REST_CLIENT_CA_STORE_TYPE_PROPERTY)).isEqualTo("JKS");
         } finally {
             instance.shutdown();
         }
