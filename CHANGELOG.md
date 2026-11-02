@@ -1,3 +1,10 @@
+## [9.16.1](https://github.com/gravitee-io/gravitee-node/compare/9.16.0...9.16.1) (2026-11-02)
+
+
+### Bug Fixes
+
+* **bom:** manage the zip of each plugin alongside its jar ([e000d0f](https://github.com/gravitee-io/gravitee-node/commit/e000d0fe93ee94b2b31ea61b749205c63373a3a1))
+
 # [9.16.0](https://github.com/gravitee-io/gravitee-node/compare/9.15.1...9.16.0) (2026-10-30)
 
 
