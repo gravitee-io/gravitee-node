@@ -1,3 +1,10 @@
+## [9.16.2](https://github.com/gravitee-io/gravitee-node/compare/9.16.1...9.16.2) (2026-11-03)
+
+
+### Bug Fixes
+
+* **hazelcast:** pick the FIPS-approved keystore type for the Kubernetes API trust store ([7b7d3e2](https://github.com/gravitee-io/gravitee-node/commit/7b7d3e2542aac7a46e58d282c8b80cd71a61487b))
+
 ## [9.16.1](https://github.com/gravitee-io/gravitee-node/compare/9.16.0...9.16.1) (2026-11-02)
 
 
