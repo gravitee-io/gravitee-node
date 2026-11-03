@@ -36,8 +36,12 @@ class HazelcastCacheConfigurationTest {
 
     private HazelcastCacheConfiguration configuration;
 
+    private String previousStoreType;
+
     @BeforeEach
     void setUp() {
+        previousStoreType = System.clearProperty(REST_CLIENT_CA_STORE_TYPE_PROPERTY);
+
         Node node = mock(Node.class);
         when(node.id()).thenReturn("node-id");
         when(node.hostname()).thenReturn("node-hostname");
@@ -49,8 +53,12 @@ class HazelcastCacheConfigurationTest {
     }
 
     @AfterEach
-    void clearProperty() {
-        System.clearProperty(REST_CLIENT_CA_STORE_TYPE_PROPERTY);
+    void restoreProperty() {
+        if (previousStoreType == null) {
+            System.clearProperty(REST_CLIENT_CA_STORE_TYPE_PROPERTY);
+        } else {
+            System.setProperty(REST_CLIENT_CA_STORE_TYPE_PROPERTY, previousStoreType);
+        }
     }
 
     @Test
