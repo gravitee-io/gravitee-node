@@ -63,7 +63,8 @@ public class RedisCache<V> implements Cache<String, V> {
      * Remove the entry and return its value in a single, atomic step (same as {@code GETDEL}, Redis 6.2+).
      * KEYS[1]: entry key.
      */
-    private static final String EVICT_SCRIPT = "local old = redis.call('GET', KEYS[1]) if old then redis.call('DEL', KEYS[1]) end return old";
+    private static final String EVICT_SCRIPT =
+        "local old = redis.call('GET', KEYS[1]) if old then redis.call('DEL', KEYS[1]) end return old";
 
     private final String name;
     private final ValueMapper<V, String> valueMapper;
@@ -141,7 +142,7 @@ public class RedisCache<V> implements Cache<String, V> {
 
     @Override
     public Single<Boolean> rxContainsKey(String key) {
-        return Single.fromCompletionStage(this.redisAPI.exists(List.of(key + SEPARATOR)).toCompletionStage())
+        return Single.fromCompletionStage(this.redisAPI.exists(List.of(getRedisEntryKey(key))).toCompletionStage())
             .flatMap(this::throwExceptionOnError)
             .map(resp -> resp.toInteger() > 0)
             .onErrorResumeNext(ex -> Single.error(new CacheException("Key existence cannot be tested from cache", ex)));
