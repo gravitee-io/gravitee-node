@@ -234,6 +234,36 @@ public abstract class AbstractCacheContractTest {
     }
 
     @Nested
+    class TimeToIdle {
+
+        // Hazelcast tracks idle time with a one-second resolution and cannot hold a 1s idle time reliably, so use 2s
+
+        @Test
+        void should_expire_entry_not_read_within_the_idle_time() throws InterruptedException {
+            Cache<String, String> cache = newCache(CacheConfiguration.builder().timeToIdleInMs(2000).build());
+            cache.put(KEY, "a");
+
+            // Polling with get would itself keep the entry alive, so wait without reading
+            Thread.sleep(4000);
+
+            assertThat(cache.get(KEY)).isNull();
+        }
+
+        @Test
+        void should_keep_entry_read_within_the_idle_time() throws InterruptedException {
+            Cache<String, String> cache = newCache(CacheConfiguration.builder().timeToIdleInMs(2000).build());
+            cache.put(KEY, "a");
+
+            // Read for well over the idle time: every read must push the expiry back
+            long until = System.currentTimeMillis() + 5000;
+            while (System.currentTimeMillis() < until) {
+                assertThat(cache.get(KEY)).isEqualTo("a");
+                Thread.sleep(200);
+            }
+        }
+    }
+
+    @Nested
     class Listeners {
 
         @Test
