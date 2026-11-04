@@ -65,6 +65,14 @@
             <artifactId>vertx-redis-client</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.gravitee.node</groupId>
+            <artifactId>gravitee-node-cache-common</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Embedded redis dependencies for unit test -->
         <dependency>
             <groupId>com.github.codemonstur</groupId>
