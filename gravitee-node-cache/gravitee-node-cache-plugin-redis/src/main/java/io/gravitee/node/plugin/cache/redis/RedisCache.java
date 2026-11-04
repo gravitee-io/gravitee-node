@@ -165,7 +165,7 @@ public class RedisCache<V> implements Cache<String, V> {
         return Maybe.fromCompletionStage(this.redisAPI.get(getRedisEntryKey(key)).toCompletionStage())
             .flatMapSingle(this::throwExceptionOnError)
             .map(response -> valueMapper.toValue(asString(response)))
-            .onErrorResumeNext(ex -> Maybe.error(new CacheException("Keys cannot be listed from cache", ex)));
+            .onErrorResumeNext(ex -> Maybe.error(new CacheException("Value cannot be read from cache", ex)));
     }
 
     @Override
