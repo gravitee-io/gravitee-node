@@ -67,6 +67,13 @@ public class RedisCache<V> implements Cache<String, V> {
     private static final String EVICT_SCRIPT =
         "local old = redis.call('GET', KEYS[1]) if old then redis.call('DEL', KEYS[1]) end return old";
 
+    /**
+     * Read the value and push its expiry back by the idle time, in a single step.
+     * KEYS[1]: entry key, ARGV[1]: time to idle in milliseconds.
+     */
+    private static final String GET_SCRIPT =
+        "local value = redis.call('GET', KEYS[1]) if value then redis.call('PEXPIRE', KEYS[1], ARGV[1]) end return value";
+
     private final String name;
     private final CacheConfiguration configuration;
     private final ValueMapper<V, String> valueMapper;
@@ -162,7 +169,10 @@ public class RedisCache<V> implements Cache<String, V> {
 
     @Override
     public Maybe<V> rxGet(String key) {
-        return Maybe.fromCompletionStage(this.redisAPI.get(getRedisEntryKey(key)).toCompletionStage())
+        final var request = refreshesOnRead()
+            ? this.redisAPI.eval(List.of(GET_SCRIPT, "1", getRedisEntryKey(key), Long.toString(configuration.getTimeToIdleInMs())))
+            : this.redisAPI.get(getRedisEntryKey(key));
+        return Maybe.fromCompletionStage(request.toCompletionStage())
             .flatMapSingle(this::throwExceptionOnError)
             .map(response -> valueMapper.toValue(asString(response)))
             .onErrorResumeNext(ex -> Maybe.error(new CacheException("Value cannot be read from cache", ex)));
@@ -191,7 +201,7 @@ public class RedisCache<V> implements Cache<String, V> {
     private Maybe<V> put(String key, V value, long ttlInMs) {
         final long effectiveTtlInMs;
         try {
-            effectiveTtlInMs = effectiveTimeToLive(ttlInMs);
+            effectiveTtlInMs = expiryOnWrite(effectiveTimeToLive(ttlInMs));
         } catch (IllegalArgumentException e) {
             return Maybe.error(e);
         }
@@ -302,6 +312,25 @@ public class RedisCache<V> implements Cache<String, V> {
             return ttlInMs;
         }
         return Math.max(configuredTtlInMs, 0);
+    }
+
+    /**
+     * Redis has no idle expiry, so it is emulated when the cache has a time to idle and no time to live:
+     * the entry expires after the idle time, and each read pushes its expiry back by the idle time.
+     * When the cache also has a time to live, that time to live alone applies, so a frequently read entry is never
+     * dropped before it. An entry written with its own time to live in an idle-only cache expires at the earliest of
+     * both, but a read may push it past its own time to live.
+     */
+    private boolean refreshesOnRead() {
+        return configuration.getTimeToIdleInMs() > 0 && configuration.getTimeToLiveInMs() <= 0;
+    }
+
+    private long expiryOnWrite(long ttlInMs) {
+        if (!refreshesOnRead()) {
+            return ttlInMs;
+        }
+        long idleInMs = configuration.getTimeToIdleInMs();
+        return ttlInMs > 0 ? Math.min(ttlInMs, idleInMs) : idleInMs;
     }
 
     private static String asString(Response response) {
