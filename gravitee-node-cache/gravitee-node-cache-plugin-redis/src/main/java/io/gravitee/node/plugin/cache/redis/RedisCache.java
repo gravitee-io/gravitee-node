@@ -16,6 +16,7 @@
 package io.gravitee.node.plugin.cache.redis;
 
 import io.gravitee.node.api.cache.Cache;
+import io.gravitee.node.api.cache.CacheConfiguration;
 import io.gravitee.node.api.cache.CacheException;
 import io.gravitee.node.api.cache.CacheListener;
 import io.gravitee.node.api.cache.ValueMapper;
@@ -67,12 +68,18 @@ public class RedisCache<V> implements Cache<String, V> {
         "local old = redis.call('GET', KEYS[1]) if old then redis.call('DEL', KEYS[1]) end return old";
 
     private final String name;
+    private final CacheConfiguration configuration;
     private final ValueMapper<V, String> valueMapper;
     private final RedisAPI redisAPI;
     private final Map<String, CacheListener<String, V>> cacheListeners = new HashMap<>();
 
     public RedisCache(String name, RedisAPI redisAPI, ValueMapper<V, String> mapper) {
+        this(name, new CacheConfiguration(), redisAPI, mapper);
+    }
+
+    public RedisCache(String name, CacheConfiguration configuration, RedisAPI redisAPI, ValueMapper<V, String> mapper) {
         this.name = name;
+        this.configuration = configuration;
         this.redisAPI = redisAPI;
         if (mapper == null) {
             throw new IllegalArgumentException("ValueMapper required for Redis Cache");
@@ -182,9 +189,15 @@ public class RedisCache<V> implements Cache<String, V> {
     }
 
     private Maybe<V> put(String key, V value, long ttlInMs) {
+        final long effectiveTtlInMs;
+        try {
+            effectiveTtlInMs = effectiveTimeToLive(ttlInMs);
+        } catch (IllegalArgumentException e) {
+            return Maybe.error(e);
+        }
         return Maybe.fromCompletionStage(
             this.redisAPI.eval(
-                List.of(PUT_SCRIPT, "1", getRedisEntryKey(key), valueMapper.toCachedValue(value), Long.toString(ttlInMs))
+                List.of(PUT_SCRIPT, "1", getRedisEntryKey(key), valueMapper.toCachedValue(value), Long.toString(effectiveTtlInMs))
             ).toCompletionStage()
         )
             .map(response -> Optional.ofNullable(valueMapper.toValue(asString(response))))
@@ -274,6 +287,21 @@ public class RedisCache<V> implements Cache<String, V> {
     @Override
     public boolean removeCacheListener(String listenerCacheId) {
         return cacheListeners.remove(listenerCacheId) != null;
+    }
+
+    /**
+     * An entry written without its own time to live gets the one from the configuration, as in the other caches.
+     * Its own time to live can't be bigger than the configured one.
+     */
+    private long effectiveTimeToLive(long ttlInMs) {
+        long configuredTtlInMs = configuration.getTimeToLiveInMs();
+        if (ttlInMs > 0) {
+            if (configuredTtlInMs > 0 && configuredTtlInMs < ttlInMs) {
+                throw new IllegalArgumentException("TTL can't be bigger than ttl defined in the cache configuration");
+            }
+            return ttlInMs;
+        }
+        return Math.max(configuredTtlInMs, 0);
     }
 
     private static String asString(Response response) {
