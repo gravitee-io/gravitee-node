@@ -47,6 +47,24 @@ import lombok.CustomLog;
 public class RedisCache<V> implements Cache<String, V> {
 
     public static final String SEPARATOR = ".";
+
+    /**
+     * Write the value and return the previous one in a single, atomic step.
+     * Lua is used rather than {@code SET ... GET} so that Redis versions older than 6.2 keep working.
+     * KEYS[1]: entry key, ARGV[1]: value, ARGV[2]: time to live in milliseconds, 0 for none.
+     */
+    private static final String PUT_SCRIPT =
+        "local old = redis.call('GET', KEYS[1]) " +
+        "if tonumber(ARGV[2]) > 0 then redis.call('SET', KEYS[1], ARGV[1], 'PX', ARGV[2]) " +
+        "else redis.call('SET', KEYS[1], ARGV[1]) end " +
+        "return old";
+
+    /**
+     * Remove the entry and return its value in a single, atomic step (same as {@code GETDEL}, Redis 6.2+).
+     * KEYS[1]: entry key.
+     */
+    private static final String EVICT_SCRIPT = "local old = redis.call('GET', KEYS[1]) if old then redis.call('DEL', KEYS[1]) end return old";
+
     private final String name;
     private final ValueMapper<V, String> valueMapper;
     private final RedisAPI redisAPI;
@@ -149,23 +167,7 @@ public class RedisCache<V> implements Cache<String, V> {
 
     @Override
     public Maybe<V> rxPut(String key, V value) {
-        return rxGet(key)
-            .map(Optional::ofNullable)
-            .switchIfEmpty(Maybe.just(Optional.empty()))
-            .flatMap(oldValue ->
-                Maybe.fromCompletionStage(this.redisAPI.setnx(getRedisEntryKey(key), valueMapper.toCachedValue(value)).toCompletionStage())
-                    .map(this::throwExceptionOnError)
-                    .mapOptional(r -> {
-                        this.cacheListeners.values().forEach(listener ->
-                            oldValue.ifPresentOrElse(
-                                old -> listener.onEntryUpdated(key, old, value),
-                                () -> listener.onEntryAdded(key, value)
-                            )
-                        );
-                        return oldValue;
-                    })
-            )
-            .onErrorResumeNext(ex -> Maybe.error(new CacheException("Unable to add cache Entry", ex)));
+        return put(key, value, 0);
     }
 
     @Override
@@ -175,26 +177,23 @@ public class RedisCache<V> implements Cache<String, V> {
 
     @Override
     public Maybe<V> rxPut(String key, V value, long ttl, TimeUnit ttlUnit) {
-        return rxGet(key)
-            .map(Optional::ofNullable)
-            .switchIfEmpty(Maybe.just(Optional.empty()))
-            .flatMap(oldValue ->
-                Maybe.fromCompletionStage(
-                    this.redisAPI.set(
-                        List.of(getRedisEntryKey(key), valueMapper.toCachedValue(value), "PX", "" + ttlUnit.toMillis(ttl))
-                    ).toCompletionStage()
-                )
-                    .map(this::throwExceptionOnError)
-                    .mapOptional(r -> {
-                        this.cacheListeners.values().forEach(listener ->
-                            oldValue.ifPresentOrElse(
-                                old -> listener.onEntryUpdated(key, old, value),
-                                () -> listener.onEntryAdded(key, value)
-                            )
-                        );
-                        return oldValue;
-                    })
-            )
+        return put(key, value, ttlUnit.toMillis(ttl));
+    }
+
+    private Maybe<V> put(String key, V value, long ttlInMs) {
+        return Maybe.fromCompletionStage(
+            this.redisAPI.eval(
+                List.of(PUT_SCRIPT, "1", getRedisEntryKey(key), valueMapper.toCachedValue(value), Long.toString(ttlInMs))
+            ).toCompletionStage()
+        )
+            .map(response -> Optional.ofNullable(valueMapper.toValue(asString(response))))
+            .defaultIfEmpty(Optional.empty())
+            .flatMapMaybe(oldValue -> {
+                this.cacheListeners.values().forEach(listener ->
+                    oldValue.ifPresentOrElse(old -> listener.onEntryUpdated(key, old, value), () -> listener.onEntryAdded(key, value))
+                );
+                return Maybe.fromOptional(oldValue);
+            })
             .onErrorResumeNext(ex -> Maybe.error(new CacheException("Unable to add cache Entry", ex)));
     }
 
@@ -247,15 +246,9 @@ public class RedisCache<V> implements Cache<String, V> {
 
     @Override
     public Maybe<V> rxEvict(String key) {
-        return this.rxGet(key)
-            .flatMap(value ->
-                Maybe.fromCompletionStage(this.redisAPI.del(List.of(getRedisEntryKey(key))).toCompletionStage())
-                    .map(this::throwExceptionOnError)
-                    .map(ignore -> {
-                        this.cacheListeners.values().forEach(listener -> listener.onEntryEvicted(key, value));
-                        return value;
-                    })
-            )
+        return Maybe.fromCompletionStage(this.redisAPI.eval(List.of(EVICT_SCRIPT, "1", getRedisEntryKey(key))).toCompletionStage())
+            .map(response -> valueMapper.toValue(asString(response)))
+            .doOnSuccess(value -> this.cacheListeners.values().forEach(listener -> listener.onEntryEvicted(key, value)))
             .onErrorResumeNext(ex -> Maybe.error(new CacheException("Unable to remove cache Entry", ex)));
     }
 
