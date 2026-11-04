@@ -200,9 +200,14 @@ public class HazelcastCache<K, V> implements Cache<K, V> {
 
     @Override
     public boolean removeCacheListener(final String cacheListenerId) {
-        if (cacheListenerId != null) {
-            return this.cache.removeEntryListener(UUID.fromString(cacheListenerId));
+        if (cacheListenerId == null) {
+            return false;
         }
-        return false;
+        try {
+            return this.cache.removeEntryListener(UUID.fromString(cacheListenerId));
+        } catch (IllegalArgumentException e) {
+            // Not an id returned by addCacheListener, so no listener is registered under it
+            return false;
+        }
     }
 }
