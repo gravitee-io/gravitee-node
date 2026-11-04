@@ -90,7 +90,7 @@ public class HazelcastCache<K, V> implements Cache<K, V> {
     @Override
     public V put(K key, V value) {
         if (timeToLiveInMs > 0) {
-            return this.cache.put(key, value, timeToLiveInMs, TimeUnit.MILLISECONDS);
+            return this.cache.put(key, value, toSecondsRoundingUp(timeToLiveInMs), TimeUnit.SECONDS);
         } else {
             return this.cache.put(key, value);
         }
@@ -103,11 +103,23 @@ public class HazelcastCache<K, V> implements Cache<K, V> {
 
     @Override
     public V put(K key, V value, long ttl, TimeUnit ttlUnit) {
-        if (timeToLiveInMs > 0 && timeToLiveInMs < TimeUnit.MILLISECONDS.convert(ttl, ttlUnit)) {
+        long ttlInMs = TimeUnit.MILLISECONDS.convert(ttl, ttlUnit);
+        if (timeToLiveInMs > 0 && timeToLiveInMs < ttlInMs) {
             throw new IllegalArgumentException("Single TTL can't be bigger than TTL defined in the configuration");
         }
 
+        if (ttlInMs > 0) {
+            return this.cache.put(key, value, toSecondsRoundingUp(ttlInMs), TimeUnit.SECONDS);
+        }
         return this.cache.put(key, value, ttl, ttlUnit);
+    }
+
+    /**
+     * Hazelcast expires entries with a one-second resolution: a duration under one second makes the entry expire at once,
+     * and 0 means it never expires. Round up so that an entry is never dropped before its time.
+     */
+    static long toSecondsRoundingUp(long durationInMs) {
+        return (durationInMs + 999) / 1000;
     }
 
     @Override

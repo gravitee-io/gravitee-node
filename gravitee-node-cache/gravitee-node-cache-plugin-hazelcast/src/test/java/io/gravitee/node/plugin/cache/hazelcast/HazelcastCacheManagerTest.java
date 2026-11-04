@@ -17,9 +17,11 @@ package io.gravitee.node.plugin.cache.hazelcast;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.hazelcast.config.MapConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import io.gravitee.node.api.cache.Cache;
+import io.gravitee.node.api.cache.CacheConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,5 +77,14 @@ class HazelcastCacheManagerTest {
         Cache<String, String> cache2 = cut.getOrCreateCache("cache");
         assertThat(cache2).isNotNull();
         assertThat(cache).isNotSameAs(cache2);
+    }
+
+    @Test
+    void should_round_sub_second_durations_up_to_one_second() {
+        cut.getOrCreateCache("sub-second", CacheConfiguration.builder().distributed(true).timeToLiveInMs(500).timeToIdleInMs(1500).build());
+
+        MapConfig mapConfig = hazelcastInstance.getConfig().getMapConfig("sub-second");
+        assertThat(mapConfig.getTimeToLiveSeconds()).isEqualTo(1);
+        assertThat(mapConfig.getMaxIdleSeconds()).isEqualTo(2);
     }
 }

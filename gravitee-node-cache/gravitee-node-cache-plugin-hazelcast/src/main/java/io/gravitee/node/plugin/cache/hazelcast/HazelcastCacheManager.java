@@ -26,7 +26,6 @@ import io.gravitee.node.api.cache.CacheManager;
 import io.gravitee.node.plugin.cache.common.InMemoryCache;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 
@@ -94,11 +93,11 @@ public class HazelcastCacheManager extends AbstractService<CacheManager> impleme
             }
 
             if (configuration.getTimeToIdleInMs() > 0) {
-                mapConfig.setMaxIdleSeconds((int) TimeUnit.SECONDS.convert(configuration.getTimeToIdleInMs(), TimeUnit.MILLISECONDS));
+                mapConfig.setMaxIdleSeconds((int) HazelcastCache.toSecondsRoundingUp(configuration.getTimeToIdleInMs()));
             }
 
             if (configuration.getTimeToLiveInMs() > 0) {
-                mapConfig.setTimeToLiveSeconds((int) TimeUnit.SECONDS.convert(configuration.getTimeToLiveInMs(), TimeUnit.MILLISECONDS));
+                mapConfig.setTimeToLiveSeconds((int) HazelcastCache.toSecondsRoundingUp(configuration.getTimeToLiveInMs()));
             }
 
             config.addMapConfig(mapConfig);
