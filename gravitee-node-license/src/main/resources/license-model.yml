@@ -17,6 +17,8 @@ packs:
             - am-extgrant-xaa # repository: gravitee-am-extensiongrant-xaa
             - am-policy-authzen # policy: gravitee-am-policy-authzen
 
+            - apim-policy-data-cache # policy: gravitee-policy-data-cache
+
     enterprise-legacy-upgrade:
         features:
             - apim-policy-xslt # policy: gravitee-policy-xslt
@@ -31,7 +33,6 @@ packs:
             - am-policy-account-linking # policy: gravitee-am-policy-account-linking
             - am-policy-mfa-challenge # policy: gravitee-am-policy-mfa-challenge
             - apim-policy-assign-metrics # policy: gravitee-policy-assign-metrics
-            - apim-policy-data-cache # policy: gravitee-policy-data-cache
             - apim-policy-data-logging-masking # policy: gravitee-policy-data-logging-masking
             - apim-policy-generate-wssecurity # policy: gravitee-policy-generate-wssecurity
             - apim-policy-geoip-filtering # policy: gravitee-policy-geoip-filtering, service: gravitee-service-geoip
