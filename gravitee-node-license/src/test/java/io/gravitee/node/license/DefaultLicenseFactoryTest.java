@@ -233,7 +233,8 @@ class DefaultLicenseFactoryTest {
             "http-flow-am-idp",
             "am-idp-france-connect",
             "am-idp-cas",
-            "cas-am-idp"
+            "cas-am-idp",
+            "apim-policy-data-cache"
         );
         assertThat(license.getReferenceType()).isEqualTo(REFERENCE_TYPE_PLATFORM);
         assertThat(license.getReferenceId()).isEqualTo(REFERENCE_ID_PLATFORM);
