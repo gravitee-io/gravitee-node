@@ -1,3 +1,10 @@
+## [9.16.3](https://github.com/gravitee-io/gravitee-node/compare/9.16.2...9.16.3) (2026-11-06)
+
+
+### Bug Fixes
+
+* move the data-cache-policy into a planet pack ([05fcbf0](https://github.com/gravitee-io/gravitee-node/commit/05fcbf042bd5b40e949f2c701b817fe9b7471aad))
+
 ## [9.16.2](https://github.com/gravitee-io/gravitee-node/compare/9.16.1...9.16.2) (2026-11-03)
 
 
