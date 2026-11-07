@@ -16,6 +16,7 @@
 package io.gravitee.node.plugin.cache.redis;
 
 import io.gravitee.node.api.cache.Cache;
+import io.gravitee.node.api.cache.CacheConfiguration;
 import io.gravitee.node.api.cache.CacheException;
 import io.gravitee.node.api.cache.CacheListener;
 import io.gravitee.node.api.cache.ValueMapper;
@@ -47,13 +48,45 @@ import lombok.CustomLog;
 public class RedisCache<V> implements Cache<String, V> {
 
     public static final String SEPARATOR = ".";
+
+    /**
+     * Write the value and return the previous one in a single, atomic step.
+     * Lua is used rather than {@code SET ... GET} so that Redis versions older than 6.2 keep working.
+     * KEYS[1]: entry key, ARGV[1]: value, ARGV[2]: time to live in milliseconds, 0 for none.
+     */
+    private static final String PUT_SCRIPT =
+        "local old = redis.call('GET', KEYS[1]) " +
+        "if tonumber(ARGV[2]) > 0 then redis.call('SET', KEYS[1], ARGV[1], 'PX', ARGV[2]) " +
+        "else redis.call('SET', KEYS[1], ARGV[1]) end " +
+        "return old";
+
+    /**
+     * Remove the entry and return its value in a single, atomic step (same as {@code GETDEL}, Redis 6.2+).
+     * KEYS[1]: entry key.
+     */
+    private static final String EVICT_SCRIPT =
+        "local old = redis.call('GET', KEYS[1]) if old then redis.call('DEL', KEYS[1]) end return old";
+
+    /**
+     * Read the value and push its expiry back by the idle time, in a single step.
+     * KEYS[1]: entry key, ARGV[1]: time to idle in milliseconds.
+     */
+    private static final String GET_SCRIPT =
+        "local value = redis.call('GET', KEYS[1]) if value then redis.call('PEXPIRE', KEYS[1], ARGV[1]) end return value";
+
     private final String name;
+    private final CacheConfiguration configuration;
     private final ValueMapper<V, String> valueMapper;
     private final RedisAPI redisAPI;
     private final Map<String, CacheListener<String, V>> cacheListeners = new HashMap<>();
 
     public RedisCache(String name, RedisAPI redisAPI, ValueMapper<V, String> mapper) {
+        this(name, new CacheConfiguration(), redisAPI, mapper);
+    }
+
+    public RedisCache(String name, CacheConfiguration configuration, RedisAPI redisAPI, ValueMapper<V, String> mapper) {
         this.name = name;
+        this.configuration = configuration;
         this.redisAPI = redisAPI;
         if (mapper == null) {
             throw new IllegalArgumentException("ValueMapper required for Redis Cache");
@@ -123,7 +156,7 @@ public class RedisCache<V> implements Cache<String, V> {
 
     @Override
     public Single<Boolean> rxContainsKey(String key) {
-        return Single.fromCompletionStage(this.redisAPI.exists(List.of(key + SEPARATOR)).toCompletionStage())
+        return Single.fromCompletionStage(this.redisAPI.exists(List.of(getRedisEntryKey(key))).toCompletionStage())
             .flatMap(this::throwExceptionOnError)
             .map(resp -> resp.toInteger() > 0)
             .onErrorResumeNext(ex -> Single.error(new CacheException("Key existence cannot be tested from cache", ex)));
@@ -136,10 +169,13 @@ public class RedisCache<V> implements Cache<String, V> {
 
     @Override
     public Maybe<V> rxGet(String key) {
-        return Maybe.fromCompletionStage(this.redisAPI.get(getRedisEntryKey(key)).toCompletionStage())
+        final var request = refreshesOnRead()
+            ? this.redisAPI.eval(List.of(GET_SCRIPT, "1", getRedisEntryKey(key), Long.toString(configuration.getTimeToIdleInMs())))
+            : this.redisAPI.get(getRedisEntryKey(key));
+        return Maybe.fromCompletionStage(request.toCompletionStage())
             .flatMapSingle(this::throwExceptionOnError)
             .map(response -> valueMapper.toValue(asString(response)))
-            .onErrorResumeNext(ex -> Maybe.error(new CacheException("Keys cannot be listed from cache", ex)));
+            .onErrorResumeNext(ex -> Maybe.error(new CacheException("Value cannot be read from cache", ex)));
     }
 
     @Override
@@ -149,23 +185,7 @@ public class RedisCache<V> implements Cache<String, V> {
 
     @Override
     public Maybe<V> rxPut(String key, V value) {
-        return rxGet(key)
-            .map(Optional::ofNullable)
-            .switchIfEmpty(Maybe.just(Optional.empty()))
-            .flatMap(oldValue ->
-                Maybe.fromCompletionStage(this.redisAPI.setnx(getRedisEntryKey(key), valueMapper.toCachedValue(value)).toCompletionStage())
-                    .map(this::throwExceptionOnError)
-                    .mapOptional(r -> {
-                        this.cacheListeners.values().forEach(listener ->
-                            oldValue.ifPresentOrElse(
-                                old -> listener.onEntryUpdated(key, old, value),
-                                () -> listener.onEntryAdded(key, value)
-                            )
-                        );
-                        return oldValue;
-                    })
-            )
-            .onErrorResumeNext(ex -> Maybe.error(new CacheException("Unable to add cache Entry", ex)));
+        return put(key, value, 0);
     }
 
     @Override
@@ -175,26 +195,29 @@ public class RedisCache<V> implements Cache<String, V> {
 
     @Override
     public Maybe<V> rxPut(String key, V value, long ttl, TimeUnit ttlUnit) {
-        return rxGet(key)
-            .map(Optional::ofNullable)
-            .switchIfEmpty(Maybe.just(Optional.empty()))
-            .flatMap(oldValue ->
-                Maybe.fromCompletionStage(
-                    this.redisAPI.set(
-                        List.of(getRedisEntryKey(key), valueMapper.toCachedValue(value), "PX", "" + ttlUnit.toMillis(ttl))
-                    ).toCompletionStage()
-                )
-                    .map(this::throwExceptionOnError)
-                    .mapOptional(r -> {
-                        this.cacheListeners.values().forEach(listener ->
-                            oldValue.ifPresentOrElse(
-                                old -> listener.onEntryUpdated(key, old, value),
-                                () -> listener.onEntryAdded(key, value)
-                            )
-                        );
-                        return oldValue;
-                    })
-            )
+        return put(key, value, ttlUnit.toMillis(ttl));
+    }
+
+    private Maybe<V> put(String key, V value, long ttlInMs) {
+        final long effectiveTtlInMs;
+        try {
+            effectiveTtlInMs = expiryOnWrite(effectiveTimeToLive(ttlInMs));
+        } catch (IllegalArgumentException e) {
+            return Maybe.error(e);
+        }
+        return Maybe.fromCompletionStage(
+            this.redisAPI.eval(
+                List.of(PUT_SCRIPT, "1", getRedisEntryKey(key), valueMapper.toCachedValue(value), Long.toString(effectiveTtlInMs))
+            ).toCompletionStage()
+        )
+            .map(response -> Optional.ofNullable(valueMapper.toValue(asString(response))))
+            .defaultIfEmpty(Optional.empty())
+            .flatMapMaybe(oldValue -> {
+                this.cacheListeners.values().forEach(listener ->
+                    oldValue.ifPresentOrElse(old -> listener.onEntryUpdated(key, old, value), () -> listener.onEntryAdded(key, value))
+                );
+                return Maybe.fromOptional(oldValue);
+            })
             .onErrorResumeNext(ex -> Maybe.error(new CacheException("Unable to add cache Entry", ex)));
     }
 
@@ -247,15 +270,9 @@ public class RedisCache<V> implements Cache<String, V> {
 
     @Override
     public Maybe<V> rxEvict(String key) {
-        return this.rxGet(key)
-            .flatMap(value ->
-                Maybe.fromCompletionStage(this.redisAPI.del(List.of(getRedisEntryKey(key))).toCompletionStage())
-                    .map(this::throwExceptionOnError)
-                    .map(ignore -> {
-                        this.cacheListeners.values().forEach(listener -> listener.onEntryEvicted(key, value));
-                        return value;
-                    })
-            )
+        return Maybe.fromCompletionStage(this.redisAPI.eval(List.of(EVICT_SCRIPT, "1", getRedisEntryKey(key))).toCompletionStage())
+            .map(response -> valueMapper.toValue(asString(response)))
+            .doOnSuccess(value -> this.cacheListeners.values().forEach(listener -> listener.onEntryEvicted(key, value)))
             .onErrorResumeNext(ex -> Maybe.error(new CacheException("Unable to remove cache Entry", ex)));
     }
 
@@ -280,6 +297,40 @@ public class RedisCache<V> implements Cache<String, V> {
     @Override
     public boolean removeCacheListener(String listenerCacheId) {
         return cacheListeners.remove(listenerCacheId) != null;
+    }
+
+    /**
+     * An entry written without its own time to live gets the one from the configuration, as in the other caches.
+     * Its own time to live can't be bigger than the configured one.
+     */
+    private long effectiveTimeToLive(long ttlInMs) {
+        long configuredTtlInMs = configuration.getTimeToLiveInMs();
+        if (ttlInMs > 0) {
+            if (configuredTtlInMs > 0 && configuredTtlInMs < ttlInMs) {
+                throw new IllegalArgumentException("TTL can't be bigger than ttl defined in the cache configuration");
+            }
+            return ttlInMs;
+        }
+        return Math.max(configuredTtlInMs, 0);
+    }
+
+    /**
+     * Redis has no idle expiry, so it is emulated when the cache has a time to idle and no time to live:
+     * the entry expires after the idle time, and each read pushes its expiry back by the idle time.
+     * When the cache also has a time to live, that time to live alone applies, so a frequently read entry is never
+     * dropped before it. An entry written with its own time to live in an idle-only cache expires at the earliest of
+     * both, but a read may push it past its own time to live.
+     */
+    private boolean refreshesOnRead() {
+        return configuration.getTimeToIdleInMs() > 0 && configuration.getTimeToLiveInMs() <= 0;
+    }
+
+    private long expiryOnWrite(long ttlInMs) {
+        if (!refreshesOnRead()) {
+            return ttlInMs;
+        }
+        long idleInMs = configuration.getTimeToIdleInMs();
+        return ttlInMs > 0 ? Math.min(ttlInMs, idleInMs) : idleInMs;
     }
 
     private static String asString(Response response) {

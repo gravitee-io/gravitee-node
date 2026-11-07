@@ -18,12 +18,15 @@ package io.gravitee.node.plugin.cache.redis;
 
 import io.gravitee.node.api.cache.Cache;
 import io.gravitee.node.api.cache.CacheConfiguration;
+import io.gravitee.node.api.cache.CacheException;
 import io.gravitee.node.api.cache.ValueMapper;
 import io.gravitee.node.vertx.client.redis.VertxRedisClientFactory;
 import io.gravitee.plugin.configurations.redis.RedisClientOptions;
 import io.reactivex.rxjava3.observers.TestObserver;
 import io.vertx.core.Vertx;
+import io.vertx.redis.client.RedisAPI;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +45,7 @@ public class RedisCacheTest {
 
     private static RedisServer redisServer;
     private static Cache<String, String> redisCache;
+    private static RedisAPI redisAPI;
 
     @BeforeAll
     public static void redisInitialization() throws IOException {
@@ -50,7 +54,9 @@ public class RedisCacheTest {
 
         final var options = RedisClientOptions.builder().host("localhost").port(6379).build();
         final var vertx = Vertx.vertx();
-        final var cm = new RedisCacheManager(options, new VertxRedisClientFactory(vertx));
+        final var redisClientFactory = new VertxRedisClientFactory(vertx);
+        redisAPI = RedisAPI.api(redisClientFactory.createClient(options));
+        final var cm = new RedisCacheManager(options, redisClientFactory);
         redisCache = cm.getOrCreateCache(
             "test",
             CacheConfiguration.builder().build(),
@@ -82,6 +88,25 @@ public class RedisCacheTest {
         test = redisCache.rxPut(key, "myvalue2").test();
         test.await();
         test.assertValue("myvalue1"); // when key is present the put return previous value
+    }
+
+    @Test
+    void should_report_redis_error_when_value_cannot_be_read() throws Exception {
+        final var key = UUID.randomUUID().toString();
+        // A list under the entry key makes GET fail with WRONGTYPE
+        final var entryKey = "test" + RedisCache.SEPARATOR + key;
+        redisAPI.lpush(List.of(entryKey, "item")).toCompletionStage().toCompletableFuture().get();
+
+        try {
+            redisCache
+                .rxGet(key)
+                .test()
+                .awaitDone(5, TimeUnit.SECONDS)
+                .assertError(e -> e instanceof CacheException && "Value cannot be read from cache".equals(e.getMessage()))
+                .assertError(e -> e.getCause() != null && e.getCause().getMessage().startsWith("WRONGTYPE"));
+        } finally {
+            redisAPI.del(List.of(entryKey)).toCompletionStage().toCompletableFuture().get();
+        }
     }
 
     @Test
