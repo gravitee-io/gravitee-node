@@ -1,3 +1,18 @@
+## [9.16.4](https://github.com/gravitee-io/gravitee-node/compare/9.16.3...9.16.4) (2026-11-09)
+
+
+### Bug Fixes
+
+* **hazelcast:** apply the configured time to live to an entry written with a time to live of 0 ([9862ac0](https://github.com/gravitee-io/gravitee-node/commit/9862ac0ab83fdc9b5601f4c0efcbf6b3da24ef72))
+* **hazelcast:** return false when removing an unknown listener ([5f9a2fd](https://github.com/gravitee-io/gravitee-node/commit/5f9a2fd14ae6f73693448d417f867ab7cfc0513c))
+* **hazelcast:** round sub-second durations up to one second ([f94a97c](https://github.com/gravitee-io/gravitee-node/commit/f94a97c812acbe3bd3ad708a56646a85a8470fb1))
+* **redis:** apply the configured time to live to entries written without one ([6859784](https://github.com/gravitee-io/gravitee-node/commit/68597844b56afbf0651edeaf80a04935ce55b9a3))
+* **redis:** honour the configured time to idle ([042f01f](https://github.com/gravitee-io/gravitee-node/commit/042f01f5119805a4eb3131f15ad5a0d2a7ceaccc))
+* **redis:** keep the cache listeners in a concurrent map ([c5430fc](https://github.com/gravitee-io/gravitee-node/commit/c5430fca18a65b71b3880aeef8c02cf984e43133))
+* **redis:** look up the cache entry key in containsKey ([82616e5](https://github.com/gravitee-io/gravitee-node/commit/82616e5b77a44c3954d332d7effc9d4b572e375c))
+* **redis:** replace the existing value atomically on put and evict ([7da22d8](https://github.com/gravitee-io/gravitee-node/commit/7da22d8849a8bc8297bfa39e16bdb4827fa30104))
+* **redis:** report a failed get with its own error message ([d8b90cb](https://github.com/gravitee-io/gravitee-node/commit/d8b90cb222646998559f2c25662374b8a562f241))
+
 ## [9.16.3](https://github.com/gravitee-io/gravitee-node/compare/9.16.2...9.16.3) (2026-11-06)
 
 
