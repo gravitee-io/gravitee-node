@@ -28,6 +28,7 @@ import io.reactivex.rxjava3.observers.TestObserver;
 import io.vertx.core.Vertx;
 import io.vertx.redis.client.RedisAPI;
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -52,10 +53,15 @@ public class RedisCacheTest {
 
     @BeforeAll
     public static void redisInitialization() throws IOException {
-        redisServer = new RedisServer(6379);
+        // A free port, so the tests never reach a Redis already running on this machine
+        final int port;
+        try (ServerSocket socket = new ServerSocket(0)) {
+            port = socket.getLocalPort();
+        }
+        redisServer = new RedisServer(port);
         redisServer.start();
 
-        final var options = RedisClientOptions.builder().host("localhost").port(6379).build();
+        final var options = RedisClientOptions.builder().host("localhost").port(port).build();
         final var vertx = Vertx.vertx();
         final var redisClientFactory = new VertxRedisClientFactory(vertx);
         redisAPI = RedisAPI.api(redisClientFactory.createClient(options));
