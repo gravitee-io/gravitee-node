@@ -1,3 +1,10 @@
+## [9.16.5](https://github.com/gravitee-io/gravitee-node/compare/9.16.4...9.16.5) (2026-11-09)
+
+
+### Performance Improvements
+
+* **redis:** run the cache scripts by their SHA-1 ([3563bdf](https://github.com/gravitee-io/gravitee-node/commit/3563bdfdd81ef1eef6d0cb164f2c6314eaccfc43))
+
 ## [9.16.4](https://github.com/gravitee-io/gravitee-node/compare/9.16.3...9.16.4) (2026-11-09)
 
 
