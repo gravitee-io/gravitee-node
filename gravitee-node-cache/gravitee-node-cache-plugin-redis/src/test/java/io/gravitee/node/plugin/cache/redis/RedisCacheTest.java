@@ -16,6 +16,8 @@
 
 package io.gravitee.node.plugin.cache.redis;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.gravitee.node.api.cache.Cache;
 import io.gravitee.node.api.cache.CacheConfiguration;
 import io.gravitee.node.api.cache.CacheException;
@@ -46,6 +48,7 @@ public class RedisCacheTest {
     private static RedisServer redisServer;
     private static Cache<String, String> redisCache;
     private static RedisAPI redisAPI;
+    private static RedisCacheManager cacheManager;
 
     @BeforeAll
     public static void redisInitialization() throws IOException {
@@ -56,8 +59,8 @@ public class RedisCacheTest {
         final var vertx = Vertx.vertx();
         final var redisClientFactory = new VertxRedisClientFactory(vertx);
         redisAPI = RedisAPI.api(redisClientFactory.createClient(options));
-        final var cm = new RedisCacheManager(options, redisClientFactory);
-        redisCache = cm.getOrCreateCache(
+        cacheManager = new RedisCacheManager(options, redisClientFactory);
+        redisCache = cacheManager.getOrCreateCache(
             "test",
             CacheConfiguration.builder().build(),
             new ValueMapper<String, String>() {
@@ -107,6 +110,49 @@ public class RedisCacheTest {
         } finally {
             redisAPI.del(List.of(entryKey)).toCompletionStage().toCompletableFuture().get();
         }
+    }
+
+    @Test
+    void should_count_a_replaced_value_it_cannot_read_as_absent() throws Exception {
+        // A value written by another version, in a format this mapper cannot read
+        Cache<String, String> cache = cacheManager.getOrCreateCache(
+            "format-change",
+            CacheConfiguration.builder().build(),
+            new ValueMapper<String, String>() {
+                @Override
+                public String toCachedValue(String value) {
+                    return "v2:" + value;
+                }
+
+                @Override
+                public String toValue(String cachedValue) {
+                    if (!cachedValue.startsWith("v2:")) {
+                        throw new IllegalStateException("unknown format");
+                    }
+                    return cachedValue.substring(3);
+                }
+            }
+        );
+        final var key = UUID.randomUUID().toString();
+        final var entryKey = "format-change" + RedisCache.SEPARATOR + key;
+        List<String> events = new java.util.concurrent.CopyOnWriteArrayList<>();
+        cache.addCacheListener(
+            new io.gravitee.node.api.cache.CacheListener<>() {
+                @Override
+                public void onEntryAdded(String k, String v) {
+                    events.add("added:" + v);
+                }
+            }
+        );
+
+        redisAPI.set(List.of(entryKey, "v1:old")).toCompletionStage().toCompletableFuture().get();
+        cache.rxPut(key, "new").test().awaitDone(5, TimeUnit.SECONDS).assertNoErrors().assertNoValues();
+        assertThat(cache.get(key)).isEqualTo("new");
+        assertThat(events).containsExactly("added:new");
+
+        redisAPI.set(List.of(entryKey, "v1:old")).toCompletionStage().toCompletableFuture().get();
+        cache.rxEvict(key).test().awaitDone(5, TimeUnit.SECONDS).assertNoErrors().assertNoValues();
+        assertThat(cache.containsKey(key)).isFalse();
     }
 
     @Test

@@ -210,7 +210,7 @@ public class RedisCache<V> implements Cache<String, V> {
                 List.of(PUT_SCRIPT, "1", getRedisEntryKey(key), valueMapper.toCachedValue(value), Long.toString(effectiveTtlInMs))
             ).toCompletionStage()
         )
-            .map(response -> Optional.ofNullable(valueMapper.toValue(asString(response))))
+            .map(response -> replacedValue(key, response))
             .defaultIfEmpty(Optional.empty())
             .flatMapMaybe(oldValue -> {
                 this.cacheListeners.values().forEach(listener ->
@@ -271,7 +271,7 @@ public class RedisCache<V> implements Cache<String, V> {
     @Override
     public Maybe<V> rxEvict(String key) {
         return Maybe.fromCompletionStage(this.redisAPI.eval(List.of(EVICT_SCRIPT, "1", getRedisEntryKey(key))).toCompletionStage())
-            .map(response -> valueMapper.toValue(asString(response)))
+            .flatMap(response -> Maybe.fromOptional(replacedValue(key, response)))
             .doOnSuccess(value -> this.cacheListeners.values().forEach(listener -> listener.onEntryEvicted(key, value)))
             .onErrorResumeNext(ex -> Maybe.error(new CacheException("Unable to remove cache Entry", ex)));
     }
@@ -331,6 +331,20 @@ public class RedisCache<V> implements Cache<String, V> {
         }
         long idleInMs = configuration.getTimeToIdleInMs();
         return ttlInMs > 0 ? Math.min(ttlInMs, idleInMs) : idleInMs;
+    }
+
+    /**
+     * The value a put replaced or an evict removed. The write has already happened when it is read, so a value this
+     * mapper cannot read (one written in another format, during a rolling upgrade for instance) is counted as absent
+     * rather than failing an operation that succeeded.
+     */
+    private Optional<V> replacedValue(String key, Response response) {
+        try {
+            return Optional.ofNullable(valueMapper.toValue(asString(response)));
+        } catch (Exception e) {
+            log.warn("Previous value of cache entry '{}' in cache '{}' cannot be read, counted as absent: {}", key, name, e.toString());
+            return Optional.empty();
+        }
     }
 
     private static String asString(Response response) {
