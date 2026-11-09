@@ -29,12 +29,9 @@ import io.vertx.redis.client.RedisAPI;
 import io.vertx.redis.client.Response;
 import io.vertx.redis.client.ResponseType;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -359,18 +356,24 @@ public class RedisCache<V> implements Cache<String, V> {
     }
 
     /**
-     * Run a script by its SHA-1, so that its source is not sent on every call. Redis answers {@code NOSCRIPT} the first
-     * time, and on a Redis Cluster node that has not run it yet: the source is then sent once with {@code EVAL}, which
-     * caches it on that node. {@code NOSCRIPT} means the script did not run, so running it again cannot apply it twice.
+     * Run a script by its SHA-1, so that its source is not sent on every call. The SHA-1 is the one Redis returns when
+     * the script is first loaded, so the gateway never hashes anything itself. A node that has not run the script yet
+     * (after a restart, or another master of a Redis Cluster) answers {@code NOSCRIPT}: the source is then sent once
+     * with {@code EVAL}, which caches it on that node. {@code NOSCRIPT} means the script did not run, so running it
+     * again cannot apply it twice.
      */
     private Future<Response> runScript(LuaScript script, String key, String... args) {
         List<String> keyAndArgs = new ArrayList<>(args.length + 2);
         keyAndArgs.add("1");
         keyAndArgs.add(key);
         keyAndArgs.addAll(List.of(args));
-        return this.redisAPI.evalsha(prepend(script.sha1(), keyAndArgs)).recover(error ->
-            isNoScript(error) ? this.redisAPI.eval(prepend(script.source(), keyAndArgs)) : Future.failedFuture(error)
-        );
+        String sha1 = script.sha1;
+        Future<String> loaded = sha1 != null
+            ? Future.succeededFuture(sha1)
+            : this.redisAPI.script(List.of("LOAD", script.source)).map(response -> script.sha1 = response.toString());
+        return loaded
+            .compose(sha -> this.redisAPI.evalsha(prepend(sha, keyAndArgs)))
+            .recover(error -> isNoScript(error) ? this.redisAPI.eval(prepend(script.source, keyAndArgs)) : Future.failedFuture(error));
     }
 
     private static List<String> prepend(String first, List<String> rest) {
@@ -385,18 +388,14 @@ public class RedisCache<V> implements Cache<String, V> {
         return message != null && message.stripLeading().regionMatches(true, 0, "NOSCRIPT", 0, "NOSCRIPT".length());
     }
 
-    /** A Lua script and the SHA-1 Redis knows it by once it has run it. */
-    private record LuaScript(String source, String sha1) {
-        LuaScript(String source) {
-            this(source, sha1Hex(source));
-        }
+    /** A Lua script, and the SHA-1 Redis returned when it was first loaded. */
+    private static final class LuaScript {
 
-        private static String sha1Hex(String source) {
-            try {
-                return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-1").digest(source.getBytes(StandardCharsets.UTF_8)));
-            } catch (NoSuchAlgorithmException e) {
-                throw new IllegalStateException("SHA-1 is not available", e);
-            }
+        private final String source;
+        private volatile String sha1;
+
+        private LuaScript(String source) {
+            this.source = source;
         }
     }
 
