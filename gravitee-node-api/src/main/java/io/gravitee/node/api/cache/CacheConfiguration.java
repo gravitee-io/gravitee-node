@@ -36,9 +36,27 @@ public class CacheConfiguration {
     @Builder.Default
     private long maxSize = -1;
 
+    /**
+     * How long an entry lives after it is written, for entries written without their own time to live. 0 or less for none.
+     * An entry's own time to live can't be bigger.
+     */
     @Builder.Default
     private long timeToLiveInMs = -1;
 
+    /**
+     * How long an entry lives without being read. 0 or less for none.
+     *
+     * <p>The in-memory and Hazelcast caches combine it with {@link #timeToLiveInMs}: an entry goes at the earliest of
+     * the two. The Redis cache has no idle expiry and emulates it, which makes two differences:
+     * <ul>
+     *   <li>when the cache also has a time to live, only the time to live applies, so an entry that is never read stays
+     *       until then;</li>
+     *   <li>when the cache has a time to idle only, an entry written with its own time to live expires at the earliest of
+     *       both, but each read pushes its expiry back by the idle time, possibly past its own time to live.</li>
+     * </ul>
+     * Hazelcast tracks idle time with a one-second resolution: an idle time under two seconds may drop entries that are
+     * read in time.
+     */
     @Builder.Default
     private long timeToIdleInMs = -1;
 }
