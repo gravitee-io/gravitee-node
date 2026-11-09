@@ -190,6 +190,19 @@ public abstract class AbstractCacheContractTest {
         }
 
         @Test
+        void should_apply_configured_ttl_to_entry_written_with_a_ttl_of_zero() {
+            Cache<String, String> cache = newCache(CacheConfiguration.builder().timeToLiveInMs(1000).build());
+
+            // A ttl of 0 means "no ttl of its own", so the cache's one applies, as for put(key, value)
+            cache.put(KEY, "a", 0, TimeUnit.MILLISECONDS);
+
+            assertThat(cache.get(KEY)).isEqualTo("a");
+            await()
+                .atMost(4, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertThat(cache.get(KEY)).isNull());
+        }
+
+        @Test
         void should_apply_configured_ttl_to_entry_written_without_one() {
             Cache<String, String> cache = newCache(CacheConfiguration.builder().timeToLiveInMs(1000).build());
             cache.put(KEY, "a");
