@@ -24,12 +24,17 @@ import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
+import io.vertx.core.Future;
 import io.vertx.redis.client.RedisAPI;
 import io.vertx.redis.client.Response;
 import io.vertx.redis.client.ResponseType;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,25 +59,28 @@ public class RedisCache<V> implements Cache<String, V> {
      * Lua is used rather than {@code SET ... GET} so that Redis versions older than 6.2 keep working.
      * KEYS[1]: entry key, ARGV[1]: value, ARGV[2]: time to live in milliseconds, 0 for none.
      */
-    private static final String PUT_SCRIPT =
+    private static final LuaScript PUT_SCRIPT = new LuaScript(
         "local old = redis.call('GET', KEYS[1]) " +
-        "if tonumber(ARGV[2]) > 0 then redis.call('SET', KEYS[1], ARGV[1], 'PX', ARGV[2]) " +
-        "else redis.call('SET', KEYS[1], ARGV[1]) end " +
-        "return old";
+            "if tonumber(ARGV[2]) > 0 then redis.call('SET', KEYS[1], ARGV[1], 'PX', ARGV[2]) " +
+            "else redis.call('SET', KEYS[1], ARGV[1]) end " +
+            "return old"
+    );
 
     /**
      * Remove the entry and return its value in a single, atomic step (same as {@code GETDEL}, Redis 6.2+).
      * KEYS[1]: entry key.
      */
-    private static final String EVICT_SCRIPT =
-        "local old = redis.call('GET', KEYS[1]) if old then redis.call('DEL', KEYS[1]) end return old";
+    private static final LuaScript EVICT_SCRIPT = new LuaScript(
+        "local old = redis.call('GET', KEYS[1]) if old then redis.call('DEL', KEYS[1]) end return old"
+    );
 
     /**
      * Read the value and push its expiry back by the idle time, in a single step.
      * KEYS[1]: entry key, ARGV[1]: time to idle in milliseconds.
      */
-    private static final String GET_SCRIPT =
-        "local value = redis.call('GET', KEYS[1]) if value then redis.call('PEXPIRE', KEYS[1], ARGV[1]) end return value";
+    private static final LuaScript GET_SCRIPT = new LuaScript(
+        "local value = redis.call('GET', KEYS[1]) if value then redis.call('PEXPIRE', KEYS[1], ARGV[1]) end return value"
+    );
 
     private final String name;
     private final CacheConfiguration configuration;
@@ -170,7 +178,7 @@ public class RedisCache<V> implements Cache<String, V> {
     @Override
     public Maybe<V> rxGet(String key) {
         final var request = refreshesOnRead()
-            ? this.redisAPI.eval(List.of(GET_SCRIPT, "1", getRedisEntryKey(key), Long.toString(configuration.getTimeToIdleInMs())))
+            ? runScript(GET_SCRIPT, getRedisEntryKey(key), Long.toString(configuration.getTimeToIdleInMs()))
             : this.redisAPI.get(getRedisEntryKey(key));
         return Maybe.fromCompletionStage(request.toCompletionStage())
             .flatMapSingle(this::throwExceptionOnError)
@@ -206,8 +214,11 @@ public class RedisCache<V> implements Cache<String, V> {
             return Maybe.error(e);
         }
         return Maybe.fromCompletionStage(
-            this.redisAPI.eval(
-                List.of(PUT_SCRIPT, "1", getRedisEntryKey(key), valueMapper.toCachedValue(value), Long.toString(effectiveTtlInMs))
+            runScript(
+                PUT_SCRIPT,
+                getRedisEntryKey(key),
+                valueMapper.toCachedValue(value),
+                Long.toString(effectiveTtlInMs)
             ).toCompletionStage()
         )
             .map(response -> replacedValue(key, response))
@@ -270,7 +281,7 @@ public class RedisCache<V> implements Cache<String, V> {
 
     @Override
     public Maybe<V> rxEvict(String key) {
-        return Maybe.fromCompletionStage(this.redisAPI.eval(List.of(EVICT_SCRIPT, "1", getRedisEntryKey(key))).toCompletionStage())
+        return Maybe.fromCompletionStage(runScript(EVICT_SCRIPT, getRedisEntryKey(key)).toCompletionStage())
             .flatMap(response -> Maybe.fromOptional(replacedValue(key, response)))
             .doOnSuccess(value -> this.cacheListeners.values().forEach(listener -> listener.onEntryEvicted(key, value)))
             .onErrorResumeNext(ex -> Maybe.error(new CacheException("Unable to remove cache Entry", ex)));
@@ -344,6 +355,48 @@ public class RedisCache<V> implements Cache<String, V> {
         } catch (Exception e) {
             log.warn("Previous value of cache entry '{}' in cache '{}' cannot be read, counted as absent: {}", key, name, e.toString());
             return Optional.empty();
+        }
+    }
+
+    /**
+     * Run a script by its SHA-1, so that its source is not sent on every call. Redis answers {@code NOSCRIPT} the first
+     * time, and on a Redis Cluster node that has not run it yet: the source is then sent once with {@code EVAL}, which
+     * caches it on that node. {@code NOSCRIPT} means the script did not run, so running it again cannot apply it twice.
+     */
+    private Future<Response> runScript(LuaScript script, String key, String... args) {
+        List<String> keyAndArgs = new ArrayList<>(args.length + 2);
+        keyAndArgs.add("1");
+        keyAndArgs.add(key);
+        keyAndArgs.addAll(List.of(args));
+        return this.redisAPI.evalsha(prepend(script.sha1(), keyAndArgs)).recover(error ->
+            isNoScript(error) ? this.redisAPI.eval(prepend(script.source(), keyAndArgs)) : Future.failedFuture(error)
+        );
+    }
+
+    private static List<String> prepend(String first, List<String> rest) {
+        List<String> all = new ArrayList<>(rest.size() + 1);
+        all.add(first);
+        all.addAll(rest);
+        return all;
+    }
+
+    private static boolean isNoScript(Throwable error) {
+        String message = error.getMessage();
+        return message != null && message.stripLeading().regionMatches(true, 0, "NOSCRIPT", 0, "NOSCRIPT".length());
+    }
+
+    /** A Lua script and the SHA-1 Redis knows it by once it has run it. */
+    private record LuaScript(String source, String sha1) {
+        LuaScript(String source) {
+            this(source, sha1Hex(source));
+        }
+
+        private static String sha1Hex(String source) {
+            try {
+                return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-1").digest(source.getBytes(StandardCharsets.UTF_8)));
+            } catch (NoSuchAlgorithmException e) {
+                throw new IllegalStateException("SHA-1 is not available", e);
+            }
         }
     }
 

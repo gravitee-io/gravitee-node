@@ -162,6 +162,26 @@ public class RedisCacheTest {
     }
 
     @Test
+    void should_send_a_script_source_once_then_run_it_by_its_sha1() throws Exception {
+        // An empty script cache, as on a node that never ran the script: the first call gets NOSCRIPT and sends the source
+        redisAPI.script(List.of("FLUSH")).toCompletionStage().toCompletableFuture().get();
+        redisAPI.config(List.of("RESETSTAT")).toCompletionStage().toCompletableFuture().get();
+
+        for (int i = 0; i < 3; i++) {
+            redisCache.put(UUID.randomUUID().toString(), "value-" + i);
+        }
+
+        String stats = redisAPI.info(List.of("commandstats")).toCompletionStage().toCompletableFuture().get().toString();
+        assertThat(callsOf(stats, "eval")).as("source sent once").isEqualTo(1);
+        assertThat(callsOf(stats, "evalsha")).as("every put by its sha1").isEqualTo(3);
+    }
+
+    private static int callsOf(String commandStats, String command) {
+        var matcher = java.util.regex.Pattern.compile("cmdstat_" + command + ":calls=(\\d+)").matcher(commandStats);
+        return matcher.find() ? Integer.parseInt(matcher.group(1)) : 0;
+    }
+
+    @Test
     void should_store_a_key_with_ttl() throws Exception {
         final var key = UUID.randomUUID().toString();
         TestObserver<String> test = redisCache.rxPut(key, "myvalue1", 3, TimeUnit.SECONDS).test();
