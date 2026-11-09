@@ -29,12 +29,12 @@ import io.vertx.redis.client.Response;
 import io.vertx.redis.client.ResponseType;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -78,7 +78,7 @@ public class RedisCache<V> implements Cache<String, V> {
     private final CacheConfiguration configuration;
     private final ValueMapper<V, String> valueMapper;
     private final RedisAPI redisAPI;
-    private final Map<String, CacheListener<String, V>> cacheListeners = new HashMap<>();
+    private final Map<String, CacheListener<String, V>> cacheListeners = new ConcurrentHashMap<>();
 
     public RedisCache(String name, RedisAPI redisAPI, ValueMapper<V, String> mapper) {
         this(name, new CacheConfiguration(), redisAPI, mapper);
