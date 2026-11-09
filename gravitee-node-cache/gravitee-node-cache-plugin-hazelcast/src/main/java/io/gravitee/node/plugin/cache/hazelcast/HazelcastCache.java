@@ -111,7 +111,8 @@ public class HazelcastCache<K, V> implements Cache<K, V> {
         if (ttlInMs > 0) {
             return this.cache.put(key, value, toSecondsRoundingUp(ttlInMs), TimeUnit.SECONDS);
         }
-        return this.cache.put(key, value, ttl, ttlUnit);
+        // No ttl of its own: the cache's applies. IMap.put with a ttl of 0 would mean "never expires" and ignore it.
+        return put(key, value);
     }
 
     /**
