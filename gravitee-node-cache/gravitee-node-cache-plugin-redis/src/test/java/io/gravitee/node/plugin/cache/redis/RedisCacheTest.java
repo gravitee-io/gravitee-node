@@ -172,7 +172,8 @@ public class RedisCacheTest {
         }
 
         String stats = redisAPI.info(List.of("commandstats")).toCompletionStage().toCompletableFuture().get().toString();
-        assertThat(callsOf(stats, "eval")).as("source sent once").isEqualTo(1);
+        // The source reaches Redis once: by SCRIPT LOAD if this cache never ran the script, else by EVAL after NOSCRIPT
+        assertThat(callsOf(stats, "script") + callsOf(stats, "eval")).as("source sent once").isEqualTo(1);
         assertThat(callsOf(stats, "evalsha")).as("every put by its sha1").isEqualTo(3);
     }
 
