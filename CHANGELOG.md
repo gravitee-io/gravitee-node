@@ -1,3 +1,10 @@
+# [9.17.0](https://github.com/gravitee-io/gravitee-node/compare/9.16.5...9.17.0) (2026-11-10)
+
+
+### Features
+
+* **license:** add Guardians features to agent-management pack ([e056070](https://github.com/gravitee-io/gravitee-node/commit/e056070e56de17b894a88bff494e88b7d9c5d865))
+
 ## [9.16.5](https://github.com/gravitee-io/gravitee-node/compare/9.16.4...9.16.5) (2026-11-09)
 
 
