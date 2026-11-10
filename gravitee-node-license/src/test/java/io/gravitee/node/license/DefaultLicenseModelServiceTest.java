@@ -200,6 +200,13 @@ class DefaultLicenseModelServiceTest {
                     "apim-ai-policy-routing",
                     "apim-policy-cost-ratelimit",
                     "apim-ai-resource-vector-store-aws-s3",
+                    "apim-guardians",
+                    "apim-guardian-policy-rule",
+                    "apim-guardian-policy-pii-redaction",
+                    "apim-guardian-policy-decision",
+                    "apim-guardian-policy-http-evaluator",
+                    "apim-guardian-resource-decision-model",
+                    "apim-guardian-resource-http-evaluator",
                 }
             ),
             arguments(

@@ -275,6 +275,14 @@ packs:
             - apim-ai-resource-vector-store-redis # resource: gravitee-resource-ai-vector-store-redis
             - apim-ai-resource-vector-store-aws-s3 # resource: gravitee-resource-ai-vector-store-aws-s3
 
+            - apim-guardians # reactor: gravitee-reactor-guardian
+            - apim-guardian-policy-rule # policy: gravitee-policy-guardrail-rule
+            - apim-guardian-policy-pii-redaction # policy: guardrail PII redaction
+            - apim-guardian-policy-decision # policy: gravitee-policy-guardrail-generic-decision
+            - apim-guardian-policy-http-evaluator # policy: guardrail HTTP evaluator
+            - apim-guardian-resource-decision-model # resource: guardrail decision model
+            - apim-guardian-resource-http-evaluator # resource: guardrail HTTP evaluator
+
             - gamma-aim-module # module: gravitee-gamma-module-aim
             - gamma-aim-endpoint-tools-http # endpoint: gravitee-endpoint-tools-http
             - gamma-aim-endpoint-tools-mcp # endpoint: gravitee-endpoint-tools-mcp
