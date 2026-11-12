@@ -100,7 +100,8 @@ public class DefaultLicenseFactory implements LicenseFactory {
 
     private License create(String referenceType, String referenceId, License3J license) throws InvalidLicenseException {
         final String tier = readTier(license);
-        final Set<String> packs = readPacks(license, tier);
+        final Optional<LicenseTier> licenseTier = findTier(tier);
+        final Set<String> packs = readPacks(license, licenseTier);
         final Set<String> features = readFeatures(license, packs);
 
         return DefaultLicense.builder()
@@ -109,6 +110,7 @@ public class DefaultLicenseFactory implements LicenseFactory {
             .tier(tier)
             .packs(packs)
             .features(features)
+            .effectiveAttributes(readEffectiveAttributes(license, licenseTier))
             .license3j(license)
             .build();
     }
@@ -117,21 +119,35 @@ public class DefaultLicenseFactory implements LicenseFactory {
         return readString(license, LICENSE_TIER_KEY).orElse(null);
     }
 
-    private Set<String> readPacks(License3J license, String tier) {
+    private Set<String> readPacks(License3J license, Optional<LicenseTier> licenseTier) {
         final Set<String> licensePacks = new HashSet<>(readList(license, LICENSE_PACKS_KEY));
 
-        if (tier != null) {
-            // Allow to declare a non existing tier. Useful when the license uses a tier that has been created for a newer version of gravitee-node
-            LicenseTier licenseTier = licenseModelService.getLicenseModel().getTiers().get(tier);
-            if (licenseTier != null) {
-                Set<String> tierPacks = licenseTier.getPacks();
-                licensePacks.addAll(tierPacks);
-            } else if (log.isDebugEnabled()) {
-                log.debug("Unknown tier: {}", tier);
-            }
-        }
+        licenseTier.ifPresent(tier -> licensePacks.addAll(tier.getPacks()));
 
         return licensePacks;
+    }
+
+    private Map<String, Object> readEffectiveAttributes(License3J license, Optional<LicenseTier> licenseTier) {
+        final Map<String, Object> attributes = new HashMap<>();
+
+        licenseTier.ifPresent(tier -> attributes.putAll(tier.getAttributes()));
+        attributes.putAll(license.features());
+
+        return Collections.unmodifiableMap(attributes);
+    }
+
+    private Optional<LicenseTier> findTier(String tier) {
+        if (tier == null) {
+            return Optional.empty();
+        }
+
+        // Allow to declare a non existing tier. Useful when the license uses a tier that has been created for a newer version of gravitee-node
+        LicenseTier licenseTier = licenseModelService.getLicenseModel().getTiers().get(tier);
+        if (licenseTier == null && log.isDebugEnabled()) {
+            log.debug("Unknown tier: {}", tier);
+        }
+
+        return Optional.ofNullable(licenseTier);
     }
 
     private Set<String> readFeatures(License3J license, Set<String> packs) {

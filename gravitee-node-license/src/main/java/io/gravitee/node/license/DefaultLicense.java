@@ -44,6 +44,11 @@ class DefaultLicense implements License {
     @Builder.Default
     private Set<String> features = Set.of();
 
+    @Getter
+    @Builder.Default
+    @Nonnull
+    private Map<String, Object> effectiveAttributes = Map.of();
+
     private License3J license3j;
 
     @Override
