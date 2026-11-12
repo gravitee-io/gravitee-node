@@ -31,7 +31,7 @@
 
     <properties>
         <javax-inject.version>1</javax-inject.version>
-        <jakarta-inject.version>2.0.1</jakarta-inject.version>
+        <jakarta-inject.version>2.0.1.MR</jakarta-inject.version>
     </properties>
 
     <dependencies>
