@@ -491,7 +491,11 @@ class DefaultLicenseFactoryTest {
 
     @Test
     void should_resolve_effective_attribute_from_tier() throws InvalidLicenseException, MalformedLicenseException {
-        final License license = cut.create(REFERENCE_TYPE_PLATFORM, REFERENCE_ID_PLATFORM, generateBase64License("gamma-universe", Map.of()));
+        final License license = cut.create(
+            REFERENCE_TYPE_PLATFORM,
+            REFERENCE_ID_PLATFORM,
+            generateBase64License("gamma-universe", Map.of())
+        );
 
         assertThat(license.getEffectiveAttributes()).containsEntry("apim-portals-max", 10).containsEntry("company", "test");
     }
@@ -521,8 +525,7 @@ class DefaultLicenseFactoryTest {
     @ParameterizedTest(name = "tier ''{0}'' should not resolve apim-portals-max")
     @NullSource
     @ValueSource(strings = { "gamma-planet", "gamma-galaxy", "universe", "unknown" })
-    void should_not_resolve_effective_attribute_without_tier_value(String tier)
-        throws InvalidLicenseException, MalformedLicenseException {
+    void should_not_resolve_effective_attribute_without_tier_value(String tier) throws InvalidLicenseException, MalformedLicenseException {
         final License license = cut.create(
             REFERENCE_TYPE_PLATFORM,
             REFERENCE_ID_PLATFORM,
@@ -534,7 +537,11 @@ class DefaultLicenseFactoryTest {
 
     @Test
     void should_keep_tier_attributes_out_of_license_attributes() throws InvalidLicenseException, MalformedLicenseException {
-        final License license = cut.create(REFERENCE_TYPE_PLATFORM, REFERENCE_ID_PLATFORM, generateBase64License("gamma-universe", Map.of()));
+        final License license = cut.create(
+            REFERENCE_TYPE_PLATFORM,
+            REFERENCE_ID_PLATFORM,
+            generateBase64License("gamma-universe", Map.of())
+        );
 
         assertThat(license.getAttributes()).doesNotContainKey("apim-portals-max");
         assertThat(license.getRawAttributes()).doesNotContainKey("apim-portals-max");
