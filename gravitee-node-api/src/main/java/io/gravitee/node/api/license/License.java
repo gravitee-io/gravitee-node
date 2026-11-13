@@ -106,6 +106,9 @@ public interface License {
     /**
      * Return the attributes of the license merged over the default attributes of its tier: an attribute signed in the license
      * overrides the tier's default value. Unlike {@link #getAttributes()}, it contains values that are not in the license itself.
+     * Tier defaults no longer apply once the license is invalid or expired, as for {@link #isFeatureEnabled(String)}: only the
+     * license's own attributes are returned then. Whole numbers are {@link Integer}, whether they come from the tier or are signed
+     * as int features in the license.
      * Defaults to {@link #getAttributes()} for licenses without tier defaults.
      *
      * @return a map of the license attributes completed with the tier defaults.

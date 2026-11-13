@@ -4,6 +4,7 @@ import static io.gravitee.node.api.license.License.REFERENCE_ID_PLATFORM;
 import static io.gravitee.node.api.license.License.REFERENCE_TYPE_ORGANIZATION;
 import static io.gravitee.node.api.license.License.REFERENCE_TYPE_PLATFORM;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.mockStatic;
@@ -545,6 +546,49 @@ class DefaultLicenseFactoryTest {
 
         assertThat(license.getAttributes()).doesNotContainKey("apim-portals-max");
         assertThat(license.getRawAttributes()).doesNotContainKey("apim-portals-max");
+    }
+
+    @Test
+    void should_not_allow_modifying_effective_attributes() throws InvalidLicenseException, MalformedLicenseException {
+        final License license = cut.create(
+            REFERENCE_TYPE_PLATFORM,
+            REFERENCE_ID_PLATFORM,
+            generateBase64License("gamma-universe", Map.of())
+        );
+
+        assertThatThrownBy(() -> license.getEffectiveAttributes().put("apim-portals-max", 100)).isInstanceOf(
+            UnsupportedOperationException.class
+        );
+    }
+
+    @Test
+    @SneakyThrows
+    void should_drop_tier_attributes_when_license_is_expired() {
+        final License license = cut.create(
+            REFERENCE_TYPE_ORGANIZATION,
+            ORG_ID,
+            generateLicense("gamma-universe", null, null, new Date(System.currentTimeMillis() - 3600000), Map.of()).serialized()
+        );
+
+        assertThat(license.getEffectiveAttributes()).doesNotContainKey("apim-portals-max").containsEntry("company", "test");
+    }
+
+    @Test
+    @SneakyThrows
+    void should_keep_signed_attributes_when_license_is_expired() {
+        final License license = cut.create(
+            REFERENCE_TYPE_ORGANIZATION,
+            ORG_ID,
+            generateLicense(
+                "gamma-universe",
+                null,
+                null,
+                new Date(System.currentTimeMillis() - 3600000),
+                Map.of("apim-portals-max", 3)
+            ).serialized()
+        );
+
+        assertThat(license.getEffectiveAttributes()).containsEntry("apim-portals-max", 3);
     }
 
     @SneakyThrows

@@ -28,4 +28,9 @@ public class LicenseTier {
 
     private Set<String> packs;
     private Map<String, Object> attributes = Map.of();
+
+    // An empty `attributes:` key in license-model.yml is read as null.
+    public void setAttributes(Map<String, Object> attributes) {
+        this.attributes = attributes == null ? Map.of() : attributes;
+    }
 }
