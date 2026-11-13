@@ -375,4 +375,6 @@ tiers:
     gamma-universe:
         packs:
             - enterprise
+        attributes:
+            apim-portals-max: 10
     ############################################################################

@@ -44,6 +44,10 @@ class DefaultLicense implements License {
     @Builder.Default
     private Set<String> features = Set.of();
 
+    @Builder.Default
+    @Nonnull
+    private Map<String, Object> effectiveAttributes = Map.of();
+
     private License3J license3j;
 
     @Override
@@ -84,5 +88,15 @@ class DefaultLicense implements License {
     @Override
     public @Nonnull Map<String, String> getRawAttributes() {
         return license3j.featuresAsString();
+    }
+
+    @Override
+    public @Nonnull Map<String, Object> getEffectiveAttributes() {
+        if (license3j.isValid() && !license3j.isExpired()) {
+            return effectiveAttributes;
+        }
+
+        // Tier defaults are entitlements: like features, they no longer apply once the license is invalid or expired.
+        return getAttributes();
     }
 }
