@@ -16,15 +16,18 @@
 package io.gravitee.node.license;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import io.gravitee.node.api.license.model.LicenseModel;
 import io.gravitee.node.api.license.model.LicensePack;
 import io.gravitee.node.api.license.model.LicenseTier;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * @author GraviteeSource Team
@@ -72,6 +75,17 @@ class DefaultLicenseModelServiceTest {
 
         assertThat(pack).isNotNull();
         assertThat(pack.getFeatures()).containsExactlyInAnyOrder(expectedFeatures);
+    }
+
+    @Test
+    void should_default_gamma_universe_portals_max_to_10() {
+        assertThat(getTier("gamma-universe").getAttributes()).containsExactly(entry("apim-portals-max", 10));
+    }
+
+    @ParameterizedTest(name = "tier ''{0}'' should have no attributes")
+    @ValueSource(strings = { "planet", "galaxy", "universe", "gamma-planet", "gamma-galaxy" })
+    void should_have_no_attributes(String tierName) {
+        assertThat(getTier(tierName).getAttributes()).isEmpty();
     }
 
     private static Stream<Arguments> tiers() {

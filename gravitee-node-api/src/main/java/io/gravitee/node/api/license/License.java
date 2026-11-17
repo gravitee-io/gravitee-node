@@ -102,4 +102,19 @@ public interface License {
      */
     @Nonnull
     Map<String, String> getRawAttributes();
+
+    /**
+     * Return the attributes of the license merged over the default attributes of its tier: an attribute signed in the license
+     * overrides the tier's default value. Unlike {@link #getAttributes()}, it contains values that are not in the license itself.
+     * Once the license is invalid or expired, the map is empty, as {@link #isFeatureEnabled(String)} then enables no feature: neither
+     * tier defaults nor attributes signed in the license apply. Values keep the type they have in the license or in the tier
+     * definition, so a numeric attribute may be a {@link Number} or a {@link String}.
+     * Defaults to {@link #getAttributes()} for licenses without tier defaults.
+     *
+     * @return a map of the license attributes completed with the tier defaults.
+     */
+    @Nonnull
+    default Map<String, Object> getEffectiveAttributes() {
+        return getAttributes();
+    }
 }

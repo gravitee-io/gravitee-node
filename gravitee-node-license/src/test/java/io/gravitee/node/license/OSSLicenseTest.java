@@ -21,6 +21,7 @@ class OSSLicenseTest {
         assertThat(cut.getExpirationDate()).isNull();
         assertThat(cut.getAttributes()).containsEntry("tier", "oss");
         assertThat(cut.getRawAttributes()).containsEntry("tier", "oss");
+        assertThat(cut.getEffectiveAttributes()).isEqualTo(cut.getAttributes());
     }
 
     @Test
