@@ -72,6 +72,7 @@ public class ExecutionContextAwareLoggerTest {
 
     @AfterEach
     public void tearDown() {
+        NodeAwareLogger.flushLogEntry();
         if (delegate != null && listAppender != null) {
             delegate.detachAppender(listAppender);
         }
