@@ -48,6 +48,7 @@ public class NodeAwareLoggerTest {
 
     @BeforeEach
     public void setUp() {
+        NodeAwareLogger.flushLogEntry();
         delegate = (Logger) LoggerFactory.getLogger("test-node-aware-logger");
 
         listAppender = new ListAppender<>();
