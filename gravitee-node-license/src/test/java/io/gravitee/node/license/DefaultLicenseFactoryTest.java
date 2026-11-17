@@ -12,6 +12,8 @@ import static org.mockito.Mockito.mockStatic;
 import io.gravitee.node.api.license.InvalidLicenseException;
 import io.gravitee.node.api.license.License;
 import io.gravitee.node.api.license.MalformedLicenseException;
+import io.gravitee.node.api.license.model.LicenseModel;
+import io.gravitee.node.api.license.model.LicenseTier;
 import io.gravitee.node.license.license3j.License3J;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
@@ -21,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import javax0.license3j.Feature;
 import javax0.license3j.crypto.LicenseKeyPair;
 import lombok.SneakyThrows;
@@ -29,6 +32,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
@@ -513,14 +517,58 @@ class DefaultLicenseFactoryTest {
     }
 
     @Test
-    void should_prefer_license_attribute_over_tier_attribute() throws InvalidLicenseException, MalformedLicenseException {
+    void should_keep_tier_limit_when_license_limit_is_lower() throws InvalidLicenseException, MalformedLicenseException {
         final License license = cut.create(
             REFERENCE_TYPE_PLATFORM,
             REFERENCE_ID_PLATFORM,
             generateBase64License("gamma-universe", Map.of("apim-portals-max", 3))
         );
 
-        assertThat(license.getEffectiveAttributes()).containsEntry("apim-portals-max", 3);
+        assertThat(license.getEffectiveAttributes()).containsEntry("apim-portals-max", 10);
+    }
+
+    @Test
+    void should_raise_tier_limit_when_license_limit_is_higher() throws InvalidLicenseException, MalformedLicenseException {
+        final License license = cut.create(
+            REFERENCE_TYPE_PLATFORM,
+            REFERENCE_ID_PLATFORM,
+            generateBase64License("gamma-universe", Map.of("apim-portals-max", 25))
+        );
+
+        assertThat(license.getEffectiveAttributes()).containsEntry("apim-portals-max", 25);
+    }
+
+    @ParameterizedTest(name = "license limit ''{0}'' on a tier limit of 10 should resolve {1}")
+    @CsvSource({ "25, 25", "3, 10", "not-a-number, 10" })
+    void should_compare_license_limit_signed_as_string(String signed, String expected)
+        throws InvalidLicenseException, MalformedLicenseException {
+        final License license = cut.create(
+            REFERENCE_TYPE_PLATFORM,
+            REFERENCE_ID_PLATFORM,
+            generateBase64License("gamma-universe", Map.of("apim-portals-max", signed))
+        );
+
+        assertThat(license.getEffectiveAttributes().get("apim-portals-max")).hasToString(expected);
+    }
+
+    @Test
+    void should_prefer_license_value_for_attribute_that_is_not_a_limit() throws InvalidLicenseException, MalformedLicenseException {
+        final LicenseTier tier = new LicenseTier();
+        tier.setPacks(Set.of());
+        tier.setAttributes(Map.of("apim-portals-max", 10, "support-level", 5));
+        final LicenseModel model = new LicenseModel();
+        model.setPacks(Map.of());
+        model.setTiers(Map.of("custom", tier));
+        model.setLimits(Set.of("apim-portals-max"));
+        final DefaultLicenseFactory factory = new DefaultLicenseFactory(() -> model);
+
+        final License license = factory.create(
+            REFERENCE_TYPE_PLATFORM,
+            REFERENCE_ID_PLATFORM,
+            generateBase64License("custom", Map.of("apim-portals-max", 3, "support-level", 2))
+        );
+
+        assertThat(license.getEffectiveAttributes()).containsEntry("apim-portals-max", 10).containsEntry("support-level", 2);
     }
 
     @ParameterizedTest(name = "tier ''{0}'' should not resolve apim-portals-max")
@@ -595,7 +643,7 @@ class DefaultLicenseFactoryTest {
     }
 
     @SneakyThrows
-    private String generateBase64License(String tier, Map<String, Integer> attributes) {
+    private String generateBase64License(String tier, Map<String, ?> attributes) {
         javax0.license3j.License license = generateLicense(tier, null, null, null, attributes);
 
         return Base64.getEncoder().encodeToString(license.serialized());
@@ -625,7 +673,7 @@ class DefaultLicenseFactoryTest {
         List<String> packs,
         List<String> features,
         Date expiry,
-        Map<String, Integer> attributes
+        Map<String, ?> attributes
     ) {
         javax0.license3j.License license = new javax0.license3j.License();
         license.setLicenseId();
@@ -647,7 +695,13 @@ class DefaultLicenseFactoryTest {
             license.add(Feature.Create.stringFeature("features", String.join(",", features)));
         }
 
-        attributes.forEach((name, value) -> license.add(Feature.Create.intFeature(name, value)));
+        attributes.forEach((name, value) ->
+            license.add(
+                value instanceof Integer number
+                    ? Feature.Create.intFeature(name, number)
+                    : Feature.Create.stringFeature(name, (String) value)
+            )
+        );
 
         license.sign(keyPair.getPair().getPrivate(), "SHA-256");
 

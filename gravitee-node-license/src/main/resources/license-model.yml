@@ -1,3 +1,7 @@
+# Attributes for which a license can only raise its tier's value, never lower it.
+limits:
+    - apim-portals-max
+
 packs:
     enterprise-features:
         features:
