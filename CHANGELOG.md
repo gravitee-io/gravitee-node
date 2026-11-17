@@ -1,3 +1,10 @@
+# [9.18.0](https://github.com/gravitee-io/gravitee-node/compare/9.17.0...9.18.0) (2026-11-17)
+
+
+### Features
+
+* **license:** add agent discovery features ([0365c63](https://github.com/gravitee-io/gravitee-node/commit/0365c639273eda3f6fb18b0b19ba2d4a73ed6637))
+
 # [9.17.0](https://github.com/gravitee-io/gravitee-node/compare/9.16.5...9.17.0) (2026-11-10)
 
 
