@@ -135,9 +135,39 @@ public class DefaultLicenseFactory implements LicenseFactory {
         if (licenseTier != null) {
             attributes.putAll(licenseTier.getAttributes());
         }
-        attributes.putAll(license.features());
+
+        final Set<String> limits = licenseModelService.getLicenseModel().getLimits();
+        license
+            .features()
+            .forEach((name, signedValue) ->
+                attributes.merge(name, signedValue, (tierValue, value) -> limits.contains(name) ? higherLimit(tierValue, value) : value)
+            );
 
         return Collections.unmodifiableMap(attributes);
+    }
+
+    private static Object higherLimit(Object tierValue, Object signedValue) {
+        final OptionalLong tierLimit = readLimit(tierValue);
+        final OptionalLong signedLimit = readLimit(signedValue);
+
+        if (signedLimit.isEmpty()) {
+            return tierValue;
+        }
+        if (tierLimit.isEmpty() || signedLimit.getAsLong() > tierLimit.getAsLong()) {
+            return signedValue;
+        }
+        return tierValue;
+    }
+
+    private static OptionalLong readLimit(Object value) {
+        if (value instanceof Number number) {
+            return OptionalLong.of(number.longValue());
+        }
+        try {
+            return OptionalLong.of(Long.parseLong(value.toString().trim()));
+        } catch (NumberFormatException e) {
+            return OptionalLong.empty();
+        }
     }
 
     private LicenseTier findTier(String tier) {

@@ -16,6 +16,7 @@
 package io.gravitee.node.api.license.model;
 
 import java.util.Map;
+import java.util.Set;
 import lombok.Data;
 
 /**
@@ -27,6 +28,12 @@ public class LicenseModel {
 
     private Map<String, LicensePack> packs;
     private Map<String, LicenseTier> tiers;
+    // Numeric attributes for which a license can only raise its tier's value, never lower it.
+    private Set<String> limits = Set.of();
+
+    public void setLimits(Set<String> limits) {
+        this.limits = limits == null ? Set.of() : limits;
+    }
 
     public boolean isGraviteeTier(String tierName) {
         return tiers.containsKey(tierName);

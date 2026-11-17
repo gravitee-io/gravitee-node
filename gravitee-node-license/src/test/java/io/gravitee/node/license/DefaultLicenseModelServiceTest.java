@@ -82,6 +82,11 @@ class DefaultLicenseModelServiceTest {
         assertThat(getTier("gamma-universe").getAttributes()).containsExactly(entry("apim-portals-max", 10));
     }
 
+    @Test
+    void should_declare_portals_max_as_a_limit() {
+        assertThat(cut.getLicenseModel().getLimits()).containsExactly("apim-portals-max");
+    }
+
     @ParameterizedTest(name = "tier ''{0}'' should have no attributes")
     @ValueSource(strings = { "planet", "galaxy", "universe", "gamma-planet", "gamma-galaxy" })
     void should_have_no_attributes(String tierName) {
