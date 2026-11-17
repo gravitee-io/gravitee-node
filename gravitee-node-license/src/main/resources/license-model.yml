@@ -295,6 +295,10 @@ packs:
             - gamma-aim-policy-semantic-prompt-guard # policy: gravitee-policy-ai-semantic-prompt-guard (not released)
             - gamma-aim-policy-semantic-response-guard # policy: gravitee-policy-ai-semantic-response-guard (not released)
 
+            - gamma-aim-discovery-foundry # agent-provider: gravitee-agent-provider-azure-foundry
+            - gamma-aim-discovery-gemini # agent-provider: gravitee-agent-provider-google-agent
+            - gamma-aim-discovery-bedrock # agent-provider: gravitee-agent-provider-aws-bedrock-agentcore
+
     event-native-management:
         features:
             - apim-en-message-reactor # reactor: gravitee-reactor-message
