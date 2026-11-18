@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mockStatic;
 import io.gravitee.node.api.license.InvalidLicenseException;
 import io.gravitee.node.api.license.License;
 import io.gravitee.node.api.license.MalformedLicenseException;
+import io.gravitee.node.api.license.model.LicenseAttribute;
 import io.gravitee.node.api.license.model.LicenseModel;
 import io.gravitee.node.api.license.model.LicenseTier;
 import io.gravitee.node.license.license3j.License3J;
@@ -559,7 +560,14 @@ class DefaultLicenseFactoryTest {
         final LicenseModel model = new LicenseModel();
         model.setPacks(Map.of());
         model.setTiers(Map.of("custom", tier));
-        model.setLimits(Set.of("apim-portals-max"));
+        model.setAttributes(
+            Map.of(
+                "apim-portals-max",
+                new LicenseAttribute(LicenseAttribute.Type.INTEGER, true),
+                "support-level",
+                new LicenseAttribute(LicenseAttribute.Type.INTEGER, false)
+            )
+        );
         final DefaultLicenseFactory factory = new DefaultLicenseFactory(() -> model);
 
         final License license = factory.create(

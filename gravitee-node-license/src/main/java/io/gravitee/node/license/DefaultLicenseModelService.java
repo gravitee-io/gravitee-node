@@ -17,6 +17,7 @@ package io.gravitee.node.license;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.gravitee.node.api.license.LicenseModelService;
+import io.gravitee.node.api.license.model.LicenseAttribute;
 import io.gravitee.node.api.license.model.LicenseModel;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,23 +49,65 @@ public class DefaultLicenseModelService implements LicenseModelService {
 
     private static LicenseModel loadModel() {
         try (InputStream stream = LicenseModel.class.getClassLoader().getResourceAsStream(YAML_MODEL)) {
-            // SnakeYAML is used here (rather than Jackson's YAMLMapper) because it fully resolves YAML
-            // anchors/aliases, even when they reference sequences. This allows a tier to extend another one
-            // by referencing its packs (and, similarly, a pack to extend another by referencing its features), e.g.:
-            //     planet:
-            //         packs: &planet-packs
-            //             - pack-a
-            //     galaxy:
-            //         packs:
-            //             - *planet-packs
-            //             - pack-b
-            Map<String, Object> raw = new Yaml().load(stream);
-            flattenPackFeatures(raw);
-            flattenTierPacks(raw);
-            return OBJECT_MAPPER.convertValue(raw, LicenseModel.class);
+            return parse(stream);
         } catch (IOException e) {
             throw new IllegalStateException("Unable to load license model", e);
         }
+    }
+
+    static LicenseModel parse(InputStream stream) {
+        // SnakeYAML is used here (rather than Jackson's YAMLMapper) because it fully resolves YAML
+        // anchors/aliases, even when they reference sequences. This allows a tier to extend another one
+        // by referencing its packs (and, similarly, a pack to extend another by referencing its features), e.g.:
+        //     planet:
+        //         packs: &planet-packs
+        //             - pack-a
+        //     galaxy:
+        //         packs:
+        //             - *planet-packs
+        //             - pack-b
+        Map<String, Object> raw = new Yaml().load(stream);
+        flattenPackFeatures(raw);
+        flattenTierPacks(raw);
+        LicenseModel licenseModel = OBJECT_MAPPER.convertValue(raw, LicenseModel.class);
+        validateAttributes(licenseModel);
+        return licenseModel;
+    }
+
+    private static void validateAttributes(LicenseModel licenseModel) {
+        licenseModel
+            .getAttributes()
+            .forEach((name, attribute) -> {
+                if (attribute.getType() == null) {
+                    throw new IllegalStateException("License model attribute '" + name + "' declares no type");
+                }
+            });
+        licenseModel
+            .getTiers()
+            .forEach((tierName, tier) ->
+                tier
+                    .getAttributes()
+                    .forEach((name, value) -> {
+                        LicenseAttribute attribute = licenseModel.getAttributes().get(name);
+                        if (attribute == null) {
+                            throw new IllegalStateException(
+                                "License model tier '" + tierName + "' sets the undeclared attribute '" + name + "'"
+                            );
+                        }
+                        if (!attribute.getType().accepts(value)) {
+                            throw new IllegalStateException(
+                                "License model tier '" +
+                                    tierName +
+                                    "' sets the attribute '" +
+                                    name +
+                                    "' to [" +
+                                    value +
+                                    "], which is not of type " +
+                                    attribute.getType()
+                            );
+                        }
+                    })
+            );
     }
 
     /**

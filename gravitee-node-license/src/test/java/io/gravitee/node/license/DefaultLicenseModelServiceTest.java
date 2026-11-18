@@ -16,12 +16,16 @@
 package io.gravitee.node.license;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import io.gravitee.node.api.license.model.LicenseAttribute;
 import io.gravitee.node.api.license.model.LicenseModel;
 import io.gravitee.node.api.license.model.LicensePack;
 import io.gravitee.node.api.license.model.LicenseTier;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -83,8 +87,91 @@ class DefaultLicenseModelServiceTest {
     }
 
     @Test
-    void should_declare_portals_max_as_a_limit() {
-        assertThat(cut.getLicenseModel().getLimits()).containsExactly("apim-portals-max");
+    void should_declare_portals_max_as_an_integer_limit() {
+        LicenseAttribute attribute = cut.getLicenseModel().getAttributes().get("apim-portals-max");
+
+        assertThat(attribute.getType()).isEqualTo(LicenseAttribute.Type.INTEGER);
+        assertThat(attribute.isLimit()).isTrue();
+    }
+
+    @Test
+    void should_load_tier_attribute_matching_its_declaration() {
+        LicenseModel model = parse(
+            """
+            attributes:
+                apim-portals-max:
+                    type: integer
+                    limit: true
+                support-level:
+                    type: string
+            tiers:
+                custom:
+                    packs: []
+                    attributes:
+                        apim-portals-max: 10
+                        support-level: gold
+            """
+        );
+
+        assertThat(model.getTiers().get("custom").getAttributes())
+            .containsEntry("apim-portals-max", 10)
+            .containsEntry("support-level", "gold");
+        assertThat(model.getAttributes().get("support-level").isLimit()).isFalse();
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("invalidModels")
+    void should_reject_invalid_attributes(String name, String yaml, String message) {
+        assertThatThrownBy(() -> parse(yaml))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining(message);
+    }
+
+    private static Stream<Arguments> invalidModels() {
+        return Stream.of(
+            arguments(
+                "undeclared tier attribute",
+                """
+                attributes:
+                    apim-portals-max:
+                        type: integer
+                tiers:
+                    custom:
+                        packs: []
+                        attributes:
+                            apim-portal-max: 10
+                """,
+                "tier 'custom' sets the undeclared attribute 'apim-portal-max'"
+            ),
+            arguments(
+                "tier attribute of the wrong type",
+                """
+                attributes:
+                    apim-portals-max:
+                        type: integer
+                tiers:
+                    custom:
+                        packs: []
+                        attributes:
+                            apim-portals-max: ten
+                """,
+                "tier 'custom' sets the attribute 'apim-portals-max' to [ten], which is not of type integer"
+            ),
+            arguments(
+                "attribute declared without a type",
+                """
+                attributes:
+                    apim-portals-max:
+                        limit: true
+                tiers: {}
+                """,
+                "attribute 'apim-portals-max' declares no type"
+            )
+        );
+    }
+
+    private static LicenseModel parse(String yaml) {
+        return DefaultLicenseModelService.parse(new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
     }
 
     @ParameterizedTest(name = "tier ''{0}'' should have no attributes")

@@ -1,6 +1,9 @@
-# Attributes for which a license can only raise its tier's value, never lower it.
-limits:
-    - apim-portals-max
+# Attributes that tiers and licenses may set. A limit can only be raised by a license: the higher of the tier's and the
+# license's value applies.
+attributes:
+    apim-portals-max:
+        type: integer
+        limit: true
 
 packs:
     enterprise-features:
