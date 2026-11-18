@@ -207,6 +207,7 @@ class DefaultLicenseModelServiceTest {
                     "apim-guardian-policy-http-evaluator",
                     "apim-guardian-resource-decision-model",
                     "apim-guardian-resource-http-evaluator",
+                    "apim-hitl",
                     "gamma-aim-discovery-foundry",
                     "gamma-aim-discovery-gemini",
                     "gamma-aim-discovery-bedrock",
