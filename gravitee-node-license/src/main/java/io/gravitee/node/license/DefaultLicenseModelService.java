@@ -81,6 +81,11 @@ public class DefaultLicenseModelService implements LicenseModelService {
                 if (attribute.getType() == null) {
                     throw new IllegalStateException("License model attribute '" + name + "' declares no type");
                 }
+                if (attribute.isLimit() && attribute.getType() != LicenseAttribute.Type.INTEGER) {
+                    throw new IllegalStateException(
+                        "License model attribute '" + name + "' is a limit, so it must be of type integer, not " + attribute.getType()
+                    );
+                }
             });
         licenseModel
             .getTiers()
