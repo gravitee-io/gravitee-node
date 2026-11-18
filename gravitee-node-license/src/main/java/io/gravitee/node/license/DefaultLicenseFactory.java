@@ -136,11 +136,13 @@ public class DefaultLicenseFactory implements LicenseFactory {
             attributes.putAll(licenseTier.getAttributes());
         }
 
-        final Set<String> limits = licenseModelService.getLicenseModel().getLimits();
+        final LicenseModel licenseModel = licenseModelService.getLicenseModel();
         license
             .features()
             .forEach((name, signedValue) ->
-                attributes.merge(name, signedValue, (tierValue, value) -> limits.contains(name) ? higherLimit(tierValue, value) : value)
+                attributes.merge(name, signedValue, (tierValue, value) ->
+                    licenseModel.isLimit(name) ? higherLimit(tierValue, value) : value
+                )
             );
 
         return Collections.unmodifiableMap(attributes);
