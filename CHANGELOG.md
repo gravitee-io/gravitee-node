@@ -1,3 +1,10 @@
+# [9.19.0](https://github.com/gravitee-io/gravitee-node/compare/9.18.0...9.19.0) (2026-11-18)
+
+
+### Features
+
+* **license:** add the Human In the Lead feature to the agent-management pack ([7b423f7](https://github.com/gravitee-io/gravitee-node/commit/7b423f73242533fb7114ca13ed8c27ead3e0a037))
+
 # [9.18.0](https://github.com/gravitee-io/gravitee-node/compare/9.17.0...9.18.0) (2026-11-17)
 
 
