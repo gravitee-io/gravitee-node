@@ -1,3 +1,13 @@
+# [9.20.0](https://github.com/gravitee-io/gravitee-node/compare/9.19.0...9.20.0) (2026-11-18)
+
+
+### Features
+
+* **license:** declare license attributes with their type ([b63c1a9](https://github.com/gravitee-io/gravitee-node/commit/b63c1a99a39cdf7a095f39daacd02365ed3e3bb0))
+* **license:** let a license only raise a declared tier limit ([347e52d](https://github.com/gravitee-io/gravitee-node/commit/347e52d0b62ae73058a924a73e319c0c6a329d73))
+* **license:** reject a limit declared on a non-integer attribute ([a608058](https://github.com/gravitee-io/gravitee-node/commit/a6080585f7a63088eee6108b62b6453b4d99420a))
+* **license:** resolve per-tier default license attributes ([92979b9](https://github.com/gravitee-io/gravitee-node/commit/92979b989c63e9005b529a3f752c972cd8c47308))
+
 # [9.19.0](https://github.com/gravitee-io/gravitee-node/compare/9.18.0...9.19.0) (2026-11-18)
 
 
