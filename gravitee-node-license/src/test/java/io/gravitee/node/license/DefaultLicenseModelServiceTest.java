@@ -166,6 +166,17 @@ class DefaultLicenseModelServiceTest {
                 tiers: {}
                 """,
                 "attribute 'apim-portals-max' declares no type"
+            ),
+            arguments(
+                "limit declared on a string attribute",
+                """
+                attributes:
+                    support-level:
+                        type: string
+                        limit: true
+                tiers: {}
+                """,
+                "attribute 'support-level' is a limit, so it must be of type integer, not string"
             )
         );
     }
