@@ -1,3 +1,10 @@
+## [9.20.1](https://github.com/gravitee-io/gravitee-node/compare/9.20.0...9.20.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* add apim-native-kafka-policy-data-contract feature ([4c2b6be](https://github.com/gravitee-io/gravitee-node/commit/4c2b6be73c18c0af7277b8db0bf90a9175fa0f3d))
+
 # [9.20.0](https://github.com/gravitee-io/gravitee-node/compare/9.19.0...9.20.0) (2026-11-18)
 
 
