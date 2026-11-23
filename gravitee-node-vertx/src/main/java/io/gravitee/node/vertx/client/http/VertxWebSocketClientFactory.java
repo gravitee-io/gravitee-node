@@ -52,6 +52,12 @@ public class VertxWebSocketClientFactory {
     private VertxHttpClientOptions httpOptions;
     private SslOptions sslOptions;
 
+    @Builder.Default
+    private int maxFrameSize = WebSocketClientOptions.DEFAULT_MAX_FRAME_SIZE;
+
+    @Builder.Default
+    private int maxMessageSize = WebSocketClientOptions.DEFAULT_MAX_MESSAGE_SIZE;
+
     public WebSocketClient createWebSocketClient() {
         if (httpOptions == null) {
             httpOptions = new VertxHttpClientOptions();
@@ -69,7 +75,9 @@ public class VertxWebSocketClientFactory {
             .setTryUsePerFrameCompression(httpOptions.isUseCompression())
             .setTryUsePerMessageCompression(httpOptions.isUseCompression())
             .setCompressionAllowClientNoContext(httpOptions.isUseCompression())
-            .setCompressionRequestServerNoContext(httpOptions.isUseCompression());
+            .setCompressionRequestServerNoContext(httpOptions.isUseCompression())
+            .setMaxFrameSize(maxFrameSize)
+            .setMaxMessageSize(maxMessageSize);
 
         final URL target = VertxHttpClientFactory.buildUrl(defaultTarget);
 

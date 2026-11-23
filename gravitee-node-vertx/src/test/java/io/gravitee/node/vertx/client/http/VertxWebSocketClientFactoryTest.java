@@ -133,6 +133,30 @@ class VertxWebSocketClientFactoryTest {
 
     @Test
     @SneakyThrows
+    void should_keep_vertx_default_frame_and_message_size_limits() {
+        final WebSocketClient webSocketClient = builder().build().createWebSocketClient();
+
+        final WebSocketClientOptions options = extractWebSocketClientOptions(webSocketClient);
+        assertThat(options.getMaxFrameSize()).isEqualTo(WebSocketClientOptions.DEFAULT_MAX_FRAME_SIZE);
+        assertThat(options.getMaxMessageSize()).isEqualTo(WebSocketClientOptions.DEFAULT_MAX_MESSAGE_SIZE);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_build_websocket_client_with_custom_frame_and_message_size_limits() {
+        final WebSocketClient webSocketClient = builder()
+            .maxFrameSize(16 * 1024 * 1024)
+            .maxMessageSize(32 * 1024 * 1024)
+            .build()
+            .createWebSocketClient();
+
+        final WebSocketClientOptions options = extractWebSocketClientOptions(webSocketClient);
+        assertThat(options.getMaxFrameSize()).isEqualTo(16 * 1024 * 1024);
+        assertThat(options.getMaxMessageSize()).isEqualTo(32 * 1024 * 1024);
+    }
+
+    @Test
+    @SneakyThrows
     void should_build_websocket_client_with_custom_proxy() {
         final VertxHttpProxyOptions proxyOptions = VertxHttpProxyOptions.builder()
             .enabled(true)
