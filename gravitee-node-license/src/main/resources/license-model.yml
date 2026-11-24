@@ -284,12 +284,13 @@ packs:
             - apim-ai-resource-vector-store-aws-s3 # resource: gravitee-resource-ai-vector-store-aws-s3
 
             - gamma-aim-guardrails # reactor: gravitee-reactor-guardrails
-            - gamma-aim-guardrails-policy-rule # policy: gravitee-policy-guardrail-rule
-            - gamma-aim-guardrails-policy-decision-binary # policy: gravitee-policy-guardrail-decision-binary
-            - gamma-aim-guardrails-policy-decision-scoring # policy: gravitee-policy-guardrail-decision-scoring
-            - gamma-aim-guardrails-policy-pii-redaction # policy: guardrail PII redaction
-            - gamma-aim-guardrails-policy-http-evaluator # policy: guardrail HTTP evaluator
-            - gamma-aim-guardrails-resource-decision-model-remote # resource: guardrail decision model
+            - gamma-aim-guardrails-policy-llm-rule # policy: gravitee-policy-guardrail-rule
+            - gamma-aim-guardrails-policy-llm-decision-binary # policy: gravitee-policy-guardrail-decision-binary
+            - gamma-aim-guardrails-policy-llm-decision-scoring # policy: gravitee-policy-guardrail-decision-scoring
+            - gamma-aim-guardrails-policy-llm-pii-redaction # policy: guardrail PII redaction
+            - gamma-aim-guardrails-policy-llm-http-evaluator # policy: guardrail HTTP evaluator
+            - gamma-aim-guardrails-resource-decision-model-remote # resource: decision model
+            - gamma-aim-guardrails-resource-token-classification-remote # resource: token classification model
 
             # START TO REMOVE
             - apim-guardians # reactor: gravitee-reactor-guardian
