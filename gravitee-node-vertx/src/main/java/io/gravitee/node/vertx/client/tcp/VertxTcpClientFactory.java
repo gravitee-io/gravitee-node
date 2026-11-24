@@ -3,6 +3,7 @@ package io.gravitee.node.vertx.client.tcp;
 import io.gravitee.node.api.configuration.Configuration;
 import io.gravitee.node.vertx.client.ssl.KeyStore;
 import io.gravitee.node.vertx.client.ssl.SslOptions;
+import io.gravitee.node.vertx.client.ssl.TrustAllTrustOptions;
 import io.gravitee.node.vertx.client.ssl.TrustStore;
 import io.gravitee.node.vertx.proxy.VertxProxyOptionsUtils;
 import io.vertx.core.net.NetClientOptions;
@@ -119,15 +120,15 @@ public class VertxTcpClientFactory {
         }
 
         String hostnameVerificationAlgorithm = sslOptions.getHostnameVerificationAlgorithm();
-        if (hostnameVerificationAlgorithm == null || "NONE".equalsIgnoreCase(hostnameVerificationAlgorithm)) {
+        if (sslOptions.isTrustAll() || hostnameVerificationAlgorithm == null || "NONE".equalsIgnoreCase(hostnameVerificationAlgorithm)) {
             clientOptions.setHostnameVerificationAlgorithm("");
         } else {
             clientOptions.setHostnameVerificationAlgorithm(hostnameVerificationAlgorithm);
         }
 
-        clientOptions.setTrustAll(sslOptions.isTrustAll());
-
-        if (!sslOptions.isTrustAll()) {
+        if (sslOptions.isTrustAll()) {
+            TrustAllTrustOptions.applyTo(clientOptions);
+        } else {
             // Client truststore configuration (trust server certificate).
             sslOptions.trustStore().flatMap(TrustStore::trustOptions).ifPresent(clientOptions::setTrustOptions);
         }

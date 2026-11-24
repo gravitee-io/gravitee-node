@@ -55,6 +55,10 @@ public class SslOptions implements Serializable {
      * Hostname verification algorithm to apply on the Vert.x
      * {@code NetClientOptions}. Precedence:
      * <ol>
+     *   <li>{@link #trustAll} — always {@code ""} (disabled), whatever
+     *       {@link #hostnameVerifier} and {@link #hostnameVerificationAlgorithm}
+     *       say: any certificate is accepted, so checking its hostname adds
+     *       nothing. Configure a truststore instead to keep the check.</li>
      *   <li>{@link #hostnameVerificationAlgorithm} if set and not
      *       {@code "NONE"} — used verbatim, supports {@code HTTPS},
      *       {@code LDAPS}, etc.</li>
@@ -65,6 +69,9 @@ public class SslOptions implements Serializable {
      * {@code NetClientOptions#setHostnameVerificationAlgorithm}.
      */
     public String effectiveHostnameVerificationAlgorithm() {
+        if (trustAll) {
+            return "";
+        }
         if (
             hostnameVerificationAlgorithm != null &&
             !hostnameVerificationAlgorithm.isEmpty() &&
@@ -73,5 +80,16 @@ public class SslOptions implements Serializable {
             return hostnameVerificationAlgorithm;
         }
         return hostnameVerifier ? "HTTPS" : "";
+    }
+
+    /**
+     * Whether an HTTP client must verify the server hostname. Never with
+     * {@link #trustAll}, whatever {@link #hostnameVerifier} says: any certificate is
+     * accepted, so checking its hostname adds nothing, and Netty 4.2.17+ refuses the
+     * handshake on Java 25 with OpenSSL when Vert.x combines both. Configure a
+     * truststore instead to keep the check.
+     */
+    public boolean effectiveVerifyHost() {
+        return hostnameVerifier && !trustAll;
     }
 }

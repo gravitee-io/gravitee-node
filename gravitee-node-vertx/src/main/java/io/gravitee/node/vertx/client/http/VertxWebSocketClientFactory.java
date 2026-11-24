@@ -18,6 +18,7 @@ package io.gravitee.node.vertx.client.http;
 import io.gravitee.node.api.configuration.Configuration;
 import io.gravitee.node.vertx.client.ssl.KeyStore;
 import io.gravitee.node.vertx.client.ssl.SslOptions;
+import io.gravitee.node.vertx.client.ssl.TrustAllTrustOptions;
 import io.gravitee.node.vertx.client.ssl.TrustStore;
 import io.gravitee.node.vertx.proxy.VertxProxyOptionsUtils;
 import io.vertx.core.http.WebSocketClientOptions;
@@ -125,7 +126,7 @@ public class VertxWebSocketClientFactory {
             }
 
             if (sslOptions != null) {
-                options.setVerifyHost(sslOptions.isHostnameVerifier()).setTrustAll(sslOptions.isTrustAll());
+                options.setVerifyHost(sslOptions.effectiveVerifyHost());
 
                 try {
                     // Client truststore configuration (trust server certificate).
@@ -135,6 +136,10 @@ public class VertxWebSocketClientFactory {
                     sslOptions.keyStore().flatMap(KeyStore::keyCertOptions).ifPresent(options::setKeyCertOptions);
                 } catch (KeyStore.KeyStoreCertOptionsException | TrustStore.TrustOptionsException e) {
                     throw new IllegalArgumentException(e.getMessage() + " for " + target);
+                }
+
+                if (sslOptions.isTrustAll()) {
+                    TrustAllTrustOptions.applyTo(options);
                 }
             }
         }
