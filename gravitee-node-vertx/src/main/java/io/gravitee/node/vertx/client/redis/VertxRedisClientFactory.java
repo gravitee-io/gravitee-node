@@ -17,6 +17,7 @@ package io.gravitee.node.vertx.client.redis;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.gravitee.node.vertx.client.ssl.KeyStore;
+import io.gravitee.node.vertx.client.ssl.TrustAllTrustOptions;
 import io.gravitee.node.vertx.client.ssl.TrustStore;
 import io.gravitee.plugin.configurations.redis.HostAndPort;
 import io.gravitee.plugin.configurations.redis.RedisClientOptions;
@@ -178,12 +179,12 @@ public class VertxRedisClientFactory {
 
         var sourceSslOptions = options.getSsl();
         if (sourceSslOptions == null) {
-            netClientOptions.setTrustAll(true);
+            TrustAllTrustOptions.applyTo(netClientOptions);
+            netClientOptions.setHostnameVerificationAlgorithm("");
             return;
         }
 
         var sslOptions = SslOptionsMapper.INSTANCE.map(sourceSslOptions);
-        netClientOptions.setTrustAll(sslOptions.isTrustAll());
         netClientOptions.setHostnameVerificationAlgorithm(sslOptions.effectiveHostnameVerificationAlgorithm());
 
         if (sslOptions.getTlsProtocols() != null && !sslOptions.getTlsProtocols().isEmpty()) {
@@ -202,7 +203,9 @@ public class VertxRedisClientFactory {
             netClientOptions.setSslEngineOptions(new io.vertx.core.net.OpenSSLEngineOptions());
         }
 
-        if (!sslOptions.isTrustAll()) {
+        if (sslOptions.isTrustAll()) {
+            TrustAllTrustOptions.applyTo(netClientOptions);
+        } else {
             sslOptions.trustStore().flatMap(TrustStore::trustOptions).ifPresent(netClientOptions::setTrustOptions);
         }
 

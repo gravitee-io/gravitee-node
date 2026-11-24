@@ -34,6 +34,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.X509ExtendedTrustManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -93,14 +94,51 @@ class VertxRedisClientFactoryTest {
         }
 
         @Test
-        void shouldBuildSslRedisOptions() {
+        void shouldBuildSslRedisOptions() throws Exception {
             var options = RedisClientOptions.builder().host("redis.local").port(6379).useSsl(true).build();
 
             RedisOptions result = factory.buildRedisOptions(options);
 
             assertThat(result.getNetClientOptions().isSsl()).isTrue();
-            assertThat(result.getNetClientOptions().isTrustAll()).isTrue();
+            assertTrustsAll(result);
+            assertThat(result.getNetClientOptions().getHostnameVerificationAlgorithm()).isEmpty();
             assertThat(result.getEndpoint()).startsWith("rediss://");
+        }
+
+        @Test
+        void shouldNotVerifyHostnameWithTrustAll() throws Exception {
+            // Given
+            var ssl = SslOptions.builder().trustAll(true).hostnameVerifier(true).hostnameVerificationAlgorithm("HTTPS").build();
+            var options = RedisClientOptions.builder().host("redis.local").port(6379).useSsl(true).ssl(ssl).build();
+
+            // When
+            RedisOptions result = factory.buildRedisOptions(options);
+
+            // Then
+            assertTrustsAll(result);
+            assertThat(result.getNetClientOptions().getHostnameVerificationAlgorithm()).isEmpty();
+        }
+
+        private void assertTrustsAll(RedisOptions result) throws Exception {
+            // Not the Vert.x trustAll flag: its trust manager is refused by Netty 4.2.17+ with OpenSSL.
+            assertThat(result.getNetClientOptions().isTrustAll()).isFalse();
+            assertThat(result.getNetClientOptions().getTrustOptions().getTrustManagerFactory(vertx).getTrustManagers())
+                .singleElement()
+                .isInstanceOf(X509ExtendedTrustManager.class);
+        }
+
+        @Test
+        void shouldVerifyHostnameWithTrustStore() {
+            // Given
+            var trustStore = JKSTrustStore.builder().path("/certs/truststore.jks").password("changeit").build();
+            var ssl = SslOptions.builder().trustAll(false).hostnameVerifier(true).trustStore(trustStore).build();
+            var options = RedisClientOptions.builder().host("redis.local").port(6379).useSsl(true).ssl(ssl).build();
+
+            // When
+            RedisOptions result = factory.buildRedisOptions(options);
+
+            // Then
+            assertThat(result.getNetClientOptions().getHostnameVerificationAlgorithm()).isEqualTo("HTTPS");
         }
 
         @Test
