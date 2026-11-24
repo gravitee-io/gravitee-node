@@ -283,6 +283,15 @@ packs:
             - apim-ai-resource-vector-store-redis # resource: gravitee-resource-ai-vector-store-redis
             - apim-ai-resource-vector-store-aws-s3 # resource: gravitee-resource-ai-vector-store-aws-s3
 
+            - gamma-aim-guardrails # reactor: gravitee-reactor-guardrails
+            - gamma-aim-guardrails-policy-rule # policy: gravitee-policy-guardrail-rule
+            - gamma-aim-guardrails-policy-decision-binary # policy: gravitee-policy-guardrail-decision-binary
+            - gamma-aim-guardrails-policy-decision-scoring # policy: gravitee-policy-guardrail-decision-scoring
+            - gamma-aim-guardrails-policy-pii-redaction # policy: guardrail PII redaction
+            - gamma-aim-guardrails-policy-http-evaluator # policy: guardrail HTTP evaluator
+            - gamma-aim-guardrails-resource-decision-model-remote # resource: guardrail decision model
+
+            # START TO REMOVE
             - apim-guardians # reactor: gravitee-reactor-guardian
             - apim-guardian-policy-rule # policy: gravitee-policy-guardrail-rule
             - apim-guardian-policy-pii-redaction # policy: guardrail PII redaction
@@ -290,6 +299,7 @@ packs:
             - apim-guardian-policy-http-evaluator # policy: guardrail HTTP evaluator
             - apim-guardian-resource-decision-model # resource: guardrail decision model
             - apim-guardian-resource-http-evaluator # resource: guardrail HTTP evaluator
+            # END TO REMOVE
 
             - apim-hitl # policy: gravitee-policy-human-approval; gateway and AIM approvals (Human In the Lead)
 
