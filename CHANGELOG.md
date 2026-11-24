@@ -1,3 +1,10 @@
+## [9.20.2](https://github.com/gravitee-io/gravitee-node/compare/9.20.1...9.20.2) (2026-11-24)
+
+
+### Bug Fixes
+
+* **vertx:** allow to configure WebSocket client frame and message size limits ([c68e826](https://github.com/gravitee-io/gravitee-node/commit/c68e826323535d07b52770c2dc3dc8cd244e5b37))
+
 ## [9.20.1](https://github.com/gravitee-io/gravitee-node/compare/9.20.0...9.20.1) (2026-11-19)
 
 
