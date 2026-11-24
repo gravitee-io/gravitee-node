@@ -1,3 +1,10 @@
+# [9.21.0](https://github.com/gravitee-io/gravitee-node/compare/9.20.2...9.21.0) (2026-11-24)
+
+
+### Features
+
+* rename guardrails related features ([0a7b2b1](https://github.com/gravitee-io/gravitee-node/commit/0a7b2b157e107ebe534622c859b7b55cb62c785a))
+
 ## [9.20.2](https://github.com/gravitee-io/gravitee-node/compare/9.20.1...9.20.2) (2026-11-24)
 
 
