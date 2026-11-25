@@ -1,3 +1,10 @@
+## [9.22.1](https://github.com/gravitee-io/gravitee-node/compare/9.22.0...9.22.1) (2026-11-25)
+
+
+### Bug Fixes
+
+* **vertx:** use an extended trust manager and skip hostname verification with trustAll ([95d3cc3](https://github.com/gravitee-io/gravitee-node/commit/95d3cc3be5e95c7c1cc7e460c6f1df24ae51caa4))
+
 # [9.22.0](https://github.com/gravitee-io/gravitee-node/compare/9.21.0...9.22.0) (2026-11-25)
 
 
