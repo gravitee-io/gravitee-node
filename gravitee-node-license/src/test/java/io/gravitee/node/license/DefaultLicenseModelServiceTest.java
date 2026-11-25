@@ -332,7 +332,7 @@ class DefaultLicenseModelServiceTest {
                     "gamma-aim-guardrails-policy-llm-http-evaluator",
                     "gamma-aim-guardrails-resource-decision-model-remote",
                     "gamma-aim-guardrails-resource-token-classification-remote",
-                    "apim-hitl",
+                    "gamma-aim-hitl",
                     "gamma-aim-discovery-foundry",
                     "gamma-aim-discovery-gemini",
                     "gamma-aim-discovery-bedrock",
