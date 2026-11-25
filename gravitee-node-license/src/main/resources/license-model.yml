@@ -302,7 +302,7 @@ packs:
             - apim-guardian-resource-http-evaluator # resource: guardrail HTTP evaluator
             # END TO REMOVE
 
-            - apim-hitl # policy: gravitee-policy-human-approval; gateway and AIM approvals (Human In the Lead)
+            - gamma-aim-hitl # policy: gravitee-policy-human-approval; gateway and AIM approvals (Human In the Lead)
 
             - gamma-aim-module # module: gravitee-gamma-module-aim
             - gamma-aim-endpoint-tools-http # endpoint: gravitee-endpoint-tools-http
