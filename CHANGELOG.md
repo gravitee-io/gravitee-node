@@ -1,3 +1,10 @@
+# [9.22.0](https://github.com/gravitee-io/gravitee-node/compare/9.21.0...9.22.0) (2026-11-25)
+
+
+### Features
+
+* rename guardrails llm policies features and add token classification resource ([09a3b9b](https://github.com/gravitee-io/gravitee-node/commit/09a3b9b7010795653d6d1369cb73e1aab66222a8))
+
 # [9.21.0](https://github.com/gravitee-io/gravitee-node/compare/9.20.2...9.21.0) (2026-11-24)
 
 
