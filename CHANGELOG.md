@@ -1,3 +1,10 @@
+## [9.22.2](https://github.com/gravitee-io/gravitee-node/compare/9.22.1...9.22.2) (2026-11-25)
+
+
+### Bug Fixes
+
+* add the gamma-aim-hitl feature and drop apim-hitl from the agent-management pack ([b625839](https://github.com/gravitee-io/gravitee-node/commit/b625839214700763473fa7f24fbae77bb5e8dc7a))
+
 ## [9.22.1](https://github.com/gravitee-io/gravitee-node/compare/9.22.0...9.22.1) (2026-11-25)
 
 
